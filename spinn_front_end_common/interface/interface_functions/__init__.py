@@ -42,8 +42,6 @@ from .host_execute_data_specification import (
     execute_application_data_specs, execute_system_data_specs)
 from .insert_chip_power_monitors_to_graphs import (
     insert_chip_power_monitors_to_graphs)
-from .insert_edges_to_live_packet_gatherers import (
-    insert_edges_to_live_packet_gatherers)
 from .insert_extra_monitor_vertices_to_graphs import (
     insert_extra_monitor_vertices_to_graphs)
 from .insert_live_packet_gatherers_to_graphs import (
@@ -52,6 +50,7 @@ from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
 from .local_tdma_builder import local_tdma_builder
 from .locate_executable_start_type import locate_executable_start_type
+from .lpg_multicast_routing_generator import lpg_multicast_routing_generator
 from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
@@ -92,11 +91,11 @@ __all__ = [
     "hbp_allocator", "host_based_bit_field_router_compressor",
     "hbp_max_machine_generator",
     "insert_chip_power_monitors_to_graphs",
-    "insert_edges_to_live_packet_gatherers",
     "insert_extra_monitor_vertices_to_graphs",
     "insert_live_packet_gatherers_to_graphs",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "local_tdma_builder", "locate_executable_start_type",
+    "lpg_multicast_routing_generator",
     "machine_generator", "placements_provenance_gatherer",
     "PreAllocateForBitFieldRouterCompressor",
     "preallocate_resources_for_chip_power_monitor",

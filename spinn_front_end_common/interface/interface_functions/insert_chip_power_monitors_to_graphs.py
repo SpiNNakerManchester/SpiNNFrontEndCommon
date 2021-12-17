@@ -14,36 +14,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from spinn_front_end_common.utility_models import ChipPowerMonitor
+from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
+from pacman.model.placements import Placement
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 def insert_chip_power_monitors_to_graphs(
-        machine, sampling_frequency, application_graph):
+        machine, sampling_frequency, placements):
     """ Adds chip power monitors into a given graph.
 
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
     :param int sampling_frequency:
-    :param application_graph: the application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
+    :param Placements placements:
     """
 
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
 
-    app_vertex = ChipPowerMonitor(
-        label="ChipPowerMonitor",
-        sampling_frequency=sampling_frequency)
-    application_graph.add_vertex(app_vertex)
     for chip in progress.over(machine.chips):
         if not chip.virtual:
-            vertex = app_vertex.create_machine_vertex(
-                vertex_slice=None, resources_required=None,
-                label=_LABEL.format("machine", chip.x, chip.y),
-                constraints=[ChipAndCoreConstraint(chip.x, chip.y)])
-            app_vertex.remember_machine_vertex(vertex)
+            vertex = ChipPowerMonitorMachineVertex(
+                f"ChipPowerMonitor on {chip.x}, {chip.y}", [],
+                sampling_frequency=sampling_frequency)
+            p = placements.n_placements_on_chip(chip.x, chip.y) + 1
+            placements.add_placement(Placement(vertex, chip.x, chip.y, p))

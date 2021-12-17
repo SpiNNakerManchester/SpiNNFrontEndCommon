@@ -92,11 +92,11 @@ from spinn_front_end_common.interface.interface_functions import (
     host_based_bit_field_router_compressor,
     hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
-    insert_edges_to_live_packet_gatherers,
     insert_extra_monitor_vertices_to_graphs,
     insert_live_packet_gatherers_to_graphs,
     load_app_images, load_fixed_routes, load_sys_images,
-    local_tdma_builder, locate_executable_start_type, machine_generator,
+    local_tdma_builder, locate_executable_start_type,
+    lpg_multicast_routing_generator, machine_generator,
     preallocate_resources_for_chip_power_monitor,
     preallocate_resources_for_live_packet_gatherers,
     pre_allocate_resources_for_extra_monitor_support,
@@ -1386,7 +1386,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine, self._application_graph)
             # return ignored as changes done inside original machine object
 
-    def _execute_insert_live_packet_gatherers_to_graphs(self):
+    def _execute_insert_live_packet_gatherers_to_graphs(
+            self, system_placements):
         """
         Runs, times and logs the InsertLivePacketGatherersToGraphs if required
         """
@@ -1398,7 +1399,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._live_packet_recorder_parameters_mapping = \
                 insert_live_packet_gatherers_to_graphs(
                     self._live_packet_recorder_params, self._machine,
-                    self._application_graph)
+                    system_placements)
 
     def _report_board_chip(self):
         """
@@ -1497,7 +1498,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._n_chips_needed = splitter_partitioner(
                 self._application_graph, self._plan_n_timesteps)
 
-    def _execute_insert_chip_power_monitors(self):
+    def _execute_insert_chip_power_monitors(self, system_placements):
         """
         Run, time and log the InsertChipPowerMonitorsToGraphs if required
 
@@ -1508,7 +1509,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             insert_chip_power_monitors_to_graphs(
                 self._machine,
                 get_config_int("EnergyMonitor", "sampling_frequency"),
-                self._application_graph)
+                system_placements)
 
     def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
@@ -1659,19 +1660,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_insert_edges_to_live_packet_gatherers(self):
+    def _execute_lpg_multicast_router(self):
         """
-        Runs, times and logs the InsertEdgesToLivePacketGatherers if required
+        Runs, times and logs lpg_multicast_router if required
         """
         with FecTimer(
-                MAPPING, "Insert edges to live packet gatherers") as timer:
+                MAPPING, "LPG Multicast router") as timer:
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
-            insert_edges_to_live_packet_gatherers(
-                self._live_packet_recorder_params, self._placements,
+            lpg_multicast_routing_generator(
+                self._live_packet_recorder_parameters, self._placements,
                 self._live_packet_recorder_parameters_mapping, self._machine,
-                self._application_graph)
+                self._routing_table_by_partition)
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -1942,8 +1943,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
             self._router_tables = basic_routing_table_generator(
-                self._routing_infos, self._routing_table_by_partition,
-                self._machine)
+                self._routing_infos, self._routing_table_by_partition)
         # TODO Nuke ZonedRoutingTableGenerator
 
     def _report_routers(self):
@@ -2070,8 +2070,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_board_chip()
 
         system_placements = Placements()
-        self._execute_insert_live_packet_gatherers_to_graphs()
-        self._execute_insert_chip_power_monitors()
+        self._execute_insert_live_packet_gatherers_to_graphs(system_placements)
+        self._execute_insert_chip_power_monitors(system_placements)
         self._execute_insert_extra_monitor_vertices(system_placements)
 
         self._execute_partitioner_report()
@@ -2082,10 +2082,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # self._report_placements_with_machine_graph()
         self._json_placements()
 
-        self._execute_insert_edges_to_live_packet_gatherers()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
         self._do_routing()
+        self._execute_lpg_multicast_router()
 
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()

@@ -21,16 +21,15 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.common import Slice
 from pacman.model.placements import Placements, Placement
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.interface_functions import (
-    insert_edges_to_live_packet_gatherers)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
-from spinn_front_end_common.utility_models import LivePacketGather
+from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
 from pacman_test_objects import SimpleTestVertex
 from pacman.model.partitioner_splitters import SplitterFixedLegacy
-from spinn_front_end_common.interface.splitter_selectors import (
-    LivePacketGatherSplitter)
-
+from spinn_front_end_common.interface.interface_functions import (
+    lpg_multicast_routing_generator)
+from pacman.model.routing_table_by_partition import (
+    MulticastRoutingTableByPartition)
 
 class TestInsertLPGEdges(unittest.TestCase):
     """ tests the interaction of the EDGE INSERTION OF LPGS
@@ -69,18 +68,11 @@ class TestInsertLPGEdges(unittest.TestCase):
         placements = Placements()
 
         # add LPG's (1 for each Ethernet connected chip
-        lpg_app_vertex = LivePacketGather(
-            LivePacketGatherParameters(default_params))
-        splitter = LivePacketGatherSplitter()
-        lpg_app_vertex.splitter = splitter
-        app_graph.add_vertex(lpg_app_vertex)
-        vertex_slice = None
-        live_packet_gatherers_to_vertex_mapping[default_params_holder] = (
-            lpg_app_vertex)
-        splitter.really_create_machine_vertices(machine)
-        for m_vert in lpg_app_vertex.machine_vertices:
-            place = next(iter(m_vert.constraints))
-            placements.add_placement(Placement(m_vert, place.x, place.y, 2))
+        for eth in machine.ethernet_connected_chips:
+            m_vert = LivePacketGatherMachineVertex(default_params_holder)
+            placements.add_placement(Placement(m_vert, eth.x, eth.y, 2))
+            live_packet_gatherers_to_vertex_mapping[
+                default_params_holder, eth.x, eth.y] = m_vert
 
         # tracker of wirings
         verts_expected = defaultdict(list)
@@ -122,23 +114,17 @@ class TestInsertLPGEdges(unittest.TestCase):
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
         # run edge inserter that should go boom
-        insert_edges_to_live_packet_gatherers(
+        routing_tables = MulticastRoutingTableByPartition()
+        lpg_multicast_routing_generator(
             live_packet_gatherers, placements,
-            live_packet_gatherers_to_vertex_mapping, machine, app_graph)
+            live_packet_gatherers_to_vertex_mapping, machine, routing_tables)
 
-        # verify edges are in the right place
+        # verify route goes from each source to each target
         for chip in machine.ethernet_connected_chips:
             for m_vert in verts_expected[chip.x, chip.y]:
-                lpg_verts = lpg_app_vertex.splitter.get_in_coming_vertices(
-                    None, m_vert)
-                self.assertEqual(len(lpg_verts), 1)
-                placement = placements.get_placement_of_vertex(lpg_verts[0])
-                self.assertEqual(placement.x, chip.x)
-                self.assertEqual(placement.y, chip.y)
-
-        # check app graph
-        for edge in app_graph.get_edges_ending_at_vertex(lpg_app_vertex):
-            self.assertIn(edge.pre_vertex, app_verts_expected)
+                entry = routing_tables.get_entry_on_coords_for_edge(
+                    m_vert, "EVENTS", chip.x, chip.y)
+                assert(entry is not None)
 
 
 if __name__ == "__main__":
