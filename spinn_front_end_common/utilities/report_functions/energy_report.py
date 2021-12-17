@@ -15,6 +15,7 @@
 
 import logging
 import os
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
@@ -35,7 +36,7 @@ class EnergyReport(object):
         consumed by a SpiNNaker job execution.
     """
 
-    __slots__ = ("__version", "__uses_spalloc")
+    __slots__ = ("__uses_spalloc")
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -44,17 +45,15 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def __init__(self, version, spalloc_server, remote_spinnaker_url):
+    def __init__(self, spalloc_server, remote_spinnaker_url):
         """
-        :param int version: version of machine
         :param str spalloc_server: spalloc server IP
         :param str remote_spinnaker_url: remote SpiNNaker URL
         """
-        self.__version = version
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
     def write_energy_report(
-            self, placements, machine, buffer_manager, power_used):
+            self, placements, buffer_manager, power_used):
         """ Writes the report.
 
         :param ~pacman.model.placements.Placements placements: the placements
@@ -63,40 +62,38 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :rtype: None
         """
+        view = FecDataView()
+        report_dir = view.run_dir_path
         # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
 
-        report_dir = FecDataView().run_dir_path
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 
         # summary report path
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
-        # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = FecDataView().time_scale_factor
-
         # create detailed report
         with open(detailed_report, "w") as f:
-            self._write_detailed_report(
-                placements, machine, power_used, f, runtime_total_ms)
+            self._write_detailed_report(placements, power_used, f)
 
         # create summary report
         with open(summary_report, "w") as f:
-            self._write_summary_report(runtime_total_ms, f, power_used)
+            self._write_summary_report(f, power_used)
 
     @classmethod
-    def _write_summary_report(cls, runtime_total_ms, f, power_used):
+    def _write_summary_report(cls, f, power_used):
         """ Write summary file
 
-        :param int runtime_total_ms:
-            Runtime with time scale factor taken into account
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
         # pylint: disable=too-many-arguments, too-many-locals
+
+        # figure runtime in milliseconds with time scale factor
+        runtime_total_ms = FecDataView().time_scale_factor
 
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
@@ -161,17 +158,17 @@ class EnergyReport(object):
             return "(over {} seconds)".format(time)
 
     def _write_detailed_report(
-            self, placements, machine, power_used, f, runtime_total_ms):
+            self, placements, power_used, f):
         """ Write detailed report and calculate costs
 
         :param ~.Placements placements: placements
-        :param ~.Machine machine: machine representation
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
-        :param float runtime_total_ms:
-            total runtime with time scale factor taken into account
         """
         # pylint: disable=too-many-arguments, too-many-locals
+        view = FecDataView()
+        runtime_total_ms = view.time_scale_factor
+        machine = view.machine
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -233,16 +230,16 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-
+        version = get_config_int("Machine", "version"),
         # if not spalloc, then could be any type of board
         if not self.__uses_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if int(self.__version) in (2, 3):
+            if int(version) in (2, 3):
                 f.write(
-                    "A SpiNN-{} board does not contain any FPGA's, and so "
-                    "its energy cost is 0 \n".format(self.__version))
+                    f"A SpiNN-{version} board does not contain any FPGA's, "
+                    f"and so its energy cost is 0 \n")
                 return
-            elif int(self.__version) not in (4, 5):
+            elif int(version) not in (4, 5):
                 # no idea where we are; version unrecognised
                 raise ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
@@ -253,14 +250,13 @@ class EnergyReport(object):
             if power_used.num_fpgas == 0:
                 # no active fpgas
                 f.write(
-                    "The FPGA's on the SpiNN-{} board are turned off and "
-                    "therefore the energy used by the FPGA is 0\n".format(
-                        self.__version))
+                    f"The FPGA's on the SpiNN-{version} board are turned off "
+                    f"and therefore the energy used by the FPGA is 0\n")
                 return
             # active fpgas; fall through to shared main part report
 
         # print out as needed for spalloc and non-spalloc versions
-        if self.__version is None:
+        if version is None:
             f.write(
                 "{} FPGAs on the Spalloc-ed boards are turned on and "
                 "therefore the energy used by the FPGA during the entire time "
@@ -275,7 +271,7 @@ class EnergyReport(object):
                 "therefore the energy used by the FPGA during the entire time "
                 "the machine was booted (which was {} ms) is {}. "
                 "The usage during execution was {}".format(
-                    power_used.num_fpgas, self.__version,
+                    power_used.num_fpgas, version,
                     power_used.total_time_secs * 1000,
                     power_used.fpga_total_energy_joules,
                     power_used.fpga_exec_energy_joules))

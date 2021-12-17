@@ -30,12 +30,11 @@ _n_word_structs = []
 
 
 def locate_extra_monitor_mc_receiver(
-        machine, placement_x, placement_y,
+        placement_x, placement_y,
         packet_gather_cores_to_ethernet_connection_map):
     """ Get the data speed up gatherer that can be used to talk to a\
         particular chip. This will be on the same board.
 
-    :param ~spinn_machine.Machine machine: The machine descriptor
     :param int placement_x: The X coordinate of the reference chip
     :param int placement_y: The Y coordinate of the reference chip
     :param packet_gather_cores_to_ethernet_connection_map:
@@ -43,7 +42,7 @@ def locate_extra_monitor_mc_receiver(
         dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :rtype: DataSpeedUpPacketGatherMachineVertex
     """
-    chip = machine.get_chip_at(placement_x, placement_y)
+    chip = FecDataView().get_chip_at(placement_x, placement_y)
     return packet_gather_cores_to_ethernet_connection_map[
         chip.nearest_ethernet_x, chip.nearest_ethernet_y]
 

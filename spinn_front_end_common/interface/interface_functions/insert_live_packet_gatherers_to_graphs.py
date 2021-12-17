@@ -22,8 +22,7 @@ from spinn_front_end_common.utility_models import (
 from spinn_front_end_common.data import FecDataView
 
 
-def insert_live_packet_gatherers_to_graphs(
-        live_packet_gatherer_parameters, machine):
+def insert_live_packet_gatherers_to_graphs(live_packet_gatherer_parameters):
     """ Add LPG vertices on Ethernet connected chips as required.
 
     :param live_packet_gatherer_parameters:
@@ -31,13 +30,6 @@ def insert_live_packet_gatherers_to_graphs(
     :type live_packet_gatherer_parameters:
         dict(LivePacketGatherParameters,
         list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
-    :param application_graph: the application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
     :return: mapping between LPG parameters and LPG application and
         machine vertices
     :rtype: dict(LivePacketGatherParameters,
@@ -45,7 +37,7 @@ def insert_live_packet_gatherers_to_graphs(
         dict(tuple(int,int),LivePacketGatherMachineVertex)))
     """
     inserter = _InsertLivePacketGatherersToGraphs()
-    return inserter._run(live_packet_gatherer_parameters, machine)
+    return inserter._run(live_packet_gatherer_parameters)
 
 
 class _InsertLivePacketGatherersToGraphs(object):
@@ -68,7 +60,7 @@ class _InsertLivePacketGatherersToGraphs(object):
         self._machine_graph = view.runtime_machine_graph
         self._application_graph = view.runtime_graph
 
-    def _run(self, live_packet_gatherer_parameters, machine,):
+    def _run(self, live_packet_gatherer_parameters):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:
@@ -76,14 +68,13 @@ class _InsertLivePacketGatherersToGraphs(object):
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine as discovered
         :return: mapping between LPG parameters and LPG application and
             machine vertices
         :rtype: dict(LivePacketGatherParameters,
             tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         """
+        machine = FecDataView().machine
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,

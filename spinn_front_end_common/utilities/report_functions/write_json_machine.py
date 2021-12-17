@@ -23,13 +23,12 @@ from spinn_front_end_common.data import FecDataView
 MACHINE_FILENAME = "machine.json"
 
 
-def write_json_machine(machine, json_folder=None, progress_bar=True):
+def write_json_machine(json_folder=None, progress_bar=True):
     """ Runs the code to write the machine in Java readable JSON.
 
     .. warning::
          The file in this folder will be overwritten!
 
-    :param ~spinn_machine.Machine machine: Machine to convert
     :param str json_folder: the folder to which the JSON are being written
     :param bool progress_bar: Flag if Progress Bar should be shown
     :return: the name of the generated file
@@ -45,7 +44,7 @@ def write_json_machine(machine, json_folder=None, progress_bar=True):
         json_folder = FecDataView().json_dir_path
     file_path = os.path.join(json_folder, MACHINE_FILENAME)
     if not os.path.exists(file_path):
-        json_obj = to_json(machine)
+        json_obj = to_json()
 
         if progress:
             progress.update()

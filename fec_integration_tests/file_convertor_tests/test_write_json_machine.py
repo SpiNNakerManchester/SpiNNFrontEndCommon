@@ -22,7 +22,7 @@ from spinn_utilities.config_holder import set_config
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
-
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import (write_json_machine, MACHINE_FILENAME)
@@ -113,10 +113,11 @@ class TestWriteJson(unittest.TestCase):
         trans.ensure_board_is_ready()
 
         machine = trans.get_machine_details()
+        FecDataWriter.set_machine(machine)
 
         folder = "spinn4"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder, True)
+        filename = write_json_machine(folder, True)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -130,7 +131,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn4_fiddle"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder, True)
+        filename = write_json_machine(folder, True)
 
         self.json_compare(filename, "spinn4_fiddle.json")
         trans.close()
@@ -150,13 +151,13 @@ class TestWriteJson(unittest.TestCase):
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
         trans.ensure_board_is_ready()
-        machine = trans.get_machine_details()
+        FecDataWriter.set_machine(trans.get_machine_details())
 
         m_allocation_controller.close()
 
         folder = "spinn2"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder, False)
+        filename = write_json_machine(folder, False)
 
         self.json_compare(filename, "spinn2.json")
         trans.close()

@@ -23,11 +23,9 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer(machine, router_tables,
-                               extra_monitor_vertices=None, placements=None):
+def router_provenance_gatherer(
+        router_tables, extra_monitor_vertices=None, placements=None):
     """
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine
     :param router_tables: the router tables that have been generated
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
@@ -37,7 +35,7 @@ def router_provenance_gatherer(machine, router_tables,
         the placements object
     """
     gather = _RouterProvenanceGatherer(
-        machine, router_tables, extra_monitor_vertices, placements)
+        router_tables, extra_monitor_vertices, placements)
     gather._add_router_provenance_data()
 
 
@@ -56,13 +54,11 @@ class _RouterProvenanceGatherer(object):
         '_router_tables',
     ]
 
-    def __init__(self, machine, router_tables,
+    def __init__(self, router_tables,
                  extra_monitor_vertices=None, placements=None):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan interface object
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine
         :param router_tables: the router tables that have been generated
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -73,8 +69,9 @@ class _RouterProvenanceGatherer(object):
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
+        view = FecDataView()
         self._extra_monitor_vertices = extra_monitor_vertices
-        self._machine = machine
+        self._machine = view.machine
         self._placements = placements
         self._router_tables = router_tables
 

@@ -19,12 +19,10 @@ from spinn_machine.router import Router
 from spinn_front_end_common.data import FecDataView
 
 
-def router_collision_potential_report(
-        router_tables_by_partition, n_keys_map, machine):
+def router_collision_potential_report(router_tables_by_partition, n_keys_map):
     """
     :param MulticastRoutingTableByPartition router_tables_by_partition:
     :param AbstractMachinePartitionNKeysMap n_keys_map:
-    :param ~spinn_machine.Machine machine:
     """
     file_name = os.path.join(
         FecDataView().run_dir_path,
@@ -32,7 +30,7 @@ def router_collision_potential_report(
 
     with open(file_name, "w") as writer:
         collision_counts = _generate_data(
-            router_tables_by_partition, n_keys_map, machine)
+            router_tables_by_partition, n_keys_map)
         _write_report(collision_counts, writer)
 
 
@@ -49,7 +47,9 @@ def _write_report(collision_counts, writer):
                     x, y, link_id, collision_counts[(x, y)][link_id]))
 
 
-def _generate_data(router_tables_by_partition, n_keys_map, machine):
+def _generate_data(router_tables_by_partition, n_keys_map):
+    view = FecDataView()
+    machine = view.machine
     collisions = defaultdict(lambda: defaultdict(int))
 
     for (x, y) in router_tables_by_partition.get_routers():

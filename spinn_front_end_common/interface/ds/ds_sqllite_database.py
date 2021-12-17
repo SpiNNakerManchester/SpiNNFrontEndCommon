@@ -28,19 +28,15 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class DsSqlliteDatabase(SQLiteDB):
     __slots__ = [
-        # The machine cached for getting the "ethernet"s
-        "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, init=None):
+    def __init__(self, init=None):
         """
-        :param ~spinn_machine.Machine machine:
         :param init:
         :type init: bool or None
         """
-        self._machine = machine
         database_file = os.path.join(FecDataView().run_dir_path, DB_NAME)
 
         if init is None:
@@ -53,6 +49,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def __init_db_contents(self):
         """ Set up the database contents from the machine. """
+        eth_chips = FecDataView().machine.ethernet_connected_chips
         with self.transaction() as cursor:
             cursor.executemany(
                 """
@@ -61,7 +58,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, (
                     (ethernet.x, ethernet.y, ethernet.ip_address)
-                    for ethernet in self._machine.ethernet_connected_chips))
+                    for ethernet in eth_chips))
 
     def __find_root_id(self):
         first_x = first_y = root_id = None
@@ -100,7 +97,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int p: p of the core ds applies to
         :param bytearray ds: the data spec as byte code
         """
-        chip = self._machine.get_chip_at(core_x, core_y)
+        chip = FecDataView().get_chip_at(core_x, core_y)
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -266,7 +263,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, (start, used, written, x, y, p))
             if cursor.rowcount == 0:
-                chip = self._machine.get_chip_at(x, y)
+                chip = FecDataView().get_chip_at(x, y)
                 cursor.execute(
                     """
                     INSERT INTO core(
@@ -290,7 +287,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, (memory_used, x, y, p))
             if cursor.rowcount == 0:
-                chip = self._machine.get_chip_at(x, y)
+                chip = FecDataView().get_chip_at(x, y)
                 cursor.execute(
                     """
                     INSERT INTO core(

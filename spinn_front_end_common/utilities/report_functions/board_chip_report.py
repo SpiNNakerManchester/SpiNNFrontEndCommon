@@ -20,18 +20,15 @@ from spinn_front_end_common.data import FecDataView
 AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
 
-def board_chip_report(machine):
+def board_chip_report():
     """ Creates a report that states where in SDRAM each region is.
 
-    :param ~spinn_machine.Machine machine:
-        python representation of the machine
     :rtype: None
     """
-
+    view = FecDataView()
+    machine = view.machine
     # create file path
-    directory_name = os.path.join(
-        FecDataView().run_dir_path, AREA_CODE_REPORT_NAME)
-
+    directory_name = os.path.join(view.run_dir_path, AREA_CODE_REPORT_NAME)
     # create the progress bar for end users
     progress_bar = ProgressBar(
         len(machine.ethernet_connected_chips),

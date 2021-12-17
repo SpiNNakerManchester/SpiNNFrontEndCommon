@@ -77,8 +77,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         bm = BufferManager(
             placements=pl, tags=t, extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
-            extra_monitor_to_chip_mapping=None, machine=None,
-            fixed_routes=None)
+            extra_monitor_to_chip_mapping=None, fixed_routes=None)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one

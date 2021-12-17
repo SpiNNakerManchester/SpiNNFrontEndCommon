@@ -131,7 +131,7 @@ class BufferManager(object):
 
     def __init__(self, placements, tags, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping, machine, fixed_routes,
+                 extra_monitor_to_chip_mapping, fixed_routes,
                  java_caller=None):
         """
         :param ~pacman.model.placements.Placements placements:
@@ -146,7 +146,6 @@ class BufferManager(object):
         :param extra_monitor_to_chip_mapping:
         :type extra_monitor_to_chip_mapping:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        :param ~spinn_machine.Machine machine:
         :param fixed_routes:
         :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param JavaCaller java_caller:
@@ -160,7 +159,6 @@ class BufferManager(object):
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
         self._fixed_routes = fixed_routes
-        self._machine = machine
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -182,7 +180,6 @@ class BufferManager(object):
         self._listener_port = None
         self._java_caller = java_caller
         if self._java_caller is not None:
-            self._java_caller.set_machine(machine)
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors(
                     self._placements, self._tags,
@@ -215,7 +212,7 @@ class BufferManager(object):
 
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
-            self._machine, placement_x, placement_y,
+            placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
         extra_mon_data = receiver.get_data(
             sender, self._placements.get_placement_of_vertex(sender),
@@ -617,7 +614,7 @@ class BufferManager(object):
         # locate receivers
         receivers = list(OrderedSet(
             locate_extra_monitor_mc_receiver(
-                self._machine, placement.x, placement.y,
+                placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
             for placement in placements))
 

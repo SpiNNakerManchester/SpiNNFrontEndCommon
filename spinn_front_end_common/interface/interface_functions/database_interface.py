@@ -24,13 +24,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(
-        tags, runtime, machine, placements,
-        routing_infos, router_tables):
+        tags, runtime, placements, routing_infos, router_tables):
     """ Writes a database of the graph(s) and other information.
 
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
@@ -41,8 +39,7 @@ def database_interface(
     """
     interface = _DatabaseInterface()
     return interface._run(
-        tags, runtime, machine, placements,
-        routing_infos, router_tables)
+        tags, runtime, placements, routing_infos, router_tables)
 
 
 class _DatabaseInterface(object):
@@ -63,12 +60,10 @@ class _DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database()
 
     def _run(
-            self, tags, runtime, machine, placements,
-            routing_infos, router_tables):
+            self, tags, runtime, placements, routing_infos, router_tables):
         """
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
@@ -90,18 +85,15 @@ class _DatabaseInterface(object):
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
             self._write_to_db(
-                machine, runtime, placements, routing_infos, router_tables,
-                tags)
+                runtime, placements, routing_infos, router_tables, tags)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
     def _write_to_db(
-            self, machine, runtime,
-            placements, routing_infos, router_tables, tags):
+            self, runtime, placements, routing_infos, router_tables, tags):
         """
-        :param ~.Machine machine:
         :param int runtime:
         :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
@@ -117,7 +109,7 @@ class _DatabaseInterface(object):
                 9, "Creating graph description database") as p:
             w.add_system_params(runtime, view.app_id)
             p.update()
-            w.add_machine_objects(machine)
+            w.add_machine_objects()
             p.update()
             if app_graph is not None and app_graph.n_vertices:
                 w.add_application_vertices(app_graph)

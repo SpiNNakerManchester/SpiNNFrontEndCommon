@@ -35,7 +35,8 @@ class TestInsertLPGs(unittest.TestCase):
         unittest_setup()
 
     def test_that_3_lpgs_are_generated_on_3_board(self):
-        machine = virtual_machine(width=12, height=12)
+        FecDataWriter().set_machine(virtual_machine(width=12, height=12))
+
         graph = MachineGraph("Test")
 
         default_params = {
@@ -63,8 +64,7 @@ class TestInsertLPGs(unittest.TestCase):
         FecDataWriter().set_runtime_machine_graph(graph)
         FecDataWriter()._set_runtime_graph(ApplicationGraph("empty"))
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine)
+            live_packet_gatherer_parameters=live_packet_gatherers)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
@@ -81,7 +81,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        machine = virtual_machine(width=12, height=12)
+        FecDataWriter().set_machine(virtual_machine(width=12, height=12))
         app_graph = ApplicationGraph("Test")
         app_graph.add_vertex(
             SimpleTestVertex(10, "New AbstractConstrainedVertex 1", 256))
@@ -112,8 +112,7 @@ class TestInsertLPGs(unittest.TestCase):
         FecDataWriter().set_runtime_machine_graph(graph)
         FecDataWriter()._set_runtime_graph(app_graph)
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine)
+            live_packet_gatherer_parameters=live_packet_gatherers)
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = list()

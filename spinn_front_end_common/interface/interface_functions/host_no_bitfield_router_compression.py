@@ -38,7 +38,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def pair_compression(
-        routing_tables, executable_finder, machine):
+        routing_tables, executable_finder):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
@@ -51,8 +51,6 @@ def pair_compression(
     :param executable_finder: tracker of binaries.
     :type executable_finder:
         ~spinn_utilities.executable_finder.ExecutableFinder
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine representation
     :param bool compress_as_much_as_possible:
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
@@ -63,13 +61,12 @@ def pair_compression(
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
-        binary_path, machine, routing_tables,
+        binary_path, routing_tables,
         "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
 
-def ordered_covering_compression(
-        routing_tables, executable_finder,  machine):
+def ordered_covering_compression(routing_tables, executable_finder):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
@@ -78,20 +75,16 @@ def ordered_covering_compression(
 
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        How to talk to the machine
     :param executable_finder: tracker of binaries.
     :type executable_finder:
         ~spinn_utilities.executable_finder.ExecutableFinder
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine representation
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
-        binary_path, machine, routing_tables,
+        binary_path, routing_tables,
         "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
@@ -107,14 +100,13 @@ class Compression(object):
         "_compress_as_much_as_possible",
         "_compress_only_when_needed",
         "_compressor_app_id",
-        "_machine",
         "_progresses_text",
         "__result_register",
         "_routing_tables",
         "__failures"]
 
     def __init__(
-            self, binary_path, machine, routing_tables,
+            self, binary_path, routing_tables,
             progress_text, result_register):
         """
         :param str binary_path: What binary to run
@@ -131,7 +123,6 @@ class Compression(object):
             "Mapping", "router_table_compress_as_far_as_possible")
         # Only used by mundy compressor we can not rebuild
         self._compress_only_when_needed = None
-        self._machine = machine
         self._routing_tables = routing_tables
         self._progresses_text = progress_text
         self._compressor_app_id = None
@@ -226,10 +217,11 @@ class Compression(object):
 
         # build core subsets
         core_subsets = CoreSubsets()
+        machine = FecDataView().machine
         for routing_table in self._routing_tables:
 
             # get the first none monitor core
-            chip = self._machine.get_chip_at(routing_table.x, routing_table.y)
+            chip = machine.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
 
             # add to the core subsets

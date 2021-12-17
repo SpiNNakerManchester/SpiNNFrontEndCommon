@@ -30,8 +30,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def application_runner(
         buffer_manager, notification_interface, executable_types,
-        runtime, no_sync_changes, time_threshold, machine,
-        run_until_complete=False):
+        runtime, no_sync_changes, time_threshold, run_until_complete=False):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
@@ -43,8 +42,6 @@ def application_runner(
         :param int runtime:
         :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
-        :param ~spinn_machine.Machine machine:
-            the spinn machine instance
         :param bool run_until_complete:
         :return: Number of synchronisation changes
         :rtype: int
@@ -53,7 +50,7 @@ def application_runner(
     runner = _ApplicationRunner(
         executable_types, no_sync_changes)
     return runner._run(buffer_manager, notification_interface, runtime,
-                       time_threshold, machine, run_until_complete)
+                       time_threshold, run_until_complete)
 
 
 class _ApplicationRunner(object):
@@ -74,7 +71,7 @@ class _ApplicationRunner(object):
     # Wraps up as a PACMAN algorithm
     def _run(
             self, buffer_manager, notification_interface, runtime,
-            time_threshold, machine, run_until_complete=False):
+            time_threshold, run_until_complete=False):
         """
         :param BufferManager buffer_manager:
         :param NotificationProtocol notification_interface:
@@ -86,8 +83,6 @@ class _ApplicationRunner(object):
         :param int runtime:
         :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
-        :param ~spinn_machine.Machine machine:
-            the spinn machine instance
         :param bool run_until_complete:
         :return: Number of synchronisation changes
         :rtype: int
@@ -108,7 +103,7 @@ class _ApplicationRunner(object):
 
         # clear away any router diagnostics that have been set due to all
         # loading applications
-        for chip in machine.chips:
+        for chip in FecDataView().machine.chips:
             if not chip.virtual:
                 self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
 

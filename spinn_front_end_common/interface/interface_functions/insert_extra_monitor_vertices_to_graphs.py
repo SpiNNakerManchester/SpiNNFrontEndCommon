@@ -21,11 +21,10 @@ from spinn_front_end_common.utility_models import (
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
 
 
-def insert_extra_monitor_vertices_to_graphs(machine):
+def insert_extra_monitor_vertices_to_graphs():
     """ Inserts the extra monitor vertices into the graph that correspond to\
     the extra monitor cores required.
 
-    :param ~spinn_machine.Machine machine: spinnMachine instance
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map
@@ -35,7 +34,7 @@ def insert_extra_monitor_vertices_to_graphs(machine):
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     # pylint: disable=too-many-arguments, attribute-defined-outside-init
-
+    machine = FecDataView().machine
     progress = ProgressBar(
         machine.n_chips + len(list(machine.ethernet_connected_chips)),
         "Inserting extra monitors into graphs")

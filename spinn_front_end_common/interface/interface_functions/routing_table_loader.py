@@ -17,14 +17,13 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 
 
-def routing_table_loader(router_tables, machine):
+def routing_table_loader(router_tables):
     """ Loads routes into initialised routers.
 
     :param router_tables:
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     :param int app_id:
-    :param ~spinn_machine.Machine machine:
     """
     progress = ProgressBar(router_tables.routing_tables,
                            "Loading routing data onto the machine")
@@ -34,6 +33,7 @@ def routing_table_loader(router_tables, machine):
     view = FecDataView()
     app_id = view.app_id
     transceiver = view.transceiver
+    machine = view.machine
     for table in progress.over(router_tables.routing_tables):
         if (not machine.get_chip_at(table.x, table.y).virtual
                 and table.multicast_routing_entries):

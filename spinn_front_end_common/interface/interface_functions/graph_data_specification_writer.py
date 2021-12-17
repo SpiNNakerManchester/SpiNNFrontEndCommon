@@ -33,13 +33,11 @@ logger = logging.getLogger(__name__)
 
 
 def graph_data_specification_writer(
-        placements, hostname, machine, placement_order=None):
+        placements, hostname, placement_order=None):
     """
     :param ~pacman.model.placements.Placements placements:
         placements of machine graph to cores
     :param str hostname: SpiNNaker machine name
-    :param ~spinn_machine.Machine machine:
-        the python representation of the SpiNNaker machine
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
     :return: DSG targets (map of placement tuple and filename)
@@ -47,7 +45,7 @@ def graph_data_specification_writer(
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    writer = _GraphDataSpecificationWriter(hostname, machine)
+    writer = _GraphDataSpecificationWriter(hostname)
     return writer._run(placements, placement_order)
 
 
@@ -62,16 +60,13 @@ class _GraphDataSpecificationWriter(object):
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip",
-        # spinnmachine instance
-        "_machine",
         # hostname
         "_hostname")
 
-    def __init__(self, hostname, machine, ):
+    def __init__(self, hostname):
         self._sdram_usage = defaultdict(lambda: 0)
         self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
-        self._machine = machine
         self._hostname = hostname
 
     def _run(
@@ -94,7 +89,7 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(self._machine)
+        targets = DataSpecificationTargets()
 
         if placement_order is None:
             placement_order = placements.placements
@@ -177,7 +172,7 @@ class _GraphDataSpecificationWriter(object):
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
             if (self._sdram_usage[pl.x, pl.y] <=
-                    self._machine.get_chip_at(pl.x, pl.y).sdram.size):
+                    FecDataView().get_chip_at(pl.x, pl.y).sdram.size):
                 return True
 
         # creating the error message which contains the memory usage of

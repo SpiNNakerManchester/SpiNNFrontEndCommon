@@ -22,7 +22,7 @@ from spinnman.model.enums import (
 from spinn_front_end_common.data import FecDataView
 
 
-def routing_setup(router_tables,  machine):
+def routing_setup(router_tables):
     """
     Initialises the routers. Note that this does not load any routes into\
     them.
@@ -31,12 +31,12 @@ def routing_setup(router_tables,  machine):
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~spinn_machine.Machine machine:
     """
     view = FecDataView()
     transceiver = view.transceiver
     routing_tables = list(router_tables.routing_tables)
     progress = ProgressBar(routing_tables, "Preparing Routing Tables")
+    machine = view.machine
 
     # Clear the routing table for each router that needs to be set up
     # and set up the diagnostics

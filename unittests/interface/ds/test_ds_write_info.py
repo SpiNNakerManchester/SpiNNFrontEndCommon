@@ -15,6 +15,7 @@
 
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
@@ -28,8 +29,8 @@ class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        machine = virtual_machine(2, 2)
-        dst = DataSpecificationTargets(machine)
+        FecDataWriter().set_machine(virtual_machine(2, 2))
+        dst = DataSpecificationTargets()
         asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)
         foo = DataWritten(123, 12, 23)

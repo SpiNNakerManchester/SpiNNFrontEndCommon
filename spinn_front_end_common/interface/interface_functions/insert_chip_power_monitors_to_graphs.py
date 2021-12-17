@@ -23,27 +23,22 @@ from spinn_front_end_common.utility_models import (
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
-def insert_chip_power_monitors_to_graphs(machine):
+def insert_chip_power_monitors_to_graphs():
     """ Adds chip power monitor vertices on Ethernet connected chips as\
         required.
-
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
-    :param int sampling_frequency:
-    :param application_graph: the application graph
     """
-    # pylint: disable=too-many-arguments
+    if FecDataView().runtime_graph.n_vertices > 0:
+        __add_app()
+    else:
+        __add_mach_only()
 
+
+def __add_app():
+    machine = FecDataView().machine
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
-    if FecDataView().runtime_graph.n_vertices > 0:
-        __add_app(machine, progress)
-    else:
-        __add_mach_only(machine, progress)
 
-
-def __add_app(machine, progress):
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     app_vertex = ChipPowerMonitor(
         label="ChipPowerMonitor",
@@ -58,7 +53,11 @@ def __add_app(machine, progress):
                 constraints=[ChipAndCoreConstraint(chip.x, chip.y)]))
 
 
-def __add_mach_only(machine, progress):
+def __add_mach_only():
+    machine = FecDataView().machine
+    # create progress bar
+    progress = ProgressBar(
+        machine.n_chips, "Adding Chip power monitors to Graph")
     machine_graph = FecDataView().runtime_machine_graph
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     for chip in progress.over(machine.chips):

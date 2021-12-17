@@ -98,11 +98,11 @@ class DatabaseWriter(SQLiteDB):
                              str(map(type, args)))
             raise
 
-    def add_machine_objects(self, machine):
+    def add_machine_objects(self):
         """ Store the machine object into the database
 
-        :param ~spinn_machine.Machine machine: the machine object.
         """
+        machine = FecDataView().machine
         with self.transaction() as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
                 cur,

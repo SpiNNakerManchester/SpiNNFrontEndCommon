@@ -61,7 +61,7 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        placements, machine, version, buffer_manager, mapping_time,
+        placements, version, buffer_manager, mapping_time,
         load_time, execute_time, dsg_time, extraction_time,
         spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
@@ -69,7 +69,6 @@ def compute_energy_used(
         simulation (or other application) running on SpiNNaker.
 
     :param ~pacman.model.placements.Placements placements:
-    :param ~spinn_machine.Machine machine:
     :param int version:
         The version of the SpiNNaker boards in use.
     :param BufferManager buffer_manager:
@@ -92,7 +91,9 @@ def compute_energy_used(
     :rtype: PowerUsed
     """
     # pylint: disable=too-many-arguments
-
+    view = FecDataView()
+    runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
+    machine = view.machine
     power_used = PowerUsed()
 
     power_used.num_chips = machine.n_chips
@@ -105,8 +106,6 @@ def compute_energy_used(
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
     using_spalloc = bool(spalloc_server or remote_spinnaker_url)
-    view = FecDataView()
-    runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
     _compute_energy_consumption(
          placements, machine, version, using_spalloc,
          dsg_time, buffer_manager, load_time,

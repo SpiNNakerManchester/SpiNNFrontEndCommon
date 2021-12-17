@@ -48,8 +48,6 @@ class JavaCaller(object):
         "_java_call",
         # The location of the java jar file
         "_jar_file",
-        # The machine
-        "_machine",
         # The location where the machine json is written
         "_machine_json_path",
         # Dict of chip (x, y) to the p of the monitor vertex
@@ -98,7 +96,6 @@ class JavaCaller(object):
 
         self._find_java_jar(java_spinnaker_path, java_jar_path)
 
-        self._machine = None
         self._machine_json_path = None
         self._placement_json = None
         self._monitor_cores = None
@@ -156,13 +153,6 @@ class JavaCaller(object):
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
 
-    def set_machine(self, machine):
-        """ Passes the machine in leaving this class to decide pass it to Java.
-
-        :param ~spinn_machine.Machine machine: A machine Object
-        """
-        self._machine = machine
-
     def set_advanced_monitors(
             self, placements, tags, monitor_cores, packet_gathers):
         """
@@ -191,7 +181,8 @@ class JavaCaller(object):
             self._gatherer_cores[core] = placement.p
 
         self._chipxy_by_ethernet = defaultdict(list)
-        for chip in self._machine.chips:
+        machine = FecDataView().machine
+        for chip in machine.chips:
             if not chip.virtual:
                 chip_xy = (chip.x, chip.y)
                 ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
@@ -203,8 +194,7 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = write_json_machine(
-                self._machine, progress_bar=False)
+            self._machine_json_path = write_json_machine(progress_bar=False)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
@@ -291,8 +281,9 @@ class JavaCaller(object):
             ~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
+        machine = FecDataView().machine
         for placement in placements:
-            chip = self._machine.get_chip_at(placement.x, placement.y)
+            chip = machine.get_chip_at(placement.x, placement.y)
             chip_xy = (placement.x, placement.y)
             ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
             by_ethernet[ethernet][chip_xy].append(placement)

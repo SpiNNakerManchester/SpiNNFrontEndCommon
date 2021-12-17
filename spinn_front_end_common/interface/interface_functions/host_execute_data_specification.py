@@ -101,8 +101,7 @@ class _ExecutionContext(object):
         cross-references
     """
 
-    def __init__(self, machine):
-        self.__machine = machine
+    def __init__(self):
         self.__references_to_fill = list()
         self.__references_to_use = dict()
 
@@ -130,7 +129,7 @@ class _ExecutionContext(object):
         # Maximum available memory.
         # However, system updates the memory available independently, so the
         # space available check actually happens when memory is allocated.
-        memory_available = self.__machine.get_chip_at(x, y).sdram.size
+        memory_available = FecDataView().get_chip_at(x, y).sdram.size
 
         # generate data spec executor
         executor = DataSpecificationExecutor(reader, memory_available)
@@ -273,13 +272,11 @@ class _ExecutionContext(object):
 
 
 def execute_system_data_specs(
-        machine, dsg_targets, region_sizes,
+        dsg_targets, region_sizes,
         executable_targets,  java_caller=None,
         processor_to_app_data_base_address=None):
     """ Execute the data specs for all system targets.
 
-    :param ~spinn_machine.Machine machine:
-        the python representation of the spinnaker machine
     :param dict(tuple(int,int,int),str) dsg_targets:
         map of placement to file path
     :param dict(tuple(int,int,int),int) region_sizes:
@@ -294,22 +291,18 @@ def execute_system_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        machine, java_caller,
-        processor_to_app_data_base_address)
+        java_caller, processor_to_app_data_base_address)
     return specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
 
 def execute_application_data_specs(
-        machine, dsg_targets,
-        executable_targets, region_sizes,
+        dsg_targets, executable_targets, region_sizes,
         placements=None, extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
         java_caller=None, processor_to_app_data_base_address=None):
     """ Execute the data specs for all non-system targets.
 
-    :param ~spinn_machine.Machine machine:
-        the python representation of the SpiNNaker machine
     :param dict(tuple(int,int,int),int) region_sizes:
         the coord for region sizes for each core
     :param DataSpecificationTargets dsg_targets:
@@ -334,8 +327,7 @@ def execute_application_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        machine, java_caller,
-        processor_to_app_data_base_address)
+        java_caller, processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
@@ -351,8 +343,6 @@ class _HostExecuteDataSpecification(object):
         "_core_to_conn_map",
         # The support class to run via Java. If None pure python is used.
         "_java",
-        # The python representation of the SpiNNaker machine.
-        "_machine",
         "_monitors",
         "_placements",
         # The write info; a dict of cores to a dict of
@@ -361,11 +351,8 @@ class _HostExecuteDataSpecification(object):
 
     first = True
 
-    def __init__(self, machine, java_caller,
-                 processor_to_app_data_base_address):
+    def __init__(self, java_caller, processor_to_app_data_base_address):
         """
-        :param ~spinn_machine.Machine machine:
-           the python representation of the spinnaker machine
         :param JavaCaller java_caller:
         :param processor_to_app_data_base_address:
             map of placement and DSG data
@@ -373,7 +360,6 @@ class _HostExecuteDataSpecification(object):
         self._app_id = FecDataView().app_id
         self._core_to_conn_map = None
         self._java = java_caller
-        self._machine = machine
         self._monitors = None
         self._placements = None
         if processor_to_app_data_base_address:
@@ -401,7 +387,6 @@ class _HostExecuteDataSpecification(object):
             dw_write_info.set_size_info(x, y, p, region_sizes[core])
         progress.update()
         dsg_targets.set_app_id(self._app_id)
-        self._java.set_machine(self._machine)
         progress.update()
         return dw_write_info
 
@@ -453,7 +438,7 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._machine) as context:
+        with _ExecutionContext() as context:
             for core, reader in progress.over(dsg_targets.items()):
                 results[core] = context.execute(
                     core, reader, FecDataView().write_memory,
@@ -529,8 +514,9 @@ class _HostExecuteDataSpecification(object):
                self._monitors, self._placements)
 
     def __select_writer(self, x, y):
-        chip = self._machine.get_chip_at(x, y)
-        ethernet_chip = self._machine.get_chip_at(
+        view = FecDataView()
+        chip = view.get_chip_at(x, y)
+        ethernet_chip = view.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
         return gatherer.send_data_into_spinnaker
@@ -564,7 +550,7 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._machine) as context:
+        with _ExecutionContext() as context:
             for core, reader in progress.over(dsg_targets.items()):
                 x, y, _p = core
                 # write information for the memory map report
@@ -689,7 +675,7 @@ class _HostExecuteDataSpecification(object):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
-        with _ExecutionContext(self._machine) as context:
+        with _ExecutionContext() as context:
             for core, reader in progress.over(sys_targets.items()):
                 self._write_info_map[core] = context.execute(
                     core, reader, FecDataView().write_memory,

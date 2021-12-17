@@ -101,48 +101,46 @@ def placer_reports_without_application_graph(
         hostname, placements, machine)
 
 
-def router_summary_report(routing_tables,  hostname, machine):
+def router_summary_report(routing_tables,  hostname):
     """ Generates a text file of routing summaries
 
     :param MulticastRoutingTables routing_tables:
         The original routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param ~spinn_machine.Machine machine: The python machine object.
     :rtype: RouterSummary
     """
     file_name = os.path.join(
         FecDataView().run_dir_path, _ROUTING_SUMMARY_FILENAME)
-    progress = ProgressBar(machine.n_chips,
+    progress = ProgressBar(FecDataView().machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
-        file_name, progress, routing_tables,  hostname, machine)
+        file_name, progress, routing_tables,  hostname)
 
 
-def router_compressed_summary_report(routing_tables, hostname, machine):
+def router_compressed_summary_report(routing_tables, hostname):
     """ Generates a text file of routing summaries
 
     :param MulticastRoutingTables routing_tables:
         The in-operation routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param ~spinn_machine.Machine machine: The python machine object.
     :rtype: RouterSummary
     """
+    view = FecDataView()
     file_name = os.path.join(
-        FecDataView().run_dir_path, _COMPRESSED_ROUTING_SUMMARY_FILENAME)
-    progress = ProgressBar(machine.n_chips,
+        view.run_dir_path, _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+    progress = ProgressBar(view.machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
-        file_name, progress, routing_tables, hostname, machine)
+        file_name, progress, routing_tables, hostname)
 
 
 def _do_router_summary_report(
-        file_name, progress, routing_tables, hostname, machine):
+        file_name, progress, routing_tables, hostname):
     """
     :param str file_name:
     :param ~spinn_utilities.progress_bar.Progress progress:
     :param MulticastRoutingTables routing_tables:
     :param str hostname:
-    :param ~spinn_machine.Machine machine:
     :return: RouterSummary
     """
     time_date_string = time.strftime("%c")
@@ -159,7 +157,8 @@ def _do_router_summary_report(
             max_none_defaultable = 0
             max_link_only = 0
             max_spinnaker_routes = 0
-            for (x, y) in progress.over(machine.chip_coordinates):
+            for (x, y) in progress.over(
+                    FecDataView().machine.chip_coordinates):
                 table = routing_tables.get_routing_table_for_chip(x, y)
                 if table is not None:
                     entries = table.number_of_entries
@@ -198,19 +197,18 @@ def _do_router_summary_report(
 
 
 def router_report_from_paths(
-        routing_tables, routing_infos, hostname,
-        placements, machine):
+        routing_tables, routing_infos, hostname, placements):
     """ Generates a text file of routing paths
 
     :param MulticastRoutingTables routing_tables: The original routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
     :param RoutingInfo routing_infos:
     :param Placements placements:
-    :param ~spinn_machine.Machine machine: The python machine object.
     :rtype: None
     """
     view = FecDataView()
     file_name = os.path.join(view.run_dir_path, _ROUTING_FILENAME)
+    machine = view.machine
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -239,7 +237,6 @@ def _write_one_router_partition_report(f, partition, machine, placements,
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
-    :param ~spinn_machine.Machine machine:
     :param Placements placements:
     :param RoutingInfo routing_infos:
     :param MulticastRoutingTables routing_tables:
@@ -542,20 +539,19 @@ def _write_one_chip_machine_placement(f, c, placements):
 
 
 def sdram_usage_report_per_chip(
-        hostname, placements, machine, plan_n_timesteps):
+        hostname, placements, plan_n_timesteps):
     """ Reports the SDRAM used per chip
 
     :param str hostname: the machine's hostname to which the placer worked on
     :param Placements placements: the placements objects built by the placer.
-    :param ~spinn_machine.Machine machine: the python machine object
     :param int plan_n_timesteps:
         The number of timesteps for which placer reserved space.
     :rtype: None
     """
-
-    file_name = os.path.join(FecDataView().run_dir_path, _SDRAM_FILENAME)
+    view = FecDataView()
+    file_name = os.path.join(view.run_dir_path, _SDRAM_FILENAME)
     time_date_string = time.strftime("%c")
-    progress = ProgressBar((len(placements) * 2 + machine.n_chips * 2),
+    progress = ProgressBar((len(placements) * 2 + view.machine.n_chips * 2),
                            "Generating SDRAM usage report")
     try:
         with open(file_name, "w") as f:
@@ -566,24 +562,21 @@ def sdram_usage_report_per_chip(
             f.write("Planned by partitioner\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, machine, plan_n_timesteps, progress, False,
-                False)
+                f, placements, plan_n_timesteps, progress, False, False)
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, machine, FecDataView().max_run_time_steps,
-                progress, True, True)
+                f, placements, view.max_run_time_steps, progress, True, True)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, placements, machine, timesteps, progress, end_progress, details):
+        f, placements, timesteps, progress, end_progress, details):
     """
     :param ~io.FileIO f:
     :param Placements placements:
-    :param ~spinn_machine.Machine machine:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
@@ -610,7 +603,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
             used_sdram_by_chip[key] = core_sdram
         else:
             used_sdram_by_chip[key] += core_sdram
-    for chip in progress.over(machine.chips, end_progress):
+    for chip in progress.over(FecDataView().machine.chips, end_progress):
         try:
             used_sdram = used_sdram_by_chip[chip.x, chip.y]
             if used_sdram:
