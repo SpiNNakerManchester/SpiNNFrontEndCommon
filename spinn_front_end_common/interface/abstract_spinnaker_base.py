@@ -451,6 +451,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._new_run_clear()
+        self._has_ran = False
         self._machine_clear()
 
         # pacman executor objects
@@ -3323,9 +3324,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if clear_tags is None:
             clear_tags = get_config_bool("Machine", "clear_tags")
 
-        if self._txrx is not None:
-            # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+        # if stopping on machine, clear IP tags and routing table
+        self.__clear(clear_tags, clear_routing_tables)
 
         # Fully stop the application
         self.__stop_app()
@@ -3347,13 +3347,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags:
         :param bool clear_routing_tables:
         """
-        # if stopping on machine, clear IP tags and
+        transceiver = self._data_writer.get_transceiver()
+        if transceiver is None:
+            return
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
-                self._txrx.clear_ip_tag(
+                transceiver.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
             for reverse_ip_tag in self._tags.reverse_ip_tags:
-                self._txrx.clear_ip_tag(
+                transceiver.clear_ip_tag(
                     reverse_ip_tag.tag,
                     board_address=reverse_ip_tag.board_address)
 
@@ -3362,15 +3364,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
-                    self._txrx.clear_multicast_routes(
+                    transceiver.clear_multicast_routes(
                         router_table.x, router_table.y)
 
         # clear values
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        if self._txrx is not None:
-            self._txrx.stop_application(self._data_writer.app_id)
+        transceiver = self._data_writer.get_transceiver()
+        if transceiver:
+            transceiver.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
