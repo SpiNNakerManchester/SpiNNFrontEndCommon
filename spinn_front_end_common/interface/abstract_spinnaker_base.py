@@ -927,7 +927,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # application
         if (graph_changed or data_changed) and self._has_ran:
             if not self.has_reset_last or not self._user_accessed_machine:
-                self._txrx.stop_application(self._data_writer.app_id)
+                self._data_writer.transceiver.stop_application(
+                    self._data_writer.app_id)
 
             self._no_sync_changes = 0
 
