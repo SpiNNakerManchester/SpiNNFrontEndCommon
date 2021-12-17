@@ -69,7 +69,6 @@ class _FecDataModel(object):
         """
         Clears out all data
         """
-        # app_id not hard_reset as used to stop previous runs
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._n_calls_to_run = None

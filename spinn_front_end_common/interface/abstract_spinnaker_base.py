@@ -496,7 +496,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         self._data_writer.hard_reset()
-        self.__close_allocation_controller()
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
@@ -525,13 +524,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertex_to_ethernet_connected_chip_mapping = None
 
     def _machine_clear(self):
-        self._ipaddress = None
-        self._board_version = None
         if self._has_ran:
             self._data_writer.transceiver.stop_application(
                 self._data_writer.app_id)
         self._data_writer.clear_transceiver()
+        self._data_writer.clear_transceiver()
+        self._data_writer.clear_app_id()
         self.__close_allocation_controller()
+        self._ipaddress = None
+        self._board_version = None
         self._machine = None
 
     def __getitem__(self, item):
@@ -915,20 +916,21 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed, data_changed = self._detect_if_graph_has_changed()
-
-        # If we have reset and the graph has changed, stop any running
-        # application
-        if (graph_changed or data_changed) and self._has_ran:
-            self._no_sync_changes = 0
-
         if graph_changed and self._has_ran:
             if not self._has_reset_last:
                 self.stop()
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
-            self._data_writer.hard_reset()
-            FecTimer.setup(self)
+
+        # If we have reset and the graph has changed, stop any running
+        # application
+        if (graph_changed or data_changed) and self._has_ran:
+            if not self.has_reset_last or not self._user_accessed_machine:
+                self._data_writer.transceiver.stop_application(
+                    self._data_writer.app_id)
+
+            self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
@@ -940,6 +942,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._new_run_clear()
                 if not self._user_accessed_machine:
                     self._machine_clear()
+            FecTimer.setup(self)
 
             self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
@@ -3062,6 +3065,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_reset_last = True
 
         self._data_writer.soft_reset()
+
         # User must assume on reset any previous machine (info) is dead
         self._user_accessed_machine = False
         assert (not self._user_accessed_machine)
