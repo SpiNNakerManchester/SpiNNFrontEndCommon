@@ -499,7 +499,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         self._data_writer.hard_reset()
-        self.__close_allocation_controller()
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
@@ -528,13 +527,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertex_to_ethernet_connected_chip_mapping = None
 
     def _machine_clear(self):
-        self._ipaddress = None
-        self._board_version = None
         if self._has_ran:
             self._txrx.stop_application(self._data_writer.app_id)
         self._data_writer.clear_transceiver()
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
+        self._ipaddress = None
+        self._board_version = None
         self._machine = None
 
     @property
@@ -928,12 +927,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
-            self._data_writer.hard_reset()
-            FecTimer.setup(self)
 
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
+            if not self.has_reset_last or not self._user_accessed_machine:
+                self._txrx.stop_application(self._data_writer.app_id)
 
             self._no_sync_changes = 0
 
@@ -947,6 +946,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._new_run_clear()
                 if not self._user_accessed_machine:
                     self._machine_clear()
+            FecTimer.setup(self)
 
             self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
@@ -1290,13 +1290,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param float total_run_time: The total run time to request
         :rtype: ~spinn_machine.Machine
         """
-        #if not self._data_writer.has_app_id():
-            #if self._data_writer.has_transceiver():
-            #    self._data_writer.set_app_id(
-            #       self._txrx.app_id_tracker.get_new_id())
-            #else:
-            #    self._data_writer.set_app_id(ALANS_DEFAULT_RANDOM_APP_ID)
-
         if not self._machine:
             if self._use_virtual_board:
                 self._execute_get_virtual_machine()
@@ -3083,6 +3076,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_reset_last = True
 
         self._data_writer.soft_reset()
+
         # User must assume on reset any previous machine (info) is dead
         self._user_accessed_machine = False
         assert (not self._user_accessed_machine)
