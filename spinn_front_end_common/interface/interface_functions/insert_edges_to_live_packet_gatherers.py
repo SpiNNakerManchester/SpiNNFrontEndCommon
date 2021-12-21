@@ -21,8 +21,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 def insert_edges_to_live_packet_gatherers(
         live_packet_gatherer_parameters, placements,
-        live_packet_gatherers_to_vertex_mapping, machine,
-        n_keys_map=None):
+        live_packet_gatherers_to_vertex_mapping, n_keys_map=None):
     """
         Add edges from the recorded vertices to the local Live PacketGatherers.
 
@@ -45,7 +44,7 @@ def insert_edges_to_live_packet_gatherers(
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
     inserter = _InsertEdgesToLivePacketGatherers(
-        placements, live_packet_gatherers_to_vertex_mapping, machine)
+        placements, live_packet_gatherers_to_vertex_mapping)
     inserter._run(live_packet_gatherer_parameters, n_keys_map)
 
 
@@ -56,14 +55,11 @@ class _InsertEdgesToLivePacketGatherers(object):
     __slots__ = [
         # the mapping of LPG parameters to machine vertices
         "_lpg_to_vertex",
-        # the SpiNNaker machine
-        "_machine",
         # the placements object
         "_placements"
     ]
 
-    def __init__(self, placements, live_packet_gatherers_to_vertex_mapping,
-                 machine):
+    def __init__(self, placements, live_packet_gatherers_to_vertex_mapping):
         """
 
         :param ~pacman.model.placements.Placements placements:
@@ -75,11 +71,9 @@ class _InsertEdgesToLivePacketGatherers(object):
             dict(LivePacketGatherParameters,
             tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
-        :param ~spinn_machine.Machine machine: the SpiNNaker machine
         """
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
-        self._machine = machine
         self._placements = placements
 
     def _run(self, live_packet_gatherer_parameters, n_keys_map=None):
@@ -88,11 +82,6 @@ class _InsertEdgesToLivePacketGatherers(object):
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         :param n_keys_map: key map
         :type n_keys_map:
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
@@ -213,7 +202,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         """
         # locate location of vertex in machine
         placement = self._placements.get_placement_of_vertex(m_vertex)
-        chip = self._machine.get_chip_at(placement.x, placement.y)
+        chip = FecDataView().get_chip_at(placement.x, placement.y)
 
         # locate closest LPG
         chip_key = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)

@@ -20,6 +20,7 @@ from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
 from spinn_machine import MulticastRoutingEntry
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 
 # ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY
 N_KEYS_PER_PARTITION_ID = 8
@@ -31,12 +32,10 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator(
-        machine, extra_monitor_cores, placements):
+def system_multicast_routing_generator(extra_monitor_cores, placements):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
 
-    :param ~spinn_machine.Machine machine:
     :param extra_monitor_cores:
     :type extra_monitor_cores:
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
@@ -47,7 +46,7 @@ def system_multicast_routing_generator(
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     generator = _SystemMulticastRoutingGenerator(
-        machine, extra_monitor_cores, placements)
+        extra_monitor_cores, placements)
     return generator._run()
 
 
@@ -58,16 +57,15 @@ class _SystemMulticastRoutingGenerator(object):
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
                  "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
-    def __init__(self, machine, extra_monitor_cores, placements):
+    def __init__(self, extra_monitor_cores, placements):
         """
 
-        :param ~spinn_machine.Machine machine:
         :param extra_monitor_cores:
         :type extra_monitor_cores:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
         """
-        self._machine = machine
+        self._machine = FecDataView().machine
         self._placements = placements
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()

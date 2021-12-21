@@ -1640,7 +1640,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             insert_edges_to_live_packet_gatherers(
                 self._live_packet_recorder_params, self._placements,
-                self._live_packet_recorder_parameters_mapping, self._machine,
+                self._live_packet_recorder_parameters_mapping,
                 self._machine_partition_n_keys_map)
 
     def _execute_insert_edges_to_extra_monitor(self):
@@ -1653,7 +1653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             insert_edges_to_extra_monitor_functionality(
-                self._placements, self._machine,
+                self._placements,
                 self._vertex_to_ethernet_connected_chip_mapping)
 
     def _execute_system_multicast_routing_generator(self):
@@ -1673,8 +1673,7 @@ class AbstractSpinnakerBase(ConfigHandler):
              self._data_in_multicast_key_to_chip_map,
              self._system_multicast_router_timeout_keys) = (
                 system_multicast_routing_generator(
-                    self._machine, self._extra_monitor_to_chip_mapping,
-                    self._placements))
+                    self._extra_monitor_to_chip_mapping, self._placements))
 
     def _execute_fixed_route_router(self):
         """
@@ -1687,8 +1686,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support"):
                 return
             self._fixed_routes = fixed_route_router(
-                self._machine, self._placements,
-                DataSpeedUpPacketGatherMachineVertex)
+                self._placements, DataSpeedUpPacketGatherMachineVertex)
 
     def _report_placements_with_application_graph(self):
         """

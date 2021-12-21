@@ -43,6 +43,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
     def test_local_verts_go_to_local_lpgs(self):
         machine = virtual_machine(width=12, height=12)
+        FecDataWriter.set_machine(machine)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -120,8 +121,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
-                live_packet_gatherers_to_vertex_mapping),
-            machine=machine)
+                live_packet_gatherers_to_vertex_mapping))
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
@@ -131,6 +131,8 @@ class TestInsertLPGEdges(unittest.TestCase):
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
         machine = virtual_machine(width=12, height=12)
+        FecDataWriter.set_machine(machine)
+
         app_graph = ApplicationGraph("Test")
         graph = MachineGraph("Test", app_graph)
 
@@ -227,8 +229,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
-                live_packet_gatherers_to_vertex_mapping),
-            machine=machine)
+                live_packet_gatherers_to_vertex_mapping))
 
         # verify edges are in the right place
         for chip in machine.ethernet_connected_chips:
