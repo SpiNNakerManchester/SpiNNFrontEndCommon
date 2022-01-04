@@ -203,9 +203,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # The holder for where machine graph vertices are placed.
-        "_placements",
-
         # The holder for the routing table entries for all used routers in this
         # simulation
         "_router_tables",
@@ -511,7 +508,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._max_machine = False
         self._multicast_routes_loaded = False
         self._n_chips_needed = None
-        self._placements = None
         self._plan_n_timesteps = None
         self._region_sizes = None
         self._router_tables = None
@@ -601,7 +597,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
         if item == "Placements":
-            return self._placements
+            return self._data_writer.placements
         if item == "RoutingInfos":
             return self._routing_infos
         if item == "SystemMulticastRouterTimeoutKeys":
@@ -1038,7 +1034,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
-        for placement in self._placements.placements:
+        for placement in self._data_writer.placements.placements:
             if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
@@ -1099,7 +1095,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
         seen_partitions = set()
 
-        for placement in self._placements.placements:
+        for placement in self._data_writer.placements.placements:
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
@@ -1554,7 +1550,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Connective based placer"):
-            self._placements = connective_based_placer(self._plan_n_timesteps)
+            self._data_writer.set_placements(
+                connective_based_placer(self._plan_n_timesteps))
 
     def _execute_one_to_one_placer(self):
         """
@@ -1567,7 +1564,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "One to one placer"):
-            self._placements = one_to_one_placer(self._plan_n_timesteps)
+            self._data_writer.set_placements(
+                one_to_one_placer(self._plan_n_timesteps))
 
     def _execute_radial_placer(self):
         """
@@ -1580,7 +1578,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Radial placer"):
-            self._placements = radial_placer(self._plan_n_timesteps)
+            self._data_writer.set_placements(
+                radial_placer(self._plan_n_timesteps))
 
     def _execute_speader_placer(self):
         """
@@ -1593,8 +1592,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Spreader placer"):
-            self._placements = spreader_placer(
-                self._machine_partition_n_keys_map, self._plan_n_timesteps)
+            self._data_writer.set_placements(spreader_placer(
+                self._machine_partition_n_keys_map, self._plan_n_timesteps))
 
     def _do_placer(self):
         """
@@ -1633,7 +1632,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                                    "live_packet_recorder_params"):
                 return
             insert_edges_to_live_packet_gatherers(
-                self._live_packet_recorder_params, self._placements,
+                self._live_packet_recorder_params,
                 self._live_packet_recorder_parameters_mapping,
                 self._machine_partition_n_keys_map)
 
@@ -1647,7 +1646,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             insert_edges_to_extra_monitor_functionality(
-                self._placements,
                 self._vertex_to_ethernet_connected_chip_mapping)
 
     def _execute_system_multicast_routing_generator(self):
@@ -1667,7 +1665,7 @@ class AbstractSpinnakerBase(ConfigHandler):
              self._data_in_multicast_key_to_chip_map,
              self._system_multicast_router_timeout_keys) = (
                 system_multicast_routing_generator(
-                    self._extra_monitor_to_chip_mapping, self._placements))
+                    self._extra_monitor_to_chip_mapping))
 
     def _execute_fixed_route_router(self):
         """
@@ -1680,7 +1678,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support"):
                 return
             self._fixed_routes = fixed_route_router(
-                self._placements, DataSpeedUpPacketGatherMachineVertex)
+                DataSpeedUpPacketGatherMachineVertex)
 
     def _report_placements_with_application_graph(self):
         """
@@ -1706,8 +1704,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_machine_graph_placer_report"):
                 return
-            placer_reports_without_application_graph(
-                self._ipaddress, self._placements)
+            placer_reports_without_application_graph(self._ipaddress)
 
     def _json_placements(self):
         """
@@ -1718,7 +1715,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_placements"):
                 return
-            write_json_placements(self._placements)
+            write_json_placements()
             # Output ignored as never used
 
     def _execute_ner_route_traffic_aware(self):
@@ -1731,8 +1728,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
-            self._routing_table_by_partition = ner_route_traffic_aware(
-                self._placements)
+            self._routing_table_by_partition = ner_route_traffic_aware()
 
     def _execute_ner_route(self):
         """
@@ -1744,7 +1740,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route"):
-            self._routing_table_by_partition = ner_route(self._placements)
+            self._routing_table_by_partition = ner_route()
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1756,8 +1752,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
-            self._routing_table_by_partition = basic_dijkstra_routing(
-                self._placements)
+            self._routing_table_by_partition = basic_dijkstra_routing()
 
     def _do_routing(self):
         """
@@ -1791,8 +1786,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-            self._tags = basic_tag_allocator(
-                self._plan_n_timesteps, self._placements)
+            self._tags = basic_tag_allocator(self._plan_n_timesteps)
 
     def _report_tag_allocations(self):
         """
@@ -1914,8 +1908,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_router_reports"):
                 return
         router_report_from_paths(
-            self._router_tables, self._routing_infos, self._ipaddress,
-            self._placements)
+            self._router_tables, self._routing_infos, self._ipaddress)
 
     def _report_router_summary(self):
         """
@@ -1958,8 +1951,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO why skip if virtual ?
             if timer.skip_if_virtual_board():
                 return
-            self._executable_types = locate_executable_start_type(
-                self._placements)
+            self._executable_types = locate_executable_start_type()
 
     def _execute_buffer_manager_creator(self):
         """
@@ -1974,8 +1966,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             self._buffer_manager = buffer_manager_creator(
-                self._placements, self._tags,
-                self._extra_monitor_vertices,
+                self._tags, self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._fixed_routes, self._java_caller)
