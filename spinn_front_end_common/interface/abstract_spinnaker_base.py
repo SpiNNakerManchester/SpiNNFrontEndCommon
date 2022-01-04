@@ -443,9 +443,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
-        self._new_run_clear()
         self._has_ran = False
-        self._machine_clear()
+        self._new_run_clear()
 
         # pacman executor objects
 
@@ -491,6 +490,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         This clears all data that if no longer valid after a hard reset
 
         """
+        if self._has_ran:
+            self._data_writer.transceiver.stop_application(
+                self._data_writer.app_id)
         self._data_writer.hard_reset()
         self._buffer_manager = None
         self._database_file_path = None
@@ -518,18 +520,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
-
-    def _machine_clear(self):
-        if self._has_ran:
-            self._data_writer.transceiver.stop_application(
-                self._data_writer.app_id)
-        self._data_writer.clear_transceiver()
-        self._data_writer.clear_transceiver()
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
         self._ipaddress = None
         self._board_version = None
-        self._data_writer.clear_machine()
+
+    def _machine_clear(self):
+        pass
 
     def __getitem__(self, item):
         """
@@ -579,7 +576,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         results = []
         for key in ["DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables",
-                    "ExtendedMachine",
                     "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
                     "SystemMulticastRouterTimeoutKeys", "Tags"]:
             item = self._unchecked_gettiem(key)
@@ -602,8 +598,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._data_in_multicast_key_to_chip_map
         if item == "DataInMulticastRoutingTables":
             return self._data_in_multicast_routing_tables
-        if item == "ExtendedMachine":
-            return self._data_writer.machine
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
         if item == "Placements":
@@ -935,9 +929,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                self._new_run_clear()
                 if not self._user_accessed_machine:
-                    self._machine_clear()
+                    self._new_run_clear()
             FecTimer.setup(self)
 
             self._data_writer.clone_graphs()
@@ -1295,7 +1288,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise Exception: No known size machine possible
         """
         if self._has_reset_last and not self._user_accessed_machine:
-            self._machine_clear()
+            # Make the reset hard
+            self._new_run_clear()
         self._get_known_machine(total_run_time)
         self._user_accessed_machine = True
         if not self._data_writer.has_machine():
