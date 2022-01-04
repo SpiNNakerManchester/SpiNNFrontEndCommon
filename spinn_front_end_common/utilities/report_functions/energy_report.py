@@ -230,16 +230,16 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-        version = get_config_int("Machine", "version"),
+        version = get_config_int("Machine", "version")
         # if not spalloc, then could be any type of board
         if not self.__uses_spalloc:
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if int(version) in (2, 3):
+            if version in (2, 3):
                 f.write(
                     f"A SpiNN-{version} board does not contain any FPGA's, "
                     f"and so its energy cost is 0 \n")
                 return
-            elif int(version) not in (4, 5):
+            elif version not in (4, 5):
                 # no idea where we are; version unrecognised
                 raise ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
