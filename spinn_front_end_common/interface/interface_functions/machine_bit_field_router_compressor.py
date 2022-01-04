@@ -127,7 +127,6 @@ class _MachineBitFieldRouterCompressor(object):
         :param routing_tables: routing tables
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinn_machine.Machine machine: spinnMachine instance
         :param ~pacman.model.placements.Placements placements:
             placements on machine
         :param ExecutableFinder executable_finder:
@@ -142,13 +141,12 @@ class _MachineBitFieldRouterCompressor(object):
         :return: where the compressors ran
         """
         view = FecDataView()
+        app_id = view.app_id
         machine_graph = view.runtime_machine_graph
         transceiver = view.transceiver
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
-        view = FecDataView()
-        app_id = view.app_id
         # new app id for this simulation
         routing_table_compressor_app_id = view.get_new_id()
 
@@ -172,13 +170,13 @@ class _MachineBitFieldRouterCompressor(object):
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
          bit_field_compressor_executable_path) = self._generate_core_subsets(
-            routing_tables, executable_finder, machine, progress_bar,
+            routing_tables, executable_finder, progress_bar,
             executable_targets)
 
         # load data into sdram
         on_host_chips = self._load_data(
             addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, machine,
+            routing_tables, app_id,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
             matrix_addresses_and_size, bit_field_compressor_executable_path,
@@ -232,7 +230,7 @@ class _MachineBitFieldRouterCompressor(object):
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
-                if (not machine.get_chip_at(table.x, table.y).virtual
+                if (not view.get_chip_at(table.x, table.y).virtual
                         and table.multicast_routing_entries):
                     transceiver.clear_multicast_routes(table.x, table.y)
                     transceiver.load_multicast_routes(
@@ -244,13 +242,12 @@ class _MachineBitFieldRouterCompressor(object):
         return compressor_executable_targets
 
     def _generate_core_subsets(
-            self, routing_tables, executable_finder, machine, progress_bar,
+            self, routing_tables, executable_finder, progress_bar,
             system_executable_targets):
         """ generates the core subsets for the binaries
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
         :param ~.ExecutableFinder executable_finder: the executable path finder
-        :param ~.Machine machine: the spinn machine instance
         :param ~.ProgressBar progress_bar: progress bar
         :param ExecutableTargets system_executable_targets:
             the executables targets to cores
@@ -262,11 +259,11 @@ class _MachineBitFieldRouterCompressor(object):
 
         _, cores = filter_targets(
             system_executable_targets, lambda ty: ty is ExecutableType.SYSTEM)
-
+        view = FecDataView()
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
             sorter = None
-            for processor in machine.get_chip_at(
+            for processor in view.get_chip_at(
                     routing_table.x, routing_table.y).processors:
                 if (not processor.is_monitor and
                         not cores.all_core_subsets.is_core(
@@ -344,7 +341,7 @@ class _MachineBitFieldRouterCompressor(object):
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, machine,
+            routing_tables, app_id,
             compress_as_much_as_possible, progress_bar, cores,
             matrix_addresses_and_size,
             bit_field_compressor_executable_path,
@@ -379,8 +376,9 @@ class _MachineBitFieldRouterCompressor(object):
         :rtype: list(tuple(int,int))
         """
         run_by_host = list()
+        view = FecDataView()
         for table in routing_tables.routing_tables:
-            if not machine.get_chip_at(table.x, table.y).virtual:
+            if not view.get_chip_at(table.x, table.y).virtual:
                 try:
                     self._load_routing_table_data(
                         table, app_id, transceiver,
@@ -801,7 +799,6 @@ def machine_bit_field_pair_router_compressor(
         :param routing_tables: routing tables
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinn_machine.Machine machine: spinnMachine instance
         :param ~pacman.model.placements.Placements placements:
             placements on machine
         :param ExecutableFinder executable_finder:
