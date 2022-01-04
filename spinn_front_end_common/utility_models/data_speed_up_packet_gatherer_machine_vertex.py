@@ -384,7 +384,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         })
     def generate_data_specification(
             self, spec, placement, routing_info, tags,
-                mc_data_chips_to_keys, router_timeout_key):
+            mc_data_chips_to_keys, router_timeout_key):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
