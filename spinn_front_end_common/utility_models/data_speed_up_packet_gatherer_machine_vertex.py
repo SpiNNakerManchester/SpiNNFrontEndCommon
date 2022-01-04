@@ -374,19 +374,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         "routing_info": "RoutingInfos",
         "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "machine": "ExtendedMachine",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "routing_info", "tags",
-            "mc_data_chips_to_keys", "machine",
-            "router_timeout_key"
+            "mc_data_chips_to_keys", "router_timeout_key"
         })
     def generate_data_specification(
             self, spec, placement, routing_info, tags,
-            mc_data_chips_to_keys, machine, router_timeout_key):
+                mc_data_chips_to_keys, router_timeout_key):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
@@ -395,7 +393,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
         """
-        machine_graph = FecDataView().runtime_machine_graph
+        view = FecDataView()
+        machine = view.machine
+        machine_graph = view.runtime_machine_graph
         # pylint: disable=too-many-arguments, arguments-differ
 
         # update my placement for future knowledge

@@ -113,8 +113,6 @@ class ExtraMonitorSupportMachineVertex(
         "_placement",
         # app id, used for reporting failures on system core RTE
         "_app_id",
-        # machine instance
-        "_machine",
         # the local transaction id
         "_transaction_id",
         # provenance region address
@@ -154,7 +152,6 @@ class ExtraMonitorSupportMachineVertex(
         # placement holder for ease of access
         self._placement = None
         self._app_id = None
-        self._machine = None
         self._transaction_id = 0
         self._prov_region = None
 
@@ -260,39 +257,35 @@ class ExtraMonitorSupportMachineVertex(
     @inject_items({"routing_info": "RoutingInfos",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-                   "machine": "ExtendedMachine",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "routing_info", "data_in_routing_tables",
-                   "mc_data_chips_to_keys", "app_id", "machine",
-                   "router_timeout_keys"})
+                   "mc_data_chips_to_keys", "app_id", "router_timeout_keys"})
     def generate_data_specification(
             self, spec, placement, routing_info,
             data_in_routing_tables, mc_data_chips_to_keys,
-            machine, router_timeout_keys):
+            router_timeout_keys):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param data_in_routing_tables: (injected)
         :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        :param ~spinn_machine.Machine machine: (injected)
         """
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
         self._app_id = FecDataView().app_id
-        self._machine = machine
         # write reinjection config
         self._generate_reinjection_config(
-            spec, router_timeout_keys, placement, machine)
+            spec, router_timeout_keys, placement)
         # write data speed up out config
         self._generate_data_speed_up_out_config(spec, routing_info)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
             spec, data_in_routing_tables,
-            machine.get_chip_at(placement.x, placement.y),
+            FecDataView().get_chip_at(placement.x, placement.y),
             mc_data_chips_to_keys)
         self._generate_provenance_area(spec)
         spec.end_specification()
@@ -325,12 +318,11 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(Gatherer.END_FLAG_KEY)
 
     def _generate_reinjection_config(
-            self, spec, router_timeout_keys, placement, machine):
+            self, spec, router_timeout_keys, placement):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param dict(tuple(int,int),int) router_timeout_keys:
         :param ~.Placement placement:
-        :param ~.Machine machine:
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.REINJECT_CONFIG,
@@ -346,7 +338,7 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(int(not value))
 
         # add the reinjection mc interface
-        chip = machine.get_chip_at(placement.x, placement.y)
+        chip = FecDataView().get_chip_at(placement.x, placement.y)
         reinjector_base_mc_key = (
             router_timeout_keys[
                 (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
