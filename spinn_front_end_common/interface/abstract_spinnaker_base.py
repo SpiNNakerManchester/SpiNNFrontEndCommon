@@ -1162,7 +1162,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set then "machine" value
         """
         with FecTimer(GET_MACHINE, "Virtual machine generator"):
-            self._data_writer.set_transceiver(virtual_machine_generator())
+            self._data_writer.set_machine(virtual_machine_generator())
 
     def _execute_allocator(self, category, total_run_time):
         """
