@@ -60,7 +60,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
 
         # verify sdram
@@ -79,7 +78,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
         self.assertEqual(
             pre_res.sdram_all.get_total_sdram(0), 0)
@@ -95,7 +93,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         with self.assertRaises(Exception) as exn:
             preallocate_resources_for_live_packet_gatherers(
                 live_packet_gatherer_parameters=live_packet_gatherers,
-                machine=machine,
                 pre_allocated_resources=PreAllocatedResourceContainer())
         # Make sure we know what the exception was; NOT an important test!
         self.assertEqual(
