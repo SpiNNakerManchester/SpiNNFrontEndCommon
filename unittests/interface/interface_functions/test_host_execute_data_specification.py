@@ -17,7 +17,6 @@ import struct
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinn_machine.virtual_machine import virtual_machine
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from data_specification.constants import (
@@ -107,8 +106,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        infos = execute_application_data_specs(dsg_targets, targets,
-            region_sizes=region_sizes)
+        infos = execute_application_data_specs(
+            dsg_targets, targets, region_sizes=region_sizes)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -150,7 +149,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         FecDataWriter().set_transceiver(transceiver)
-        #machine = virtual_machine(2, 2)
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
