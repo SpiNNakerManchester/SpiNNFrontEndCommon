@@ -1701,7 +1701,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_application_graph_placer_report"):
                 return
             placer_reports_with_application_graph(
-                self._ipaddress, self._placements, self._machine)
+                self._ipaddress, self._placements)
 
     def _report_placements_with_machine_graph(self):
         """
@@ -1712,9 +1712,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_machine_graph_placer_report"):
                 return
-            # TODO dont pass down machine_graph is they are kept long term
             placer_reports_without_application_graph(
-                self._ipaddress, self._placements, self._machine)
+                self._ipaddress, self._placements)
 
     def _json_placements(self):
         """
@@ -1739,7 +1738,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
             self._routing_table_by_partition = ner_route_traffic_aware(
-                self._machine, self._placements)
+                self._placements)
 
     def _execute_ner_route(self):
         """
@@ -1751,8 +1750,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route"):
-            self._routing_table_by_partition = ner_route(
-                self._machine, self._placements)
+            self._routing_table_by_partition = ner_route(self._placements)
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1765,7 +1763,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
             self._routing_table_by_partition = basic_dijkstra_routing(
-                self._machine, self._placements)
+                self._placements)
 
     def _do_routing(self):
         """
@@ -1800,7 +1798,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
             self._tags = basic_tag_allocator(
-                self._machine, self._plan_n_timesteps, self._placements)
+                self._plan_n_timesteps, self._placements)
 
     def _report_tag_allocations(self):
         """
@@ -3122,7 +3120,7 @@ class AbstractSpinnakerBase(ConfigHandler):
          :rtype: ~spinn_machine.Machine
          """
         self._get_machine()
-        return self._machine
+        return self._data_writer.machine
 
     @property
     def routing_infos(self):

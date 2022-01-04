@@ -72,33 +72,26 @@ def tag_allocator_report(tag_infos):
                      "writing.", file_name)
 
 
-def placer_reports_with_application_graph(hostname, placements, machine):
+def placer_reports_with_application_graph(hostname, placements):
     """ Reports that can be produced from placement given a application\
         graph's existence
 
     :param str hostname: The machine's hostname to which the placer worked on.
     :param Placements placements: the placements objects built by the placer.
-    :param ~spinn_machine.Machine machine: the python machine object.
     :rtype: None
     """
-    placement_report_with_application_graph_by_vertex(
-        hostname, placements)
-    placement_report_with_application_graph_by_core(
-        hostname, placements, machine)
+    placement_report_with_application_graph_by_vertex(hostname, placements)
+    placement_report_with_application_graph_by_core(hostname, placements)
 
 
-def placer_reports_without_application_graph(
-        hostname, placements, machine):
+def placer_reports_without_application_graph(hostname, placements):
     """
     :param str hostname: The machine's hostname to which the placer worked on.
     :param Placements placements: The placements objects built by the placer.
-    :param ~spinn_machine.Machine machine: The python machine object.
-        The machine graph to which the reports are to operate on.
     :rtype: None
     """
     placement_report_without_application_graph_by_vertex(hostname, placements)
-    placement_report_without_application_graph_by_core(
-        hostname, placements, machine)
+    placement_report_without_application_graph_by_core(hostname, placements)
 
 
 def router_summary_report(routing_tables,  hostname):
@@ -419,12 +412,10 @@ def _write_one_vertex_machine_placement(f, vertex, placements):
     f.write(" Placed on core ({}, {}, {})\n\n".format(x, y, p))
 
 
-def placement_report_with_application_graph_by_core(
-        hostname, placements, machine):
+def placement_report_with_application_graph_by_core(hostname, placements):
     """ Generate report on the placement of vertices onto cores by core.
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine object
     :param Placements placements: the placements objects built by the placer.
     """
 
@@ -435,6 +426,7 @@ def placement_report_with_application_graph_by_core(
         FecDataView().run_dir_path, _PLACEMENT_CORE_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
+        machine = FecDataView().machine
         with open(file_name, "w") as f:
             progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
@@ -483,20 +475,20 @@ def _write_one_chip_application_placement(f, chip, placements):
             f.write("              Model: {}\n\n".format(vertex_model))
 
 
-def placement_report_without_application_graph_by_core(
-        hostname, placements, machine):
+def placement_report_without_application_graph_by_core(hostname, placements):
     """ Generate report on the placement of vertices onto cores by core.
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param ~spinn_machine.Machine machine: the SpiNNaker machine object
     :param Placements placements: the placements objects built by the placer.
     """
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
+    view = FecDataView()
     file_name = os.path.join(
-        FecDataView().run_dir_path, _PLACEMENT_CORE_SIMPLE_FILENAME)
+        view.run_dir_path, _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
+    machine = view.machine
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine.chips,
