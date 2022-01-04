@@ -113,7 +113,7 @@ class TestWriteJson(unittest.TestCase):
         trans.ensure_board_is_ready()
 
         machine = trans.get_machine_details()
-        FecDataWriter.set_machine(machine)
+        FecDataWriter().set_machine(machine)
 
         folder = "spinn4"
         self._remove_old_json(folder)
@@ -151,7 +151,7 @@ class TestWriteJson(unittest.TestCase):
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
         trans.ensure_board_is_ready()
-        FecDataWriter.set_machine(trans.get_machine_details())
+        FecDataWriter().set_machine(trans.get_machine_details())
 
         m_allocation_controller.close()
 

@@ -43,7 +43,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
     def test_local_verts_go_to_local_lpgs(self):
         machine = virtual_machine(width=12, height=12)
-        FecDataWriter.set_machine(machine)
+        FecDataWriter().set_machine(machine)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -131,7 +131,7 @@ class TestInsertLPGEdges(unittest.TestCase):
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
         machine = virtual_machine(width=12, height=12)
-        FecDataWriter.set_machine(machine)
+        FecDataWriter().set_machine(machine)
 
         app_graph = ApplicationGraph("Test")
         graph = MachineGraph("Test", app_graph)
