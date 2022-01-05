@@ -32,11 +32,8 @@ from spinn_front_end_common.utilities.utility_calls import get_report_writer
 logger = logging.getLogger(__name__)
 
 
-def graph_data_specification_writer(
-        placements, hostname, placement_order=None):
+def graph_data_specification_writer(hostname, placement_order=None):
     """
-    :param ~pacman.model.placements.Placements placements:
-        placements of machine graph to cores
     :param str hostname: SpiNNaker machine name
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
@@ -46,7 +43,7 @@ def graph_data_specification_writer(
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter(hostname)
-    return writer._run(placements, placement_order)
+    return writer._run(placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
@@ -69,14 +66,9 @@ class _GraphDataSpecificationWriter(object):
         self._vertices_by_chip = defaultdict(list)
         self._hostname = hostname
 
-    def _run(
-            self, placements, placement_order=None):
+    def _run(self, placement_order=None):
         """
-        :param ~pacman.model.placements.Placements placements:
-            placements of machine graph to cores
         :param str hostname: SpiNNaker machine name
-        :param ~spinn_machine.Machine machine:
-            the python representation of the SpiNNaker machine
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets (map of placement tuple and filename)
@@ -89,10 +81,11 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
+        placements = FecDataView().placements
         targets = DataSpecificationTargets()
 
         if placement_order is None:
-            placement_order = placements.placements
+            placement_order = placements
 
         progress = ProgressBar(
             placements.n_placements, "Generating data specifications")

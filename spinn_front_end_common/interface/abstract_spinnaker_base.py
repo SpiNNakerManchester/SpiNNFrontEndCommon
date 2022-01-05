@@ -1034,7 +1034,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
-        for placement in self._data_writer.placements.placements:
+        for placement in self._data_writer.placements:
             if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
@@ -1095,7 +1095,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
         seen_partitions = set()
 
-        for placement in self._data_writer.placements.placements:
+        for placement in self._data_writer.placements:
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
@@ -1692,8 +1692,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
-            placer_reports_with_application_graph(
-                self._ipaddress, self._placements)
+            placer_reports_with_application_graph(self._ipaddress)
 
     def _report_placements_with_machine_graph(self):
         """
@@ -1977,7 +1976,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
             # Ok if transceiver = None
-            sdram_outgoing_partition_allocator(self._placements)
+            sdram_outgoing_partition_allocator()
 
     def _do_mapping(self, total_run_time):
         """
@@ -2057,8 +2056,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
             self._dsg_targets, self._region_sizes = \
-                graph_data_specification_writer(
-                    self._placements, self._ipaddress)
+                graph_data_specification_writer(self._ipaddress)
 
     def _do_data_generation(self):
         """
@@ -2096,7 +2094,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
                 self._executable_targets = graph_binary_gatherer(
-                    self._placements, self._executable_finder)
+                    self._executable_finder)
             except KeyError:
                 if self.use_virtual_board:
                     logger.warning(
@@ -2122,7 +2120,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
-                self._router_tables, self._placements, self._routing_infos)
+                self._router_tables, self._routing_infos)
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
@@ -2142,8 +2140,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             machine_bit_field_ordered_covering_compressor(
-                self._router_tables,
-                self._placements, self._executable_finder,
+                self._router_tables, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             self._multicast_routes_loaded = True
             return None
@@ -2165,8 +2162,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
-                self._router_tables,
-                self._placements, self._executable_finder,
+                self._router_tables, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None
 
@@ -2365,7 +2361,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports",  "write_bit_field_compressor_report"):
                 return
             # BitFieldSummary output ignored as never used
-            bitfield_compressor_report(self._placements)
+            bitfield_compressor_report()
 
     def _execute_load_fixed_routes(self):
         """
@@ -2417,7 +2413,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return processor_to_app_data_base_address
             return execute_application_data_specs(
                 self._dsg_targets,
-                self._executable_targets, self._region_sizes, self._placements,
+                self._executable_targets, self._region_sizes,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._java_caller, processor_to_app_data_base_address)
@@ -2584,7 +2580,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_sdram_usage_report_per_chip"):
                 return
             sdram_usage_report_per_chip(
-                self._ipaddress, self._placements, self._plan_n_timesteps)
+                self._ipaddress, self._plan_n_timesteps)
 
     def _execute_dsg_region_reloader(self):
         """

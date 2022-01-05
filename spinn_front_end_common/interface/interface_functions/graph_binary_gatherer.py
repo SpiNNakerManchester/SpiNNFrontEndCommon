@@ -26,18 +26,17 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_binary_gatherer(placements, executable_finder):
+def graph_binary_gatherer(executable_finder):
     """
     Extracts binaries to be executed.
 
-    :param ~pacman.model.placements.Placements placements:
     :param executable_finder:
     :type executable_finder:
         ~spinn_utilities.executable_finder.ExecutableFinder
     :rtype: ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer(executable_finder)
-    return gatherer._run(placements)
+    return gatherer._run()
 
 
 class _GraphBinaryGatherer(object):
@@ -56,13 +55,13 @@ class _GraphBinaryGatherer(object):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
 
-    def _run(self, placements):
+    def _run(self):
         """
-        :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.graphs.machine.MachineGraph graph:
         :rtype: ExecutableTargets
         """
         graph = FecDataView().runtime_machine_graph
+        placements = FecDataView().placements
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)

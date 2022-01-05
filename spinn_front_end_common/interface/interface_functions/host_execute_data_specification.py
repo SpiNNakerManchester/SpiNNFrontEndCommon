@@ -298,7 +298,7 @@ def execute_system_data_specs(
 
 def execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes,
-        placements=None, extra_monitor_cores=None,
+        extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
         java_caller=None, processor_to_app_data_base_address=None):
     """ Execute the data specs for all non-system targets.
@@ -311,8 +311,6 @@ def execute_application_data_specs(
         whether to use fast data in protocol
     :param ~spinnman.model.ExecutableTargets executable_targets:
         what core will running what binary
-    :param ~pacman.model.placements.Placements placements:
-        where vertices are located
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
         the deployed extra monitors, if any
     :param extra_monitor_cores_to_ethernet_connection_map:
@@ -329,7 +327,7 @@ def execute_application_data_specs(
     specifier = _HostExecuteDataSpecification(
         java_caller, processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
-        dsg_targets, executable_targets, region_sizes, placements,
+        dsg_targets, executable_targets, region_sizes,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
 
 
@@ -449,7 +447,7 @@ class _HostExecuteDataSpecification(object):
     def execute_application_data_specs(
             self, dsg_targets,
             executable_targets, region_sizes,
-            placements=None, extra_monitor_cores=None,
+            extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
@@ -462,8 +460,6 @@ class _HostExecuteDataSpecification(object):
             whether to use fast data in protocol
         :param ~spinnman.model.ExecutableTargets executable_targets:
             what core will running what binary
-        :param ~pacman.model.placements.Placements placements:
-            where vertices are located
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the deployed extra monitors, if any
         :param extra_monitor_cores_to_ethernet_connection_map:
@@ -477,7 +473,7 @@ class _HostExecuteDataSpecification(object):
         """
         # pylint: disable=too-many-arguments
         self._monitors = extra_monitor_cores
-        self._placements = placements
+        self._placements = FecDataView().placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
         uses_advanced_monitors = get_config_bool(

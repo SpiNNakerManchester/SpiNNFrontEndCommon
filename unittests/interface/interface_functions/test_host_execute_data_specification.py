@@ -23,6 +23,7 @@ from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
+from pacman.model.placements import Placements
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs)
@@ -83,6 +84,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
     def test_call(self):
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
 
         dsg_targets = DataSpecificationTargets()
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
@@ -149,6 +151,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -224,6 +227,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -259,6 +263,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -286,6 +291,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -321,6 +327,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         FecDataWriter().set_transceiver(transceiver)
+        FecDataWriter().set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()

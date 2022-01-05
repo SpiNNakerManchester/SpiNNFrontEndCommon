@@ -78,8 +78,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         FecDataWriter().set_runtime_machine_graph(graph)
         FecDataWriter().set_placements(placements)
-        targets = graph_binary_gatherer(
-            placements, _TestExecutableFinder())
+        targets = graph_binary_gatherer(_TestExecutableFinder())
         start_type = locate_executable_start_type()
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)

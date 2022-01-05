@@ -72,16 +72,15 @@ def tag_allocator_report(tag_infos):
                      "writing.", file_name)
 
 
-def placer_reports_with_application_graph(hostname, placements):
+def placer_reports_with_application_graph(hostname):
     """ Reports that can be produced from placement given a application\
         graph's existence
 
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param Placements placements: the placements objects built by the placer.
     :rtype: None
     """
-    placement_report_with_application_graph_by_vertex(hostname, placements)
-    placement_report_with_application_graph_by_core(hostname, placements)
+    placement_report_with_application_graph_by_vertex(hostname)
+    placement_report_with_application_graph_by_core(hostname)
 
 
 def placer_reports_without_application_graph(hostname):
@@ -306,18 +305,19 @@ def _write_one_vertex_partition(f, vertex):
     f.write("\n")
 
 
-def placement_report_with_application_graph_by_vertex(hostname, placements):
+def placement_report_with_application_graph_by_vertex(hostname):
     """ Generate report on the placement of vertices onto cores by vertex.
 
     :param str hostname: the machine's hostname to which the placer worked on
     :param ApplicationGraph graph: the graph to which placements were built
-    :param Placements placements: the placements objects built by the placer.
     """
 
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
+    view = FecDataView()
     file_name = os.path.join(
-        FecDataView().run_dir_path, _PLACEMENT_VTX_GRAPH_FILENAME)
+        view.run_dir_path, _PLACEMENT_VTX_GRAPH_FILENAME)
+    placements = view.placements
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -413,18 +413,19 @@ def _write_one_vertex_machine_placement(f, vertex, placements):
     f.write(" Placed on core ({}, {}, {})\n\n".format(x, y, p))
 
 
-def placement_report_with_application_graph_by_core(hostname, placements):
+def placement_report_with_application_graph_by_core(hostname):
     """ Generate report on the placement of vertices onto cores by core.
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param Placements placements: the placements objects built by the placer.
     """
 
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
+    view = FecDataView()
     file_name = os.path.join(
-        FecDataView().run_dir_path, _PLACEMENT_CORE_GRAPH_FILENAME)
+        view.run_dir_path, _PLACEMENT_CORE_GRAPH_FILENAME)
+    placements = view.placements
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView().machine
@@ -531,18 +532,17 @@ def _write_one_chip_machine_placement(f, c, placements):
             f.write("\n")
 
 
-def sdram_usage_report_per_chip(
-        hostname, placements, plan_n_timesteps):
+def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
     """ Reports the SDRAM used per chip
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param Placements placements: the placements objects built by the placer.
     :param int plan_n_timesteps:
         The number of timesteps for which placer reserved space.
     :rtype: None
     """
     view = FecDataView()
     file_name = os.path.join(view.run_dir_path, _SDRAM_FILENAME)
+    placements = FecDataView().placements
     time_date_string = time.strftime("%c")
     progress = ProgressBar((len(placements) * 2 + view.machine.n_chips * 2),
                            "Generating SDRAM usage report")
@@ -576,8 +576,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     """
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
-    placements = sorted(placements.placements,
-                        key=lambda x: x.vertex.label)
+    placements = sorted(placements, key=lambda x: x.vertex.label)
     for placement in progress.over(placements, False):
         vertex_sdram = placement.vertex.resources_required.sdram
         core_sdram = vertex_sdram.get_total_sdram(timesteps)

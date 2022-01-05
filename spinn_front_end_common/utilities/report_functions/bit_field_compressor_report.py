@@ -44,19 +44,18 @@ def generate_provenance_item(x, y, bit_fields_merged):
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
-def bitfield_compressor_report(placements):
+def bitfield_compressor_report():
     """
     Generates a report that shows the impact of the compression of \
     bitfields into the routing table.
 
-    :param ~pacman.model.placements.Placements placements: the placements
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
     """
     file_name = os.path.join(FecDataView().run_dir_path, _FILE_NAME)
     try:
         with open(file_name, "w") as f:
-            return _write_report(f, placements)
+            return _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
@@ -122,16 +121,15 @@ def _merged_component(to_merge_per_chip, writer):
             average_per_chip_merged)
 
 
-def _compute_to_merge_per_chip(placements):
+def _compute_to_merge_per_chip():
     """
-    :param ~.Placements placements:
     :rtype: tuple(int, int, int, float or int)
     """
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
     machine_graph = FecDataView().runtime_machine_graph
-    for placement in placements:
+    for placement in FecDataView().placements:
         binary_start_type = None
         if isinstance(placement.vertex, AbstractHasAssociatedBinary):
             binary_start_type = placement.vertex.get_binary_start_type()
@@ -170,15 +168,14 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
     return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
 
-def _write_report(writer, placements):
+def _write_report(writer):
     """ writes the report
 
     :param ~io.FileIO writer: the file writer
-    :param ~.Placements placements: the placements
     :return: a summary
     :rtype: BitFieldSummary
     """
-    total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip(placements)
+    total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip()
     (max_to_merge_per_chip, low_to_merge_per_chip,
      average_per_chip_to_merge) = _before_merge_component(
         total_to_merge, to_merge_per_chip)
