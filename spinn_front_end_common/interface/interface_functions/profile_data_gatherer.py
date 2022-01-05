@@ -24,12 +24,10 @@ _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
 _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
-def profile_data_gatherer(placements):
+def profile_data_gatherer():
     """ Gets all the profiling data recorded by vertices and writes it to\
         files.
 
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
     """
     # pylint: disable=too-many-arguments
     placements = FecDataView().placements

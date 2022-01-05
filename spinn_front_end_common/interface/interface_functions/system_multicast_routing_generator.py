@@ -52,8 +52,8 @@ class _SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
     """
-    __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
-                 "_routing_tables", "_time_out_keys_by_board"]
+    __slots__ = ["_key_to_destination_map", "_monitors", "_machine",
+                 "_placements", "_routing_tables", "_time_out_keys_by_board"]
 
     def __init__(self, extra_monitor_cores):
         """
