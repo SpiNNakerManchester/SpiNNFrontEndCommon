@@ -124,6 +124,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     """
 
     __fec_data = _FecDataModel()
+
     __slots__ = []
 
     # app_id methods
@@ -140,6 +141,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if self.__fec_data._app_id is None:
             self.__fec_data._app_id = self.get_new_id()
         return self.__fec_data._app_id
+
+    @classmethod
+    def get_app_id(cls):
+        if cls.__fec_data._app_id is None:
+            cls.__fec_data._app_id = cls.get_new_id()
+        return cls.__fec_data._app_id
 
     # current_run_timesteps and first_machine_time_step
     # Only a property as always available
@@ -217,6 +224,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if self.__fec_data._max_run_time_steps is None:
             raise self._exception("max_run_time_steps")
         return self.__fec_data._max_run_time_steps
+
+    def get_max_run_time_steps(self):
+        return self.__fec_data._max_run_time_steps
+
+    @classmethod
+    def get_max_run_time_steps2(cls):
+        return cls.__fec_data._max_run_time_steps
 
     def has_max_run_time_steps(self):
         return self.__fec_data._max_run_time_steps is not None
