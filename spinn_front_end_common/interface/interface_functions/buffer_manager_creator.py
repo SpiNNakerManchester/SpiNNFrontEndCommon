@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import (
@@ -21,13 +22,12 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 
 
 def buffer_manager_creator(
-        placements, tags, extra_monitor_cores=None,
+        tags, extra_monitor_cores=None,
         extra_monitor_to_chip_mapping=None,
         packet_gather_cores_to_ethernet_connection_map=None,
         fixed_routes=None, java_caller=None):
     """ Creates a buffer manager.
 
-    :param ~pacman.model.placements.Placements placements:
     :param ~pacman.model.tags.Tags tags:
     :param bool uses_advanced_monitors:
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
@@ -42,12 +42,13 @@ def buffer_manager_creator(
     :param JavaCaller java_caller:
     :rtype: BufferManager
     """
+    placements = FecDataView().placements
     # pylint: disable=too-many-arguments
     progress = ProgressBar(placements.n_placements, "Initialising buffers")
 
     # Create the buffer manager
     buffer_manager = BufferManager(
-        placements=placements, tags=tags,
+        tags=tags,
         extra_monitor_cores=extra_monitor_cores,
         packet_gather_cores_to_ethernet_connection_map=(
             packet_gather_cores_to_ethernet_connection_map),

@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 def insert_edges_to_live_packet_gatherers(
-        live_packet_gatherer_parameters, placements,
+        live_packet_gatherer_parameters,
         live_packet_gatherers_to_vertex_mapping, n_keys_map=None):
     """
         Add edges from the recorded vertices to the local Live PacketGatherers.
@@ -29,8 +29,6 @@ def insert_edges_to_live_packet_gatherers(
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated
             with it
@@ -44,7 +42,7 @@ def insert_edges_to_live_packet_gatherers(
             ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
     inserter = _InsertEdgesToLivePacketGatherers(
-        placements, live_packet_gatherers_to_vertex_mapping)
+        live_packet_gatherers_to_vertex_mapping)
     inserter._run(live_packet_gatherer_parameters, n_keys_map)
 
 
@@ -59,11 +57,9 @@ class _InsertEdgesToLivePacketGatherers(object):
         "_placements"
     ]
 
-    def __init__(self, placements, live_packet_gatherers_to_vertex_mapping):
+    def __init__(self, live_packet_gatherers_to_vertex_mapping):
         """
 
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated
             with it
@@ -74,7 +70,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         """
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
-        self._placements = placements
+        self._placements = FecDataView().placements
 
     def _run(self, live_packet_gatherer_parameters, n_keys_map=None):
         """

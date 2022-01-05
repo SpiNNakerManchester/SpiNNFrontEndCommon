@@ -129,13 +129,11 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, extra_monitor_cores,
+    def __init__(self, tags, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, fixed_routes,
                  java_caller=None):
         """
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             The monitors.
@@ -152,7 +150,7 @@ class BufferManager(object):
             Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
-        self._placements = placements
+        self._placements = FecDataView().placements
         self._tags = tags
         self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \

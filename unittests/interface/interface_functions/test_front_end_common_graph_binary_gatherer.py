@@ -77,9 +77,10 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_4, 0, 0, 3)])
 
         FecDataWriter().set_runtime_machine_graph(graph)
+        FecDataWriter().set_placements(placements)
         targets = graph_binary_gatherer(
             placements, _TestExecutableFinder())
-        start_type = locate_executable_start_type(placements)
+        start_type = locate_executable_start_type()
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -108,7 +109,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph.add_vertices([vertex_1, vertex_2])
 
         FecDataWriter().set_runtime_machine_graph(graph)
-        results = locate_executable_start_type(placements)
+        FecDataWriter().set_placements(placements)
+        results = locate_executable_start_type()
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)

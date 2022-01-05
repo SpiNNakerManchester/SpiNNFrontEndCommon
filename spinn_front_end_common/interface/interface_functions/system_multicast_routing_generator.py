@@ -32,21 +32,19 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator(extra_monitor_cores, placements):
+def system_multicast_routing_generator(extra_monitor_cores):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
 
     :param extra_monitor_cores:
     :type extra_monitor_cores:
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-    :param ~pacman.model.placements.Placements placements:
     :return: routing tables, destination-to-key map,
         board-locn-to-timeout-key map
     :rtype: tuple(MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
-    generator = _SystemMulticastRoutingGenerator(
-        extra_monitor_cores, placements)
+    generator = _SystemMulticastRoutingGenerator(extra_monitor_cores)
     return generator._run()
 
 
@@ -55,9 +53,9 @@ class _SystemMulticastRoutingGenerator(object):
         extra monitor cores.
     """
     __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
-                 "_placements", "_routing_tables", "_time_out_keys_by_board"]
+                 "_routing_tables", "_time_out_keys_by_board"]
 
-    def __init__(self, extra_monitor_cores, placements):
+    def __init__(self, extra_monitor_cores):
         """
 
         :param extra_monitor_cores:
@@ -65,8 +63,9 @@ class _SystemMulticastRoutingGenerator(object):
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
         """
-        self._machine = FecDataView().machine
-        self._placements = placements
+        view = FecDataView()
+        self._machine = view.machine
+        self._placements = view.placements
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map = dict()

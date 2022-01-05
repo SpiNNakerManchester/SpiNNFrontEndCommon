@@ -24,19 +24,18 @@ from spinn_front_end_common.utility_models import (
 
 
 def insert_edges_to_extra_monitor_functionality(
-        placements, vertex_to_ethernet_connected_chip_mapping):
+        vertex_to_ethernet_connected_chip_mapping):
     """
         Inserts edges between vertices who use MC speed up and its local\
             MC data gatherer.
 
-        :param ~pacman.model.placements.Placements placements: the placements
         :param vertex_to_ethernet_connected_chip_mapping:
             mapping between ethernet connected chips and packet gatherers
         :type vertex_to_ethernet_connected_chip_mapping:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     """
     inserter = _InsertEdgesToExtraMonitorFunctionality(
-        placements, vertex_to_ethernet_connected_chip_mapping)
+        vertex_to_ethernet_connected_chip_mapping)
     inserter._run()
 
 
@@ -54,15 +53,14 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
 
     EDGE_LABEL = "edge between {} and {}"
 
-    def __init__(self, placements, vertex_to_ethernet_connected_chip_mapping):
+    def __init__(self, vertex_to_ethernet_connected_chip_mapping):
         """
 
-        :param ~pacman.model.placements.Placements placements: the placements
         :param vertex_to_ethernet_connected_chip_mapping:
             mapping between ethernet connected chips and packet gatherers
         """
         self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
-        self._placements = placements
+        self._placements = FecDataView().placements
 
     def _run(self):
         """

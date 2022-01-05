@@ -84,14 +84,13 @@ def placer_reports_with_application_graph(hostname, placements):
     placement_report_with_application_graph_by_core(hostname, placements)
 
 
-def placer_reports_without_application_graph(hostname, placements):
+def placer_reports_without_application_graph(hostname):
     """
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param Placements placements: The placements objects built by the placer.
     :rtype: None
     """
-    placement_report_without_application_graph_by_vertex(hostname, placements)
-    placement_report_without_application_graph_by_core(hostname, placements)
+    placement_report_without_application_graph_by_vertex(hostname)
+    placement_report_without_application_graph_by_core(hostname)
 
 
 def router_summary_report(routing_tables,  hostname):
@@ -190,18 +189,18 @@ def _do_router_summary_report(
 
 
 def router_report_from_paths(
-        routing_tables, routing_infos, hostname, placements):
+        routing_tables, routing_infos, hostname):
     """ Generates a text file of routing paths
 
     :param MulticastRoutingTables routing_tables: The original routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
     :param RoutingInfo routing_infos:
-    :param Placements placements:
     :rtype: None
     """
     view = FecDataView()
     file_name = os.path.join(view.run_dir_path, _ROUTING_FILENAME)
     machine = view.machine
+    placements = view.placements
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -367,13 +366,15 @@ def _write_one_vertex_application_placement(f, vertex, placements):
     f.write("\n")
 
 
-def placement_report_without_application_graph_by_vertex(hostname, placements):
+def placement_report_without_application_graph_by_vertex(hostname):
     """ Generate report on the placement of vertices onto cores by vertex.
 
     :param str hostname: the machine's hostname to which the placer worked on
     :param Placements placements: the placements objects built by the placer.
     """
-    machine_graph = FecDataView().runtime_machine_graph
+    view = FecDataView()
+    machine_graph = view.runtime_machine_graph
+    placements = view.placements
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
@@ -475,11 +476,10 @@ def _write_one_chip_application_placement(f, chip, placements):
             f.write("              Model: {}\n\n".format(vertex_model))
 
 
-def placement_report_without_application_graph_by_core(hostname, placements):
+def placement_report_without_application_graph_by_core(hostname):
     """ Generate report on the placement of vertices onto cores by core.
 
     :param str hostname: the machine's hostname to which the placer worked on
-    :param Placements placements: the placements objects built by the placer.
     """
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
@@ -489,6 +489,7 @@ def placement_report_without_application_graph_by_core(hostname, placements):
         view.run_dir_path, _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     machine = view.machine
+    placements = view.placements
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine.chips,

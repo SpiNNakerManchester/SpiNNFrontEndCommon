@@ -64,7 +64,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # Create two placements and 'Placements' object
         pl1 = Placement(v1, 0, 1, 1)
         pl2 = Placement(v2, 0, 2, 1)
-        pl = Placements([pl1, pl2])
+        FecDataWriter().set_placements(Placements([pl1, pl2]))
 
         # Create transceiver
         transceiver = Transceiver(version=5, connections=connections)
@@ -75,7 +75,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         # Create buffer manager
         bm = BufferManager(
-            placements=pl, tags=t, extra_monitor_cores=None,
+            tags=t, extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, fixed_routes=None)
 

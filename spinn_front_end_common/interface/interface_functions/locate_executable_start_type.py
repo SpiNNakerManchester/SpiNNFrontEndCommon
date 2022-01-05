@@ -20,15 +20,16 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-def locate_executable_start_type(placements):
+def locate_executable_start_type():
     """
     Discovers where applications of particular types need to be launched.
 
     :param ~pacman.model.graphs.machine.MachineGraph graph:
-    :param ~pacman.model.placements.Placements placements:
     :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
-    graph = FecDataView().runtime_machine_graph
+    view = FecDataView()
+    graph = view.runtime_machine_graph
+    placements = view.placements
     if not graph.vertices:
         return {ExecutableType.NO_APPLICATION: None}
 

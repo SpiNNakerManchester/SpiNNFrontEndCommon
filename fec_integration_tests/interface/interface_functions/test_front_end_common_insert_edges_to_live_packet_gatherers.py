@@ -116,10 +116,10 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         FecDataWriter().set_runtime_machine_graph(graph)
         FecDataWriter()._set_runtime_graph(ApplicationGraph("Empty"))
+        FecDataWriter().set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping))
 
@@ -224,10 +224,10 @@ class TestInsertLPGEdges(unittest.TestCase):
 
         FecDataWriter().set_runtime_machine_graph(graph)
         FecDataWriter()._set_runtime_graph(app_graph)
+        FecDataWriter().set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            placements=placements,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping))
 
