@@ -225,9 +225,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise self._exception("max_run_time_steps")
         return self.__fec_data._max_run_time_steps
 
-    def get_max_run_time_steps(self):
-        return self.__fec_data._max_run_time_steps
-
     @classmethod
     def get_max_run_time_steps2(cls):
         return cls.__fec_data._max_run_time_steps
