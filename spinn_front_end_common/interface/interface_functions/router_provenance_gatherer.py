@@ -32,7 +32,8 @@ def router_provenance_gatherer(
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
         vertices which represent the extra monitor code
     :param ~pacman.model.placements.Placements placements:
-        the placements object
+        the placements object to get router provenace for.
+        May not be all placements so dont use View
     """
     gather = _RouterProvenanceGatherer(
         router_tables, extra_monitor_vertices, placements)

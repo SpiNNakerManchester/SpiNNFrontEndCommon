@@ -52,11 +52,9 @@ class EnergyReport(object):
         """
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
-    def write_energy_report(
-            self, placements, buffer_manager, power_used):
+    def write_energy_report(self, buffer_manager, power_used):
         """ Writes the report.
 
-        :param ~pacman.model.placements.Placements placements: the placements
         :param ~spinn_machine.Machine machine: the machine
         :param BufferManager buffer_manager:
         :param PowerUsed power_used:
@@ -77,7 +75,7 @@ class EnergyReport(object):
 
         # create detailed report
         with open(detailed_report, "w") as f:
-            self._write_detailed_report(placements, power_used, f)
+            self._write_detailed_report(power_used, f)
 
         # create summary report
         with open(summary_report, "w") as f:
@@ -157,11 +155,9 @@ class EnergyReport(object):
         else:
             return "(over {} seconds)".format(time)
 
-    def _write_detailed_report(
-            self, placements, power_used, f):
+    def _write_detailed_report(self, power_used, f):
         """ Write detailed report and calculate costs
 
-        :param ~.Placements placements: placements
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
@@ -169,6 +165,7 @@ class EnergyReport(object):
         view = FecDataView()
         runtime_total_ms = view.time_scale_factor
         machine = view.machine
+        placements = FecDataView().placements
 
         # write warning about accuracy etc
         self._write_warning(f)

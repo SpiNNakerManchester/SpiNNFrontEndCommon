@@ -30,9 +30,9 @@ from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
 
 
-def dsg_region_reloader(placements, hostname):
+def dsg_region_reloader(hostname):
     reloader = _DSGRegionReloader(hostname)
-    reloader._run(placements)
+    reloader._run()
 
 
 class _DSGRegionReloader(object):
@@ -48,14 +48,13 @@ class _DSGRegionReloader(object):
         self._txrx = FecDataView().transceiver
         self._host = hostname
 
-    def _run(self, placements):
+    def _run(self):
         """
-        :param ~pacman.model.placements.Placements placements:
-            the list of placements of the machine graph to cores
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
+        placements = FecDataView().placements
         run_dir_path = FecDataView().run_dir_path
         self._data_dir = generate_unique_folder_name(
             run_dir_path, "reloaded_data_regions", "")

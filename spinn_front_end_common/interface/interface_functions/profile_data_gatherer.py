@@ -32,7 +32,7 @@ def profile_data_gatherer(placements):
             The placements of the vertices
     """
     # pylint: disable=too-many-arguments
-
+    placements = FecDataView().placements
     progress = ProgressBar(
         placements.n_placements, "Getting profile data")
     provenance_file_path = FecDataView().app_provenance_dir_path

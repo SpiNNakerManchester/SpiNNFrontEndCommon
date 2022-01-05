@@ -137,7 +137,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         }
         transceiver = _MockTransceiver(user_0_addresses)
         FecDataWriter().set_transceiver(transceiver)
-        dsg_region_reloader(placements, "localhost")
+        FecDataWriter().set_placements(placements)
+        dsg_region_reloader("localhost")
 
         regions_rewritten = transceiver._regions_rewritten
 

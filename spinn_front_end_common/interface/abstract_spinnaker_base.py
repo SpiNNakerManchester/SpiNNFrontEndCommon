@@ -2596,7 +2596,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            dsg_region_reloader(self._placements, self._ipaddress)
+            dsg_region_reloader(self._ipaddress)
 
     def _execute_graph_provenance_gatherer(self):
         """
@@ -2617,7 +2617,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            placements_provenance_gatherer(self._placements)
+            placements_provenance_gatherer(self._data_writer.placements)
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -2630,7 +2630,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             router_provenance_gatherer(
                 self._router_tables,
-                self._extra_monitor_vertices, self._placements)
+                self._extra_monitor_vertices, self._data_writer.placements)
 
     def _execute_profile_data_gatherer(self):
         """
@@ -2641,7 +2641,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            profile_data_gatherer(self._placements)
+            profile_data_gatherer()
 
     def _do_read_provenance(self):
         """
@@ -2665,14 +2665,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # TODO runtime is None
             power_used = compute_energy_used(
-                self._placements, self._board_version,
+                self._board_version,
                 self._buffer_manager, self._mapping_time,
                 self._load_time, self._execute_time, self._dsg_time,
                 self._extraction_time,
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
-            energy_provenance_reporter(power_used, self._placements)
+            energy_provenance_reporter(power_used)
 
             # create energy reporter
             energy_reporter = EnergyReport(
@@ -2680,8 +2680,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # run energy report
             energy_reporter.write_energy_report(
-                self._placements, self._buffer_manager,
-                power_used)
+                self._buffer_manager, power_used)
 
     def _do_provenance_reports(self):
         """
@@ -2734,7 +2733,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
                 self._tags, run_time,
-                self._placements, self._routing_infos, self._router_tables)
+                self._routing_infos, self._router_tables)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -2791,8 +2790,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Buffer extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
-            buffer_extractor(
-                self._placements, self._buffer_manager)
+            buffer_extractor(self._buffer_manager)
 
     def _do_extract_from_machine(self):
         """
@@ -2905,7 +2903,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_provenance_gatherer(
                 router_tables=self._router_tables,
                 extra_monitor_vertices=self._extra_monitor_vertices,
-                placements=self._placements)
+                placements=self._data_writer.placements)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2974,9 +2972,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 finished_cores = transceiver.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
+                placements = self._data_writer.placements
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
-                        self._placements.get_placement_on_processor(x, y, p))
+                        placements.get_placement_on_processor(x, y, p))
                 placements_provenance_gatherer(finished_placements)
             except Exception as pro_e:
                 logger.exception(f"Could not read provenance due to {pro_e}")
@@ -3123,7 +3122,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: ~pacman.model.placements.Placements
         """
-        return self._placements
+        return self._data_writer.placements
 
     @property
     def tags(self):

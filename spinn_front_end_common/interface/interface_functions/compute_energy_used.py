@@ -61,14 +61,13 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        placements, version, buffer_manager, mapping_time,
+        version, buffer_manager, mapping_time,
         load_time, execute_time, dsg_time, extraction_time,
         spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
 
-    :param ~pacman.model.placements.Placements placements:
     :param int version:
         The version of the SpiNNaker boards in use.
     :param BufferManager buffer_manager:
@@ -94,6 +93,7 @@ def compute_energy_used(
     view = FecDataView()
     runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
     machine = view.machine
+    placements = FecDataView().placements
     power_used = PowerUsed()
 
     power_used.num_chips = machine.n_chips

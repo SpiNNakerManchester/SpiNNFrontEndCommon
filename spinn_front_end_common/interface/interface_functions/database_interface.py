@@ -24,12 +24,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(
-        tags, runtime, placements, routing_infos, router_tables):
+        tags, runtime, routing_infos, router_tables):
     """ Writes a database of the graph(s) and other information.
 
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
         :type router_tables:
@@ -38,8 +37,7 @@ def database_interface(
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface()
-    return interface._run(
-        tags, runtime, placements, routing_infos, router_tables)
+    return interface._run(tags, runtime, routing_infos, router_tables)
 
 
 class _DatabaseInterface(object):
@@ -60,11 +58,10 @@ class _DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database()
 
     def _run(
-            self, tags, runtime, placements, routing_infos, router_tables):
+            self, tags, runtime, routing_infos, router_tables):
         """
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~pacman.model.placements.Placements placements:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
         :type router_tables:
@@ -84,18 +81,15 @@ class _DatabaseInterface(object):
         if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(
-                runtime, placements, routing_infos, router_tables, tags)
+            self._write_to_db(runtime, routing_infos, router_tables, tags)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
-    def _write_to_db(
-            self, runtime, placements, routing_infos, router_tables, tags):
+    def _write_to_db(self, runtime, routing_infos, router_tables, tags):
         """
         :param int runtime:
-        :param ~.Placements placements:
         :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
@@ -116,7 +110,7 @@ class _DatabaseInterface(object):
             p.update()
             w.add_vertices(machine_graph, view.max_run_time_steps, app_graph)
             p.update()
-            w.add_placements(placements)
+            w.add_placements()
             p.update()
             w.add_routing_infos(routing_infos, machine_graph)
             p.update()

@@ -26,10 +26,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 def placements_provenance_gatherer(placements):
     """ Gets provenance information from vertices on the machine.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
     :param ~pacman.model.placements.Placements placements:
-        The placements of the vertices
+        The placements of the vertices to gather data form.
+        May not be all placements so dont use View
     """
     errors = list()
 

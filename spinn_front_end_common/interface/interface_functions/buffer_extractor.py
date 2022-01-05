@@ -24,14 +24,13 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def buffer_extractor(placements, buffer_manager):
+def buffer_extractor(buffer_manager):
     """ Extracts data in between runs.
 
-    :param ~pacman.model.placements.Placements placements:
     :param BufferManager buffer_manager:
     """
     # Count the regions to be read
-    n_regions_to_read, recording_placements = _count_regions(placements)
+    n_regions_to_read, recording_placements = _count_regions()
     if not n_regions_to_read:
         logger.info("No recorded data to extract")
         return
@@ -46,13 +45,12 @@ def buffer_extractor(placements, buffer_manager):
         progress.end()
 
 
-def _count_regions(placements):
+def _count_regions():
     """
-    :param ~.MachineGraph machine_graph:
-    :param ~.Placements placements:
     :rtype: tuple(int, list(~.Placement))
     """
     # Count the regions to be read
+    placements = FecDataView().placements
     n_regions_to_read = 0
     recording_placements = list()
     for vertex in FecDataView().runtime_machine_graph.vertices:
