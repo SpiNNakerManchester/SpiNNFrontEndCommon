@@ -56,7 +56,7 @@ def buffer_manager_creator(
         fixed_routes=fixed_routes,
         java_caller=java_caller)
 
-    for placement in progress.over(placements.placements):
+    for placement in progress.over(placements):
         vertex = placement.vertex
         if isinstance(vertex, AbstractSendsBuffersFromHost) and \
                 vertex.buffering_input():

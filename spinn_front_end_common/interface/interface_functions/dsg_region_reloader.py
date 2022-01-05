@@ -70,7 +70,7 @@ class _DSGRegionReloader(object):
                 os.makedirs(report_dir)
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
-        for placement in progress.over(placements.placements):
+        for placement in progress.over(placements):
             # Generate the data spec for the placement if needed
             self._regenerate_data_spec_for_vertices(placement)
 

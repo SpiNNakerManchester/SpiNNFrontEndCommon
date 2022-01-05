@@ -37,7 +37,7 @@ def placements_provenance_gatherer(placements):
         placements.n_placements, "Getting provenance data")
 
     # retrieve provenance data from any cores that provide data
-    for placement in progress.over(placements.placements):
+    for placement in progress.over(placements):
         _add_placement_provenance(placement, errors)
     if errors:
         logger.warning("Errors found during provenance gathering:")
