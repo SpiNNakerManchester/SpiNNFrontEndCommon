@@ -67,8 +67,7 @@ class ConfigHandler(object):
         if data_writer:
             self._data_writer = data_writer
         else:
-            self._data_writer = FecDataWriter()
-        self._data_writer.setup()
+            self._data_writer = FecDataWriter.setup()
 
         # set up machine targeted data
         self._use_virtual_board = get_config_bool("Machine", "virtual_board")

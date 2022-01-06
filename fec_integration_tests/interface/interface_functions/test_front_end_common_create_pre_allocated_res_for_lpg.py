@@ -34,7 +34,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         unittest_setup()
 
     def test_one_lpg_params(self):
-        FecDataWriter().set_machine(virtual_machine(width=12, height=12))
+        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
 
         default_params = {
             'use_prefix': False,
@@ -74,7 +74,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 1)
 
     def test_none(self):
-        FecDataWriter().set_machine(virtual_machine(width=12, height=12))
+        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
         live_packet_gatherers = dict()
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
@@ -89,7 +89,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 0)
 
     def test_fail(self):
-        FecDataWriter().set_machine(virtual_machine(width=12, height=12))
+        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
         live_packet_gatherers = {'foo': 'bar'}
         with self.assertRaises(Exception) as exn:
             preallocate_resources_for_live_packet_gatherers(

@@ -13,8 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.exceptions import NotSetupException
 from spinn_front_end_common.utilities.exceptions import (
-    SimulatorDataNotYetAvialable, SimulatorNotSetupException)
+    SimulatorNotSetupException)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import add_spinnaker_cfg
@@ -30,13 +31,12 @@ clear_cfg_files(True)
 add_spinnaker_cfg()
 
 view = FecDataView()
-writer = FecDataWriter()
 try:
     a = view.simulation_time_step_us
     raise Exception("OOPS")
-except SimulatorNotSetupException:
+except NotSetupException:
     pass
-writer.setup()
+writer = FecDataWriter.setup()
 try:
     view.simulation_time_step_us
     raise Exception("OOPS")

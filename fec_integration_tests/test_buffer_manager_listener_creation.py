@@ -38,6 +38,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # individual boards, where it's preferred all traffic is received by
         # a single listener
 
+        writer = FecDataWriter.mock()
         # Create two vertices
         v1 = SimpleTestVertex(10, "v1", 256)
         v2 = SimpleTestVertex(10, "v2", 256)
@@ -64,11 +65,11 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # Create two placements and 'Placements' object
         pl1 = Placement(v1, 0, 1, 1)
         pl2 = Placement(v2, 0, 2, 1)
-        FecDataWriter().set_placements(Placements([pl1, pl2]))
+        writer.set_placements(Placements([pl1, pl2]))
 
         # Create transceiver
         transceiver = Transceiver(version=5, connections=connections)
-        FecDataWriter().set_transceiver(transceiver)
+        writer.set_transceiver(transceiver)
         # Alternatively, one can register a udp listener for testing via:
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)

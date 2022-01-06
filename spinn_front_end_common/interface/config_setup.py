@@ -41,7 +41,7 @@ def unittest_setup():
     setup_for_unittest()
     clear_cfg_files(True)
     add_spinnaker_cfg()
-    FecDataWriter().mock()
+    FecDataWriter.mock()
 
 
 def add_spinnaker_cfg():

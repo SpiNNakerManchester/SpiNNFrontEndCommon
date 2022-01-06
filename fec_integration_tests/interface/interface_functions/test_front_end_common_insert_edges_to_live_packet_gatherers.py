@@ -42,8 +42,9 @@ class TestInsertLPGEdges(unittest.TestCase):
         unittest_setup()
 
     def test_local_verts_go_to_local_lpgs(self):
+        writer = FecDataWriter.mock()
         machine = virtual_machine(width=12, height=12)
-        FecDataWriter().set_machine(machine)
+        writer.set_machine(machine)
         graph = MachineGraph("Test")
 
         default_params = {
@@ -114,9 +115,9 @@ class TestInsertLPGEdges(unittest.TestCase):
             verts_expected[eth_x, eth_y].append(vertex)
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
-        FecDataWriter().set_runtime_machine_graph(graph)
-        FecDataWriter()._set_runtime_graph(ApplicationGraph("Empty"))
-        FecDataWriter().set_placements(placements)
+        writer.set_runtime_machine_graph(graph)
+        writer._set_runtime_graph(ApplicationGraph("Empty"))
+        writer.set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
@@ -130,8 +131,9 @@ class TestInsertLPGEdges(unittest.TestCase):
                 self.assertIn(edge.pre_vertex, verts_expected[chip.x, chip.y])
 
     def test_local_verts_go_to_local_lpgs_app_graph(self):
+        writer = FecDataWriter.mock()
         machine = virtual_machine(width=12, height=12)
-        FecDataWriter().set_machine(machine)
+        writer.set_machine(machine)
 
         app_graph = ApplicationGraph("Test")
         graph = MachineGraph("Test", app_graph)
@@ -222,9 +224,9 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
-        FecDataWriter().set_runtime_machine_graph(graph)
-        FecDataWriter()._set_runtime_graph(app_graph)
-        FecDataWriter().set_placements(placements)
+        writer.set_runtime_machine_graph(graph)
+        writer._set_runtime_graph(app_graph)
+        writer.set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,

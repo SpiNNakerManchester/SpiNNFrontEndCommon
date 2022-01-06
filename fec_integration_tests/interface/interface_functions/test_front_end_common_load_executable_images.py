@@ -67,7 +67,7 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         unittest_setup()
 
     def test_front_end_common_load_executable_images(self):
-        FecDataWriter().set_transceiver(_MockTransceiver(self))
+        FecDataWriter.mock().set_transceiver(_MockTransceiver(self))
         targets = ExecutableTargets()
         targets.add_processor("test.aplx", 0, 0, 0, SIM)
         targets.add_processor("test.aplx", 0, 0, 1, SIM)
