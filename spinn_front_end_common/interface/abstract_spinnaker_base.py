@@ -3117,14 +3117,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._fixed_routes
 
     @property
-    def placements(self):
-        """ Where machine vertices are placed on the machine.
-
-        :rtype: ~pacman.model.placements.Placements
-        """
-        return self._data_writer.placements
-
-    @property
     def tags(self):
         """
         :rtype: ~pacman.model.tags.Tags
