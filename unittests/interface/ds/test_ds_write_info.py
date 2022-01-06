@@ -29,7 +29,7 @@ class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        FecDataWriter().set_machine(virtual_machine(2, 2))
+        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         dst = DataSpecificationTargets()
         asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)

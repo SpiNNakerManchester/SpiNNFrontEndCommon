@@ -82,9 +82,10 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         set_config("Machine", "enable_advanced_monitor_support", "False")
 
     def test_call(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
         dsg_targets = DataSpecificationTargets()
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
@@ -148,10 +149,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(info.memory_written, 152)
 
     def test_multi_spec_with_references(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -224,10 +226,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[2][2], header_data[1][2])
 
     def test_multispec_with_reference_error(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -260,10 +263,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
                 dsg_targets, targets, region_sizes=region_sizes)
 
     def test_multispec_with_double_reference(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -288,10 +292,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
                 dsg_targets, targets, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()
@@ -324,10 +329,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
                 dsg_targets, targets, region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(Placements([]))
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
         region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets()

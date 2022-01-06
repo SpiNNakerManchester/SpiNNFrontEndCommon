@@ -26,7 +26,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
         unittest_setup()
 
     def test_dict(self):
-        FecDataWriter().set_machine(virtual_machine(2, 2))
+        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         check = dict()
         asDict = DataSpecificationTargets()
         c1 = (0, 0, 0)

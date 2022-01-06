@@ -70,7 +70,7 @@ class TestFrontEndCommonTagsLoader(unittest.TestCase):
         tags.add_reverse_ip_tag(rip_tag_2, vertex)
 
         txrx = _MockTransceiver()
-        FecDataWriter().set_transceiver(txrx)
+        FecDataWriter.mock().set_transceiver(txrx)
 
         tags_loader(tags)
         self.assertIn(tag_1, txrx._ip_tags)

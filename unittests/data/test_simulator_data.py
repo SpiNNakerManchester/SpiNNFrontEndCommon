@@ -34,10 +34,9 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_setup(self):
         view = FecDataView()
-        writer = FecDataWriter()
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
-        writer.setup()
+        writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_us
         writer.set_up_timings(1000, 1)
@@ -45,8 +44,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_run(self):
         view = FecDataView()
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         self.assertEqual(1, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(1, view.n_calls_to_run)
@@ -65,26 +63,22 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_mock(self):
         view = FecDataView()
-        writer = FecDataWriter()
-        writer.mock()
+        writer = FecDataWriter.mock()
         # check there is a value not what it is
         self.assertIsNotNone(view.app_id)
         self.assertIsNotNone(view.simulation_time_step_us)
 
     def test_multiple(self):
         view = FecDataView()
-        writer = FecDataWriter()
+        writer = FecDataWriter.setup()
         view2 = FecDataView()
-        writer2 = FecDataWriter()
-        writer2.set_app_id(7)
+        writer.set_app_id(7)
         self.assertEqual(7, view.app_id)
         self.assertEqual(7, view2.app_id)
         self.assertEqual(7, writer.app_id)
-        self.assertEqual(7, writer2.app_id)
 
     def test_app_id(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         # Not critical it is 17 as long as below three are the same
         self.assertEqual(17, writer.app_id)
         self.assertEqual(17, writer.app_id)
@@ -97,8 +91,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(17, writer.app_id)
 
     def test_run_times(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         self.assertEqual(0, writer.first_machine_time_step)
         self.assertEqual(0, writer.current_run_timesteps)
         writer.increment_current_run_timesteps(105)
@@ -122,8 +115,7 @@ class TestSimulatorData(unittest.TestCase):
             writer.increment_current_run_timesteps(None)
 
     def test_run_forever(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         writer.increment_current_run_timesteps(None)
         self.assertEqual(0, writer.first_machine_time_step)
         self.assertIsNone(writer.current_run_timesteps)
@@ -133,8 +125,7 @@ class TestSimulatorData(unittest.TestCase):
             writer.increment_current_run_timesteps(100)
 
     def test_current_run_times_ms(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             writer.current_run_time_ms
         writer.set_up_timings(500, 4)
@@ -143,8 +134,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(44, writer.current_run_time_ms)
 
     def test_max_run_time_steps(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             writer.max_run_time_steps
         self.assertEqual(None, writer.get_max_run_time_steps())
@@ -163,8 +153,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_simulation_timestep(self):
         view = FecDataView()
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             view.simulation_time_step_us
         with self.assertRaises(DataNotYetAvialable):
@@ -229,8 +218,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(None, view.get_hardware_time_step_us())
 
     def test_directories_normal(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         report_dir = writer.report_dir_path
         self.assertTrue(os.path.exists(report_dir))
 
@@ -261,8 +249,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn(dir, dir2)
 
     def test_directories_reset(self):
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         run_dir = writer.run_dir_path
         self.assertIn("run_1", run_dir)
         writer.start_run()
@@ -288,8 +275,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn("run_3", run_dir)
 
     def test_directories_mocked(self):
-        writer = FecDataWriter()
-        writer.mock()
+        writer = FecDataWriter.mock()
         self.assertTrue(os.path.exists(writer.report_dir_path))
         self.assertTrue(os.path.exists(writer.timestamp_dir_path))
         self.assertTrue(os.path.exists(writer.run_dir_path))
@@ -299,7 +285,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(writer.system_provenance_dir_path))
 
     def test_directories_not_setup(self):
-        writer = FecDataWriter()
+        writer = FecDataWriter.mock()
         # Hacks as normally not done
         writer._FecDataWriter__fec_data._clear()
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
@@ -321,8 +307,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_get_n_calls_to_run(self):
         view = FecDataView()
-        writer = FecDataWriter()
-        writer.setup()
+        writer = FecDataWriter.setup()
         self.assertTrue(view.has_n_calls_to_run())
         self.assertEqual(1, view.n_calls_to_run)
         writer.start_run()

@@ -85,7 +85,7 @@ def test_app_finisher():
     executable_types = {
         ExecutableType.USES_SIMULATION_INTERFACE: core_subsets}
     txrx = _MockTransceiver(core_states, 0.5)
-    FecDataWriter().set_transceiver(txrx)
+    FecDataWriter.mock().set_transceiver(txrx)
     application_finisher(executable_types)
 
     # First round called twice as 2 running +

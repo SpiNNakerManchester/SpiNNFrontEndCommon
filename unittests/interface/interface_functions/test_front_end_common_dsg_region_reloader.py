@@ -122,6 +122,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         """ Test that an application vertex's data is rewritten correctly
         """
         # Create a default SDRAM to set the max to default
+        writer = FecDataWriter.mock()
         SDRAM()
         m_vertex_1 = _TestMachineVertex()
         m_vertex_2 = _TestMachineVertex()
@@ -136,8 +137,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             for i, placement in enumerate(placements)
         }
         transceiver = _MockTransceiver(user_0_addresses)
-        FecDataWriter().set_transceiver(transceiver)
-        FecDataWriter().set_placements(placements)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(placements)
         dsg_region_reloader("localhost")
 
         regions_rewritten = transceiver._regions_rewritten

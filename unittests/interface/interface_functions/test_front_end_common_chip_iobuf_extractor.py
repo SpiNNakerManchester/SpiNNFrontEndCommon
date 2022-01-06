@@ -88,7 +88,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
-        FecDataWriter().set_transceiver(_PretendTransceiver(
+        FecDataWriter.mock().set_transceiver(_PretendTransceiver(
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
              IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
              IOBuffer(0, 0, 3, text003)]))

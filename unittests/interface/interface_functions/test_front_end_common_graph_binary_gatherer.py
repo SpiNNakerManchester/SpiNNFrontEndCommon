@@ -58,7 +58,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
     def test_call(self):
         """ Test calling the binary gatherer normally
         """
-
+        writer = FecDataWriter.mock()
         vertex_1 = _TestVertexWithBinary(
             "test.aplx", ExecutableType.RUNNING)
         vertex_2 = _TestVertexWithBinary(
@@ -76,8 +76,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_3, 0, 0, 2),
             Placement(vertex_4, 0, 0, 3)])
 
-        FecDataWriter().set_runtime_machine_graph(graph)
-        FecDataWriter().set_placements(placements)
+        writer.set_runtime_machine_graph(graph)
+        writer.set_placements(placements)
         targets = graph_binary_gatherer(_TestExecutableFinder())
         start_type = locate_executable_start_type()
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
@@ -94,7 +94,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
     def test_mixed_binaries(self):
         """ Test calling the binary gatherer with mixed executable types
         """
-
+        writer = FecDataWriter.mock()
         vertex_1 = _TestVertexWithBinary(
             "test.aplx", ExecutableType.RUNNING)
         vertex_2 = _TestVertexWithBinary(
@@ -107,8 +107,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
-        FecDataWriter().set_runtime_machine_graph(graph)
-        FecDataWriter().set_placements(placements)
+        writer.set_runtime_machine_graph(graph)
+        writer.set_placements(placements)
         results = locate_executable_start_type()
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
