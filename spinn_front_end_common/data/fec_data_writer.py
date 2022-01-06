@@ -20,6 +20,7 @@ import os
 import time
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from spinn_front_end_common.utilities.constants import (
@@ -41,33 +42,22 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     __fec_data = _FecDataModel()
     __slots__ = []
 
-    def mock(self):
-        """
-        Clears out all data and adds mock values where needed.
-
-        This should set the most likely defaults values.
-        But be aware that what is considered the most likely default could
-        change over time.
-
-        Unittests that depend on any valid value being set should be able to
-        depend on Mock.
-
-        Unittest that depend on a specific value should call mock and then
-        set that value.
-        """
-        PacmanDataWriter.mock(self)
-        SpiNNManDataWriter().local_mock()
+    @overrides(PacmanDataWriter._mock)
+    def _mock(self):
+        PacmanDataWriter._mock(self)
+        self._spinnman_mock()
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.set_up_timings(1000, 1)
 
-    def setup(self):
+    @overrides(PacmanDataWriter._setup)
+    def _setup(self):
         """
         Puts all data back into the state expected at sim.setup time
 
         """
-        PacmanDataWriter.setup(self)
-        SpiNNManDataWriter.local_setup(self)
+        PacmanDataWriter._setup(self)
+        self._spinnman_setup()
         self.__fec_data._clear()
         self.__fec_data._n_calls_to_run = 0
         self.__create_reports_directory()
