@@ -49,7 +49,6 @@ def _write_report(collision_counts, writer):
 
 def _generate_data(router_tables_by_partition, n_keys_map):
     view = FecDataView()
-    machine = view.machine
     collisions = defaultdict(lambda: defaultdict(int))
 
     for (x, y) in router_tables_by_partition.get_routers():
@@ -60,7 +59,7 @@ def _generate_data(router_tables_by_partition, n_keys_map):
                     partition, x, y)
             for link in entry.link_ids:
                 if collisions[(x, y)][link] == 0:
-                    chip = machine.get_chip_at(x, y)
+                    chip = FecDataView.get_chip_at(x, y)
                     other_chip_x = chip.router.get_link(link).destination_x
                     other_chip_y = chip.router.get_link(link).destination_y
                     collision_route = Router.opposite(link)

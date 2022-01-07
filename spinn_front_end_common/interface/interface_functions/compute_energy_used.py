@@ -135,7 +135,7 @@ def _compute_energy_consumption(
     :param PowerUsed power_used:
     """
     # figure active chips
-    active_chips = __active_chips(machine, placements)
+    active_chips = __active_chips(placements)
 
     # figure out packet cost
     _router_packet_energy(power_used)
@@ -177,14 +177,13 @@ def _compute_energy_consumption(
         MILLIWATTS_FOR_FRAME_IDLE_COST)
 
 
-def __active_chips(machine, placements):
+def __active_chips(placements):
     """
-    :param ~.Machine machine:
     :param ~.Placements placements
     :rtype: set(~.Chip)
     """
     return OrderedSet(
-        machine.get_chip_at(placement.x, placement.y)
+        FecDataView.get_chip_at(placement.x, placement.y)
         for placement in placements
         if isinstance(placement.vertex, ChipPowerMonitorMachineVertex))
 
@@ -319,14 +318,14 @@ def _calculate_fpga_energy(
 
         # how many fpgas are active
         total_fpgas = __board_n_operational_fpgas(
-            machine, machine.ethernet_connected_chips[0])
+            machine.ethernet_connected_chips[0])
         # active fpgas
         if total_fpgas == 0:
             return 0, 0
     else:  # spalloc machine, need to check each board
         for ethernet_connected_chip in machine.ethernet_connected_chips:
             total_fpgas += __board_n_operational_fpgas(
-                machine, ethernet_connected_chip)
+               ethernet_connected_chip)
 
     # Only need to update this here now that we've learned there are FPGAs
     # in use
@@ -339,11 +338,10 @@ def _calculate_fpga_energy(
     power_used.fpga_exec_energy_joules = power_usage_runtime
 
 
-def __board_n_operational_fpgas(machine, ethernet_chip):
+def __board_n_operational_fpgas(ethernet_chip):
     """ Figures out how many FPGAs were switched on for a particular \
         SpiNN-5 board.
 
-    :param ~.Machine machine: SpiNNaker machine
     :param ~.Chip ethernet_chip: the ethernet chip to look from
     :return: number of FPGAs on, on this board
     """
@@ -353,22 +351,22 @@ def __board_n_operational_fpgas(machine, ethernet_chip):
 
     # positions to check for active links
     left_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 0), (0, 1), (0, 2), (0, 3), (0, 4)))
     right_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((7, 3), (7, 4), (7, 5), (7, 6), (7, 7)))
     top_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((4, 7), (5, 7), (6, 7), (7, 7)))
     bottom_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 0), (1, 0), (2, 0), (3, 0), (4, 0)))
     top_left_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 3), (1, 4), (2, 5), (3, 6), (4, 7)))
     bottom_right_chips = (
-        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 4), (1, 5), (2, 6), (3, 7)))
 
     # bottom left, bottom

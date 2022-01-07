@@ -482,14 +482,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def locate_correct_write_data_function_for_chip_location(
-            uses_advanced_monitors, machine, x, y, transceiver,
+            uses_advanced_monitors, x, y, transceiver,
             extra_monitor_cores_to_ethernet_connection_map):
         """ Supports other components figuring out which gatherer and function\
             to call for writing data onto SpiNNaker.
 
         :param bool uses_advanced_monitors:
             Whether the system is using advanced monitors
-        :param ~spinn_machine.Machine machine: the SpiNNMachine instance
         :param int x: the chip x coordinate to write data to
         :param int y: the chip y coordinate to write data to
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -504,8 +503,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if not uses_advanced_monitors:
             return transceiver.write_memory
 
-        chip = machine.get_chip_at(x, y)
-        ethernet_connected_chip = machine.get_chip_at(
+        chip = FecDataView.get_chip_at(x, y)
+        ethernet_connected_chip = FecDataView.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         gatherer = extra_monitor_cores_to_ethernet_connection_map[
             ethernet_connected_chip.x, ethernet_connected_chip.y]
@@ -656,8 +655,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
 
         # determine board chip IDs, as the LPG does not know machine scope IDs
-        machine = transceiver.get_machine_details()
-        chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
+        machine = FecDataView.get_machine()
+        chip = FecDataView.get_chip_at(destination_chip_x, destination_chip_y)
         dest_x, dest_y = machine.get_local_xy(chip)
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
@@ -1179,8 +1178,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
             routers_been_in_use = self._determine_which_routers_were_used(
-                placement, fixed_routes,
-                transceiver.get_machine_details())
+                placement, fixed_routes)
             self._write_routers_used_into_report(
                 self._out_report_path, routers_been_in_use,
                 placement)
@@ -1231,14 +1229,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         return lost_seq_nums
 
     @staticmethod
-    def _determine_which_routers_were_used(placement, fixed_routes, machine):
+    def _determine_which_routers_were_used(placement, fixed_routes):
         """ Traverse the fixed route paths from a given location to its\
             destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
         :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:
             the fixed routes for each router
-        :param ~.Machine machine: the spinnMachine instance
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
@@ -1249,7 +1246,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         while len(entry.processor_ids) == 0:
             # can assume one link, as its a minimum spanning tree going to
             # the root
-            machine_link = machine.get_chip_at(
+            machine_link = FecDataView.get_chip_at(
                 chip_x, chip_y).router.get_link(next(iter(entry.link_ids)))
             chip_x = machine_link.destination_x
             chip_y = machine_link.destination_y
