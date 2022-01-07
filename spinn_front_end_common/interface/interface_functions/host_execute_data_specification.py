@@ -157,7 +157,7 @@ class _ExecutionContext(object):
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
             to_write = numpy.concatenate((header, pointer_table)).tobytes()
-            FecDataView().write_memory(x, y, base_address, to_write)
+            FecDataView.write_memory(x, y, base_address, to_write)
 
         # Write each region
         bytes_written = APP_PTR_TABLE_BYTE_SIZE
@@ -194,7 +194,7 @@ class _ExecutionContext(object):
                     ref_region)
             to_write = numpy.concatenate(
                 (core_to_fill.header, pointer_table)).tobytes()
-            FecDataView().write_memory(
+            FecDataView.write_memory(
                 core_to_fill.x, core_to_fill.y, core_to_fill.base_address,
                 to_write)
 
@@ -437,9 +437,10 @@ class _HostExecuteDataSpecification(object):
                 core, region_sizes[core])
 
         with _ExecutionContext() as context:
+            transceiver = FecDataView.get_transceiver()
             for core, reader in progress.over(dsg_targets.items()):
                 results[core] = context.execute(
-                    core, reader, FecDataView().write_memory,
+                    core, reader, transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         return results
@@ -547,13 +548,14 @@ class _HostExecuteDataSpecification(object):
                 core, region_sizes[core])
 
         with _ExecutionContext() as context:
+            transceiver = FecDataView.get_transceiver()
             for core, reader in progress.over(dsg_targets.items()):
                 x, y, _p = core
                 # write information for the memory map report
                 self._write_info_map[core] = context.execute(
                     core, reader,
                     self.__select_writer(x, y)
-                    if use_monitors else FecDataView().write_memory,
+                    if use_monitors else transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         if use_monitors:
@@ -672,9 +674,10 @@ class _HostExecuteDataSpecification(object):
                 core, region_sizes[core])
 
         with _ExecutionContext() as context:
+            transceiver = FecDataView.get_transceiver()
             for core, reader in progress.over(sys_targets.items()):
                 self._write_info_map[core] = context.execute(
-                    core, reader, FecDataView().write_memory,
+                    core, reader, transceiver.write_memory,
                     base_addresses[core], region_sizes[core])
 
         return self._write_info_map

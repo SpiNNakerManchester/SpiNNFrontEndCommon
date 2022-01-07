@@ -198,7 +198,7 @@ class BufferManager(object):
         """
         # pylint: disable=too-many-arguments
         if not get_config_bool("Machine", "enable_advanced_monitor_support"):
-            return FecDataView().read_memory(
+            return FecDataView.read_memory(
                 placement_x, placement_y, address, length)
 
         # Round to word boundaries
@@ -216,7 +216,7 @@ class BufferManager(object):
             sender, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
         if VERIFY:
-            txrx_data = FecDataView().read_memory(
+            txrx_data = FecDataView.read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
 
@@ -484,7 +484,7 @@ class BufferManager(object):
                 region, sent_stop_message=True)
 
         # Do the writing all at once for efficiency
-        FecDataView().write_memory(
+        FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):

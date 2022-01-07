@@ -47,7 +47,7 @@ def locate_extra_monitor_mc_receiver(
         chip.nearest_ethernet_x, chip.nearest_ethernet_y]
 
 
-def read_data(x, y, address, length, data_format, transceiver):
+def read_data(x, y, address, length, data_format):
     """ Reads and converts a single data item from memory.
 
     :param int x: chip x
@@ -56,12 +56,10 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param int length: length to read
     :param str data_format:
         the format to read memory (see :py:func:`struct.pack`)
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpinnMan interface
     """
     # pylint: disable=too-many-arguments
 
-    data = transceiver.read_memory(x, y, address, length)
+    data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
