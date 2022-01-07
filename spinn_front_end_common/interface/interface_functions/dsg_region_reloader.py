@@ -55,7 +55,7 @@ class _DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         placements = FecDataView().placements
-        run_dir_path = FecDataView().run_dir_path
+        run_dir_path = FecDataView.get_run_dir_path()
         self._data_dir = generate_unique_folder_name(
             run_dir_path, "reloaded_data_regions", "")
         if not os.path.exists(self._data_dir):

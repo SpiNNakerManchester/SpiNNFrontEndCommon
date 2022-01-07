@@ -36,7 +36,7 @@ def generate_routing_compression_checker_report(
     :rtype: None
     """
     file_name = os.path.join(
-        FecDataView().run_dir_path, "routing_compression_checker_report.rpt")
+        FecDataView.get_run_dir_path(), "routing_compression_checker_report.rpt")
 
     try:
         with open(file_name, "w") as f:

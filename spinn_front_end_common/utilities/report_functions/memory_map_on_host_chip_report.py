@@ -38,7 +38,7 @@ def memory_map_on_host_chip_report(dsg_targets):
     """
     view = FecDataView()
     directory_name = os.path.join(
-        view.run_dir_path, MEM_MAP_SUBDIR_NAME)
+        FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 

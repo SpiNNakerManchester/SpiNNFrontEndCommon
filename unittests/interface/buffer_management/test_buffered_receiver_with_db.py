@@ -29,7 +29,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         unittest_setup()
 
     def test_use_database(self):
-        f = os.path.join(FecDataView().run_dir_path, DB_FILE_NAME)
+        f = os.path.join(FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
         brd = BufferedReceivingData()

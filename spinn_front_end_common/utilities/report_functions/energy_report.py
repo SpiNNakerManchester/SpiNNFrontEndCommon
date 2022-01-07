@@ -60,8 +60,7 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :rtype: None
         """
-        view = FecDataView()
-        report_dir = view.run_dir_path
+        report_dir = FecDataView.get_run_dir_path()
         # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")

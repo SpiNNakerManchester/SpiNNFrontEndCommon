@@ -89,7 +89,7 @@ def generate_report_path():
     :rtype: str
     """
     report_folder_path = os.path.join(
-        FecDataView().run_dir_path, _REPORT_FOLDER_NAME)
+        FecDataView.get_run_dir_path(), _REPORT_FOLDER_NAME)
     if not os.path.exists(report_folder_path):
         os.mkdir(report_folder_path)
     return report_folder_path

@@ -40,7 +40,8 @@ class BufferedReceivingData(object):
     ]
 
     def __init__(self):
-        self._db_file = os.path.join(FecDataView().run_dir_path, DB_FILE_NAME)
+        self._db_file = os.path.join(
+            FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self._db = None
         self.reset()
 

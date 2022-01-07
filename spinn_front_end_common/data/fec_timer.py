@@ -75,7 +75,7 @@ class FecTimer(object):
         _simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
             _provenance_path = os.path.join(
-                FecDataView().run_dir_path,
+                FecDataView.get_run_dir_path(),
                 "algorithm_timings.rpt")
         else:
             _provenance_path = None

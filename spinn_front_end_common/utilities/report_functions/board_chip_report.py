@@ -28,7 +28,8 @@ def board_chip_report():
     view = FecDataView()
     machine = view.machine
     # create file path
-    directory_name = os.path.join(view.run_dir_path, AREA_CODE_REPORT_NAME)
+    directory_name = os.path.join(
+        FecDataView.get_run_dir_path(), AREA_CODE_REPORT_NAME)
     # create the progress bar for end users
     progress_bar = ProgressBar(
         len(machine.ethernet_connected_chips),

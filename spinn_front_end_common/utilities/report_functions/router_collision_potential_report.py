@@ -25,7 +25,7 @@ def router_collision_potential_report(router_tables_by_partition, n_keys_map):
     :param AbstractMachinePartitionNKeysMap n_keys_map:
     """
     file_name = os.path.join(
-        FecDataView().run_dir_path,
+        FecDataView.get_run_dir_path(),
         "routing_collision_protential_report.rpt")
 
     with open(file_name, "w") as writer:

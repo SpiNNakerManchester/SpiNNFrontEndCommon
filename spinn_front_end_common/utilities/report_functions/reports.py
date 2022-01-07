@@ -56,7 +56,7 @@ def tag_allocator_report(tag_infos):
     :rtype: None
     """
 
-    file_name = os.path.join(FecDataView().run_dir_path, _TAGS_FILENAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(
@@ -101,7 +101,7 @@ def router_summary_report(routing_tables,  hostname):
     :rtype: RouterSummary
     """
     file_name = os.path.join(
-        FecDataView().run_dir_path, _ROUTING_SUMMARY_FILENAME)
+        FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView().machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
@@ -118,7 +118,7 @@ def router_compressed_summary_report(routing_tables, hostname):
     """
     view = FecDataView()
     file_name = os.path.join(
-        view.run_dir_path, _COMPRESSED_ROUTING_SUMMARY_FILENAME)
+        FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(view.machine.n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
@@ -197,7 +197,7 @@ def router_report_from_paths(
     :rtype: None
     """
     view = FecDataView()
-    file_name = os.path.join(view.run_dir_path, _ROUTING_FILENAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     machine = view.machine
     placements = view.placements
     time_date_string = time.strftime("%c")
@@ -261,7 +261,7 @@ def partitioner_report(hostname):
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
-        FecDataView().run_dir_path, _PARTITIONING_FILENAME)
+        FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -316,7 +316,7 @@ def placement_report_with_application_graph_by_vertex(hostname):
     # For each vertex, describe its core mapping.
     view = FecDataView()
     file_name = os.path.join(
-        view.run_dir_path, _PLACEMENT_VTX_GRAPH_FILENAME)
+        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
     placements = view.placements
     time_date_string = time.strftime("%c")
     try:
@@ -378,7 +378,7 @@ def placement_report_without_application_graph_by_vertex(hostname):
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
-        FecDataView().run_dir_path, _PLACEMENT_VTX_SIMPLE_FILENAME)
+        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -424,7 +424,7 @@ def placement_report_with_application_graph_by_core(hostname):
     # For each core, display what is held on it.
     view = FecDataView()
     file_name = os.path.join(
-        view.run_dir_path, _PLACEMENT_CORE_GRAPH_FILENAME)
+        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
     placements = view.placements
     time_date_string = time.strftime("%c")
     try:
@@ -487,7 +487,7 @@ def placement_report_without_application_graph_by_core(hostname):
     # For each core, display what is held on it.
     view = FecDataView()
     file_name = os.path.join(
-        view.run_dir_path, _PLACEMENT_CORE_SIMPLE_FILENAME)
+        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     machine = view.machine
     placements = view.placements
@@ -541,7 +541,7 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
     :rtype: None
     """
     view = FecDataView()
-    file_name = os.path.join(view.run_dir_path, _SDRAM_FILENAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
     placements = FecDataView().placements
     time_date_string = time.strftime("%c")
     progress = ProgressBar((len(placements) * 2 + view.machine.n_chips * 2),
@@ -618,7 +618,7 @@ def routing_info_report(routing_infos):
     :param RoutingInfo routing_infos:
     """
     view = FecDataView()
-    file_name = os.path.join(view.run_dir_path, _VIRTKEY_FILENAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
     machine_graph = view.runtime_machine_graph
     try:
         with open(file_name, "w") as f:
@@ -659,7 +659,7 @@ def router_report_from_router_tables(routing_tables):
     """
 
     top_level_folder = os.path.join(
-        FecDataView().run_dir_path, _ROUTING_TABLE_DIR)
+        FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -677,7 +677,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     """
 
     top_level_folder = os.path.join(
-        FecDataView().run_dir_path, _C_ROUTING_TABLE_DIR)
+        FecDataView.get_run_dir_path(), _C_ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -745,7 +745,8 @@ def generate_comparison_router_report(
         the compressed routing tables
     :rtype: None
     """
-    file_name = os.path.join(FecDataView().run_dir_path, _COMPARED_FILENAME)
+    file_name = os.path.join(
+        FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(

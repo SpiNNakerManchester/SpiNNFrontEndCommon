@@ -23,15 +23,14 @@ def fixed_route_from_machine_report():
 
         :param int app_id: the application ID the fixed routes were loaded with
         """
-    view = FecDataView()
     file_name = os.path.join(
-        view.run_dir_path, "fixed_route_routers")
-    transceiver = view.transceiver
-    machine = view.machine
+        FecDataView.get_run_dir_path(), "fixed_route_routers")
+    transceiver = FecDataView().transceiver
+    machine = FecDataView().machine
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")
 
-    app_id = view.app_id
+    app_id = FecDataView().app_id
     with open(file_name, "w") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):

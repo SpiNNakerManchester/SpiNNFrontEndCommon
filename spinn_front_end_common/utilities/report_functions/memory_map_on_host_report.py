@@ -29,7 +29,7 @@ def memory_map_on_host_report(processor_to_app_data_base_address):
     :type processor_to_app_data_base_address:
         dict(tuple(int,int,int),DataWritten)
     """
-    file_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _FOLDER_NAME)
     try:
         with open(file_name, "w") as f:
             f.write("On host data specification executor\n")

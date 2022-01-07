@@ -209,7 +209,7 @@ class ConfigHandler(object):
 
         if get_config_bool("Logging", "warnings_at_end_to_file"):
             log_report_file = os.path.join(
-                self._data_writer.run_dir_path, WARNING_LOGS_FILENAME)
+                self._data_writer.get_run_dir_path(), WARNING_LOGS_FILENAME)
             logger.set_report_File(log_report_file)
 
     def __write_named_file(self, file_name):

@@ -448,7 +448,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtpye: int
         """
         try:
-            if self.status == Data_Status.IN_RUN:
+            if self.get_status() == Data_Status.IN_RUN:
                 return self.__fec_data._n_calls_to_run
             else:
                 # This is the current behaviour in ASB
@@ -465,7 +465,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if self.__fec_data._n_calls_to_run is None:
             raise self._exception("n_calls_to_run")
-        if self.status == Data_Status.IN_RUN:
+        if self.get_status() == Data_Status.IN_RUN:
             return self.__fec_data._n_calls_to_run
         else:
             # This is the current behaviour in ASB
@@ -492,7 +492,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if self.__fec_data._report_dir_path:
             return self.__fec_data._report_dir_path
-        if self.status == Data_Status.MOCKED:
+        if self.get_status()== Data_Status.MOCKED:
             return self._temporary_dir_path()
         raise self._exception("report_dir_path")
 
@@ -510,7 +510,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if self.__fec_data._timestamp_dir_path:
             return self.__fec_data._timestamp_dir_path
-        if self.status == Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
         raise self._exception("timestamp_dir_path")
 
@@ -531,10 +531,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.status == Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
 
-        return self._child_folder(self.run_dir_path, "json_files")
+        return self._child_folder(self.get_run_dir_path(), "json_files")
 
     @property
     def provenance_dir_path(self):
@@ -551,9 +551,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.status == Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
-        return self._child_folder(self.run_dir_path, "provenance_data")
+        return self._child_folder(self.get_run_dir_path(), "provenance_data")
 
     @property
     def app_provenance_dir_path(self):
@@ -570,7 +570,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SimulatorNotSetupException:
             If the simulator has not been setup
         """
-        if self.status == Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
 
         return self._child_folder(
@@ -591,7 +591,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.status == Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
         return self._child_folder(
             self.provenance_dir_path, "system_provenance_data")

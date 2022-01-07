@@ -84,7 +84,7 @@ class JavaCaller(object):
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
-        self._report_folder = FecDataView().run_dir_path
+        self._report_folder = FecDataView.get_run_dir_path()
 
         self._java_call = java_call
         result = subprocess.call([self._java_call, '-version'])

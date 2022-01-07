@@ -48,18 +48,18 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(1, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(1, view.n_calls_to_run)
-        self.assertIn("run_1", view.run_dir_path)
+        self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.finish_run()
         self.assertEqual(2, view.n_calls_to_run)
         writer.start_run()
         self.assertEqual(2, view.n_calls_to_run)
         # No reset so run director does not change
-        self.assertIn("run_1", view.run_dir_path)
+        self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.finish_run()
         writer.start_run()
         self.assertEqual(3, view.n_calls_to_run)
         writer.hard_reset()
-        self.assertIn("run_3", view.run_dir_path)
+        self.assertIn("run_3", FecDataView.get_run_dir_path())
 
     def test_mock(self):
         view = FecDataView()
@@ -226,7 +226,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(report_dir))
         self.assertIn(report_dir, timestramp_dir)
 
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertTrue(os.path.exists(run_dir))
         self.assertIn(timestramp_dir, run_dir)
 
@@ -250,35 +250,35 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_directories_reset(self):
         writer = FecDataWriter.setup()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
         writer.start_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
         writer.finish_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
         writer.start_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
         writer.finish_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
         writer.hard_reset()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
         writer.start_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
         writer.finish_run()
-        run_dir = writer.run_dir_path
+        run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
 
     def test_directories_mocked(self):
         writer = FecDataWriter.mock()
-        self.assertTrue(os.path.exists(writer.report_dir_path))
+        self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(writer.timestamp_dir_path))
-        self.assertTrue(os.path.exists(writer.run_dir_path))
+        self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(writer.json_dir_path))
         self.assertTrue(os.path.exists(writer.provenance_dir_path))
         self.assertTrue(os.path.exists(writer.app_provenance_dir_path))
@@ -295,7 +295,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.timestamp_dir_path))
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.run_dir_path))
+            self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         with self.assertRaises(NotSetupException):
             self.assertTrue(os.path.exists(writer.json_dir_path))
         with self.assertRaises(NotSetupException):
