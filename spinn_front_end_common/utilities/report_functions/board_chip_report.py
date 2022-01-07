@@ -25,8 +25,7 @@ def board_chip_report():
 
     :rtype: None
     """
-    view = FecDataView()
-    machine = view.machine
+    machine = FecDataView.get_machine()
     # create file path
     directory_name = os.path.join(
         FecDataView.get_run_dir_path(), AREA_CODE_REPORT_NAME)

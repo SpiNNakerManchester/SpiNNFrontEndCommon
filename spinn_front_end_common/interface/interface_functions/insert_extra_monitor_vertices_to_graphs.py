@@ -34,7 +34,7 @@ def insert_extra_monitor_vertices_to_graphs():
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     # pylint: disable=too-many-arguments, attribute-defined-outside-init
-    machine = FecDataView().machine
+    machine = FecDataView.get_machine()
     progress = ProgressBar(
         machine.n_chips + len(list(machine.ethernet_connected_chips)),
         "Inserting extra monitors into graphs")

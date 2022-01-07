@@ -47,8 +47,6 @@ class _RouterProvenanceGatherer(object):
     __slots__ = [
         # Extra monitor vertices if any
         '_extra_monitor_vertices',
-        # machine passed in
-        '_machine',
         # placements passed in if any
         '_placements',
         # routingtabkes passed in
@@ -72,14 +70,13 @@ class _RouterProvenanceGatherer(object):
         # pylint: disable=attribute-defined-outside-init
         view = FecDataView()
         self._extra_monitor_vertices = extra_monitor_vertices
-        self._machine = view.machine
         self._placements = placements
         self._router_tables = router_tables
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
         """
-        progress = ProgressBar(self._machine.n_chips*2,
+        progress = ProgressBar(FecDataView.get_machine().n_chips*2,
                                "Getting Router Provenance")
 
         seen_chips = set()
@@ -99,7 +96,7 @@ class _RouterProvenanceGatherer(object):
 
         # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
-                self._machine.chips, key=lambda c: (c.x, c.y))):
+                FecDataView.get_machine().chips, key=lambda c: (c.x, c.y))):
             if not chip.virtual and (chip.x, chip.y) not in seen_chips:
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
@@ -112,7 +109,7 @@ class _RouterProvenanceGatherer(object):
         # pylint: disable=too-many-arguments, bare-except
         x = table.x
         y = table.y
-        if not self._machine.get_chip_at(x, y).virtual:
+        if not FecDataView.get_chip_at(x, y).virtual:
             try:
                 diagnostics = FecDataView().transceiver.get_router_diagnostics(
                     x, y)
@@ -347,6 +344,6 @@ class _RouterProvenanceGatherer(object):
         :rtype: bool
         """
         return any(
-            self._machine.get_chip_at(
+            FecDataView.get_chip_at(
                 link.destination_x, link.destination_y).virtual
-            for link in self._machine.get_chip_at(x, y).router.links)
+            for link in FecDataView.get_chip_at(x, y).router.links)

@@ -103,7 +103,7 @@ class _ApplicationRunner(object):
 
         # clear away any router diagnostics that have been set due to all
         # loading applications
-        for chip in FecDataView().machine.chips:
+        for chip in FecDataView.get_machine().chips:
             if not chip.virtual:
                 self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
 

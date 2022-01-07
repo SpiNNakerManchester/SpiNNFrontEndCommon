@@ -49,7 +49,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def __init_db_contents(self):
         """ Set up the database contents from the machine. """
-        eth_chips = FecDataView().machine.ethernet_connected_chips
+        eth_chips = FecDataView.get_machine().ethernet_connected_chips
         with self.transaction() as cursor:
             cursor.executemany(
                 """

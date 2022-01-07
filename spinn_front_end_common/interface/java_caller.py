@@ -181,7 +181,7 @@ class JavaCaller(object):
             self._gatherer_cores[core] = placement.p
 
         self._chipxy_by_ethernet = defaultdict(list)
-        machine = FecDataView().machine
+        machine = FecDataView.get_machine()
         for chip in machine.chips:
             if not chip.virtual:
                 chip_xy = (chip.x, chip.y)
@@ -281,9 +281,8 @@ class JavaCaller(object):
             ~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
-        machine = FecDataView().machine
         for placement in placements:
-            chip = machine.get_chip_at(placement.x, placement.y)
+            chip = FecDataView.get_chip_at(placement.x, placement.y)
             chip_xy = (placement.x, placement.y)
             ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
             by_ethernet[ethernet][chip_xy].append(placement)

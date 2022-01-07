@@ -163,7 +163,6 @@ class EnergyReport(object):
         # pylint: disable=too-many-arguments, too-many-locals
         view = FecDataView()
         runtime_total_ms = view.time_scale_factor
-        machine = view.machine
         placements = FecDataView().placements
 
         # write warning about accuracy etc
@@ -186,7 +185,8 @@ class EnergyReport(object):
         active_chips = set()
         for placement in placements:
             if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
-                active_chips.add(machine.get_chip_at(placement.x, placement.y))
+                active_chips.add(
+                    FecDataView.get_chip_at(placement.x, placement.y))
         for chip in active_chips:
             self._write_chips_active_cost(
                 chip, placements, runtime_total_ms, power_used, f)

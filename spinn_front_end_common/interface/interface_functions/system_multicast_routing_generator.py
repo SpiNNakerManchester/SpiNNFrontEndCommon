@@ -64,7 +64,7 @@ class _SystemMulticastRoutingGenerator(object):
         :param ~pacman.model.placements.Placements placements:
         """
         view = FecDataView()
-        self._machine = view.machine
+        self._machine = FecDataView.get_machine()
         self._placements = view.placements
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()

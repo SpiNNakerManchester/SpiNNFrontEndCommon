@@ -36,12 +36,11 @@ def routing_setup(router_tables):
     transceiver = view.transceiver
     routing_tables = list(router_tables.routing_tables)
     progress = ProgressBar(routing_tables, "Preparing Routing Tables")
-    machine = view.machine
 
     # Clear the routing table for each router that needs to be set up
     # and set up the diagnostics
     for router_table in progress.over(routing_tables):
-        if not machine.get_chip_at(router_table.x, router_table.y).virtual:
+        if not FecDataView.get_chip_at(router_table.x, router_table.y).virtual:
             transceiver.clear_multicast_routes(
                 router_table.x, router_table.y)
             transceiver.clear_router_diagnostic_counters(

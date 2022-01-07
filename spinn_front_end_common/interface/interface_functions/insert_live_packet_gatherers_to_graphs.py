@@ -74,7 +74,7 @@ class _InsertLivePacketGatherersToGraphs(object):
             tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         """
-        machine = FecDataView().machine
+        machine = FecDataView.get_machine()
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,

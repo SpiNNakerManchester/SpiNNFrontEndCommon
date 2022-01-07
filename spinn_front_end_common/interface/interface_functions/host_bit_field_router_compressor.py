@@ -255,17 +255,16 @@ class _HostBasedBitFieldRouterCompressor(object):
         self._bit_fields_by_key = None
         self._compression_attempts = dict()
 
-    def get_bit_field_sdram_base_addresses(
-            self, chip_x, chip_y, machine, placements):
+    def get_bit_field_sdram_base_addresses(self, chip_x, chip_y, placements):
         """
         :param int chip_x:
         :param int chip_y:
-        :param ~spinn_machine.Machine machine:
         :param ~pacman.model.placements.Placements placements:
         """
         # locate the bitfields in a chip level scope
         base_addresses = dict()
-        n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
+        n_processors_on_chip = FecDataView.get_chip_at(
+            chip_x, chip_y).n_processors
         for p in range(0, n_processors_on_chip):
             if placements.is_processor_occupied(chip_x, chip_y, p):
                 vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
@@ -296,18 +295,17 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         view = FecDataView()
         machine_graph = view.runtime_machine_graph
-        machine = view.machine
         placements = FecDataView().placements
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (
             self.get_bit_field_sdram_base_addresses(
-                router_table.x, router_table.y, machine, placements))
+                router_table.x, router_table.y, placements))
 
         # read in bitfields.
         self._read_in_bit_fields(
             router_table.x, router_table.y,
             bit_field_chip_base_addresses, machine_graph,
-            placements, machine.get_chip_at(
+            placements, FecDataView().get_chip_at(
                 router_table.x, router_table.y).n_processors)
 
         # execute binary search

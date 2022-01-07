@@ -34,7 +34,7 @@ def insert_chip_power_monitors_to_graphs():
 
 
 def __add_app():
-    machine = FecDataView().machine
+    machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
@@ -54,7 +54,7 @@ def __add_app():
 
 
 def __add_mach_only():
-    machine = FecDataView().machine
+    machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")

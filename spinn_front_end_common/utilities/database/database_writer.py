@@ -102,7 +102,7 @@ class DatabaseWriter(SQLiteDB):
         """ Store the machine object into the database
 
         """
-        machine = FecDataView().machine
+        machine = FecDataView.get_machine()
         with self.transaction() as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
                 cur,

@@ -217,11 +217,10 @@ class Compression(object):
 
         # build core subsets
         core_subsets = CoreSubsets()
-        machine = FecDataView().machine
         for routing_table in self._routing_tables:
 
             # get the first none monitor core
-            chip = machine.get_chip_at(routing_table.x, routing_table.y)
+            chip = FecDataView.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
 
             # add to the core subsets

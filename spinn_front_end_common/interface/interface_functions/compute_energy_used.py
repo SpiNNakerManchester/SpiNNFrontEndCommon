@@ -92,7 +92,7 @@ def compute_energy_used(
     # pylint: disable=too-many-arguments
     view = FecDataView()
     runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
-    machine = view.machine
+    machine = FecDataView.get_machine()
     placements = FecDataView().placements
     power_used = PowerUsed()
 
