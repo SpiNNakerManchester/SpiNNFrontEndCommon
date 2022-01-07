@@ -102,7 +102,7 @@ def router_summary_report(routing_tables,  hostname):
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
-    progress = ProgressBar(FecDataView().machine.n_chips,
+    progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
         file_name, progress, routing_tables,  hostname)
