@@ -393,9 +393,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
         """
-        view = FecDataView()
-        machine = view.machine
-        machine_graph = view.runtime_machine_graph
+        machine = FecDataView.get_machine()
+        machine_graph = FecDataView().runtime_machine_graph
         # pylint: disable=too-many-arguments, arguments-differ
 
         # update my placement for future knowledge

@@ -542,8 +542,9 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
     placements = FecDataView().placements
     time_date_string = time.strftime("%c")
-    progress = ProgressBar((len(placements) * 2 + view.machine.n_chips * 2),
-                           "Generating SDRAM usage report")
+    progress = ProgressBar(
+        (len(placements) * 2 + FecDataView.get_machine().n_chips * 2),
+        "Generating SDRAM usage report")
     try:
         with open(file_name, "w") as f:
             f.write("        Memory Usage by Core\n")
