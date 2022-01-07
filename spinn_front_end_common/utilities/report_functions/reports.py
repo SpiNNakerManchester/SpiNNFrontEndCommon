@@ -119,7 +119,7 @@ def router_compressed_summary_report(routing_tables, hostname):
     view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
-    progress = ProgressBar(view.machine.n_chips,
+    progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(
         file_name, progress, routing_tables, hostname)
@@ -149,7 +149,7 @@ def _do_router_summary_report(
             max_link_only = 0
             max_spinnaker_routes = 0
             for (x, y) in progress.over(
-                    FecDataView().machine.chip_coordinates):
+                    FecDataView.get_machine().chip_coordinates):
                 table = routing_tables.get_routing_table_for_chip(x, y)
                 if table is not None:
                     entries = table.number_of_entries
@@ -198,7 +198,6 @@ def router_report_from_paths(
     """
     view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
-    machine = view.machine
     placements = view.placements
     time_date_string = time.strftime("%c")
     try:
@@ -216,15 +215,15 @@ def router_report_from_paths(
                     view.runtime_machine_graph.outgoing_edge_partitions):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     _write_one_router_partition_report(
-                        f, partition, machine, placements, routing_infos,
+                        f, partition, placements, routing_infos,
                         routing_tables)
     except IOError:
         logger.exception("Generate_routing_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
-def _write_one_router_partition_report(f, partition, machine, placements,
-                                       routing_infos, routing_tables):
+def _write_one_router_partition_report(
+        f, partition, placements, routing_infos, routing_tables):
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
@@ -240,7 +239,7 @@ def _write_one_router_partition_report(f, partition, machine, placements,
             edge.post_vertex)
         path, number_of_entries = _search_route(
             source_placement, destination_placement,
-            key_and_mask, routing_tables, machine)
+            key_and_mask, routing_tables)
         text = ("**** Edge '{}', from vertex: '{}' to vertex: '{}'".format(
             edge.label, edge.pre_vertex.label, edge.post_vertex.label))
         text += " Takes path \n {}\n".format(path)
@@ -428,7 +427,7 @@ def placement_report_with_application_graph_by_core(hostname):
     placements = view.placements
     time_date_string = time.strftime("%c")
     try:
-        machine = FecDataView().machine
+        machine = FecDataView.get_machine()
         with open(file_name, "w") as f:
             progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
@@ -489,11 +488,11 @@ def placement_report_without_application_graph_by_core(hostname):
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
-    machine = view.machine
+    machine = FecDataView.get_machine()
     placements = view.placements
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(machine.chips,
+            progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
 
             f.write("        Placement Information by Core\n")
@@ -595,7 +594,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
             used_sdram_by_chip[key] = core_sdram
         else:
             used_sdram_by_chip[key] += core_sdram
-    for chip in progress.over(FecDataView().machine.chips, end_progress):
+    for chip in progress.over(FecDataView.get_machine().chips, end_progress):
         try:
             used_sdram = used_sdram_by_chip[chip.x, chip.y]
             if used_sdram:
@@ -795,14 +794,12 @@ def generate_comparison_router_report(
 
 
 def _search_route(
-        source_placement, dest_placement, key_and_mask, routing_tables,
-        machine):
+        source_placement, dest_placement, key_and_mask, routing_tables):
     """
     :param Placement source_placement:
     :param Placement dest_placement:
     :param BaseKeyAndMask key_and_mask:
     :param ~spinn_machine.MulticastRoutingTables routing_tables:
-    :param ~spinn_machine.Machine machine:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
@@ -821,7 +818,7 @@ def _search_route(
     # If the destination is virtual, replace with the real destination chip
     extra_text, total_number_of_entries = _recursive_trace_to_destinations(
         source_placement.x, source_placement.y, key_and_mask,
-        dest_placement.x, dest_placement.y, dest_placement.p, machine,
+        dest_placement.x, dest_placement.y, dest_placement.p,
         routing_tables, number_of_entries)
     text += extra_text
     return text, total_number_of_entries
@@ -830,7 +827,7 @@ def _search_route(
 # locates the next dest position to check
 def _recursive_trace_to_destinations(
         chip_x, chip_y, key_and_mask,
-        dest_chip_x, dest_chip_y, dest_p, machine, routing_tables,
+        dest_chip_x, dest_chip_y, dest_p, routing_tables,
         number_of_entries):
     """ Recursively search though routing tables till no more entries are\
         registered with this key
@@ -841,13 +838,12 @@ def _recursive_trace_to_destinations(
     :param int dest_chip_x:
     :param int dest_chip_y:
     :param int dest_chip_p:
-    :param ~spinn_machine.Machine machine:
     :param ~spinn_machine.MulticastRoutingTables routing_tables:
     :param int number_of_entries:
     :rtype: tuple(str, int) or tuple(None, None)
     """
 
-    chip = machine.get_chip_at(chip_x, chip_y)
+    chip = FecDataView.get_chip_at(chip_x, chip_y)
 
     # If reached destination, return the core
     if (chip_x == dest_chip_x and chip_y == dest_chip_y):
@@ -865,7 +861,7 @@ def _recursive_trace_to_destinations(
         link_id, link = next(iter(chip.router))
         result, new_n_entries = _recursive_trace_to_destinations(
             link.destination_x, link.destination_y, key_and_mask,
-            dest_chip_x, dest_chip_y, dest_p, machine,
+            dest_chip_x, dest_chip_y, dest_p,
             routing_tables, number_of_entries)
         if result is None:
             return None, None
@@ -877,7 +873,7 @@ def _recursive_trace_to_destinations(
             link = chip.router.get_link(link_id)
             result, new_n_entries = _recursive_trace_to_destinations(
                 link.destination_x, link.destination_y, key_and_mask,
-                dest_chip_x, dest_chip_y, dest_p, machine,
+                dest_chip_x, dest_chip_y, dest_p,
                 routing_tables, number_of_entries)
             if result is not None:
                 break
