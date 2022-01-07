@@ -492,7 +492,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if self.__fec_data._report_dir_path:
             return self.__fec_data._report_dir_path
-        if self.get_status()== Data_Status.MOCKED:
+        if self.get_status() == Data_Status.MOCKED:
             return self._temporary_dir_path()
         raise self._exception("report_dir_path")
 

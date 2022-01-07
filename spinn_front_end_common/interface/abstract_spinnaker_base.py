@@ -389,7 +389,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, n_chips_required=None,
-            n_boards_required=None, front_end_versions=[], data_writer_cls=None):
+            n_boards_required=None, front_end_versions=[],
+            data_writer_cls=None):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:

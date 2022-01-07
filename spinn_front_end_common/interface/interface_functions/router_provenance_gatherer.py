@@ -68,7 +68,6 @@ class _RouterProvenanceGatherer(object):
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
-        view = FecDataView()
         self._extra_monitor_vertices = extra_monitor_vertices
         self._placements = placements
         self._router_tables = router_tables

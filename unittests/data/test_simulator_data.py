@@ -63,7 +63,6 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_mock(self):
         view = FecDataView()
-        writer = FecDataWriter.mock()
         # check there is a value not what it is
         self.assertIsNotNone(view.app_id)
         self.assertIsNotNone(view.simulation_time_step_us)

@@ -48,7 +48,6 @@ def _write_report(collision_counts, writer):
 
 
 def _generate_data(router_tables_by_partition, n_keys_map):
-    view = FecDataView()
     collisions = defaultdict(lambda: defaultdict(int))
 
     for (x, y) in router_tables_by_partition.get_routers():

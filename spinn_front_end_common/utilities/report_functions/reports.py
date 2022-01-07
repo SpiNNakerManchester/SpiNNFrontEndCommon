@@ -116,7 +116,6 @@ def router_compressed_summary_report(routing_tables, hostname):
     :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: RouterSummary
     """
-    view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
