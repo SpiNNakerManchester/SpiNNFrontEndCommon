@@ -30,5 +30,6 @@ def chip_io_buf_clearer(executable_types):
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
-        process = ClearIOBUFProcess(FecDataView().scamp_connection_selector)
+        process = ClearIOBUFProcess(
+            FecDataView.get_scamp_connection_selector())
         process.clear_iobuf(core_subsets, len(core_subsets))

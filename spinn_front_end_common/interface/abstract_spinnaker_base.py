@@ -3268,9 +3268,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags:
         :param bool clear_routing_tables:
         """
-        transceiver = self._data_writer.get_transceiver()
-        if transceiver is None:
+        if not self._data_writer.has_transceiver():
             return
+        transceiver = self._data_writer.get_transceiver()
 
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
@@ -3294,8 +3294,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._no_sync_changes = 0
 
     def __stop_app(self):
-        transceiver = self._data_writer.get_transceiver()
-        if transceiver:
+        if self._data_writer.has_transceiver():
+            transceiver = self._data_writer.get_transceiver()
             transceiver.stop_application(self._data_writer.app_id)
             self._data_writer.clear_app_id()
 

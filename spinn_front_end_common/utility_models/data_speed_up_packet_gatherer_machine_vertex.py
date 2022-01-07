@@ -988,7 +988,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -1005,7 +1005,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self], placements)
         process = SetRouterTimeoutProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -1020,7 +1020,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             the placements object
         """
         core_subsets = convert_vertices_to_core_subset([self], placements)
-        process = ClearQueueProcess(FecDataView().scamp_connection_selector)
+        process = ClearQueueProcess(
+            FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722

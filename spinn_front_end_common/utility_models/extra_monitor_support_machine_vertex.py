@@ -456,7 +456,7 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.scamp_connection_selector)
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
@@ -508,7 +508,8 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ResetCountersProcess(FecDataView().scamp_connection_selector)
+        process = ResetCountersProcess(
+            FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
@@ -529,7 +530,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ClearQueueProcess(FecDataView().scamp_connection_selector)
+        process = ClearQueueProcess(FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
@@ -549,7 +550,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
@@ -573,7 +574,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = ReadStatusProcess(FecDataView().scamp_connection_selector)
+        process = ReadStatusProcess(FecDataView.get_scamp_connection_selector())
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
@@ -613,7 +614,7 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = SetPacketTypesProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             process.set_packet_types(
                 core_subsets, self._reinject_point_to_point,
@@ -641,7 +642,7 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = LoadSystemMCRoutesProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
@@ -664,7 +665,7 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = LoadApplicationMCRoutesProcess(
-            FecDataView().scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
