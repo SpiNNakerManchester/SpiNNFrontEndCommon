@@ -110,8 +110,8 @@ class _RouterProvenanceGatherer(object):
         y = table.y
         if not FecDataView.get_chip_at(x, y).virtual:
             try:
-                diagnostics = FecDataView().transceiver.get_router_diagnostics(
-                    x, y)
+                transceiver = FecDataView.get_transceiver()
+                diagnostics = transceiver.get_router_diagnostics(x, y)
             except SpinnmanException:
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
@@ -128,8 +128,8 @@ class _RouterProvenanceGatherer(object):
         """
         # pylint: disable=bare-except
         try:
-            diagnostics = FecDataView().transceiver.get_router_diagnostics(
-                chip.x, chip.y)
+            transceiver = FecDataView.get_transceiver()
+            diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return

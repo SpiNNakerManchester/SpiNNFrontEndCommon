@@ -176,7 +176,7 @@ class ExtraMonitorSupportMachineVertex(
         :param txrx: SpiNNMan instance
         :rtype: None
         """
-        self._transaction_id = FecDataView().transceiver.read_user_1(
+        self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @property
@@ -413,7 +413,7 @@ class ExtraMonitorSupportMachineVertex(
     def get_provenance_data_from_machine(self, placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         provenance_address = self.__get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(

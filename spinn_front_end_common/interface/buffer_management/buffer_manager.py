@@ -279,7 +279,7 @@ class BufferManager(object):
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
-        connection = FecDataView().transceiver.register_udp_listener(
+        connection = FecDataView.get_transceiver().register_udp_listener(
             self._receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
@@ -566,7 +566,7 @@ class BufferManager(object):
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
             destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
-        FecDataView().transceiver.send_sdp_message(sdp_message)
+        FecDataView.get_transceiver().send_sdp_message(sdp_message)
 
     def stop(self):
         """ Indicates that the simulation has finished, so no further\
@@ -698,7 +698,7 @@ class BufferManager(object):
         :param x: The x-coordinate of the chip containing the data
         :param y: The y-coordinate of the chip containing the data
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         n_regions = transceiver.read_word(x, y, addr)
         n_bytes = get_recording_header_size(n_regions)
         data = transceiver.read_memory(

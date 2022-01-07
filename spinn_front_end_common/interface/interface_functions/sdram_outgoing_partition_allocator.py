@@ -24,7 +24,7 @@ def sdram_outgoing_partition_allocator():
     view = FecDataView()
     machine_graph = view.runtime_machine_graph
     placements = view.placements
-    transceiver = view.get_transceiver()
+    transceiver = FecDataView.get_transceiver()
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(machine_graph.vertices),
         string_describing_what_being_progressed=(

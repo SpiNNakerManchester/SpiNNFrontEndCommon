@@ -69,7 +69,7 @@ def get_profiling_data(profile_region, tag_labels, placement):
     :param ~pacman.model.placements.Placement placement: placement
     :rtype: ProfileData
     """
-    txrx = FecDataView().transceiver
+    txrx = FecDataView.get_transceiver()
     profile_data = ProfileData(tag_labels)
 
     address = locate_memory_region_for_placement(

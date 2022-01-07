@@ -33,7 +33,7 @@ def routing_setup(router_tables):
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
     view = FecDataView()
-    transceiver = view.transceiver
+    transceiver = FecDataView.get_transceiver()
     routing_tables = list(router_tables.routing_tables)
     progress = ProgressBar(routing_tables, "Preparing Routing Tables")
 

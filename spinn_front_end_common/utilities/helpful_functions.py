@@ -73,7 +73,7 @@ def write_address_to_user0(x, y, p, address):
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
-    txrx = FecDataView().transceiver
+    txrx = FecDataView.get_transceiver()
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
 
@@ -86,7 +86,7 @@ def write_address_to_user1(x, y, p, address):
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
-    txrx = FecDataView().transceiver
+    txrx = FecDataView.get_transceiver()
     user_1_address = txrx.get_user_1_register_address_from_core(p)
     txrx.write_memory(x, y, user_1_address, address)
 
@@ -112,7 +112,7 @@ def locate_memory_region_for_placement(placement, region):
     :return: the address
     :rtype: int
     """
-    transceiver = FecDataView().transceiver
+    transceiver = FecDataView.get_transceiver()
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 

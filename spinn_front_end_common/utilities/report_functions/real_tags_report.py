@@ -34,6 +34,6 @@ def tags_from_machine_report():
 
 def _get_tags():
     try:
-        return FecDataView().transceiver.get_tags()
+        return FecDataView.get_transceiver().get_tags()
     except Exception as e:  # pylint: disable=broad-except
         return [e]

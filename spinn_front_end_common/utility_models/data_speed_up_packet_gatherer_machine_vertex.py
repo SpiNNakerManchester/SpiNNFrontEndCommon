@@ -350,7 +350,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             and updates the data speed up gatherer.
 
         """
-        self._transaction_id = FecDataView().transceiver.read_user_1(
+        self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
 
     @classmethod
@@ -579,7 +579,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
 
         # start time recording
         start = datetime.datetime.now()
@@ -1067,7 +1067,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             core_subsets = convert_vertices_to_core_subset(
                 extra_monitor_cores, placements)
             try:
-                error_cores = FecDataView().transceiver.get_cores_not_in_state(
+                transceiver = FecDataView.get_transceiver()
+                error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
                 if error_cores:
                     log.error("Cores in an unexpected state: {}".format(
@@ -1125,7 +1126,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self._run, "No Extraction time", end - start)
             return data
 
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
 
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(
@@ -1568,7 +1569,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                .get_provenance_data_from_machine)
     def get_provenance_data_from_machine(self, placement):
         # Get the App Data for the core
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 

@@ -171,7 +171,7 @@ class Compression(object):
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the pacman router table instance
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         data = self._build_data(table)
 
         # go to spinnman and ask for a memory region of that size per chip.
@@ -188,17 +188,18 @@ class Compression(object):
 
         :param ExecutableTargets executable_targets:
         """
+        transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
             x = core_subset.x
             y = core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from specified register
                 if self.__result_register == 0:
-                    result = FecDataView().transceiver.read_user_0(x, y, p)
+                    result = transceiver().read_user_0(x, y, p)
                 elif self.__result_register == 1:
-                    result = FecDataView().transceiver.read_user_1(x, y, p)
+                    result = transceiver.read_user_1(x, y, p)
                 elif self.__result_register == 2:
-                    result = FecDataView().transceiver.read_user_2(x, y, p)
+                    result = transceiver.read_user_2(x, y, p)
                 else:
                     raise Exception("Incorrect register")
                 # The result is 0 if success, otherwise failure

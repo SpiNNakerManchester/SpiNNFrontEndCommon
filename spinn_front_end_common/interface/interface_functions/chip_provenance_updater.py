@@ -49,7 +49,7 @@ class _ChipProvenanceUpdater(object):
         self.__all_cores = all_core_subsets
         view = FecDataView()
         self.__app_id = view.app_id
-        self.__txrx = view.transceiver
+        self.__txrx = FecDataView.get_transceiver()
 
     def _run(self):
         # check that the right number of processors are in sync

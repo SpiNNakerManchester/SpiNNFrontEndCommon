@@ -63,7 +63,7 @@ class _ApplicationRunner(object):
     def __init__(
             self, executable_types, no_sync_changes):
         view = FecDataView()
-        self.__txrx = view.transceiver
+        self.__txrx = FecDataView.get_transceiver()
         self.__app_id = view.app_id
         self.__executable_types = executable_types
         self.__syncs = no_sync_changes

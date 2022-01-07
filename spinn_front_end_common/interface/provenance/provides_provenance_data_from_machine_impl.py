@@ -130,7 +130,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param ~pacman.model.placements.Placement placement:
         :rtype: iterable(int)
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(

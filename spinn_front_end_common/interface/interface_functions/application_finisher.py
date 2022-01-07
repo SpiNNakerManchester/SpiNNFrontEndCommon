@@ -40,7 +40,7 @@ def application_finisher(executable_types):
     """
     view = FecDataView()
     app_id = view.app_id
-    txrx = view.transceiver
+    txrx = FecDataView.get_transceiver()
     total_processors = \
         len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
     all_core_subsets = \

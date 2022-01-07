@@ -141,7 +141,7 @@ class _MachineBitFieldRouterCompressor(object):
         view = FecDataView()
         app_id = view.app_id
         machine_graph = view.runtime_machine_graph
-        transceiver = view.transceiver
+        transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
@@ -312,7 +312,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param str sorter_binary_path: the path to the sorter binary
         :rtype: bool
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
         for core_subset in sorter_cores:
@@ -700,7 +700,7 @@ class _MachineBitFieldRouterCompressor(object):
         sdram_block_addresses_and_sizes = defaultdict(list)
         placements = FecDataView().placements
         machine_graph = FecDataView().runtime_machine_graph
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
             placement = placements.get_placement_of_vertex(vertex)

@@ -32,7 +32,7 @@ def _emergency_state_check():
     try:
         view = FecDataView()
         app_id = view.app_id
-        txrx = view.transceiver
+        txrx = FecDataView.get_transceiver()
         rte_count = txrx.get_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)

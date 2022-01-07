@@ -36,13 +36,12 @@ def memory_map_on_host_chip_report(dsg_targets):
     :param dict(tuple(int,int,int),...) dsg_targets:
         the map between placement and file writer
     """
-    view = FecDataView()
     directory_name = os.path.join(
         FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 
-    transceiver = view.transceiver
+    transceiver = FecDataView.get_transceiver()
     progress = ProgressBar(dsg_targets, "Writing memory map reports")
     for (x, y, p) in progress.over(dsg_targets):
         file_name = os.path.join(

@@ -32,7 +32,7 @@ def routing_table_loader(router_tables):
     # the chips SDRAM
     view = FecDataView()
     app_id = view.app_id
-    transceiver = view.transceiver
+    transceiver = FecDataView.get_transceiver()
     for table in progress.over(router_tables.routing_tables):
         if (not FecDataView.get_chip_at(table.x, table.y).virtual
                 and table.multicast_routing_entries):

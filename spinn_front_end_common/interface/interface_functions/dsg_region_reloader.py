@@ -45,7 +45,7 @@ class _DSGRegionReloader(object):
         :param str hostname:
             the machine name
         """
-        self._txrx = FecDataView().transceiver
+        self._txrx = FecDataView.get_transceiver()
         self._host = hostname
 
     def _run(self):

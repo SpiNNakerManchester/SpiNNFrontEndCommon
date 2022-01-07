@@ -411,7 +411,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         :return: dict of lists of processor id to bitfields.
         :rtype: tuple(dict(int,list(_BitFieldData)), list(_BitFieldData))
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         # data holder
         self._bit_fields_by_key = defaultdict(list)
         bit_fields_by_coverage = defaultdict(list)
@@ -624,7 +624,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param int chip_x: the chip x coord from which this happened
         :param int chip_y: the chip y coord from which this happened
         """
-        transceiver = FecDataView().transceiver
+        transceiver = FecDataView.get_transceiver()
         for entries in self._bit_fields_by_key.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:

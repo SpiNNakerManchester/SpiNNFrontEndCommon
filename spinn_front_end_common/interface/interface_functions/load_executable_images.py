@@ -52,7 +52,7 @@ def __load_images(executable_targets, filt, label):
     # Compute what work is to be done here
     view = FecDataView()
     app_id = view.app_id
-    txrx = view.transceiver
+    txrx = FecDataView.get_transceiver()
     binaries, cores = filter_targets(executable_targets, filt)
 
     # ISSUE: Loading order may be non-constant on older Python

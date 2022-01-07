@@ -25,7 +25,7 @@ def fixed_route_from_machine_report():
         """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), "fixed_route_routers")
-    transceiver = FecDataView().transceiver
+    transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")

@@ -38,7 +38,7 @@ def chip_runtime_updater(executable_types, n_sync_steps):
         total_number_of_things_to_do=1,
         string_describing_what_being_progressed=(
             "Waiting for cores to be either in PAUSED or READY state"))
-    view.transceiver.wait_for_cores_to_be_in_state(
+    FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
         core_subsets, view.app_id, [CPUState.PAUSED, CPUState.READY],
         error_states=frozenset({
             CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,

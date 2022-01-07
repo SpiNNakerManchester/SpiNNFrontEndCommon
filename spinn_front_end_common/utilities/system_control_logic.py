@@ -54,7 +54,7 @@ def run_system_application(
         If one should arise from the underlying SpiNNMan calls
     """
     view = FecDataView()
-    transceiver = view.transceiver
+    transceiver = FecDataView.get_transceiver()
     # load the executable
     transceiver.execute_application(executable_cores, app_id)
 
