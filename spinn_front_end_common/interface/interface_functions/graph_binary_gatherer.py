@@ -60,7 +60,7 @@ class _GraphBinaryGatherer(object):
         :param ~pacman.model.graphs.machine.MachineGraph graph:
         :rtype: ExecutableTargets
         """
-        graph = FecDataView().runtime_machine_graph
+        graph = FecDataView.get_runtime_machine_graph()
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
             placement = FecDataView.get_placement_of_vertex(vertex)
