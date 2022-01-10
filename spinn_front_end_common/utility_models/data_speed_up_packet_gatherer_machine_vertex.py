@@ -937,7 +937,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         lead_monitor = extra_monitor_cores[0]
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
-        self._last_status = lead_monitor.get_reinjection_status(placements)
+        self._last_status = lead_monitor.get_reinjection_status()
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
@@ -953,31 +953,22 @@ class DataSpeedUpPacketGatherMachineVertex(
         self.set_router_wait1_timeout(self._LONG_TIMEOUT)
 
     @staticmethod
-    def load_application_routing_tables(extra_monitor_cores, placements):
+    def load_application_routing_tables(extra_monitor_cores):
         """ Set all chips to have application table loaded in the router.
 
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
-        extra_monitor_cores[0].load_application_mc_routes(
-            placements, extra_monitor_cores)
+        extra_monitor_cores[0].load_application_mc_routes(extra_monitor_cores)
 
     @staticmethod
-    def load_system_routing_tables(
-            extra_monitor_cores, placements):
+    def load_system_routing_tables(extra_monitor_cores):
         """ Set all chips to have the system table loaded in the router
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
-        extra_monitor_cores[0].load_system_mc_routes(
-            placements, extra_monitor_cores)
+        extra_monitor_cores[0].load_system_mc_routes(extra_monitor_cores)
 
     def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
@@ -1623,6 +1614,5 @@ class _StreamingContextManager(object):
         for gatherer in self._gatherers:
             gatherer.unset_cores_for_data_streaming(self._monitors)
         for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(
-                self._monitors, self._placements)
+            gatherer.load_application_routing_tables(self._monitors)
         return False

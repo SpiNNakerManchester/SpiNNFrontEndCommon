@@ -496,10 +496,8 @@ class _HostExecuteDataSpecification(object):
 
     def __set_router_timeouts(self):
         for receiver in self._core_to_conn_map.values():
-            receiver.load_system_routing_tables(
-                self._monitors, self._placements)
-            receiver.set_cores_for_data_streaming(
-                self._monitors, self._placements)
+            receiver.load_system_routing_tables(self._monitors)
+            receiver.set_cores_for_data_streaming(self._monitors)
 
     def __reset_router_timeouts(self):
         # reset router timeouts
@@ -507,8 +505,7 @@ class _HostExecuteDataSpecification(object):
             receiver.unset_cores_for_data_streaming(
                 self._monitors)
             # reset router tables
-            receiver.load_application_routing_tables(
-               self._monitors, self._placements)
+            receiver.load_application_routing_tables(self._monitors)
 
     def __select_writer(self, x, y):
         view = FecDataView()

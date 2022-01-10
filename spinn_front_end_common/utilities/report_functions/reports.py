@@ -197,7 +197,6 @@ def router_report_from_paths(
     """
     view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
-    placements = view.placements
     time_date_string = time.strftime("%c")
     machine_graph = FecDataView.get_runtime_machine_graph()
     try:
@@ -215,27 +214,26 @@ def router_report_from_paths(
                     machine_graph.outgoing_edge_partitions):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     _write_one_router_partition_report(
-                        f, partition, placements, routing_infos,
-                        routing_tables)
+                        f, partition, routing_infos, routing_tables)
     except IOError:
         logger.exception("Generate_routing_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _write_one_router_partition_report(
-        f, partition, placements, routing_infos, routing_tables):
+        f, partition, routing_infos, routing_tables):
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
-    :param Placements placements:
     :param RoutingInfo routing_infos:
     :param MulticastRoutingTables routing_tables:
     """
-    source_placement = placements.get_placement_of_vertex(partition.pre_vertex)
+    source_placement = FecDataView.get_placement_of_vertex(
+        partition.pre_vertex)
     key_and_mask = routing_infos.get_routing_info_from_partition(
         partition).first_key_and_mask
     for edge in partition.edges:
-        destination_placement = placements.get_placement_of_vertex(
+        destination_placement = FecDataView.get_placement_of_vertex(
             edge.post_vertex)
         path, number_of_entries = _search_route(
             source_placement, destination_placement,
@@ -317,7 +315,6 @@ def placement_report_with_application_graph_by_vertex(hostname):
     view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
-    placements = view.placements
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
@@ -331,13 +328,13 @@ def placement_report_with_application_graph_by_vertex(hostname):
 
             for vertex in progress.over(
                     FecDataView.get_runtime_graph().vertices):
-                _write_one_vertex_application_placement(f, vertex, placements)
+                _write_one_vertex_application_placement(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
                          " writing.", file_name)
 
 
-def _write_one_vertex_application_placement(f, vertex, placements):
+def _write_one_vertex_application_placement(f, vertex):
     """
     :param ~io.FileIO f:
     :param ApplicationVertex vertex:
@@ -360,7 +357,7 @@ def _write_one_vertex_application_placement(f, vertex, placements):
         lo_atom = sv.vertex_slice.lo_atom
         hi_atom = sv.vertex_slice.hi_atom
         num_atoms = sv.vertex_slice.n_atoms
-        cur_placement = placements.get_placement_of_vertex(sv)
+        cur_placement = FecDataView.get_placement_of_vertex(sv)
         x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
         f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
                 .format(lo_atom, hi_atom, num_atoms, x, y, p))
@@ -373,9 +370,7 @@ def placement_report_without_application_graph_by_vertex(hostname):
     :param str hostname: the machine's hostname to which the placer worked on
     :param Placements placements: the placements objects built by the placer.
     """
-    view = FecDataView()
     machine_graph = FecDataView.get_runtime_machine_graph()
-    placements = view.placements
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
@@ -392,24 +387,23 @@ def placement_report_without_application_graph_by_vertex(hostname):
                 time_date_string, hostname))
 
             for vertex in progress.over(machine_graph.vertices):
-                _write_one_vertex_machine_placement(f, vertex, placements)
+                _write_one_vertex_machine_placement(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
                          " writing.", file_name)
 
 
-def _write_one_vertex_machine_placement(f, vertex, placements):
+def _write_one_vertex_machine_placement(f, vertex):
     """
     :param ~io.FileIO f:
     :param MachineVertex vertex:
-    :param Placements placements:
     """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
     f.write("**** Vertex: '{}'\n".format(vertex_name))
     f.write("Model: {}\n".format(vertex_model))
 
-    cur_placement = placements.get_placement_of_vertex(vertex)
+    cur_placement = FecDataView.get_placement_of_vertex(vertex)
     x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
     f.write(" Placed on core ({}, {}, {})\n\n".format(x, y, p))
 

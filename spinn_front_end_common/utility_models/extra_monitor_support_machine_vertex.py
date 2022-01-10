@@ -529,17 +529,13 @@ class ExtraMonitorSupportMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def get_reinjection_status(self, placements):
+    def get_reinjection_status(self):
         """ Get the reinjection status from this extra monitor vertex
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
-        :param ~pacman.model.placements.Placements placements:
-            the vertex placements
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
         """
-        placement = placements.get_placement_of_vertex(self)
+        placement = FecDataView.get_placement_of_vertex(self)
         process = ReadStatusProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -611,13 +607,10 @@ class ExtraMonitorSupportMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def load_system_mc_routes(
-            self, placements, extra_monitor_cores_for_data):
+    def load_system_mc_routes(self, extra_monitor_cores_for_data):
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
 
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
@@ -626,47 +619,43 @@ class ExtraMonitorSupportMachineVertex(
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data, placements)
+            extra_monitor_cores_for_data)
         process = LoadSystemMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                self, placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def load_application_mc_routes(
-            self, placements, extra_monitor_cores_for_data):
+    def load_application_mc_routes(self, extra_monitor_cores_for_data):
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
 
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
             iterable(ExtraMonitorSupportMachineVertex)
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data, placements)
+            extra_monitor_cores_for_data)
         process = LoadApplicationMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                self, placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
     @staticmethod
-    def _convert_vertices_to_core_subset(extra_monitor_cores, placements):
+    def _convert_vertices_to_core_subset(extra_monitor_cores):
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
         :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the vertices to convert to core subsets
-        :param ~.Placements placements: the placements object
         :return: where the vertices have been placed
         :rtype: ~.CoreSubsets
         """
@@ -676,6 +665,6 @@ class ExtraMonitorSupportMachineVertex(
                 raise Exception(
                     "can only use ExtraMonitorSupportMachineVertex to set "
                     "the router time out")
-            placement = placements.get_placement_of_vertex(vertex)
+            placement = FecDataView.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets
