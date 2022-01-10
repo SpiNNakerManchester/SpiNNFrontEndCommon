@@ -1044,7 +1044,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         vertices = graph.vertices
         command_sender_vertex = CommandSender
         if len(vertices) > 0:
-            graph = self._data_writer.runtime_machine_graph
+            graph = self._data_writer.get_runtime_machine_graph()
             vertices = graph.vertices
             command_sender_vertex = CommandSenderMachineVertex
         for vertex in vertices:
@@ -1102,7 +1102,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 usage_by_chip[placement.x, placement.y] = sdram_required
 
             # add sdram partitions
-            machine_graph = self._data_writer.runtime_machine_graph
+            machine_graph = self._data_writer.get_runtime_machine_graph()
             sdram_partitions = (
                 machine_graph.get_sdram_edge_partitions_starting_at_vertex(
                     placement.vertex))

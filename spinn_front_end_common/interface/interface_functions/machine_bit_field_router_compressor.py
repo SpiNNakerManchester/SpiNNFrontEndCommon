@@ -140,7 +140,7 @@ class _MachineBitFieldRouterCompressor(object):
         """
         view = FecDataView()
         app_id = view.app_id
-        machine_graph = view.runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
@@ -699,7 +699,7 @@ class _MachineBitFieldRouterCompressor(object):
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
         placements = FecDataView().placements
-        machine_graph = FecDataView().runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         transceiver = FecDataView.get_transceiver()
         for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):

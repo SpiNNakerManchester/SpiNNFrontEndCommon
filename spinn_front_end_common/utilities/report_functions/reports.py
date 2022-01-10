@@ -199,10 +199,11 @@ def router_report_from_paths(
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     placements = view.placements
     time_date_string = time.strftime("%c")
+    machine_graph = FecDataView.get_runtime_machine_graph()
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(
-                view.runtime_machine_graph.n_outgoing_edge_partitions,
+                machine_graph.n_outgoing_edge_partitions,
                 "Generating Routing path report")
 
             f.write("        Edge Routing Report\n")
@@ -211,7 +212,7 @@ def router_report_from_paths(
                 time_date_string, hostname))
 
             for partition in progress.over(
-                    view.runtime_machine_graph.outgoing_edge_partitions):
+                    machine_graph.outgoing_edge_partitions):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     _write_one_router_partition_report(
                         f, partition, placements, routing_infos,
@@ -373,7 +374,7 @@ def placement_report_without_application_graph_by_vertex(hostname):
     :param Placements placements: the placements objects built by the placer.
     """
     view = FecDataView()
-    machine_graph = view.runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     placements = view.placements
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
@@ -620,7 +621,7 @@ def routing_info_report(routing_infos):
     """
     view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
-    machine_graph = view.runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,

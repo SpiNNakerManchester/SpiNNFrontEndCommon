@@ -28,7 +28,7 @@ def edge_to_n_keys_mapper():
     :rtype: ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     :raises ConfigurationException: If no graph is available
     """
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     # Generate an n_keys map for the graph and add constraints
     n_keys_map = DictBasedMachinePartitionNKeysMap()
 

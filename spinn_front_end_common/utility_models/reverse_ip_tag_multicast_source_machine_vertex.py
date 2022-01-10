@@ -606,7 +606,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
             else:
-                machine_graph = FecDataView().runtime_machine_graph
+                machine_graph = FecDataView.get_runtime_machine_graph()
                 partitions = machine_graph\
                     .get_multicast_edge_partitions_starting_at_vertex(self)
                 partition = next(iter(partitions), None)

@@ -26,7 +26,7 @@ def graph_measurer(plan_n_timesteps):
     :return: The size of the graph in number of chips.
     :rtype: int
     """
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
 
     # check that the algorithm can handle the constraints
     ResourceTracker.check_constraints(machine_graph.vertices)

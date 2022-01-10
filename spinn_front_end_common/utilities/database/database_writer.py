@@ -74,9 +74,10 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
+        graph = FecDataView.get_runtime_machine_graph()
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
                    and vertex.is_in_injection_mode
-                   for vertex in FecDataView().runtime_machine_graph.vertices)
+                   for vertex in graph.vertices)
 
     @property
     def database_path(self):

@@ -28,7 +28,7 @@ def locate_executable_start_type():
     :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
     view = FecDataView()
-    graph = view.runtime_machine_graph
+    graph = FecDataView.get_runtime_machine_graph()
     placements = view.placements
     if not graph.vertices:
         return {ExecutableType.NO_APPLICATION: None}

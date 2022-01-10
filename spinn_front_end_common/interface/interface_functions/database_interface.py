@@ -98,7 +98,7 @@ class _DatabaseInterface(object):
 
         view = FecDataView()
         app_graph = FecDataView.get_runtime_graph()
-        machine_graph = view .runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
             w.add_system_params(runtime, view.app_id)

@@ -77,7 +77,7 @@ def __add_second_monitors_application_graph(
     extra_monitor_vertices = list()
 
     application_graph = FecDataView.get_runtime_graph()
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -106,7 +106,7 @@ def __add_second_monitors_machine_graph(progress, machine, vertex_to_chip_map):
 
     extra_monitor_vertices = list()
 
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -131,7 +131,7 @@ def __add_data_extraction_vertices_app_graph(
     # pylint: disable=too-many-arguments
 
     application_graph = FecDataView.get_runtime_graph()
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     # insert machine vertices
     for chip in progress.over(machine.ethernet_connected_chips):
         # add to application graph
@@ -154,7 +154,7 @@ def __add_data_extraction_vertices_mach_graph(
     """
     # pylint: disable=too-many-arguments
 
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     # insert machine vertices
     for chip in progress.over(machine.ethernet_connected_chips):
         machine_vertex = __new_mach_gatherer(chip, vertex_to_chip_map)

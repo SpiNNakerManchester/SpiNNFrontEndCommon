@@ -106,7 +106,7 @@ def generate_key_to_atom_map(routing_infos):
     :rtype: dict(int,int)
     """
     # build key to n atoms map
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     key_to_n_atoms_map = dict()
     for vertex in machine_graph.vertices:
         for partition in machine_graph.\
@@ -294,7 +294,7 @@ class _HostBasedBitFieldRouterCompressor(object):
             should be allowed to handle per time step
         """
         view = FecDataView()
-        machine_graph = view.runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         placements = FecDataView().placements
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (

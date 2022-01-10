@@ -128,7 +128,7 @@ def _compute_to_merge_per_chip():
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     for placement in FecDataView().placements:
         binary_start_type = None
         if isinstance(placement.vertex, AbstractHasAssociatedBinary):

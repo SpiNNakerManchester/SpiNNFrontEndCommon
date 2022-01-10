@@ -28,7 +28,7 @@ def process_partition_constraints():
         partition request it.
 
     """
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     # generate progress bar
     progress = ProgressBar(
         machine_graph.n_vertices,

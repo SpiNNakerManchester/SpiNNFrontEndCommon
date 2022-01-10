@@ -22,7 +22,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 def sdram_outgoing_partition_allocator():
     view = FecDataView()
-    machine_graph = view.runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     placements = view.placements
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()

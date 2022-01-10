@@ -57,7 +57,7 @@ class _InsertLivePacketGatherersToGraphs(object):
             ~pacman.model.graphs.application.ApplicationGraph
         """
         view = FecDataView()
-        self._machine_graph = view.runtime_machine_graph
+        self._machine_graph = FecDataView.get_runtime_machine_graph()
         self._application_graph = FecDataView.get_runtime_graph()
 
     def _run(self, live_packet_gatherer_parameters):

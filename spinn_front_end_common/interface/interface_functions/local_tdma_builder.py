@@ -102,7 +102,7 @@ def local_tdma_builder(n_keys_map):
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    machine_graph = view.runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     for app_vertex in FecDataView.get_runtime_graph().vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             app_verts.append(app_vertex)

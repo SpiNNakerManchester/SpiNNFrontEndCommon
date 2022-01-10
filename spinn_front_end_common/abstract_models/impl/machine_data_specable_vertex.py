@@ -40,7 +40,7 @@ class MachineDataSpecableVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)
         :param ~pacman.model.tags.Tags tags: (Injected)
         """
-        machine_graph = FecDataView().runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         # pylint: disable=too-many-arguments, arguments-differ
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)

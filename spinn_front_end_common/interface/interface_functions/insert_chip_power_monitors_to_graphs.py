@@ -44,7 +44,7 @@ def __add_app():
         label="ChipPowerMonitor",
         sampling_frequency=sampling_frequency)
     FecDataView.get_runtime_graph().add_vertex(app_vertex)
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     for chip in progress.over(machine.chips):
         if not chip.virtual:
             machine_graph.add_vertex(app_vertex.create_machine_vertex(
@@ -58,7 +58,7 @@ def __add_mach_only():
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
-    machine_graph = FecDataView().runtime_machine_graph
+    machine_graph = FecDataView.get_runtime_machine_graph()
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     for chip in progress.over(machine.chips):
         if not chip.virtual:

@@ -295,7 +295,7 @@ class ExtraMonitorSupportMachineVertex(
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.RoutingInfo routing_info: the packet routing info
         """
-        machine_graph = FecDataView().runtime_machine_graph
+        machine_graph = FecDataView.get_runtime_machine_graph()
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,

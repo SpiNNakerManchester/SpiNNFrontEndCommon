@@ -53,7 +53,7 @@ def _count_regions():
     placements = FecDataView().placements
     n_regions_to_read = 0
     recording_placements = list()
-    for vertex in FecDataView().runtime_machine_graph.vertices:
+    for vertex in FecDataView.get_runtime_machine_graph().vertices:
         if isinstance(vertex, AbstractReceiveBuffersToHost):
             n_regions_to_read += len(vertex.get_recorded_region_ids())
             placement = placements.get_placement_of_vertex(vertex)
