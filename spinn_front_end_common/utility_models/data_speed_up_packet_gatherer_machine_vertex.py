@@ -371,7 +371,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @inject_items({
-        "routing_info": "RoutingInfos",
         "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
@@ -379,16 +378,15 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "routing_info", "tags",
+            "tags",
             "mc_data_chips_to_keys", "router_timeout_key"
         })
     def generate_data_specification(
-            self, spec, placement, routing_info, tags,
+            self, spec, placement, tags,
             mc_data_chips_to_keys, router_timeout_key):
         """
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             (injected)
-        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param ~pacman.model.tags.Tags tags: (injected)
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
@@ -404,6 +402,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
 
         # the keys for the special cases
+        routing_info = FecDataView.get_routing_infos()
         if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
             base_key = routing_info.get_first_key_for_edge(
                 list(machine_graph.get_edges_ending_at_vertex(self))[0])

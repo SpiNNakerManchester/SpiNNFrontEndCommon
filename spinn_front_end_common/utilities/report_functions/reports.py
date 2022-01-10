@@ -186,19 +186,17 @@ def _do_router_summary_report(
                          "Can't open file {} for writing.", file_name)
 
 
-def router_report_from_paths(
-        routing_tables, routing_infos, hostname):
+def router_report_from_paths(routing_tables, hostname):
     """ Generates a text file of routing paths
 
     :param MulticastRoutingTables routing_tables: The original routing tables.
     :param str hostname: The machine's hostname to which the placer worked on.
-    :param RoutingInfo routing_infos:
     :rtype: None
     """
-    view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
     machine_graph = FecDataView.get_runtime_machine_graph()
+    routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(
@@ -607,15 +605,14 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(routing_infos):
+def routing_info_report():
     """ Generates a report which says which keys is being allocated to each\
         vertex
 
-    :param RoutingInfo routing_infos:
     """
-    view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
     machine_graph = FecDataView.get_runtime_machine_graph()
+    routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,

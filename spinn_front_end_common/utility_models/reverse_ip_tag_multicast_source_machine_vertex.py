@@ -22,7 +22,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
@@ -592,10 +591,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self, routing_info):
-        """
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        """
+    def _update_virtual_key(self):
+        routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
                 rinfo = routing_info.get_routing_info_from_pre_vertex(
@@ -680,21 +677,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
             int(math.ceil(max_offset)))
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
-    @inject_items({
-        "routing_info": "RoutingInfos",
-    })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={"routing_info"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            routing_info):
+            ):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
         :param int data_n_time_steps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
-        self._update_virtual_key(routing_info)
+        self._update_virtual_key(o)
 
         # Reserve regions
         self._reserve_regions(spec)

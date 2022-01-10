@@ -254,20 +254,18 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "RoutingInfos",
-                   "data_in_routing_tables": "DataInMulticastRoutingTables",
+    @inject_items({"data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
                    "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
-                   "routing_info", "data_in_routing_tables",
+                   "data_in_routing_tables",
                    "mc_data_chips_to_keys", "app_id", "router_timeout_keys"})
     def generate_data_specification(
-            self, spec, placement, routing_info,
+            self, spec, placement,
             data_in_routing_tables, mc_data_chips_to_keys,
             router_timeout_keys):
         """
-        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param data_in_routing_tables: (injected)
         :type data_in_routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -281,7 +279,7 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_reinjection_config(
             spec, router_timeout_keys, placement)
         # write data speed up out config
-        self._generate_data_speed_up_out_config(spec, routing_info)
+        self._generate_data_speed_up_out_config(spec)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
             spec, data_in_routing_tables,
@@ -290,10 +288,9 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_provenance_area(spec)
         spec.end_specification()
 
-    def _generate_data_speed_up_out_config(self, spec, routing_info):
+    def _generate_data_speed_up_out_config(self, spec):
         """
         :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.RoutingInfo routing_info: the packet routing info
         """
         machine_graph = FecDataView.get_runtime_machine_graph()
         spec.reserve_memory_region(
@@ -302,6 +299,7 @@ class ExtraMonitorSupportMachineVertex(
             label="data speed-up out config region")
         spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
 
+        routing_info = FecDataView.get_routing_infos()
         if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
             base_key = routing_info.get_first_key_for_edge(
                 list(machine_graph.get_edges_starting_at_vertex(self))[0])

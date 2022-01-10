@@ -23,13 +23,11 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(
-        tags, runtime, routing_infos, router_tables):
+def database_interface(tags, runtime, router_tables):
     """ Writes a database of the graph(s) and other information.
 
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -37,7 +35,7 @@ def database_interface(
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface()
-    return interface._run(tags, runtime, routing_infos, router_tables)
+    return interface._run(tags, runtime, router_tables)
 
 
 class _DatabaseInterface(object):
@@ -58,11 +56,10 @@ class _DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database()
 
     def _run(
-            self, tags, runtime, routing_infos, router_tables):
+            self, tags, runtime, router_tables):
         """
         :param ~pacman.model.tags.Tags tags:
         :param int runtime:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         :param router_tables:
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
@@ -81,16 +78,15 @@ class _DatabaseInterface(object):
         if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(runtime, routing_infos, router_tables, tags)
+            self._write_to_db(runtime, router_tables, tags)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
-    def _write_to_db(self, runtime, routing_infos, router_tables, tags):
+    def _write_to_db(self, runtime, router_tables, tags):
         """
         :param int runtime:
-        :param ~.RoutingInfo routing_infos:
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
         """
@@ -112,7 +108,7 @@ class _DatabaseInterface(object):
             p.update()
             w.add_placements()
             p.update()
-            w.add_routing_infos(routing_infos, machine_graph)
+            w.add_routing_infos(machine_graph)
             p.update()
             w.add_routing_tables(router_tables)
             p.update()
@@ -124,6 +120,5 @@ class _DatabaseInterface(object):
                         "create_routing_info_to_neuron_id_mapping"):
                     w.create_atom_to_event_id_mapping(
                         application_graph=app_graph,
-                        machine_graph=machine_graph,
-                        routing_infos=routing_infos)
+                        machine_graph=machine_graph)
             p.update()

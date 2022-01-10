@@ -72,7 +72,7 @@ def host_based_bit_field_router_compressor(
     # compressed router table
     compressed_pacman_router_tables = MulticastRoutingTables()
 
-    key_atom_map = generate_key_to_atom_map(routing_infos)
+    key_atom_map = generate_key_to_atom_map()
 
     # start the routing table choice conversion
     for router_table in progress.over(router_tables.routing_tables):
@@ -95,18 +95,17 @@ def generate_report_path():
     return report_folder_path
 
 
-def generate_key_to_atom_map(routing_infos):
+def generate_key_to_atom_map():
     """ THIS IS NEEDED due to the link from key to edge being lost.
 
     :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         machine graph
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        routing infos
     :return: key to atom map based of key to n atoms
     :rtype: dict(int,int)
     """
     # build key to n atoms map
     machine_graph = FecDataView.get_runtime_machine_graph()
+    routing_infos = FecDataView.get_routing_infos()
     key_to_n_atoms_map = dict()
     for vertex in machine_graph.vertices:
         for partition in machine_graph.\

@@ -20,6 +20,7 @@ from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -147,14 +148,13 @@ class LivePacketGatherMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @inject_items({"tags": "Tags",
-                   "routing_info": "RoutingInfos"})
+    @inject_items({"tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"tags", "routing_info"})
+        additional_arguments={"tags"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            tags, routing_info):
+            tags):
         """
         :param ~pacman.model.tags.Tags tags:
         """
@@ -165,7 +165,7 @@ class LivePacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec)
         self._write_configuration_region(
-            spec, tags.get_ip_tags_for_vertex(self), routing_info)
+            spec, tags.get_ip_tags_for_vertex(self))
 
         # End-of-Spec:
         spec.end_specification()
@@ -187,14 +187,12 @@ class LivePacketGatherMachineVertex(
             label='config')
         self.reserve_provenance_data_region(spec)
 
-    def _write_configuration_region(self, spec, iptags, routing_info):
+    def _write_configuration_region(self, spec, iptags):
         """ Write the configuration region to the spec
 
         :param ~.DataSpecificationGenerator spec:
         :param iterable(~.IPTag) iptags:
             The set of IP tags assigned to the object
-        :param RoutingInfo routing_info:
-            Routing information for incoming keys if needed
         :raise ConfigurationException: if `iptags` is empty
         :raise DataSpecificationException:
             when something goes wrong with the DSG generation
@@ -229,6 +227,7 @@ class LivePacketGatherMachineVertex(
         if not self._lpg_params.translate_keys:
             spec.write_value(0)
         else:
+            routing_info = FecDataView.get_routing_infos()
             spec.write_value(len(self._incoming_edges))
             for edge in self._incoming_edges:
                 r_info = routing_info.get_routing_info_for_edge(edge)

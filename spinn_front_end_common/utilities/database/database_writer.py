@@ -302,14 +302,13 @@ class DatabaseWriter(SQLiteDB):
                      placement.x, placement.y, placement.p, self._machine_id)
                     for placement in FecDataView.get_placements()))
 
-    def add_routing_infos(self, routing_infos, machine_graph):
+    def add_routing_infos(self,  machine_graph):
         """ Adds the routing information (key masks etc) into the database
 
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            the routing information object
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
             the machine graph object
         """
+        routing_infos = FecDataView.get_routing_infos()
         # Filter just the MULTICAST partitions first
         partitions_and_routing_info = (
             (partition, routing_infos.get_routing_info_from_partition(
@@ -380,13 +379,12 @@ class DatabaseWriter(SQLiteDB):
                             vertex) or ()))
 
     def create_atom_to_event_id_mapping(
-            self, application_graph, machine_graph, routing_infos):
+            self, application_graph, machine_graph):
         """
         :param application_graph:
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
         if application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings
@@ -403,6 +401,7 @@ class DatabaseWriter(SQLiteDB):
                 for partition in machine_graph.
                 get_outgoing_edge_partitions_starting_at_vertex(vertex))
 
+        routing_infos = FecDataView.get_routing_infos()
         with self.transaction() as cur:
             cur.executemany(
                 """

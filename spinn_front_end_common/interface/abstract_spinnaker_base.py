@@ -207,10 +207,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # simulation
         "_router_tables",
 
-        # the holder for the keys used by the machine vertices for
-        # communication
-        "_routing_infos",
-
         # the holder for the fixed routes generated, if there are any
         "_fixed_routes",
 
@@ -513,7 +509,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._region_sizes = None
         self._router_tables = None
         self._routing_table_by_partition = None
-        self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
@@ -598,7 +593,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
         if item == "RoutingInfos":
-            return self._routing_infos
+            return self._data_writer.get_routing_infos()
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
         if item == "Tags":
@@ -1815,8 +1810,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Global allocate"):
-            self._routing_infos = global_allocate(
-                self._machine_partition_n_keys_map)
+            self._data_writer.set_routing_infos(global_allocate(
+                self._machine_partition_n_keys_map))
 
     def _execute_flexible_allocate(self):
         """
@@ -1830,8 +1825,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Zoned routing info allocator"):
-            self._routing_infos = flexible_allocate(
-                self._machine_partition_n_keys_map)
+            self._data_writer.set_routing_infos(flexible_allocate(
+                self._machine_partition_n_keys_map))
 
     def _execute_malloc_based_routing_info_allocator(self):
         """
@@ -1845,8 +1840,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Malloc based routing info allocator"):
-            self._routing_infos = malloc_based_routing_info_allocator(
-                self._machine_partition_n_keys_map)
+            self._data_writer.set_routing_infos(malloc_based_routing_info_allocator(
+                self._machine_partition_n_keys_map))
 
     def do_info_allocator(self):
         """
@@ -1882,7 +1877,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
-            routing_info_report(self._routing_infos)
+            routing_info_report()
 
     def _execute_basic_routing_table_generator(self):
         """
@@ -1894,7 +1889,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
             self._router_tables = basic_routing_table_generator(
-                self._routing_infos, self._routing_table_by_partition)
+                self._routing_table_by_partition)
         # TODO Nuke ZonedRoutingTableGenerator
 
     def _report_routers(self):
@@ -1905,8 +1900,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_reports"):
                 return
-        router_report_from_paths(
-            self._router_tables, self._routing_infos, self._ipaddress)
+        router_report_from_paths(self._router_tables, self._ipaddress)
 
     def _report_router_summary(self):
         """
@@ -2139,7 +2133,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             machine_bit_field_ordered_covering_compressor(
                 self._router_tables, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._executable_targets)
             self._multicast_routes_loaded = True
             return None
 
@@ -2161,7 +2155,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
                 self._router_tables, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._executable_targets)
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -2731,8 +2725,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
-                self._tags, run_time,
-                self._routing_infos, self._router_tables)
+                self._tags, run_time, self._router_tables)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -3099,13 +3092,6 @@ class AbstractSpinnakerBase(ConfigHandler):
          """
         self._get_machine()
         return self._data_writer.machine
-
-    @property
-    def routing_infos(self):
-        """
-        :rtype: ~pacman.model.routing_info.RoutingInfo
-        """
-        return self._routing_infos
 
     @property
     def fixed_routes(self):

@@ -15,7 +15,6 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
@@ -24,6 +23,7 @@ from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -158,16 +158,14 @@ class CommandSenderMachineVertex(
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
-    @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"routing_infos"})
-    def generate_data_specification(
-            self, spec, placement, routing_infos):
+        AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing infos
         """
+        routing_infos = FecDataView.get_routing_infos()
         # pylint: disable=too-many-arguments, arguments-differ
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
