@@ -43,7 +43,7 @@ def insert_extra_monitor_vertices_to_graphs():
     vertex_to_chip_map = dict()
 
     # handle reinjector and chip based data extractor functionality.
-    if FecDataView().runtime_graph.n_vertices > 0:
+    if FecDataView.get_runtime_graph().n_vertices > 0:
         extra_monitors = __add_second_monitors_application_graph(
             progress, machine, vertex_to_chip_map)
     else:
@@ -51,7 +51,7 @@ def insert_extra_monitor_vertices_to_graphs():
             progress, machine, vertex_to_chip_map)
 
     # progress data receiver for data extraction functionality
-    if FecDataView().runtime_graph.n_vertices > 0:
+    if FecDataView.get_runtime_graph().n_vertices > 0:
         __add_data_extraction_vertices_app_graph(
             progress, machine, chip_to_gatherer_map, vertex_to_chip_map)
     else:
@@ -76,7 +76,7 @@ def __add_second_monitors_application_graph(
 
     extra_monitor_vertices = list()
 
-    application_graph = FecDataView().runtime_graph
+    application_graph = FecDataView.get_runtime_graph()
     machine_graph = FecDataView().runtime_machine_graph
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
@@ -130,7 +130,7 @@ def __add_data_extraction_vertices_app_graph(
     """
     # pylint: disable=too-many-arguments
 
-    application_graph = FecDataView().runtime_graph
+    application_graph = FecDataView.get_runtime_graph()
     machine_graph = FecDataView().runtime_machine_graph
     # insert machine vertices
     for chip in progress.over(machine.ethernet_connected_chips):

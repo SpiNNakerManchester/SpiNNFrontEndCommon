@@ -27,7 +27,7 @@ def insert_chip_power_monitors_to_graphs():
     """ Adds chip power monitor vertices on Ethernet connected chips as\
         required.
     """
-    if FecDataView().runtime_graph.n_vertices > 0:
+    if FecDataView.get_runtime_graph().n_vertices > 0:
         __add_app()
     else:
         __add_mach_only()
@@ -43,7 +43,7 @@ def __add_app():
     app_vertex = ChipPowerMonitor(
         label="ChipPowerMonitor",
         sampling_frequency=sampling_frequency)
-    FecDataView().runtime_graph.add_vertex(app_vertex)
+    FecDataView.get_runtime_graph().add_vertex(app_vertex)
     machine_graph = FecDataView().runtime_machine_graph
     for chip in progress.over(machine.chips):
         if not chip.virtual:

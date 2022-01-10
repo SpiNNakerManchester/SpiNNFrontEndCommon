@@ -85,7 +85,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         machine_graph = FecDataView().runtime_machine_graph
-        application_graph = FecDataView().runtime_graph
+        application_graph = FecDataView.get_runtime_graph()
         progress = ProgressBar(
             live_packet_gatherer_parameters,
             string_describing_what_being_progressed=(

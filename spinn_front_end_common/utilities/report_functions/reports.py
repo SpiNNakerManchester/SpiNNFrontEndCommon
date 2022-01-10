@@ -263,7 +263,7 @@ def partitioner_report(hostname):
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(FecDataView().runtime_graph.n_vertices,
+            progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
                                    "Generating partitioner report")
 
             f.write("        Partitioning Information by Vertex\n")
@@ -271,7 +271,8 @@ def partitioner_report(hostname):
             f.write("Generated: {} for target machine '{}'\n\n".format(
                 time_date_string, hostname))
 
-            for vertex in progress.over(FecDataView().runtime_graph.vertices):
+            for vertex in progress.over(
+                    FecDataView.get_runtime_graph().vertices):
                 _write_one_vertex_partition(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -319,7 +320,7 @@ def placement_report_with_application_graph_by_vertex(hostname):
     time_date_string = time.strftime("%c")
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(FecDataView().runtime_graph.n_vertices,
+            progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
                                    "Generating placement report")
 
             f.write("        Placement Information by Vertex\n")
@@ -327,7 +328,8 @@ def placement_report_with_application_graph_by_vertex(hostname):
             f.write("Generated: {} for target machine '{}'\n\n".format(
                 time_date_string, hostname))
 
-            for vertex in progress.over(FecDataView().runtime_graph.vertices):
+            for vertex in progress.over(
+                    FecDataView.get_runtime_graph().vertices):
                 _write_one_vertex_application_placement(f, vertex, placements)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"

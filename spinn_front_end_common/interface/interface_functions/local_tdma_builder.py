@@ -90,7 +90,7 @@ def local_tdma_builder(n_keys_map):
         ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
     """
     view = FecDataView()
-    if view.runtime_graph.n_vertices == 0:
+    if FecDataView.get_runtime_graph().n_vertices == 0:
         return
 
     # get config params
@@ -103,7 +103,7 @@ def local_tdma_builder(n_keys_map):
     app_verts = list()
     max_fraction_of_sending = 0
     machine_graph = view.runtime_machine_graph
-    for app_vertex in view.runtime_graph.vertices:
+    for app_vertex in FecDataView.get_runtime_graph().vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             app_verts.append(app_vertex)
 
@@ -143,7 +143,7 @@ def local_tdma_builder(n_keys_map):
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in FecDataView().runtime_graph.vertices:
+    for app_vertex in FecDataView.get_runtime_graph().vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             initial_offset = __generate_initial_offset(
                 app_vertex, app_verts, clocks_initial,

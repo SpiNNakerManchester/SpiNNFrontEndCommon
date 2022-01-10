@@ -58,7 +58,7 @@ class _InsertLivePacketGatherersToGraphs(object):
         """
         view = FecDataView()
         self._machine_graph = view.runtime_machine_graph
-        self._application_graph = view.runtime_graph
+        self._application_graph = FecDataView.get_runtime_graph()
 
     def _run(self, live_packet_gatherer_parameters):
         """ Add LPG vertices on Ethernet connected chips as required.

@@ -47,7 +47,7 @@ def _get_machine_graph_provenance():
 
 
 def _get_app_graph_provenance():
-    application_graph = FecDataView().runtime_graph
+    application_graph = FecDataView.get_runtime_graph()
     progress = ProgressBar(
         application_graph.n_vertices +
         application_graph.n_outgoing_edge_partitions,

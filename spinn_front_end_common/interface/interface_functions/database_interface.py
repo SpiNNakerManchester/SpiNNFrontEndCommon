@@ -97,7 +97,7 @@ class _DatabaseInterface(object):
         # pylint: disable=too-many-arguments
 
         view = FecDataView()
-        app_graph = view.runtime_graph
+        app_graph = FecDataView.get_runtime_graph()
         machine_graph = view .runtime_machine_graph
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:

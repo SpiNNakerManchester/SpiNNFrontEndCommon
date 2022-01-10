@@ -67,7 +67,7 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
         machine_graph = FecDataView().runtime_machine_graph
-        application_graph = FecDataView().runtime_graph
+        application_graph = FecDataView.get_runtime_graph()
 
         progress = ProgressBar(
             machine_graph.n_vertices + application_graph.n_vertices,

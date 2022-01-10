@@ -1040,7 +1040,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _add_commands_to_command_sender(self):
         command_sender = None
-        graph = self._data_writer.runtime_graph
+        graph = self._data_writer.get_runtime_graph()
         vertices = graph.vertices
         command_sender_vertex = CommandSender
         if len(vertices) > 0:
@@ -1068,7 +1068,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
-        graph = self._data_writer.runtime_graph
+        graph = self._data_writer.get_runtime_graph()
         for vertex in graph.vertices:
             # add any dependent edges and vertices if needed
             if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
@@ -1449,7 +1449,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type pre_allocated_resources:
             ~pacman.model.resources.PreAllocatedResourceContainer
         """
-        if not self._data_writer.runtime_graph.n_vertices:
+        if not self._data_writer.get_runtime_graph().n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             machine_graph, self._n_chips_needed = splitter_partitioner(
@@ -1684,7 +1684,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
-        if not self._data_writer.runtime_graph.n_vertices:
+        if not self._data_writer.get_runtime_graph().n_vertices:
             return
         with FecTimer(
                 MAPPING, "Placements wth application graph report") as timer:
