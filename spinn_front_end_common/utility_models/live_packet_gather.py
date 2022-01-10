@@ -37,6 +37,10 @@ class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
         label = lpg_params.label or "Live Packet Gatherer"
         super().__init__(label, constraints, 1)
         self._lpg_params = lpg_params
+        self._incoming_edges = list()
+
+    def add_incoming_edge(self, edge):
+        self._incoming_edges.append(edge)
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
@@ -55,11 +59,21 @@ class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
     def n_atoms(self):
         return 1
 
+    def __get_key_translation_sdram(self):
+        if not self._lpg_params.translate_keys:
+            return 0
+        n_entries = 0
+        for edge in self._incoming_edges:
+            n_entries += len(
+                edge.pre_vertex.splitter.get_in_coming_slices()[0])
+        return n_entries * LivePacketGatherMachineVertex._KEY_ENTRY_SIZE
+
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=ConstantSDRAM(
-                LivePacketGatherMachineVertex.get_sdram_usage()),
+                LivePacketGatherMachineVertex.get_sdram_usage() +
+                self.__get_key_translation_sdram()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
