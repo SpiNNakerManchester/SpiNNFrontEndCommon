@@ -505,7 +505,7 @@ class _HostExecuteDataSpecification(object):
         # reset router timeouts
         for receiver in self._core_to_conn_map.values():
             receiver.unset_cores_for_data_streaming(
-                self._monitors, self._placements)
+                self._monitors)
             # reset router tables
             receiver.load_application_routing_tables(
                self._monitors, self._placements)

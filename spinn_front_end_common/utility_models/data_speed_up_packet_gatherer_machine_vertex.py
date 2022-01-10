@@ -941,16 +941,16 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
-            placements, extra_monitor_cores,
+            extra_monitor_cores,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        self.clear_reinjection_queue(placements)
+        self.clear_reinjection_queue()
 
         # set time outs
-        self.set_router_wait2_timeout(self._SHORT_TIMEOUT, placements)
-        self.set_router_wait1_timeout(self._LONG_TIMEOUT, placements)
+        self.set_router_wait2_timeout(self._SHORT_TIMEOUT)
+        self.set_router_wait1_timeout(self._LONG_TIMEOUT)
 
     @staticmethod
     def load_application_routing_tables(extra_monitor_cores, placements):
@@ -979,68 +979,65 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores[0].load_system_mc_routes(
             placements, extra_monitor_cores)
 
-    def set_router_wait1_timeout(self, timeout, placements):
+    def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
         :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
-        core_subsets = convert_vertices_to_core_subset([self], placements)
+        core_subsets = convert_vertices_to_core_subset([self])
         process = SetRouterTimeoutProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                self, placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def set_router_wait2_timeout(self, timeout, placements):
+    def set_router_wait2_timeout(self, timeout):
         """ Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
-        core_subsets = convert_vertices_to_core_subset([self], placements)
+        core_subsets = convert_vertices_to_core_subset([self])
         process = SetRouterTimeoutProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                self, placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def clear_reinjection_queue(self, placements):
+    def clear_reinjection_queue(self):
         """ Clears the queues for reinjection.
 
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
-        core_subsets = convert_vertices_to_core_subset([self], placements)
+        core_subsets = convert_vertices_to_core_subset([self])
         process = ClearQueueProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                self, placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def unset_cores_for_data_streaming(self, extra_monitor_cores, placements):
+    def unset_cores_for_data_streaming(self, extra_monitor_cores):
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
         # Set the routers to temporary values
-        self.set_router_wait1_timeout(self._TEMP_TIMEOUT, placements)
-        self.set_router_wait2_timeout(self._ZERO_TIMEOUT, placements)
+        self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
+        self.set_router_wait2_timeout(self._ZERO_TIMEOUT)
 
         if self._last_status is None:
             log.warning(
@@ -1048,15 +1045,13 @@ class DataSpeedUpPacketGatherMachineVertex(
                 " unset")
         try:
             self.set_router_wait1_timeout(
-                self._last_status.router_wait1_timeout_parameters,
-                placements)
+                self._last_status.router_wait1_timeout_parameters)
             self.set_router_wait2_timeout(
-                self._last_status.router_wait2_timeout_parameters,
-                placements)
+                self._last_status.router_wait2_timeout_parameters)
 
             lead_monitor = extra_monitor_cores[0]
             lead_monitor.set_reinjection_packets(
-                placements, extra_monitor_cores,
+                extra_monitor_cores,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
                 nearest_neighbour=(
@@ -1065,8 +1060,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         except Exception:  # pylint: disable=broad-except
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
-            core_subsets = convert_vertices_to_core_subset(
-                extra_monitor_cores, placements)
+            core_subsets = convert_vertices_to_core_subset(extra_monitor_cores)
             try:
                 transceiver = FecDataView.get_transceiver()
                 error_cores = transceiver.get_cores_not_in_state(
@@ -1627,8 +1621,7 @@ class _StreamingContextManager(object):
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(
-                self._monitors, self._placements)
+            gatherer.unset_cores_for_data_streaming(self._monitors)
         for gatherer in self._gatherers:
             gatherer.load_application_routing_tables(
                 self._monitors, self._placements)

@@ -227,19 +227,17 @@ def determine_flow_states(executable_types, no_sync_changes):
     return expected_start_states, expected_end_states
 
 
-def convert_vertices_to_core_subset(vertices, placements):
+def convert_vertices_to_core_subset(vertices):
     """ Converts vertices into core subsets.
 
     :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:
         the vertices to convert to core subsets
-    :param ~pacman.model.placements.Placements placements:
-        the placements object
     :return: the CoreSubSets of the vertices
     :rtype: ~spinn_machine.CoreSubsets
     """
     core_subsets = CoreSubsets()
     for vertex in vertices:
-        placement = placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
 
