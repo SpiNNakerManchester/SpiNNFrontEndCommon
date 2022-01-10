@@ -30,7 +30,7 @@ def network_specification():
     :rtype: None
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
-    graph = FecDataView().runtime_best_graph
+    graph = FecDataView.get_runtime_best_graph()
     try:
         with open(filename, "w") as f:
             f.write("*** Vertices:\n")
