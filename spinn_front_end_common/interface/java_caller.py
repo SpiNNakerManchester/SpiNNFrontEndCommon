@@ -206,12 +206,12 @@ class JavaCaller(object):
         """
         self._report_folder = report_folder
 
-    def set_placements(self, placements):
+    def set_placements(self, recording_placements):
         """ Passes in the placements leaving this class to decide pass it to
             Java.
 
         This method may obtain extra information about he placements which is
-        why it also needs the transceiver.
+        why it also accesses the transceiver.
 
         Currently the extra information extracted is recording region base
         address but this could change if recording region saved in the
@@ -220,16 +220,18 @@ class JavaCaller(object):
         Currently this method uses JSON but that may well change to using the
         database.
 
-        :param ~pacman.model.placements.Placements placements:
-            The Placements Object
+        :param ~pacman.model.placements.Placements recording_placements:
+            Placements that are recording. May not be all placements
         """
         path = os.path.join(
             FecDataView().json_dir_path, "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
-            self._placement_json = self._write_placements(placements, path)
+            self._placement_json = self._write_placements(
+                recording_placements, path)
         else:
-            self._placement_json = self._write_gather(placements, path)
+            self._placement_json = self._write_gather(
+                recording_placements, path)
 
     def _json_placement(self, placement):
         """
@@ -274,27 +276,28 @@ class JavaCaller(object):
 
         return json_tag
 
-    def _placements_grouped(self, placements):
+    def _placements_grouped(self, recording_placements):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placementss:
         :rtype: dict(tuple(int,int),dict(tuple(int,int),
             ~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
-        for placement in placements:
+        for placement in recording_placements:
             chip = FecDataView.get_chip_at(placement.x, placement.y)
             chip_xy = (placement.x, placement.y)
             ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
             by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
-    def _write_gather(self, placements, path):
+    def _write_gather(self, recording_placements, path):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placements:
+            placements that are recording data. May not eb all placements
         :param str path:
         :rtype: str
         """
-        placements_by_ethernet = self._placements_grouped(placements)
+        placements_by_ethernet = self._placements_grouped(recording_placements)
         json_obj = list()
         for ethernet in self._chipxy_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
@@ -328,15 +331,16 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, placements, path):
+    def _write_placements(self, recording_placements, path):
         """
         :param ~pacman.model.placements.Placements placements:
+            Placements that are recording data. May not eb all placements
         :param str path:
         :rtype: str
         """
         # Read back the regions
         json_obj = list()
-        for placement in placements:
+        for placement in recording_placements:
             json_p = self._json_placement(placement)
             if json_p:
                 json_obj.append(json_p)

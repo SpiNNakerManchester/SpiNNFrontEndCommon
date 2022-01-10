@@ -576,15 +576,15 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
-    def get_data_for_placements(self, placements, progress=None):
+    def get_data_for_placements(self, recording_placements, progress=None):
         """
-        :param ~pacman.model.placements.Placements placements:
-            Where to get the data from.
+        :param ~pacman.model.placements.Placements recording_placements:
+            Where to get the data from. May not be all placements
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         if self._java_caller is not None:
-            self._java_caller.set_placements(placements)
+            self._java_caller.set_placements(recording_placements)
 
         timer = Timer()
         with timer:
@@ -596,15 +596,16 @@ class BufferManager(object):
                 elif get_config_bool(
                         "Machine", "enable_advanced_monitor_support"):
                     self.__old_get_data_for_placements_with_monitors(
-                        placements, progress)
+                        recording_placements, progress)
                 else:
-                    self.__old_get_data_for_placements(placements, progress)
+                    self.__old_get_data_for_placements(
+                        recording_placements, progress)
         get_simulator().add_extraction_timing(timer.measured_interval)
 
     def __old_get_data_for_placements_with_monitors(
-            self, placements, progress):
+            self, recording_placements, progress):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
@@ -614,7 +615,7 @@ class BufferManager(object):
             locate_extra_monitor_mc_receiver(
                 placement.x, placement.y,
                 self._packet_gather_cores_to_ethernet_connection_map)
-            for placement in placements))
+            for placement in recording_placements))
 
         # update transaction id from the machine for all extra monitors
         for extra_mon in self._extra_monitor_cores:
@@ -624,17 +625,17 @@ class BufferManager(object):
         with receivers[0].streaming(
                 receivers, self._extra_monitor_cores, self._placements):
             # get data
-            self.__old_get_data_for_placements(placements, progress)
+            self.__old_get_data_for_placements(recording_placements, progress)
 
-    def __old_get_data_for_placements(self, placements, progress):
+    def __old_get_data_for_placements(self, recording_placements, progress):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         # get data
-        for placement in placements:
+        for placement in recording_placements:
             vertex = placement.vertex
             for recording_region_id in vertex.get_recorded_region_ids():
                 self._retreive_by_placement(placement, recording_region_id)
