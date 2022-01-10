@@ -18,9 +18,10 @@ from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph
+from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    InsertLivePacketGatherersToGraphs)
+    insert_live_packet_gatherers_to_graphs)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 
@@ -59,10 +60,10 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
-        edge_inserter = InsertLivePacketGatherersToGraphs()
-        lpg_verts_mapping = edge_inserter(
+        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine, machine_graph=graph, application_graph=None)
+            machine=machine, machine_graph=graph,
+            application_graph=ApplicationGraph("empty"))
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
@@ -81,6 +82,8 @@ class TestInsertLPGs(unittest.TestCase):
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = virtual_machine(width=12, height=12)
         app_graph = ApplicationGraph("Test")
+        app_graph.add_vertex(
+            SimpleTestVertex(10, "New AbstractConstrainedVertex 1", 256))
         graph = MachineGraph("Test", app_graph)
 
         default_params = {
@@ -106,8 +109,7 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
-        edge_inserter = InsertLivePacketGatherersToGraphs()
-        lpg_verts_mapping = edge_inserter(
+        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph)
 
@@ -131,7 +133,7 @@ class TestInsertLPGs(unittest.TestCase):
         app_verts = set()
         for vertex in lpg_verts_mapping[default_params_holder][1].values():
             app_vertex = vertex.app_vertex
-            self.assertNotEqual(app_vertex, None)
+            self.assertIsNotNone(app_vertex)
             self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
         # Should only be a single app vertex for one set of params
