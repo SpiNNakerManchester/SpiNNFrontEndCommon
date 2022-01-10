@@ -32,7 +32,6 @@ def routing_setup(router_tables):
         ~pacman.model.routing_tables.MulticastRoutingTables
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
-    view = FecDataView()
     transceiver = FecDataView.get_transceiver()
     routing_tables = list(router_tables.routing_tables)
     progress = ProgressBar(routing_tables, "Preparing Routing Tables")

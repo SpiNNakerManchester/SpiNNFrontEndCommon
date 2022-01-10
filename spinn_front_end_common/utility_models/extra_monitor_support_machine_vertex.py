@@ -530,7 +530,8 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
-        process = ClearQueueProcess(FecDataView.get_scamp_connection_selector())
+        process = ClearQueueProcess(
+            FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
@@ -574,7 +575,8 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
-        process = ReadStatusProcess(FecDataView.get_scamp_connection_selector())
+        process = ReadStatusProcess(
+            FecDataView.get_scamp_connection_selector())
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
