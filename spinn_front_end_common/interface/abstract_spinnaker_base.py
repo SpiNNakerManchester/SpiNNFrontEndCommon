@@ -1033,7 +1033,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
-        for placement in self._data_writer.placements:
+        for placement in self._data_writer.get_placements():
             if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
@@ -1094,7 +1094,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
         seen_partitions = set()
 
-        for placement in self._data_writer.placements:
+        for placement in self._data_writer.get_placements():
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
@@ -2615,7 +2615,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            placements_provenance_gatherer(self._data_writer.placements)
+            # Also used in recover from error where is is not all placements
+            placements_provenance_gatherer(self._data_writer.get_placements())
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -2628,7 +2629,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             router_provenance_gatherer(
                 self._router_tables,
-                self._extra_monitor_vertices, self._data_writer.placements)
+                self._extra_monitor_vertices)
 
     def _execute_profile_data_gatherer(self):
         """
@@ -2900,8 +2901,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         try:
             router_provenance_gatherer(
                 router_tables=self._router_tables,
-                extra_monitor_vertices=self._extra_monitor_vertices,
-                placements=self._data_writer.placements)
+                extra_monitor_vertices=self._extra_monitor_vertices)
         except Exception:
             logger.exception("Error reading router provenance")
 
@@ -2970,7 +2970,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 finished_cores = transceiver.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
-                placements = self._data_writer.placements
+                placements = self._data_writer.get_placements()
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
                         placements.get_placement_on_processor(x, y, p))

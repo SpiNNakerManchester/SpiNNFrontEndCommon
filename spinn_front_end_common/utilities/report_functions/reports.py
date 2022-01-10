@@ -537,10 +537,10 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
     """
     view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
-    n_placement = FecDataView.get_placements().n_placement
+    n_placements = FecDataView.get_placements().n_placements
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
-        (n_placement * 2 + FecDataView.get_machine().n_chips * 2),
+        (n_placements * 2 + FecDataView.get_machine().n_chips * 2),
         "Generating SDRAM usage report")
     try:
         with open(file_name, "w") as f:

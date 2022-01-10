@@ -23,20 +23,20 @@ from spinn_front_end_common.interface.provenance import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def placements_provenance_gatherer(placements):
+def placements_provenance_gatherer(used_placements):
     """ Gets provenance information from vertices on the machine.
 
-    :param ~pacman.model.placements.Placements placements:
+    :param ~pacman.model.placements.Placements used_placements:
         The placements of the vertices to gather data form.
         May not be all placements so dont use View
     """
     errors = list()
 
     progress = ProgressBar(
-        placements.n_placements, "Getting provenance data")
+        used_placements.n_placements, "Getting provenance data")
 
     # retrieve provenance data from any cores that provide data
-    for placement in progress.over(placements):
+    for placement in progress.over(used_placements):
         _add_placement_provenance(placement, errors)
     if errors:
         logger.warning("Errors found during provenance gathering:")

@@ -24,19 +24,15 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def router_provenance_gatherer(
-        router_tables, extra_monitor_vertices=None, placements=None):
+        router_tables, extra_monitor_vertices=None):
     """
     :param router_tables: the router tables that have been generated
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
         vertices which represent the extra monitor code
-    :param ~pacman.model.placements.Placements placements:
-        the placements object to get router provenace for.
-        May not be all placements so dont use View
     """
-    gather = _RouterProvenanceGatherer(
-        router_tables, extra_monitor_vertices, placements)
+    gather = _RouterProvenanceGatherer(router_tables, extra_monitor_vertices)
     gather._add_router_provenance_data()
 
 
@@ -47,29 +43,21 @@ class _RouterProvenanceGatherer(object):
     __slots__ = [
         # Extra monitor vertices if any
         '_extra_monitor_vertices',
-        # placements passed in if any
-        '_placements',
-        # routingtabkes passed in
+        # routingtables passed in
         '_router_tables',
     ]
 
-    def __init__(self, router_tables,
-                 extra_monitor_vertices=None, placements=None):
+    def __init__(self, router_tables, extra_monitor_vertices=None):
         """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan interface object
         :param router_tables: the router tables that have been generated
         :type router_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
             vertices which represent the extra monitor code
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
         self._extra_monitor_vertices = extra_monitor_vertices
-        self._placements = placements
         self._router_tables = router_tables
 
     def _add_router_provenance_data(self):
