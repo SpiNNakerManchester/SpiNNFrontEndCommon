@@ -342,7 +342,6 @@ class _HostExecuteDataSpecification(object):
         # The support class to run via Java. If None pure python is used.
         "_java",
         "_monitors",
-        "_placements",
         # The write info; a dict of cores to a dict of
         # 'start_address', 'memory_used', 'memory_written'
         "_write_info_map"]
@@ -359,7 +358,6 @@ class _HostExecuteDataSpecification(object):
         self._core_to_conn_map = None
         self._java = java_caller
         self._monitors = None
-        self._placements = None
         if processor_to_app_data_base_address:
             self._write_info_map = processor_to_app_data_base_address
         else:
@@ -474,7 +472,6 @@ class _HostExecuteDataSpecification(object):
         """
         # pylint: disable=too-many-arguments
         self._monitors = extra_monitor_cores
-        self._placements = FecDataView().placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
         uses_advanced_monitors = get_config_bool(
@@ -582,7 +579,8 @@ class _HostExecuteDataSpecification(object):
         dw_write_info = self.__java_database(
             dsg_targets, progress, region_sizes)
         if use_monitors:
-            self._java.set_placements(self._placements)
+            # Method also called with just recording params
+            self._java.set_placements(FecDataView.get_placements())
 
         self._java.execute_app_data_specification(use_monitors)
 

@@ -42,7 +42,7 @@ def buffer_manager_creator(
     :param JavaCaller java_caller:
     :rtype: BufferManager
     """
-    placements = FecDataView().placements
+    placements = FecDataView.get_placements()
     # pylint: disable=too-many-arguments
     progress = ProgressBar(placements.n_placements, "Initialising buffers")
 

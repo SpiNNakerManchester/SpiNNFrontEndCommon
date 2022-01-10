@@ -295,7 +295,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         view = FecDataView()
         machine_graph = FecDataView.get_runtime_machine_graph()
-        placements = FecDataView().placements
+        placements = FecDataView.get_placements()
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (
             self.get_bit_field_sdram_base_addresses(

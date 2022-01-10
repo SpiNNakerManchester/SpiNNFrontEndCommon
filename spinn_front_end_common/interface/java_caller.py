@@ -204,7 +204,7 @@ class JavaCaller(object):
         """
         self._report_folder = report_folder
 
-    def set_placements(self, recording_placements):
+    def set_placements(self, used_placements):
         """ Passes in the placements leaving this class to decide pass it to
             Java.
 
@@ -218,7 +218,7 @@ class JavaCaller(object):
         Currently this method uses JSON but that may well change to using the
         database.
 
-        :param ~pacman.model.placements.Placements recording_placements:
+        :param ~pacman.model.placements.Placements used_placements:
             Placements that are recording. May not be all placements
         """
         path = os.path.join(
@@ -226,10 +226,10 @@ class JavaCaller(object):
         self._recording = False
         if self._gatherer_iptags is None:
             self._placement_json = self._write_placements(
-                recording_placements, path)
+                used_placements, path)
         else:
             self._placement_json = self._write_gather(
-                recording_placements, path)
+                used_placements, path)
 
     def _json_placement(self, placement):
         """
@@ -288,14 +288,14 @@ class JavaCaller(object):
             by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
-    def _write_gather(self, recording_placements, path):
+    def _write_gather(self, used_placements, path):
         """
-        :param ~pacman.model.placements.Placements recording_placements:
-            placements that are recording data. May not eb all placements
+        :param ~pacman.model.placements.Placements used_placements:
+            placements that are being used. May not eb all placements
         :param str path:
         :rtype: str
         """
-        placements_by_ethernet = self._placements_grouped(recording_placements)
+        placements_by_ethernet = self._placements_grouped(used_placements)
         json_obj = list()
         for ethernet in self._chipxy_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
@@ -329,16 +329,16 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, recording_placements, path):
+    def _write_placements(self, used_placements, path):
         """
         :param ~pacman.model.placements.Placements placements:
-            Placements that are recording data. May not eb all placements
+            Placements that are being used. May not be all placements
         :param str path:
         :rtype: str
         """
         # Read back the regions
         json_obj = list()
-        for placement in recording_placements:
+        for placement in used_placements:
             json_p = self._json_placement(placement)
             if json_p:
                 json_obj.append(json_p)

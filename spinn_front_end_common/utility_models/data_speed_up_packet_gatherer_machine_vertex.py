@@ -908,7 +908,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("sent end flag")
 
     @staticmethod
-    def streaming(gatherers, extra_monitor_cores, placements):
+    def streaming(gatherers, extra_monitor_cores):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming via a Python context manager (i.e., using\
             the `with` statement).
@@ -917,22 +917,16 @@ class DataSpeedUpPacketGatherMachineVertex(
             All the gatherers that are to be set
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         :return: a context manager
         """
-        return _StreamingContextManager(
-            gatherers, extra_monitor_cores, placements)
+        return _StreamingContextManager(gatherers, extra_monitor_cores)
 
-    def set_cores_for_data_streaming(
-            self, extra_monitor_cores, placements):
+    def set_cores_for_data_streaming(self, extra_monitor_cores):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
         lead_monitor = extra_monitor_cores[0]
         # Store the last reinjection status for resetting
@@ -1590,25 +1584,21 @@ class _StreamingContextManager(object):
     """ The implementation of the context manager object for streaming \
         configuration control.
     """
-    __slots__ = ["_gatherers", "_monitors", "_placements"]
+    __slots__ = ["_gatherers", "_monitors"]
 
-    def __init__(self, gatherers, monitors, placements):
+    def __init__(self, gatherers, monitors):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
         :param list(ExtraMonitorSupportMachineVertex) monitors:
-        :param ~pacman.model.placements.Placements placements:
         """
         self._gatherers = list(gatherers)
         self._monitors = monitors
-        self._placements = placements
 
     def __enter__(self):
         for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(
-                self._monitors, self._placements)
+            gatherer.load_system_routing_tables(self._monitors)
         for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(
-                self._monitors, self._placements)
+            gatherer.set_cores_for_data_streaming(self._monitors)
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:

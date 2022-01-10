@@ -93,7 +93,7 @@ def compute_energy_used(
     view = FecDataView()
     runtime_total_ms = view.current_run_timesteps * view.time_scale_factor
     machine = FecDataView.get_machine()
-    placements = FecDataView().placements
+    placements = FecDataView.get_placements()
     power_used = PowerUsed()
 
     power_used.num_chips = machine.n_chips

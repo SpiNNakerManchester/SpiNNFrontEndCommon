@@ -150,7 +150,7 @@ class BufferManager(object):
             Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
-        self._placements = FecDataView().placements
+        self._placements = FecDataView.get_placements()
         self._tags = tags
         self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
@@ -621,8 +621,7 @@ class BufferManager(object):
             extra_mon.update_transaction_id_from_machine()
 
         # Ugly, to avoid an import loop...
-        with receivers[0].streaming(
-                receivers, self._extra_monitor_cores, self._placements):
+        with receivers[0].streaming(receivers, self._extra_monitor_cores):
             # get data
             self.__old_get_data_for_placements(recording_placements, progress)
 

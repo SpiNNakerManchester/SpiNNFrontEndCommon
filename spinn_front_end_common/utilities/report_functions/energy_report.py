@@ -163,7 +163,7 @@ class EnergyReport(object):
         # pylint: disable=too-many-arguments, too-many-locals
         view = FecDataView()
         runtime_total_ms = view.time_scale_factor
-        placements = FecDataView().placements
+        placements = FecDataView.get_placements()
 
         # write warning about accuracy etc
         self._write_warning(f)

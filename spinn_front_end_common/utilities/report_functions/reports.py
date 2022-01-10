@@ -420,7 +420,7 @@ def placement_report_with_application_graph_by_core(hostname):
     view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
-    placements = view.placements
+    placements = FecDataView.get_placements()
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()
@@ -485,7 +485,7 @@ def placement_report_without_application_graph_by_core(hostname):
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     machine = FecDataView.get_machine()
-    placements = view.placements
+    placements = FecDataView.get_placements()
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(machine.n_chips,
@@ -537,10 +537,10 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
     """
     view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
-    placements = FecDataView().placements
+    n_placement = FecDataView.get_placements().n_placement
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
-        (len(placements) * 2 + FecDataView.get_machine().n_chips * 2),
+        (n_placement * 2 + FecDataView.get_machine().n_chips * 2),
         "Generating SDRAM usage report")
     try:
         with open(file_name, "w") as f:
@@ -551,28 +551,28 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
             f.write("Planned by partitioner\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, plan_n_timesteps, progress, False, False)
+                f, plan_n_timesteps, progress, False, False)
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, placements, view.max_run_time_steps, progress, True, True)
+                f, view.max_run_time_steps, progress, True, True)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, placements, timesteps, progress, end_progress, details):
+        f, timesteps, progress, end_progress, details):
     """
     :param ~io.FileIO f:
-    :param Placements placements:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
-    placements = sorted(placements, key=lambda x: x.vertex.label)
+    placements = sorted(
+        FecDataView.get_placements(), key=lambda x: x.vertex.label)
     for placement in progress.over(placements, False):
         vertex_sdram = placement.vertex.resources_required.sdram
         core_sdram = vertex_sdram.get_total_sdram(timesteps)

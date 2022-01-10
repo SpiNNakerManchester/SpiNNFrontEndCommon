@@ -81,7 +81,7 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        placements = FecDataView().placements
+        placements = FecDataView.get_placements()
         targets = DataSpecificationTargets()
 
         if placement_order is None:
