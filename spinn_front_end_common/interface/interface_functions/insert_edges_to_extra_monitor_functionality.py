@@ -47,8 +47,6 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
     __slots__ = [
         # Map of Chip(x,y) to the (Gather) vertex
         "_chip_to_gatherer_map",
-        # Map of Core(x,y,p) to the Placement on that core
-        "_placements"
     ]
 
     EDGE_LABEL = "edge between {} and {}"
@@ -60,7 +58,6 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
             mapping between ethernet connected chips and packet gatherers
         """
         self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
-        self._placements = FecDataView().placements
 
     def _run(self):
         """
@@ -136,7 +133,7 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         :param ExtraMonitorSupportMachineVertex vertex:
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
-        placement = self._placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         chip = FecDataView().get_chip_at(placement.x, placement.y)
         ethernet_chip = FecDataView().get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)

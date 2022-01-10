@@ -53,7 +53,7 @@ class _SystemMulticastRoutingGenerator(object):
         extra monitor cores.
     """
     __slots__ = ["_key_to_destination_map", "_monitors", "_machine",
-                 "_placements", "_routing_tables", "_time_out_keys_by_board"]
+                 "_routing_tables", "_time_out_keys_by_board"]
 
     def __init__(self, extra_monitor_cores):
         """
@@ -65,7 +65,6 @@ class _SystemMulticastRoutingGenerator(object):
         """
         view = FecDataView()
         self._machine = FecDataView.get_machine()
-        self._placements = view.placements
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map = dict()
@@ -217,8 +216,7 @@ class _SystemMulticastRoutingGenerator(object):
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
             self._key_to_destination_map[x, y] = key
-            placement = self._placements.get_placement_of_vertex(
-                self._monitors[x, y])
+            placement = FecDataView.get_placement_of_vertex(self._monitors[x, y])
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
                 x, y, link = tree[(x, y)]
@@ -235,7 +233,7 @@ class _SystemMulticastRoutingGenerator(object):
         time_out_key = key
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
-            placement = self._placements.get_placement_of_vertex(
+            placement = FecDataView.get_placement_of_vertex(
                 self._monitors[x, y])
             self._add_routing_entry(
                 x, y, time_out_key, processor_id=placement.p,

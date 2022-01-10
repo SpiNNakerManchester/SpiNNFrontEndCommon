@@ -61,10 +61,9 @@ class _GraphBinaryGatherer(object):
         :rtype: ExecutableTargets
         """
         graph = FecDataView().runtime_machine_graph
-        placements = FecDataView().placements
         progress = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in progress.over(graph.vertices):
-            placement = placements.get_placement_of_vertex(vertex)
+            placement = FecDataView.get_placement_of_vertex(vertex)
             self.__get_binary(placement, vertex)
 
         return self._exe_targets

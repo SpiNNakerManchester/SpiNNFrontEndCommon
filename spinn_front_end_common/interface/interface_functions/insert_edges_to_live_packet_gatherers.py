@@ -53,8 +53,6 @@ class _InsertEdgesToLivePacketGatherers(object):
     __slots__ = [
         # the mapping of LPG parameters to machine vertices
         "_lpg_to_vertex",
-        # the placements object
-        "_placements"
     ]
 
     def __init__(self, live_packet_gatherers_to_vertex_mapping):
@@ -70,7 +68,6 @@ class _InsertEdgesToLivePacketGatherers(object):
         """
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
-        self._placements = FecDataView().placements
 
     def _run(self, live_packet_gatherer_parameters, n_keys_map=None):
         """
@@ -197,7 +194,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         :raise ConfigurationException: if a local gatherer cannot be found
         """
         # locate location of vertex in machine
-        placement = self._placements.get_placement_of_vertex(m_vertex)
+        placement = FecDataView.get_placement_of_vertex(m_vertex)
         chip = FecDataView().get_chip_at(placement.x, placement.y)
 
         # locate closest LPG

@@ -29,7 +29,6 @@ def locate_executable_start_type():
     """
     view = FecDataView()
     graph = FecDataView.get_runtime_machine_graph()
-    placements = view.placements
     if not graph.vertices:
         return {ExecutableType.NO_APPLICATION: None}
 
@@ -45,8 +44,7 @@ def locate_executable_start_type():
             if bin_type not in binary_start_types:
                 binary_start_types[bin_type] = CoreSubsets()
 
-            __add_vertex_to_subset(
-                vertex, placements, binary_start_types[bin_type])
+            __add_vertex_to_subset(vertex, binary_start_types[bin_type])
 
     # only got apps with no binary, such as external devices.
     # return no app
@@ -56,12 +54,11 @@ def locate_executable_start_type():
     return binary_start_types
 
 
-def __add_vertex_to_subset(machine_vertex, placements, core_subsets):
+def __add_vertex_to_subset(machine_vertex, core_subsets):
     """
     :param ~.MachineVertex machine_vertex:
-    :param ~.Placements placements:
     :param ~.CoreSubsets core_subsets:
     """
-    placement = placements.get_placement_of_vertex(machine_vertex)
+    placement = FecDataView.get_placement_of_vertex(machine_vertex)
     core_subsets.add_processor(
         x=placement.x, y=placement.y, processor_id=placement.p)

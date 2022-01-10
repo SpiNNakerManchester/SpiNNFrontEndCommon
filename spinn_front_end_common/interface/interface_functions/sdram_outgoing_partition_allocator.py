@@ -23,7 +23,6 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 def sdram_outgoing_partition_allocator():
     view = FecDataView()
     machine_graph = FecDataView.get_runtime_machine_graph()
-    placements = view.placements
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None
@@ -48,10 +47,10 @@ def sdram_outgoing_partition_allocator():
             # you need to ask for the first pre vertex
             if isinstance(
                     sdram_partition, SourceSegmentedSDRAMMachinePartition):
-                placement = placements.get_placement_of_vertex(
+                placement = FecDataView.get_placement_of_vertex(
                     next(iter(sdram_partition.pre_vertices)))
             else:
-                placement = placements.get_placement_of_vertex(
+                placement = FecDataView.get_placement_of_vertex(
                     sdram_partition.pre_vertex)
 
             # total sdram

@@ -154,10 +154,8 @@ class JavaCaller(object):
                     f"No file found at java_jar_path: {java_jar_path}")
 
     def set_advanced_monitors(
-            self, placements, tags, monitor_cores, packet_gathers):
+            self, tags, monitor_cores, packet_gathers):
         """
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param monitor_cores: Where the advanced monitor for each core is
         :type monitor_cores:
@@ -169,7 +167,7 @@ class JavaCaller(object):
         """
         self._monitor_cores = dict()
         for core, monitor_core in monitor_cores.items():
-            placement = placements.get_placement_of_vertex(monitor_core)
+            placement = FecDataView.get_placement_of_vertex(monitor_core)
             self._monitor_cores[core] = placement.p
 
         self._gatherer_iptags = dict()
@@ -177,7 +175,7 @@ class JavaCaller(object):
         for core, packet_gather in packet_gathers.items():
             self._gatherer_iptags[core] = \
                 tags.get_ip_tags_for_vertex(packet_gather)[0]
-            placement = placements.get_placement_of_vertex(packet_gather)
+            placement = FecDataView.get_placement_of_vertex(packet_gather)
             self._gatherer_cores[core] = placement.p
 
         self._chipxy_by_ethernet = defaultdict(list)

@@ -180,8 +180,7 @@ class BufferManager(object):
         if self._java_caller is not None:
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors(
-                    self._placements, self._tags,
-                    self._extra_monitor_cores_by_chip,
+                    self._tags, self._extra_monitor_cores_by_chip,
                     self._packet_gather_cores_to_ethernet_connection_map)
 
     def _request_data(self, placement_x, placement_y, address, length):
@@ -213,7 +212,7 @@ class BufferManager(object):
             placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
         extra_mon_data = receiver.get_data(
-            sender, self._placements.get_placement_of_vertex(sender),
+            sender, FecDataView.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
         if VERIFY:
             txrx_data = FecDataView.read_memory(
@@ -431,7 +430,7 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        placement = self._placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         region_base_address = locate_memory_region_for_placement(
             placement, region)
 
@@ -560,7 +559,7 @@ class BufferManager(object):
             ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
         """
 
-        placement = self._placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,

@@ -235,7 +235,7 @@ def _calculate_chips_active_energy(
 
     # get recordings from the chip power monitor
     recorded_measurements = chip_power_monitor.get_recorded_data(
-        placement=placements.get_placement_of_vertex(chip_power_monitor),
+        placement=FecDataView.get_placement_of_vertex(chip_power_monitor),
         buffer_manager=buffer_manager)
 
     # deduce time in milliseconds per recording element

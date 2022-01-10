@@ -698,12 +698,11 @@ class _MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
-        placements = FecDataView().placements
         machine_graph = FecDataView.get_runtime_machine_graph()
         transceiver = FecDataView.get_transceiver()
         for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
-            placement = placements.get_placement_of_vertex(vertex)
+            placement = FecDataView.get_placement_of_vertex(vertex)
 
             # locate the interface vertex (maybe app or machine)
             if isinstance(
