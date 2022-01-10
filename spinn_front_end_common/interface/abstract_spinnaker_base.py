@@ -1974,7 +1974,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SDRAMOutgoingPartitionAllocator
         """
         with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
-            # Ok if transceiver = None
             sdram_outgoing_partition_allocator()
 
     def _do_mapping(self, total_run_time):

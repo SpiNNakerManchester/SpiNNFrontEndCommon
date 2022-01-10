@@ -24,14 +24,18 @@ def sdram_outgoing_partition_allocator():
     view = FecDataView()
     machine_graph = view.runtime_machine_graph
     placements = view.placements
-    transceiver = FecDataView.get_transceiver()
+    if FecDataView.has_transceiver():
+        transceiver = FecDataView.get_transceiver()
+        virtual_usage = None
+    else:
+        # Ok if transceiver = None
+        transceiver = None
+        virtual_usage = defaultdict(int)
+
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(machine_graph.vertices),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
-
-    if transceiver is None:
-        virtual_usage = defaultdict(int)
 
     for machine_vertex in machine_graph.vertices:
         sdram_partitions = (
