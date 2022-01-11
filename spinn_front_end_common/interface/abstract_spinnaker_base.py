@@ -1838,8 +1838,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Malloc based routing info allocator"):
-            self._data_writer.set_routing_infos(malloc_based_routing_info_allocator(
-                self._machine_partition_n_keys_map))
+            self._data_writer.set_routing_infos(
+                malloc_based_routing_info_allocator(
+                    self._machine_partition_n_keys_map))
 
     def do_info_allocator(self):
         """

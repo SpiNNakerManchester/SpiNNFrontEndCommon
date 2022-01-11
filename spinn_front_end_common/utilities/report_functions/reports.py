@@ -310,7 +310,6 @@ def placement_report_with_application_graph_by_vertex(hostname):
 
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
-    view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
@@ -415,7 +414,6 @@ def placement_report_with_application_graph_by_core(hostname):
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
-    view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
     placements = FecDataView.get_placements()
@@ -478,7 +476,6 @@ def placement_report_without_application_graph_by_core(hostname):
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
-    view = FecDataView()
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")

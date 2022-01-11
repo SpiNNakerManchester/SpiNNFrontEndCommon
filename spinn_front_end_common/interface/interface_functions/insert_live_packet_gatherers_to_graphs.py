@@ -56,7 +56,6 @@ class _InsertLivePacketGatherersToGraphs(object):
         :type application_graph:
             ~pacman.model.graphs.application.ApplicationGraph
         """
-        view = FecDataView()
         self._machine_graph = FecDataView.get_runtime_machine_graph()
         self._application_graph = FecDataView.get_runtime_graph()
 

@@ -27,7 +27,6 @@ def locate_executable_start_type():
     :param ~pacman.model.graphs.machine.MachineGraph graph:
     :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
-    view = FecDataView()
     graph = FecDataView.get_runtime_machine_graph()
     if not graph.vertices:
         return {ExecutableType.NO_APPLICATION: None}

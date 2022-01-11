@@ -63,7 +63,6 @@ class _SystemMulticastRoutingGenerator(object):
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
         """
-        view = FecDataView()
         self._machine = FecDataView.get_machine()
         self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()
@@ -216,7 +215,8 @@ class _SystemMulticastRoutingGenerator(object):
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
             self._key_to_destination_map[x, y] = key
-            placement = FecDataView.get_placement_of_vertex(self._monitors[x, y])
+            placement = FecDataView.get_placement_of_vertex(
+                self._monitors[x, y])
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
                 x, y, link = tree[(x, y)]

@@ -292,7 +292,6 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param dict(int,int) key_atom_map: key to atoms map
             should be allowed to handle per time step
         """
-        view = FecDataView()
         machine_graph = FecDataView.get_runtime_machine_graph()
         placements = FecDataView.get_placements()
         # Find the processors that have bitfield data and where it is
