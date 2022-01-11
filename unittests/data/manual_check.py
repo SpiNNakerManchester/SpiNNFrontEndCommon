@@ -30,15 +30,15 @@ add_spinnaker_cfg()
 
 view = FecDataView()
 try:
-    a = view.simulation_time_step_us
+    a = FecDataView.get_simulation_time_step_us()
     raise Exception("OOPS")
 except NotSetupException:
     pass
 writer = FecDataWriter.setup()
 try:
-    view.simulation_time_step_us
+    FecDataView.get_simulation_time_step_us()
     raise Exception("OOPS")
 except DataNotYetAvialable:
     pass
 writer.set_up_timings(1000, 1)
-print(view.simulation_time_step_us)
+print(FecDataView.get_simulation_time_step_us())

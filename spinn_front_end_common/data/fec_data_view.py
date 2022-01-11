@@ -150,7 +150,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._current_run_timesteps
 
     @classmethod
-    def current_run_time_ms(cls):
+    def get_current_run_time_ms(cls):
         """
         The end of this or the previous do__run loop time in ms.
 
@@ -165,7 +165,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._current_run_timesteps is None:
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
-                cls.simulation_time_step_ms)
+                cls.get_simulation_time_step_ms())
 
     @classmethod
     def get_first_machine_time_step(cls):
@@ -203,7 +203,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # simulation_time_step_methods
 
-    def has_time_step(self):
+    @classmethod
+    def has_time_step(cls):
         """
         Check if any/all of the time_step values are known
 
@@ -213,133 +214,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtype: bool
         """
-        return self.__fec_data._simulation_time_step_us is not None
+        return cls.__fec_data._simulation_time_step_us is not None
 
-    def get_simulation_time_step_us(self):
+    @classmethod
+    def get_simulation_time_step_us(cls):
         """ The simulation timestep, in microseconds or None if not known
 
         Previously know as "machine_time_step"
 
         :rtype: int or None
         """
-        return self.__fec_data._simulation_time_step_us
+        if cls.__fec_data._simulation_time_step_us is None:
+            raise cls._exception("simulation_time_step_us")
+        return cls.__fec_data._simulation_time_step_us
 
-    def get_simulation_time_step_s(self):
-        """ The simulation timestep, in seconds or None if not known
-
-        Semantic sugar for simulation_time_step_us / 1,000,000.
-
-        :rtype: int or None
-        """
-        return self.__fec_data._simulation_time_step_s
-
-    def get_simulation_time_step_ms(self):
-        """ The simulation time step, in milliseconds or None if not known
-
-        Semantic sugar for simulation_time_step_us / 1000.
-
-        :rtype: float or None
-        """
-        return self.__fec_data._simulation_time_step_ms
-
-    def get_simulation_time_step_per_ms(self):
-        """ The simulation time step in a milliseconds or None if not known
-
-        Semantic sugar for 1000 / simulation_time_step_us
-
-        :rtype: float or None
-        :raises SpiNNUtilsExceptionn:
-            If the simulation_time_step is currently unavailable
-        """
-        return self.__fec_data._simulation_time_step_per_ms
-
-    def get_simulation_time_step_per_s(self):
-        """ The simulation time step in a seconds or None if not known
-
-        Semantic sugar for 1,000,000 / simulation_time_step_us
-
-        :rtype: float or None
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        return self.__fec_data._simulation_time_step_per_s
-
-    def get_hardware_time_step_ms(self):
-        """ The hardware timestep, in milliseconds or None if not known
-
-        Semantic sugar for simulation_time_step_ms * time_scale_factor
-
-        :rtype: float or None
-        """
-        return self.__fec_data._hardware_time_step_ms
-
-    def get_hardware_time_step_us(self):
-        """ The hardware timestep, in microeconds or None if not known
-
-        Semantic sugar for simulation_time_step_us * time_scale_factor
-
-        :rtype: int or None
-        """
-        return self.__fec_data._hardware_time_step_us
-
-    @property
-    def simulation_time_step_us(self):
-        """ The simulation time step, in microseconds
-
-        Previously known as machine_timestep
-
-        :rtype: int
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if self.__fec_data._simulation_time_step_us is None:
-            raise self._exception("simulation_time_step_us")
-        return self.__fec_data._simulation_time_step_us
-
-    @property
-    def simulation_time_step_ms(self):
-        """ The simulation timestep, in microseconds
-
-        Semantic sugar for simulation_time_step() / 1000.
-
-        :rtype: float
-        :raises SpiNNUtilsException:
-            If the simulation_time_step_ms is currently unavailable
-        """
-        if self.__fec_data._simulation_time_step_ms is None:
-            raise self._exception("simulation_time_step_ms")
-        return self.__fec_data._simulation_time_step_ms
-
-    @property
-    def simulation_time_step_per_ms(self):
-        """ The simulation time steps per millisecond
-
-        Semantic sugar for 1000 / simulation_time_step()
-
-        :rtype: float
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if self.__fec_data._simulation_time_step_per_ms is None:
-            raise self._exception("simulation_time_step_per_ms")
-        return self.__fec_data._simulation_time_step_per_ms
-
-    @property
-    def simulation_time_step_per_s(self):
-        """ The simulation time steps per second
-
-        Semantic sugar for 1,000,000 / simulation_time_step()
-
-        :rtype: float
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if self.__fec_data._simulation_time_step_per_s is None:
-            raise self._exception("simulation_time_step_per_s")
-        return self.__fec_data._simulation_time_step_per_s
-
-    @property
-    def simulation_time_step_s(self):
+    @classmethod
+    def get_simulation_time_step_s(cls):
         """ The simulation timestep, in seconds
 
         Semantic sugar for simulation_time_step() / 1,000,000.
@@ -348,64 +238,95 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
-        if self.__fec_data._simulation_time_step_s is None:
-            raise self._exception("simulation_time_step_s")
-        return self.__fec_data._simulation_time_step_s
+        if cls.__fec_data._simulation_time_step_us is None:
+            raise cls._exception("simulation_time_step_s")
+        return cls.__fec_data._simulation_time_step_s
 
-    @property
-    def hardware_time_step_ms(self):
-        """ The hardware timestep, in milliseconds
+    @classmethod
+    def get_simulation_time_step_ms(cls):
+        """ The simulation time step, in milliseconds or None if not known
 
-        Semantic sugar for simulation_time_step_ms * time_sclae_factor
+        Semantic sugar for simulation_time_step_us / 1000.
 
-        :rtype: float
+        :rtype: float or None
+        """
+        if cls.__fec_data._simulation_time_step_us is None:
+            raise cls._exception("simulation_time_step_ms")
+        return cls.__fec_data._simulation_time_step_ms
+
+    @classmethod
+    def get_simulation_time_step_per_ms(cls):
+        """ The simulation time step in a milliseconds or None if not known
+
+        Semantic sugar for 1000 / simulation_time_step_us
+
+        :rtype: float or None
+        :raises SpiNNUtilsExceptionn:
+            If the simulation_time_step is currently unavailable
+        """
+        if cls.__fec_data._simulation_time_step_per_ms is None:
+            raise cls._exception("simulation_time_step_per_ms")
+        return cls.__fec_data._simulation_time_step_per_ms
+
+    @classmethod
+    def get_simulation_time_step_per_s(cls):
+        """ The simulation time step in a seconds or None if not known
+
+        Semantic sugar for 1,000,000 / simulation_time_step_us
+
+        :rtype: float or None
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._hardware_time_step_ms is None:
-            raise self._exception("hardware_time_step_ms")
-        return self.__fec_data._hardware_time_step_ms
+        if cls.__fec_data._simulation_time_step_per_s is None:
+            raise cls._exception("simulation_time_step_per_s")
+        return cls.__fec_data._simulation_time_step_per_s
 
-    @property
-    def hardware_time_step_us(self):
-        """ The hardware timestep, in microseconds
+    @classmethod
+    def get_hardware_time_step_ms(cls):
+        """ The hardware timestep, in milliseconds or None if not known
 
-        Semantic sugar for simulation_time_step_us * time_sclae_factor
+        Semantic sugar for simulation_time_step_ms * time_scale_factor
 
-        :rtype: int
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
+        :rtype: float or None
         """
-        if self.__fec_data._hardware_time_step_us is None:
-            raise self._exception("ardware_time_step_us")
-        return self.__fec_data._hardware_time_step_us
+        if cls.__fec_data._hardware_time_step_ms is None:
+            raise cls._exception("hardware_time_step_ms")
+        return cls.__fec_data._hardware_time_step_ms
+
+    @classmethod
+    def get_hardware_time_step_us(cls):
+        """ The hardware timestep, in microeconds or None if not known
+
+        Semantic sugar for simulation_time_step_us * time_scale_factor
+
+        :rtype: int or None
+        """
+        if cls.__fec_data._hardware_time_step_us is None:
+            raise cls._exception("ardware_time_step_us")
+        return cls.__fec_data._hardware_time_step_us
 
     # time scale factor
 
-    def get_time_scale_factor(self):
-        """
-        :rtype: int, float or None
-        """
-        return self.__fec_data._time_scale_factor
-
-    @property
-    def time_scale_factor(self):
+    @classmethod
+    def get_time_scale_factor(cls):
         """
 
         :rtype: int or float
         :raises SpiNNUtilsException:
             If the time_scale_factor is currently unavailable
         """
-        if self.__fec_data._time_scale_factor is None:
-            raise self._exception("time_scale_factor")
-        return self.__fec_data._time_scale_factor
+        if cls.__fec_data._time_scale_factor is None:
+            raise cls._exception("time_scale_factor")
+        return cls.__fec_data._time_scale_factor
 
-    def has_time_scale_factor(self):
+    @classmethod
+    def has_time_scale_factor(cls):
         """
 
         :rtype: bool
         """
-        return self.__fec_data._time_scale_factor is not None
+        return cls.__fec_data._time_scale_factor is not None
 
     # n calls_to run
 

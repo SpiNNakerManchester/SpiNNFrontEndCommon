@@ -797,7 +797,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: The number of timesteps
         :rtype: int
         """
-        time_step_ms = self._data_writer.simulation_time_step_ms
+        time_step_ms = self._data_writer.get_simulation_time_step_ms()
         n_time_steps = int(math.ceil(time_in_ms / time_step_ms))
         calc_time = n_time_steps * time_step_ms
 
@@ -830,15 +830,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None, None
         n_machine_time_steps = self.__timesteps(run_time)
         total_run_timesteps = (
-            self._data_writer.get_current_run_timesteps() + n_machine_time_steps)
+            self._data_writer.get_current_run_timesteps() +
+            n_machine_time_steps)
         total_run_time = (
-            total_run_timesteps * self._data_writer.hardware_time_step_ms)
+            total_run_timesteps *
+            self._data_writer.get_hardware_time_step_ms())
 
         logger.info(
             f"Simulating for {n_machine_time_steps} "
-            f"{self._data_writer.simulation_time_step_ms}ms timesteps "
+            f"{self._data_writer.get_simulation_time_step_ms()} ms timesteps "
             f"using a hardware timestep of "
-            f"{self._data_writer.hardware_time_step_us} us")
+            f"{self._data_writer.get_hardware_time_step_us()} us")
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
@@ -2817,7 +2819,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         run_time = None
         if n_machine_time_steps is not None:
             run_time = (n_machine_time_steps *
-                        self._data_writer.simulation_time_step_ms)
+                        self._data_writer.get_simulation_time_step_ms())
         self._data_writer.increment_current_run_timesteps(
             n_machine_time_steps)
 

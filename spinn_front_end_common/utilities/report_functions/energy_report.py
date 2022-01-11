@@ -90,7 +90,7 @@ class EnergyReport(object):
         # pylint: disable=too-many-arguments, too-many-locals
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = FecDataView().time_scale_factor
+        runtime_total_ms = FecDataView.get_time_scale_factor()
 
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
@@ -161,8 +161,7 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         """
         # pylint: disable=too-many-arguments, too-many-locals
-        view = FecDataView()
-        runtime_total_ms = view.time_scale_factor
+        runtime_total_ms = FecDataView.get_time_scale_factor()
         placements = FecDataView.get_placements()
 
         # write warning about accuracy etc

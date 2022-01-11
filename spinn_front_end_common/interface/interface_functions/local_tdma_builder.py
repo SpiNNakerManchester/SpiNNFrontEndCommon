@@ -89,12 +89,11 @@ def local_tdma_builder(n_keys_map):
     :type n_keys_map:
         ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
     """
-    view = FecDataView()
     if FecDataView.get_runtime_graph().n_vertices == 0:
         return
 
     # get config params
-    us_per_cycle = view.hardware_time_step_us
+    us_per_cycle = FecDataView.get_hardware_time_step_us()
     clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
     (app_machine_quantity, clocks_between_cores, clocks_for_sending,
      clocks_waiting, clocks_initial) = __config_values(clocks_per_cycle)
@@ -132,7 +131,7 @@ def local_tdma_builder(n_keys_map):
                     max_fraction_of_sending, fraction_of_sending)
 
     time_scale_factor_needed = (
-            view.time_scale_factor * max_fraction_of_sending)
+            FecDataView.get_time_scale_factor() * max_fraction_of_sending)
     if max_fraction_of_sending > 1:
         logger.warning(
             "A time scale factor of {} may be needed to run correctly"

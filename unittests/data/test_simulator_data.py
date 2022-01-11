@@ -38,9 +38,9 @@ class TestSimulatorData(unittest.TestCase):
         # Use manual_check to verify this without dependency
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_us
+            FecDataView.get_simulation_time_step_us()
         writer.set_up_timings(1000, 1)
-        view.simulation_time_step_us
+        FecDataView.get_simulation_time_step_us()
 
     def test_run(self):
         view = FecDataView()
@@ -65,7 +65,7 @@ class TestSimulatorData(unittest.TestCase):
         view = FecDataView()
         # check there is a value not what it is
         self.assertIsNotNone(FecDataView.get_app_id())
-        self.assertIsNotNone(view.simulation_time_step_us)
+        self.assertIsNotNone(FecDataView.get_simulation_time_step_us())
 
     def test_multiple(self):
         view = FecDataView()
@@ -134,7 +134,6 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_max_run_time_steps()
-        self.assertEqual(None, writer.get_max_run_time_steps())
         self.assertFalse(FecDataView.has_max_run_time_steps())
         writer.set_max_run_time_steps(13455)
         self.assertEqual(13455, writer.get_max_run_time_steps())
@@ -152,67 +151,60 @@ class TestSimulatorData(unittest.TestCase):
         view = FecDataView()
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_us
+            FecDataView.get_simulation_time_step_us()
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_per_ms
+            FecDataView.get_simulation_time_step_per_ms()
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_per_s
+            FecDataView.get_simulation_time_step_per_s
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_ms
+            FecDataView.get_simulation_time_step_ms()
         with self.assertRaises(DataNotYetAvialable):
-            view.simulation_time_step_s
+            FecDataView.get_simulation_time_step_s()
         with self.assertRaises(DataNotYetAvialable):
-            view.time_scale_factor
+            FecDataView.get_time_scale_factor()
         with self.assertRaises(DataNotYetAvialable):
-            view.hardware_time_step_ms
+            FecDataView.get_hardware_time_step_ms()
         with self.assertRaises(DataNotYetAvialable):
-            view.hardware_time_step_us
-        self.assertEqual(None, view.get_simulation_time_step_us())
-        self.assertEqual(None, view.get_simulation_time_step_ms())
-        self.assertEqual(None, view.get_simulation_time_step_s())
-        self.assertEqual(None, view.get_simulation_time_step_per_ms())
-        self.assertEqual(None, view.get_simulation_time_step_per_s())
-        self.assertEqual(None, view.get_time_scale_factor())
-        self.assertEqual(None, view.get_hardware_time_step_us())
-        self.assertEqual(None, view.get_hardware_time_step_ms())
-        self.assertFalse(view.has_time_step())
+            FecDataView.get_hardware_time_step_us()
+        self.assertFalse(FecDataView.has_time_step())
 
         writer.set_up_timings(500, 4)
-        self.assertEqual(500, view.get_simulation_time_step_us())
-        self.assertEqual(0.5, view.get_simulation_time_step_ms())
-        self.assertEqual(2, view.get_simulation_time_step_per_ms())
-        self.assertEqual(0.0005, view.get_simulation_time_step_s())
-        self.assertEqual(2000, view.get_simulation_time_step_per_s())
-        self.assertEqual(4, view.get_time_scale_factor())
-        self.assertEqual(2000, view.get_hardware_time_step_us())
-        self.assertEqual(2, view.get_hardware_time_step_ms())
-        self.assertEqual(500, view.simulation_time_step_us)
-        self.assertEqual(0.5, view.simulation_time_step_ms)
-        self.assertEqual(0.0005, view.simulation_time_step_s)
-        self.assertEqual(2, view.simulation_time_step_per_ms)
-        self.assertEqual(2000, view.simulation_time_step_per_s)
-        self.assertEqual(4, view.time_scale_factor)
-        self.assertEqual(2, view.hardware_time_step_ms)
-        self.assertEqual(2000, view.hardware_time_step_us)
-        self.assertTrue(view.has_time_step())
+        self.assertEqual(500, FecDataView.get_simulation_time_step_us())
+        self.assertEqual(0.5, FecDataView.get_simulation_time_step_ms())
+        self.assertEqual(2, FecDataView.get_simulation_time_step_per_ms())
+        self.assertEqual(0.0005, FecDataView.get_simulation_time_step_s())
+        self.assertEqual(2000, FecDataView.get_simulation_time_step_per_s())
+        self.assertEqual(4, FecDataView.get_time_scale_factor())
+        self.assertEqual(2000, FecDataView.get_hardware_time_step_us())
+        self.assertEqual(2, FecDataView.get_hardware_time_step_ms())
+        self.assertTrue(FecDataView.has_time_step())
 
         set_config("Machine", "simulation_time_step", 300)
         writer.set_up_timings(None, 1)
-        self.assertEqual(300, view.get_simulation_time_step_us())
+        self.assertEqual(300, FecDataView.get_simulation_time_step_us())
 
         with self.assertRaises(ConfigurationException):
             writer.set_up_timings(-12, 1)
 
         with self.assertRaises(TypeError):
             writer.set_up_timings("bacon", 1)
-        self.assertEqual(None, view.get_simulation_time_step_us())
-        self.assertEqual(None, view.get_simulation_time_step_ms())
-        self.assertEqual(None, view.get_simulation_time_step_s())
-        self.assertEqual(None, view.get_simulation_time_step_per_ms())
-        self.assertEqual(None, view.get_simulation_time_step_per_s())
-        self.assertEqual(None, view.get_time_scale_factor())
-        self.assertEqual(None, view.get_hardware_time_step_ms())
-        self.assertEqual(None, view.get_hardware_time_step_us())
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_simulation_time_step_us()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_simulation_time_step_per_ms()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_simulation_time_step_per_s()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_simulation_time_step_ms()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_simulation_time_step_s()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_time_scale_factor()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_hardware_time_step_ms()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_hardware_time_step_us()
+        self.assertFalse(view.has_time_step())
 
     def test_directories_normal(self):
         writer = FecDataWriter.setup()

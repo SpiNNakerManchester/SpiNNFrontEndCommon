@@ -90,9 +90,8 @@ def compute_energy_used(
     :rtype: PowerUsed
     """
     # pylint: disable=too-many-arguments
-    view = FecDataView()
     runtime_total_ms = FecDataView.get_current_run_timesteps()\
-                       * view.time_scale_factor
+                       * FecDataView.get_time_scale_factor()
     machine = FecDataView.get_machine()
     placements = FecDataView.get_placements()
     power_used = PowerUsed()

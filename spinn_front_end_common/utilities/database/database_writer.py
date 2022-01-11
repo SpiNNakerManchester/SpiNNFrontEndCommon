@@ -195,7 +195,6 @@ class DatabaseWriter(SQLiteDB):
 
         :param int runtime: the amount of time the application is to run for
         """
-        view = FecDataView()
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -203,8 +202,9 @@ class DatabaseWriter(SQLiteDB):
                     parameter_id, value)
                 VALUES (?, ?)
                 """, [
-                    ("machine_time_step", view.simulation_time_step_us),
-                    ("time_scale_factor", view.time_scale_factor),
+                    ("machine_time_step",
+                     FecDataView.get_simulation_time_step_us()),
+                    ("time_scale_factor", FecDataView.get_time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", app_id)])

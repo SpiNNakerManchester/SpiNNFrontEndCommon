@@ -170,7 +170,7 @@ class ProfileData(object):
         :param str tag: The tag to get the data for
         :rtype: float
         """
-        time_step_ms = FecDataView().simulation_time_step_ms
+        time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(
             self._max_time / time_step_ms)
         endpoint = n_points * time_step_ms
@@ -185,7 +185,7 @@ class ProfileData(object):
         :param str tag: The tag to get the data for
         :rtype: float
         """
-        time_step_ms = FecDataView().simulation_time_step_ms
+        time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(
             self._max_time / time_step_ms)
         endpoint = n_points * time_step_ms

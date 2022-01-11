@@ -321,7 +321,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Recording live data, use the user provided receive rate
         # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/896
         keys_per_timestep = math.ceil(
-            receive_rate / FecDataView().simulation_time_step_ms * 1.1)
+            receive_rate / FecDataView.get_simulation_time_step_ms() * 1.1)
         header_size = EIEIODataHeader.get_header_size(
             EIEIOType.KEY_32_BIT, is_payload_base=True)
         # Maximum size is one packet per key
@@ -668,7 +668,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(data=self._receive_sdp_port)
 
         # write timer offset in microseconds
-        max_offset = (FecDataView().hardware_time_step_us // (
+        max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *

@@ -106,9 +106,9 @@ class ChipPowerMonitorMachineVertex(
         :rtype: ~pacman.model.resources.ResourceContainer
         """
         # pylint: disable=too-many-locals
-        view = FecDataView()
         # The number of sample per step does not have to be an int
-        samples_per_step = (view.hardware_time_step_us / sampling_frequency)
+        samples_per_step = (FecDataView.get_hardware_time_step_us() /
+                            sampling_frequency)
         n_samples_per_recording = get_config_int(
             "EnergyMonitor", "n_samples_per_recording_entry")
         recording_per_step = (samples_per_step / n_samples_per_recording)
@@ -239,12 +239,11 @@ class ChipPowerMonitorMachineVertex(
         :return: the SDRAM usage
         :rtype: int
         """
-        view = FecDataView()
-
         recording_time = \
             self._sampling_frequency * get_config_int(
                 "EnergyMonitor", "n_samples_per_recording_entry")
-        n_entries = math.floor(view.hardware_time_step_us / recording_time)
+        n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
+                               recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement, buffer_manager):
