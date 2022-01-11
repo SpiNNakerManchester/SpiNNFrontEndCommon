@@ -704,8 +704,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self._recording_sdram_per_timestep(
                 self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * \
-                             FecDataView.get_max_run_time_steps()
+            recording_size = (
+                    per_timestep * FecDataView.get_max_run_time_steps())
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information

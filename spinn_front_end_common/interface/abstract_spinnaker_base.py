@@ -3328,7 +3328,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have run forever, stop the binaries
 
-        if (self._has_ran and self._data_writer.get_current_run_timesteps() is None
+        if (self._has_ran
+                and self._data_writer.get_current_run_timesteps() is None
                 and not self._use_virtual_board
                 and not self._run_until_complete):
             try:

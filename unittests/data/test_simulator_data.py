@@ -33,7 +33,6 @@ class TestSimulatorData(unittest.TestCase):
         unittest_setup()
 
     def test_setup(self):
-        view = FecDataView()
         # What happens before setup depends on the previous test
         # Use manual_check to verify this without dependency
         writer = FecDataWriter.setup()
@@ -43,7 +42,6 @@ class TestSimulatorData(unittest.TestCase):
         FecDataView.get_simulation_time_step_us()
 
     def test_run(self):
-        view = FecDataView()
         writer = FecDataWriter.setup()
         self.assertEqual(1, FecDataView.get_n_calls_to_run())
         writer.start_run()
@@ -62,7 +60,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn("run_3", FecDataView.get_run_dir_path())
 
     def test_mock(self):
-        view = FecDataView()
         # check there is a value not what it is
         self.assertIsNotNone(FecDataView.get_app_id())
         self.assertIsNotNone(FecDataView.get_simulation_time_step_us())
@@ -295,7 +292,6 @@ class TestSimulatorData(unittest.TestCase):
             self.assertTrue(os.path.exists(writer.system_provenance_dir_path))
 
     def test_get_n_calls_to_run(self):
-        view = FecDataView()
         writer = FecDataWriter.setup()
         self.assertTrue(FecDataWriter.has_n_calls_to_run())
         self.assertEqual(1, FecDataView.get_n_calls_to_run())
