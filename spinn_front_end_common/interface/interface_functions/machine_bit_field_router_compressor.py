@@ -138,7 +138,7 @@ class _MachineBitFieldRouterCompressor(object):
         :return: where the compressors ran
         """
         view = FecDataView()
-        app_id = view.app_id
+        app_id = FecDataView.get_app_id()
         machine_graph = FecDataView.get_runtime_machine_graph()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:

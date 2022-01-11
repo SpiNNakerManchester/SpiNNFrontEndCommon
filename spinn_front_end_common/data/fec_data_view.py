@@ -129,19 +129,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # app_id methods
 
-    @property
-    def app_id(self):
-        """
-        The current application id
-
-        :rtype: int
-        :raises SpiNNUtilsException:
-            If the app_id is currently unavailable
-        """
-        if self.__fec_data._app_id is None:
-            self.__fec_data._app_id = self.get_new_id()
-        return self.__fec_data._app_id
-
     @classmethod
     def get_app_id(cls):
         if cls.__fec_data._app_id is None:

@@ -47,8 +47,7 @@ class _ChipProvenanceUpdater(object):
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
-        view = FecDataView()
-        self.__app_id = view.app_id
+        self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
 
     def _run(self):

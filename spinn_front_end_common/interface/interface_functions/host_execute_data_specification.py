@@ -354,7 +354,7 @@ class _HostExecuteDataSpecification(object):
         :param processor_to_app_data_base_address:
             map of placement and DSG data
         """
-        self._app_id = FecDataView().app_id
+        self._app_id = FecDataView.get_app_id()
         self._core_to_conn_map = None
         self._java = java_caller
         self._monitors = None

@@ -64,7 +64,7 @@ class TestSimulatorData(unittest.TestCase):
     def test_mock(self):
         view = FecDataView()
         # check there is a value not what it is
-        self.assertIsNotNone(view.app_id)
+        self.assertIsNotNone(FecDataView.get_app_id())
         self.assertIsNotNone(view.simulation_time_step_us)
 
     def test_multiple(self):
@@ -72,22 +72,20 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         view2 = FecDataView()
         writer.set_app_id(7)
-        self.assertEqual(7, view.app_id)
-        self.assertEqual(7, view2.app_id)
-        self.assertEqual(7, writer.app_id)
+        self.assertEqual(7, view.get_app_id())
+        self.assertEqual(7, view2.get_app_id())
+        self.assertEqual(7, FecDataView.get_app_id())
+        self.assertEqual(7, writer.get_app_id())
 
     def test_app_id(self):
         writer = FecDataWriter.setup()
-        # Not critical it is 17 as long as below three are the same
-        self.assertEqual(17, writer.app_id)
-        self.assertEqual(17, writer.app_id)
-        self.assertEqual(17, writer.app_id)
+        app_id1 = writer.get_app_id()
+        self.assertEqual(app_id1, writer.get_app_id())
+        self.assertEqual(app_id1, writer.get_app_id())
         writer.clear_app_id()
-        # Not critical is 18 as long as different to above
-        self.assertEqual(18, writer.app_id)
+        self.assertNotEqual(app_id1, writer.get_app_id())
         writer.hard_reset()
-        # Not critical it is 17 but should repeat from before
-        self.assertEqual(17, writer.app_id)
+        self.assertEqual(app_id1, writer.get_app_id())
 
     def test_run_times(self):
         writer = FecDataWriter.setup()

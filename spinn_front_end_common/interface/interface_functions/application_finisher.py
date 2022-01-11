@@ -38,8 +38,7 @@ def application_finisher(executable_types):
         dict(ExecutableType,~spinn_machine.CoreSubsets)
     :raises ExecutableFailedToStopException:
     """
-    view = FecDataView()
-    app_id = view.app_id
+    app_id = FecDataView.get_app_id()
     txrx = FecDataView.get_transceiver()
     total_processors = \
         len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])

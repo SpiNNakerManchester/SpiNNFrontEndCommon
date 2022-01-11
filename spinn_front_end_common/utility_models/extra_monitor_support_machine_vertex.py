@@ -274,7 +274,7 @@ class ExtraMonitorSupportMachineVertex(
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
-        self._app_id = FecDataView().app_id
+        self._app_id = FecDataView.get_app_id()
         # write reinjection config
         self._generate_reinjection_config(
             spec, router_timeout_keys, placement)

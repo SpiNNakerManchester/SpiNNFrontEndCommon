@@ -251,14 +251,15 @@ class Compression(object):
         data = b''
         if self._compress_only_when_needed is None:
             data += _THREE_WORDS.pack(
-                FecDataView().app_id,
+                FecDataView.get_app_id(),
                 int(self._compress_as_much_as_possible),
                 # Write the size of the table
                 table.number_of_entries)
         else:
             # Mundy's compressor can not be changed so uses it own structure
             data += _FOUR_WORDS.pack(
-                FecDataView().app_id, int(self._compress_only_when_needed),
+                FecDataView.get_app_id(),
+                int(self._compress_only_when_needed),
                 int(self._compress_as_much_as_possible),
                 # Write the size of the table
                 table.number_of_entries)

@@ -30,8 +30,7 @@ def _emergency_state_check():
     """
     # pylint: disable=broad-except
     try:
-        view = FecDataView()
-        app_id = view.app_id
+        app_id = FecDataView.get_app_id()
         txrx = FecDataView.get_transceiver()
         rte_count = txrx.get_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)

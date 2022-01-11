@@ -21,7 +21,6 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 
 def sdram_outgoing_partition_allocator():
-    view = FecDataView()
     machine_graph = FecDataView.get_runtime_machine_graph()
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
@@ -40,7 +39,7 @@ def sdram_outgoing_partition_allocator():
         sdram_partitions = (
             machine_graph.get_sdram_edge_partitions_starting_at_vertex(
                 machine_vertex))
-        app_id = view.app_id
+        app_id = FecDataView.get_app_id()
         for sdram_partition in sdram_partitions:
 
             # get placement, ones where the src is multiple,

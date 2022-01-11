@@ -30,7 +30,7 @@ def fixed_route_from_machine_report():
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")
 
-    app_id = FecDataView().app_id
+    app_id = FecDataView.get_app_id()
     with open(file_name, "w") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):

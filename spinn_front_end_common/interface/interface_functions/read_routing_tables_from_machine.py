@@ -30,8 +30,7 @@ def read_routing_tables_from_machine(routing_tables):
     progress = ProgressBar(
         routing_tables, "Reading Routing Tables from Machine")
     machine_routing_tables = MulticastRoutingTables()
-    view = FecDataView()
-    app_id = view.app_id
+    app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
     for routing_table in progress.over(routing_tables):
         # get multicast entries from machine

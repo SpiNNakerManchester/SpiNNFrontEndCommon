@@ -28,8 +28,7 @@ def load_fixed_routes(fixed_routes):
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(fixed_routes),
         string_describing_what_being_progressed="loading fixed routes")
-    view = FecDataView()
-    app_id = view.app_id
+    app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
     for chip_x, chip_y in progress_bar.over(fixed_routes.keys()):
         transceiver.load_fixed_route(

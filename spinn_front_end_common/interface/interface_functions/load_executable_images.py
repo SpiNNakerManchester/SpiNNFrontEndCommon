@@ -50,8 +50,7 @@ def __load_images(executable_targets, filt, label):
     :param str label
     """
     # Compute what work is to be done here
-    view = FecDataView()
-    app_id = view.app_id
+    app_id = FecDataView.get_app_id()
     txrx = FecDataView.get_transceiver()
     binaries, cores = filter_targets(executable_targets, filt)
 
