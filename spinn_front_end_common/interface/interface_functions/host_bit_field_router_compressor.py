@@ -44,16 +44,13 @@ from pacman.operations.router_compressors.pair_compressor import (
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 
-def host_based_bit_field_router_compressor(
-        router_tables, routing_infos):
+def host_based_bit_field_router_compressor(router_tables):
     """
     Entry point when using the PACMANAlgorithmExecutor
 
     :param router_tables: routing tables (uncompressed and unordered)
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        routing information
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """

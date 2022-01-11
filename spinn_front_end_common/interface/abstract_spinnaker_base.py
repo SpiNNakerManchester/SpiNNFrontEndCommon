@@ -2111,7 +2111,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
-                self._router_tables, self._routing_infos)
+                self._router_tables)
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
