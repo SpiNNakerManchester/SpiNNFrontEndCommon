@@ -349,24 +349,27 @@ def __board_n_operational_fpgas(ethernet_chip):
 
     # TODO: should be possible to get this info from Machine
 
+    # As the Chips can be None use the machine call and not the View call
+    machine = FecDataView.get_machine()
+
     # positions to check for active links
     left_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 0), (0, 1), (0, 2), (0, 3), (0, 4)))
     right_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((7, 3), (7, 4), (7, 5), (7, 6), (7, 7)))
     top_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((4, 7), (5, 7), (6, 7), (7, 7)))
     bottom_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 0), (1, 0), (2, 0), (3, 0), (4, 0)))
     top_left_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 3), (1, 4), (2, 5), (3, 6), (4, 7)))
     bottom_right_chips = (
-        FecDataView.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
+        machine.get_chip_at(ethernet_chip.x + dx, ethernet_chip.y + dy)
         for dx, dy in ((0, 4), (1, 5), (2, 6), (3, 7)))
 
     # bottom left, bottom
