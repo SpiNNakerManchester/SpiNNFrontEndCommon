@@ -688,7 +688,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int data_n_time_steps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
-        self._update_virtual_key(o)
+        self._update_virtual_key()
 
         # Reserve regions
         self._reserve_regions(spec)

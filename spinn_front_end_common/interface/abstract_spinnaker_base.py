@@ -568,7 +568,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         results = []
         for key in ["DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables",
-                    "MachinePartitionNKeysMap", "RoutingInfos",
+                    "MachinePartitionNKeysMap",
                     "SystemMulticastRouterTimeoutKeys", "Tags"]:
             item = self._unchecked_gettiem(key)
             if item is not None:
@@ -592,8 +592,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._data_in_multicast_routing_tables
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
-        if item == "RoutingInfos":
-            return self._data_writer.get_routing_infos()
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
         if item == "Tags":
