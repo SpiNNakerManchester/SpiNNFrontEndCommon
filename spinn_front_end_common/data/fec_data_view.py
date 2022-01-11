@@ -136,9 +136,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._app_id
 
     # current_run_timesteps and first_machine_time_step
-    # Only a property as always available
-    @property
-    def current_run_timesteps(self):
+    @classmethod
+    def get_current_run_timesteps(cls):
         """
         The end of this or the previous do__run loop time in steps.
 
@@ -148,10 +147,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtpye: int or None
         """
-        return self.__fec_data._current_run_timesteps
+        return cls.__fec_data._current_run_timesteps
 
-    @property
-    def current_run_time_ms(self):
+    @classmethod
+    def current_run_time_ms(cls):
         """
         The end of this or the previous do__run loop time in ms.
 
@@ -163,13 +162,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtpye: float
         """
-        if self.__fec_data._current_run_timesteps is None:
+        if cls.__fec_data._current_run_timesteps is None:
             return 0.0
-        return (self.__fec_data._current_run_timesteps *
-                self.simulation_time_step_ms)
+        return (cls.__fec_data._current_run_timesteps *
+                cls.simulation_time_step_ms)
 
-    @property
-    def first_machine_time_step(self):
+    @classmethod
+    def get_first_machine_time_step(cls):
         """
         The start of this or the next do_run loop time in steps
 
@@ -177,47 +176,30 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtpye: int or None
         """
-        return self.__fec_data._first_machine_time_step
+        return cls.__fec_data._first_machine_time_step
 
     # max_run_time_steps methods
 
-    def get_max_run_time_steps(self):
+    @classmethod
+    def get_max_run_time_steps(cls):
         """
         Returns the calculated longest time this or a future run loop could be
 
         Mainly ued to indicate the number of timesteps the vertex can and
         therefor should reserve memry for
 
-        Guranteed to be None (unkown) or possitve
+        Guranteed to be possitve
 
         :rtype: None or int
         """
-        return self.__fec_data._max_run_time_steps
+        if cls.__fec_data._max_run_time_steps is None:
+            raise cls._exception("max_run_time_steps")
 
-    @property
-    def max_run_time_steps(self):
-        """
-        Returns the calculated longest time this or a future run loop could be
-
-        Mainly ued to indicate the number of timesteps the vertex can and
-        therefor should reserve memory for
-
-        Guranteed to be possitve
-
-        :rtype: int
-        :raises SpiNNUtilsException:
-            If the max_run_time_steps is currently unavailable
-        """
-        if self.__fec_data._max_run_time_steps is None:
-            raise self._exception("max_run_time_steps")
-        return self.__fec_data._max_run_time_steps
-
-    @classmethod
-    def get_max_run_time_steps2(cls):
         return cls.__fec_data._max_run_time_steps
 
-    def has_max_run_time_steps(self):
-        return self.__fec_data._max_run_time_steps is not None
+    @classmethod
+    def has_max_run_time_steps(cls):
+        return cls.__fec_data._max_run_time_steps is not None
 
     # simulation_time_step_methods
 

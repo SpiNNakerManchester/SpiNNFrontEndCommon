@@ -830,7 +830,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None, None
         n_machine_time_steps = self.__timesteps(run_time)
         total_run_timesteps = (
-            self._data_writer.current_run_timesteps + n_machine_time_steps)
+            self._data_writer.get_current_run_timesteps() + n_machine_time_steps)
         total_run_time = (
             total_run_timesteps * self._data_writer.hardware_time_step_ms)
 
@@ -2686,7 +2686,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ChipIOBufClearer if required
 
         """
-        if self._data_writer.current_run_timesteps is None:
+        if self._data_writer.get_current_run_timesteps() is None:
             return
         with FecTimer(RUN_LOOP, "Clear IO buffer") as timer:
             if timer.skip_if_virtual_board():
@@ -3326,7 +3326,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have run forever, stop the binaries
 
-        if (self._has_ran and self._data_writer.current_run_timesteps is None
+        if (self._has_ran and self._data_writer.get_current_run_timesteps() is None
                 and not self._use_virtual_board
                 and not self._run_until_complete):
             try:

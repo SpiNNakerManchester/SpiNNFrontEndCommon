@@ -155,7 +155,7 @@ class _GraphDataSpecificationWriter(object):
                 for i, size in enumerate(spec.region_sizes):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))
                     est_size = est_size.get_total_sdram(
-                        FecDataView().max_run_time_steps)
+                        FecDataView.get_max_run_time_steps())
                     if size > est_size:
                         logger.warn(
                             "Region {} of vertex {} is bigger than expected: "
@@ -176,7 +176,7 @@ class _GraphDataSpecificationWriter(object):
                 vert, self._region_sizes[pl.x, pl.y, pl.p],
                 sum(self._region_sizes[pl.x, pl.y, pl.p]),
                 vert.resources_required.sdram.get_total_sdram(
-                    FecDataView().max_run_time_steps))
+                    FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(

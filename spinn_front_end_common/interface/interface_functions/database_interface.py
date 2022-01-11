@@ -92,7 +92,6 @@ class _DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        view = FecDataView()
         app_graph = FecDataView.get_runtime_graph()
         machine_graph = FecDataView.get_runtime_machine_graph()
         with self._writer as w, ProgressBar(
@@ -104,7 +103,8 @@ class _DatabaseInterface(object):
             if app_graph is not None and app_graph.n_vertices:
                 w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(machine_graph, view.max_run_time_steps, app_graph)
+            w.add_vertices(
+                machine_graph, FecDataView.get_max_run_time_steps(), app_graph)
             p.update()
             w.add_placements()
             p.update()

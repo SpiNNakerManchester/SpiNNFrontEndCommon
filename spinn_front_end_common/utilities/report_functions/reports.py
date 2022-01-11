@@ -530,7 +530,6 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
         The number of timesteps for which placer reserved space.
     :rtype: None
     """
-    view = FecDataView()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
     n_placements = FecDataView.get_placements().n_placements
     time_date_string = time.strftime("%c")
@@ -550,7 +549,7 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, view.max_run_time_steps, progress, True, True)
+                f, FecDataView.get_max_run_time_steps(), progress, True, True)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)

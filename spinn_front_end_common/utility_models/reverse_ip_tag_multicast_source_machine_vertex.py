@@ -480,9 +480,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """ Fill the send buffer with keys to send.
 
        """
-        view = FecDataView()
-        first_machine_time_step = view.first_machine_time_step
-        run_until_timesteps = view.current_run_timesteps
+        first_machine_time_step = FecDataView.get_first_machine_time_step()
+        run_until_timesteps = FecDataView.get_current_run_timesteps()
         if (self._first_machine_time_step == first_machine_time_step and
                 self._run_until_timesteps == run_until_timesteps):
             return
@@ -582,7 +581,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_size = (
                 self._send_buffer_sdram_per_timestep(
                     self._send_buffer_times, self._n_keys) *
-                FecDataView().max_run_time_steps)
+                FecDataView.get_max_run_time_steps())
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
@@ -705,7 +704,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self._recording_sdram_per_timestep(
                 self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * FecDataView().max_run_time_steps
+            recording_size = per_timestep * \
+                             FecDataView.get_max_run_time_steps()
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information

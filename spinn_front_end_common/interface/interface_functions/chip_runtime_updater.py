@@ -30,7 +30,6 @@ def chip_runtime_updater(executable_types, n_sync_steps):
         :param n_sync_steps:
         :type n_sync_steps: int or None
     """
-    view = FecDataView()
     core_subsets = \
         executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
@@ -46,14 +45,14 @@ def chip_runtime_updater(executable_types, n_sync_steps):
             CPUState.FINISHED}))
     ready_progress.end()
 
-    run_until_timesteps = view.current_run_timesteps
+    run_until_timesteps = FecDataView.get_current_run_timesteps()
     if run_until_timesteps is None:
         infinite_run = 1
         run_until_timesteps = 0
         current_timesteps = 0
     else:
         infinite_run = 0
-        current_timesteps = view.first_machine_time_step
+        current_timesteps = FecDataView.get_first_machine_time_step()
 
     process = UpdateRuntimeProcess(FecDataView.get_scamp_connection_selector())
     process.update_runtime(

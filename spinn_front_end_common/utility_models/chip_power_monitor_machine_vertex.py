@@ -186,7 +186,7 @@ class ChipPowerMonitorMachineVertex(
         spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick()
-            * FecDataView().max_run_time_steps]
+            * FecDataView.get_max_run_time_steps()]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 

@@ -89,20 +89,20 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_run_times(self):
         writer = FecDataWriter.setup()
-        self.assertEqual(0, writer.first_machine_time_step)
-        self.assertEqual(0, writer.current_run_timesteps)
+        self.assertEqual(0, FecDataView.get_first_machine_time_step())
+        self.assertEqual(0, FecDataView.get_current_run_timesteps())
         writer.increment_current_run_timesteps(105)
-        self.assertEqual(0, writer.first_machine_time_step)
-        self.assertEqual(105, writer.current_run_timesteps)
+        self.assertEqual(0, FecDataView.get_first_machine_time_step())
+        self.assertEqual(105, FecDataView.get_current_run_timesteps())
         writer.increment_current_run_timesteps(95)
-        self.assertEqual(105, writer.first_machine_time_step)
-        self.assertEqual(200, writer.current_run_timesteps)
+        self.assertEqual(105, FecDataView.get_first_machine_time_step())
+        self.assertEqual(200, FecDataView.get_current_run_timesteps())
         writer.increment_current_run_timesteps(0)
-        self.assertEqual(200, writer.first_machine_time_step)
-        self.assertEqual(200, writer.current_run_timesteps)
+        self.assertEqual(200, FecDataView.get_first_machine_time_step())
+        self.assertEqual(200, FecDataView.get_current_run_timesteps())
         writer.hard_reset()
-        self.assertEqual(0, writer.first_machine_time_step)
-        self.assertEqual(0, writer.current_run_timesteps)
+        self.assertEqual(0, FecDataView.get_first_machine_time_step())
+        self.assertEqual(0,  FecDataView.get_current_run_timesteps())
         with self.assertRaises(TypeError):
             writer.increment_current_run_timesteps(45.0)
         with self.assertRaises(ConfigurationException):
@@ -114,8 +114,8 @@ class TestSimulatorData(unittest.TestCase):
     def test_run_forever(self):
         writer = FecDataWriter.setup()
         writer.increment_current_run_timesteps(None)
-        self.assertEqual(0, writer.first_machine_time_step)
-        self.assertIsNone(writer.current_run_timesteps)
+        self.assertEqual(0, FecDataView.get_first_machine_time_step())
+        self.assertIsNone(FecDataView.get_current_run_timesteps())
         with self.assertRaises(NotImplementedError):
             writer.increment_current_run_timesteps(None)
         with self.assertRaises(NotImplementedError):
@@ -124,22 +124,22 @@ class TestSimulatorData(unittest.TestCase):
     def test_current_run_times_ms(self):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
-            writer.current_run_time_ms
+            FecDataView.get_current_run_time_ms()
         writer.set_up_timings(500, 4)
-        self.assertEqual(0, writer.current_run_time_ms)
+        self.assertEqual(0, FecDataView.get_current_run_time_ms())
         writer.increment_current_run_timesteps(88)
-        self.assertEqual(44, writer.current_run_time_ms)
+        self.assertEqual(44, FecDataView.get_current_run_time_ms())
 
     def test_max_run_time_steps(self):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
-            writer.max_run_time_steps
+            FecDataView.get_max_run_time_steps()
         self.assertEqual(None, writer.get_max_run_time_steps())
-        self.assertFalse(writer.has_max_run_time_steps())
+        self.assertFalse(FecDataView.has_max_run_time_steps())
         writer.set_max_run_time_steps(13455)
         self.assertEqual(13455, writer.get_max_run_time_steps())
-        self.assertEqual(13455, writer.max_run_time_steps)
-        self.assertTrue(writer.has_max_run_time_steps)
+        self.assertEqual(13455, FecDataView.get_max_run_time_steps())
+        self.assertTrue(FecDataView.has_max_run_time_steps)
 
         with self.assertRaises(TypeError):
             writer.set_max_run_time_steps(45.0)
