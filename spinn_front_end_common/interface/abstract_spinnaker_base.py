@@ -3090,7 +3090,7 @@ class AbstractSpinnakerBase(ConfigHandler):
          :rtype: ~spinn_machine.Machine
          """
         self._get_machine()
-        return self._data_writer.machine
+        return self._data_writer.get_machine()
 
     @property
     def fixed_routes(self):
@@ -3266,7 +3266,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     board_address=reverse_ip_tag.board_address)
 
         # if clearing routing table entries, clear
-        machine = self._data_writer.machine
+        machine = self._data_writer.get_machine()
         if clear_routing_tables:
             for router_table in self._router_tables.routing_tables:
                 if not machine.get_chip_at(
@@ -3375,7 +3375,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: int
         """
         self._get_machine()
-        machine = self._data_writer.machine
+        machine = self._data_writer.get_machine()
         # get cores of machine
         cores = machine.total_available_user_cores
         take_into_account_chip_power_monitor = get_config_bool(
