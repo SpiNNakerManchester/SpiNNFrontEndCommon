@@ -85,7 +85,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def __create_run_dir_path(self):
         self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
-            f"run_{self.n_calls_to_run}"))
+            f"run_{self.get_n_calls_to_run()}"))
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(

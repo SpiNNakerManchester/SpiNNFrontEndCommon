@@ -331,38 +331,24 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # n calls_to run
 
     # The data the user gets needs not be the exact data cached
-    def get_n_calls_to_run(self):
+    @classmethod
+    def get_n_calls_to_run(cls):
         """
         The number of this or the next call to run or None if not Known
 
         :rtpye: int
         """
-        try:
-            if self.get_status() == Data_Status.IN_RUN:
-                return self.__fec_data._n_calls_to_run
-            else:
-                # This is the current behaviour in ASB
-                return self.__fec_data._n_calls_to_run + 1
-        except TypeError:
-            return None
-
-    @property
-    def n_calls_to_run(self):
-        """
-        The number of this or the next call to run
-
-        :rtpye: int
-        """
-        if self.__fec_data._n_calls_to_run is None:
-            raise self._exception("n_calls_to_run")
-        if self.get_status() == Data_Status.IN_RUN:
-            return self.__fec_data._n_calls_to_run
+        if cls.__fec_data._n_calls_to_run is None:
+            raise cls._exception("n_calls_to_run")
+        if cls.get_status() == Data_Status.IN_RUN:
+            return cls.__fec_data._n_calls_to_run
         else:
             # This is the current behaviour in ASB
-            return self.__fec_data._n_calls_to_run + 1
+            return cls.__fec_data._n_calls_to_run + 1
 
-    def has_n_calls_to_run(self):
-        return self.__fec_data._n_calls_to_run is not None
+    @classmethod
+    def has_n_calls_to_run(cls):
+        return cls.__fec_data._n_calls_to_run is not None
 
     # Report directories
     # There are NO has or get methods for directories
