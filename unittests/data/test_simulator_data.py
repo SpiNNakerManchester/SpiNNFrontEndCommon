@@ -155,7 +155,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_simulation_time_step_per_ms()
         with self.assertRaises(DataNotYetAvialable):
-            FecDataView.get_simulation_time_step_per_s
+            FecDataView.get_simulation_time_step_per_s()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_simulation_time_step_ms()
         with self.assertRaises(DataNotYetAvialable):
