@@ -486,7 +486,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._has_ran:
             self._data_writer.get_transceiver().stop_application(
-                self._data_writer.app_id)
+                self._data_writer.get_app_id())
         self._data_writer.hard_reset()
         self._buffer_manager = None
         self._database_file_path = None
@@ -908,7 +908,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if (graph_changed or data_changed) and self._has_ran:
             if not self.has_reset_last or not self._user_accessed_machine:
                 self._data_writer.get_transceiver().stop_application(
-                    self._data_writer.app_id)
+                    self._data_writer.get_app_id())
 
             self._no_sync_changes = 0
 
@@ -3282,7 +3282,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __stop_app(self):
         if self._data_writer.has_transceiver():
             transceiver = self._data_writer.get_transceiver()
-            transceiver.stop_application(self._data_writer.app_id)
+            transceiver.stop_application(self._data_writer.get_app_id())
             self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
@@ -3414,7 +3414,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             sync_signal = Signal.SYNC1
         transceiver = self._data_writer.get_transceiver()
-        transceiver.send_signal(self._data_writer.app_id, sync_signal)
+        transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
         self._no_sync_changes += 1
 
     @staticmethod
