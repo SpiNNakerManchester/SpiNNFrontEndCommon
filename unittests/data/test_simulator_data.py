@@ -204,7 +204,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse(view.has_time_step())
 
     def test_directories_normal(self):
-        writer = FecDataWriter.setup()
+        FecDataWriter.setup()
         report_dir = FecDataView.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
 
@@ -261,7 +261,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn("run_3", run_dir)
 
     def test_directories_mocked(self):
-        writer = FecDataWriter.mock()
+        FecDataWriter.mock()
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
