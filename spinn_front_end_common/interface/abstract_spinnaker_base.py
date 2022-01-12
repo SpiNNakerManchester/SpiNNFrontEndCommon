@@ -210,9 +210,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the holder for the fixed routes generated, if there are any
         "_fixed_routes",
 
-        # The holder for the IP tags and reverse IP tags used by the simulation
-        "_tags",
-
         # The manager of streaming buffered data in and out of the SpiNNaker
         # machine
         "_buffer_manager",
@@ -510,7 +507,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._router_tables = None
         self._routing_table_by_partition = None
         self._system_multicast_router_timeout_keys = None
-        self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
@@ -569,7 +565,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         for key in ["DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables",
                     "MachinePartitionNKeysMap",
-                    "SystemMulticastRouterTimeoutKeys", "Tags"]:
+                    "SystemMulticastRouterTimeoutKeys"]:
             item = self._unchecked_gettiem(key)
             if item is not None:
                 results.append((key, item))
@@ -594,8 +590,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._machine_partition_n_keys_map
         if item == "SystemMulticastRouterTimeoutKeys":
             return self._system_multicast_router_timeout_keys
-        if item == "Tags":
-            return self._tags
         raise KeyError(f"Unexpected Item {item}")
 
     def set_n_boards_required(self, n_boards_required):
@@ -1779,7 +1773,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-            self._tags = basic_tag_allocator(self._plan_n_timesteps)
+            self._data_writer.set_tags(
+                basic_tag_allocator(self._plan_n_timesteps))
 
     def _report_tag_allocations(self):
         """
@@ -1789,7 +1784,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_tag_allocation_reports"):
                 return
-            tag_allocator_report(self._tags)
+            tag_allocator_report()
 
     def _execute_process_partition_constraints(self):
         """
@@ -1959,7 +1954,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             self._buffer_manager = buffer_manager_creator(
-                self._tags, self._extra_monitor_vertices,
+                self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._fixed_routes, self._java_caller)
@@ -2432,7 +2427,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Tags Loader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            tags_loader(self._tags)
+            tags_loader()
 
     def _do_extra_load_algorithms(self):
         """
@@ -2726,7 +2721,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
-                self._tags, run_time, self._router_tables)
+                run_time, self._router_tables)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -3102,13 +3097,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._fixed_routes
 
     @property
-    def tags(self):
-        """
-        :rtype: ~pacman.model.tags.Tags
-        """
-        return self._tags
-
-    @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
@@ -3259,10 +3247,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         transceiver = self._data_writer.get_transceiver()
 
         if clear_tags:
-            for ip_tag in self._tags.ip_tags:
+            for ip_tag in self._data_writer.get_tags().ip_tags:
                 transceiver.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
-            for reverse_ip_tag in self._tags.reverse_ip_tags:
+            for reverse_ip_tag in self._data_writer.get_tags().reverse_ip_tags:
                 transceiver.clear_ip_tag(
                     reverse_ip_tag.tag,
                     board_address=reverse_ip_tag.board_address)

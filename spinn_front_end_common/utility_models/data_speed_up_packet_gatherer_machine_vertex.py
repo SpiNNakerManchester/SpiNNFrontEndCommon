@@ -371,23 +371,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @inject_items({
-        "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
         "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "tags",
             "mc_data_chips_to_keys", "router_timeout_key"
         })
     def generate_data_specification(
-            self, spec, placement, tags,
-            mc_data_chips_to_keys, router_timeout_key):
+            self, spec, placement,  mc_data_chips_to_keys, router_timeout_key):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (injected)
-        :param ~pacman.model.tags.Tags tags: (injected)
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
         :param dict(tuple(int,int),int) router_timeout_key: (injected)
         """
@@ -426,7 +420,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # locate the tag ID for our data and update with a port
         # Note: The port doesn't matter as we are going to override this later
-        iptags = tags.get_ip_tags_for_vertex(self)
+        iptags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         iptag = iptags[0]
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag

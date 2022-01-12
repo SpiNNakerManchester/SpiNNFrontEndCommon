@@ -22,13 +22,12 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 
 
 def buffer_manager_creator(
-        tags, extra_monitor_cores=None,
+        extra_monitor_cores=None,
         extra_monitor_to_chip_mapping=None,
         packet_gather_cores_to_ethernet_connection_map=None,
         fixed_routes=None, java_caller=None):
     """ Creates a buffer manager.
 
-    :param ~pacman.model.tags.Tags tags:
     :param bool uses_advanced_monitors:
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
     :param extra_monitor_to_chip_mapping:
@@ -48,7 +47,6 @@ def buffer_manager_creator(
 
     # Create the buffer manager
     buffer_manager = BufferManager(
-        tags=tags,
         extra_monitor_cores=extra_monitor_cores,
         packet_gather_cores_to_ethernet_connection_map=(
             packet_gather_cores_to_ethernet_connection_map),

@@ -148,13 +148,11 @@ class LivePacketGatherMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @inject_items({"tags": "Tags"})
     @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"tags"})
+        AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            tags):
+            ):
         """
         :param ~pacman.model.tags.Tags tags:
         """
@@ -165,7 +163,7 @@ class LivePacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec)
         self._write_configuration_region(
-            spec, tags.get_ip_tags_for_vertex(self))
+            spec, FecDataView.get_tags().get_ip_tags_for_vertex(self))
 
         # End-of-Spec:
         spec.end_specification()

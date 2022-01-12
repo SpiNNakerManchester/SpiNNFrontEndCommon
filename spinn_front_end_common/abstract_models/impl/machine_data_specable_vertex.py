@@ -15,9 +15,9 @@
 
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 
 
 class MachineDataSpecableVertex(
@@ -26,16 +26,15 @@ class MachineDataSpecableVertex(
     """
     __slots__ = ()
 
-    @inject_items({
-        "tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={"tags"})
-    def generate_data_specification(self, spec, placement, tags):
+    def generate_data_specification(self, spec, placement):
         """
         :param ~pacman.model.tags.Tags tags: (Injected)
         """
         # pylint: disable=too-many-arguments, arguments-differ
+        tags = FecDataView.get_tags()
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(

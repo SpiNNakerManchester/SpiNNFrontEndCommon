@@ -80,12 +80,6 @@ class BufferManager(object):
     """
 
     __slots__ = [
-        # placements object
-        "_placements",
-
-        # list of tags
-        "_tags",
-
         # Set of (ip_address, port) that are being listened to for the tags
         "_seen_tags",
 
@@ -129,7 +123,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, tags, extra_monitor_cores,
+    def __init__(self, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, fixed_routes,
                  java_caller=None):
@@ -150,8 +144,6 @@ class BufferManager(object):
             Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
-        self._placements = FecDataView.get_placements()
-        self._tags = tags
         self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
@@ -180,7 +172,7 @@ class BufferManager(object):
         if self._java_caller is not None:
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors(
-                    self._tags, self._extra_monitor_cores_by_chip,
+                    self._extra_monitor_cores_by_chip,
                     self._packet_gather_cores_to_ethernet_connection_map)
 
     def _request_data(self, placement_x, placement_y, address, length):
@@ -266,7 +258,7 @@ class BufferManager(object):
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
-                vertex = self._placements.get_vertex_on_processor(
+                vertex = FecDataView.get_vertex_on_processor(
                     packet.x, packet.y, packet.p)
                 if vertex in self._sender_vertices:
                     self._send_messages(
@@ -296,29 +288,26 @@ class BufferManager(object):
         """
 
         # Find a tag for receiving buffer data
-        tags = self._tags.get_ip_tags_for_vertex(vertex)
+        # locate tag associated with the buffer manager traffic
+        for tag in FecDataView.get_tags():
+            if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
+                # If the tag port is not assigned create a connection and
+                # assign the port.  Note that this *should* update the
+                # port number in any tags being shared.
+                if tag.port is None:
+                    # If connection already setup, ensure subsequent
+                    # boards use same listener port in their tag
+                    if self._listener_port is None:
+                        connection = self._create_connection(tag)
+                        tag.port = connection.local_port
+                        self._listener_port = connection.local_port
+                    else:
+                        tag.port = self._listener_port
 
-        if tags is not None:
-            # locate tag associated with the buffer manager traffic
-            for tag in tags:
-                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
-                    # If the tag port is not assigned create a connection and
-                    # assign the port.  Note that this *should* update the
-                    # port number in any tags being shared.
-                    if tag.port is None:
-                        # If connection already setup, ensure subsequent
-                        # boards use same listener port in their tag
-                        if self._listener_port is None:
-                            connection = self._create_connection(tag)
-                            tag.port = connection.local_port
-                            self._listener_port = connection.local_port
-                        else:
-                            tag.port = self._listener_port
-
-                    # In case we have tags with different specified ports,
-                    # also allow the tag to be created here
-                    elif (tag.ip_address, tag.port) not in self._seen_tags:
-                        self._create_connection(tag)
+                # In case we have tags with different specified ports,
+                # also allow the tag to be created here
+                elif (tag.ip_address, tag.port) not in self._seen_tags:
+                    self._create_connection(tag)
 
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices which require\

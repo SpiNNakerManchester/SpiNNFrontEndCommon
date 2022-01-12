@@ -18,12 +18,9 @@ from spinnman.constants import MAX_TAG_ID
 from spinn_front_end_common.data import FecDataView
 
 
-def tags_loader(tags):
+def tags_loader():
     """ Loads tags onto the machine.
 
-    :param ~pacman.model.tags.Tags tags:
-        the tags object which contains IP and reverse IP tags;
-        could be ``None`` if these are being given in separate lists
     """
     # clear all the tags from the Ethernet connection, as nothing should
     # be allowed to use it (no two apps should use the same Ethernet
@@ -34,6 +31,7 @@ def tags_loader(tags):
         transceiver.clear_ip_tag(tag_id)
 
     # Use tags object to supply tag info if it is supplied
+    tags = FecDataView.get_tags()
     iptags = list(tags.ip_tags)
     reverse_iptags = list(tags.reverse_ip_tags)
 
