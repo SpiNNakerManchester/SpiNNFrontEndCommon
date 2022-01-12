@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.graphs.application import ApplicationEdgePartition
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     most_direct_route, convert_a_route)
 from pacman.operations.router_algorithms.ner_route import targets_by_chip
@@ -31,8 +30,8 @@ def lpg_multicast_routing_generator(
         for app_vertex, part_ids in live_packet_gatherer_parameters[
                 lpg_params]:
             for part_id in part_ids:
-                part = ApplicationEdgePartition(part_id, app_vertex)
-                m_vertices = app_vertex.splitter.get_out_going_vertices(part)
+                m_vertices = app_vertex.splitter.get_out_going_vertices(
+                    part_id)
                 for m_vertex in m_vertices:
                     placement = placements.get_placement_of_vertex(m_vertex)
                     chip = machine.get_chip_at(placement.x, placement.y)
