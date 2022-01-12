@@ -205,10 +205,10 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_directories_normal(self):
         writer = FecDataWriter.setup()
-        report_dir = writer.report_dir_path
+        report_dir = FecDataView.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
 
-        timestramp_dir = writer.timestamp_dir_path
+        timestramp_dir = FecDataView.get_timestamp_dir_path()
         self.assertTrue(os.path.exists(report_dir))
         self.assertIn(report_dir, timestramp_dir)
 
@@ -216,20 +216,20 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(run_dir))
         self.assertIn(timestramp_dir, run_dir)
 
-        dir = writer.json_dir_path
+        dir = FecDataView.get_json_dir_path()
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir)
 
-        dir = writer.provenance_dir_path
+        dir = FecDataView.get_provenance_dir_path()
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir)
 
-        dir2 = writer.app_provenance_dir_path
+        dir2 = FecDataView.get_app_provenance_dir_path()
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir2)
         self.assertIn(dir, dir2)
 
-        dir2 = writer.system_provenance_dir_path
+        dir2 = FecDataView.get_system_provenance_dir_path()
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir2)
         self.assertIn(dir, dir2)
@@ -263,12 +263,14 @@ class TestSimulatorData(unittest.TestCase):
     def test_directories_mocked(self):
         writer = FecDataWriter.mock()
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
-        self.assertTrue(os.path.exists(writer.timestamp_dir_path))
+        self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
-        self.assertTrue(os.path.exists(writer.json_dir_path))
-        self.assertTrue(os.path.exists(writer.provenance_dir_path))
-        self.assertTrue(os.path.exists(writer.app_provenance_dir_path))
-        self.assertTrue(os.path.exists(writer.system_provenance_dir_path))
+        self.assertTrue(os.path.exists(FecDataView.get_json_dir_path()))
+        self.assertTrue(os.path.exists(FecDataView.get_provenance_dir_path()))
+        self.assertTrue(os.path.exists(
+            FecDataView.get_app_provenance_dir_path()))
+        self.assertTrue(os.path.exists(
+            FecDataView.get_system_provenance_dir_path()))
 
     def test_directories_not_setup(self):
         writer = FecDataWriter.mock()
@@ -277,19 +279,19 @@ class TestSimulatorData(unittest.TestCase):
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
         _UtilsDataModel()._status = Data_Status.NOT_SETUP
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.report_dir_path))
+            FecDataView.get_report_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.timestamp_dir_path))
+            FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
+            FecDataView.get_run_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.json_dir_path))
+            FecDataView.get_json_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.provenance_dir_path))
+            FecDataView.get_provenance_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.app_provenance_dir_path))
+            FecDataView.get_app_provenance_dir_path()
         with self.assertRaises(NotSetupException):
-            self.assertTrue(os.path.exists(writer.system_provenance_dir_path))
+            FecDataView.get_system_provenance_dir_path()
 
     def test_get_n_calls_to_run(self):
         writer = FecDataWriter.setup()

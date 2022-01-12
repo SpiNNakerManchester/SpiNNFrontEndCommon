@@ -34,7 +34,7 @@ def write_json_routing_tables(router_tables):
     progress = ProgressBar(3, "Converting to JSON RouterTables")
 
     file_path = os.path.join(
-        FecDataView().json_dir_path, ROUTING_TABLES_FILENAME)
+        FecDataView.get_json_dir_path(), ROUTING_TABLES_FILENAME)
     json_obj = to_json(router_tables)
 
     if progress:

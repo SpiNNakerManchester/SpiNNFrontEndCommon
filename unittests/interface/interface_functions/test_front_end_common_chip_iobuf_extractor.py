@@ -97,7 +97,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
 
     def testCallSimple(self):
-        folder = FecDataView().app_provenance_dir_path
+        folder = FecDataView.get_app_provenance_dir_path()
         error_entries, warn_entries = chip_io_buf_extractor(
             executable_targets=executable_targets,
             executable_finder=None)
@@ -131,7 +131,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(5, len(warn_entries))
 
     def testCallChips(self):
-        folder = FecDataView().app_provenance_dir_path
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         error_entries, warn_entries = chip_io_buf_extractor(
@@ -165,7 +165,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(2, len(warn_entries))
 
     def testCallBinary(self):
-        folder = FecDataView().app_provenance_dir_path
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
@@ -196,7 +196,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(3, len(warn_entries))
 
     def testCallBoth(self):
-        folder = FecDataView().app_provenance_dir_path
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)

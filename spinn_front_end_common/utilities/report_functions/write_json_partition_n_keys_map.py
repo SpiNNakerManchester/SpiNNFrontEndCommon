@@ -39,7 +39,8 @@ def write_json_partition_n_keys_map(partition_to_n_keys_map):
     # Steps are tojson, validate and writefile
     progress = ProgressBar(3, "Converting to JSON partition n key map")
 
-    file_path = os.path.join(FecDataView().json_dir_path, N_KEYS_MAP_FILENAME)
+    file_path = os.path.join(
+        FecDataView.get_json_dir_path(), N_KEYS_MAP_FILENAME)
     json_obj = partition_to_n_keys_map_to_json(partition_to_n_keys_map)
 
     if progress:

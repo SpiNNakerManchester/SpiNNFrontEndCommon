@@ -68,8 +68,8 @@ class IOBufExtractor(object):
         self.__suppress_progress = bool(suppress_progress)
 
         view = FecDataView()
-        self.__app_path = view.app_provenance_dir_path
-        self.__sys_path = view.system_provenance_dir_path
+        self.__app_path = FecDataView.get_app_provenance_dir_path()
+        self.__sys_path = FecDataView.get_system_provenance_dir_path()
         self.__from_cores = get_config_str(
             "Reports", "extract_iobuf_from_cores")
         self.__binary_types = get_config_str(

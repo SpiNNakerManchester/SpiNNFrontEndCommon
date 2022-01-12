@@ -222,7 +222,7 @@ class JavaCaller(object):
             Placements that are recording. May not be all placements
         """
         path = os.path.join(
-            FecDataView().json_dir_path, "java_placements.json")
+            FecDataView.get_json_dir_path(), "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
             self._placement_json = self._write_placements(

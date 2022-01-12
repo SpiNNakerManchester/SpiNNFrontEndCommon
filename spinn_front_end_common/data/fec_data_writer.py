@@ -101,15 +101,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             self.__fec_data._report_dir_path = self._child_folder(
                 default_report_file_path, REPORTS_DIRNAME)
 
-    def __create_timestamp_directory(self):
+    @classmethod
+    def __create_timestamp_directory(cls):
         while True:
             try:
                 now = datetime.datetime.now()
                 timestamp = (
                     f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
                     f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
-                self.__fec_data._timestamp_dir_path = self._child_folder(
-                    self.report_dir_path, timestamp, must_create=True)
+                cls.__fec_data._timestamp_dir_path = cls._child_folder(
+                    cls.get_report_dir_path(), timestamp, must_create=True)
                 return
             except OSError:
                 time.sleep(0.5)

@@ -41,7 +41,7 @@ def write_json_machine(json_folder=None, progress_bar=True):
     else:
         progress = None
     if json_folder is None:
-        json_folder = FecDataView().json_dir_path
+        json_folder = FecDataView.get_json_dir_path()
     file_path = os.path.join(json_folder, MACHINE_FILENAME)
     if not os.path.exists(file_path):
         json_obj = to_json()

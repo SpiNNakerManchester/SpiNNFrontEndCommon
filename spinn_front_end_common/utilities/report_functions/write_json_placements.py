@@ -34,7 +34,8 @@ def write_json_placements():
     # Steps are tojson, validate and writefile
     progress = ProgressBar(3, "Converting to JSON Placements")
 
-    file_path = os.path.join(FecDataView().json_dir_path, PLACEMENTS_FILENAME)
+    file_path = os.path.join(
+        FecDataView.get_json_dir_path(), PLACEMENTS_FILENAME)
     json_obj = placements_to_json()
 
     # validate the schema

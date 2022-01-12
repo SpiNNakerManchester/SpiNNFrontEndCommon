@@ -53,7 +53,7 @@ class ProvenanceReader(object):
             for example before run is called
         """
         return os.path.join(
-            FecDataView().provenance_dir_path, PROVENANCE_DB)
+            FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
 
     def __init__(self, provenance_data_path=None):
         """

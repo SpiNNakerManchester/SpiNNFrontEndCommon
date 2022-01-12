@@ -192,7 +192,7 @@ class ConfigHandler(object):
 
     def _set_up_report_specifics(self):
         # clear and clean out folders considered not useful anymore
-        report_dir_path = self._data_writer.report_dir_path
+        report_dir_path = self._data_writer.get_report_dir_path()
         if os.listdir(report_dir_path):
             self._remove_excess_folders(
                 get_config_int("Reports", "max_reports_kept"),
@@ -200,7 +200,7 @@ class ConfigHandler(object):
                 get_config_bool("Reports", "remove_errored_folders"))
 
         # store timestamp in latest/time_stamp for provenance reasons
-        timestamp_dir_path = self._data_writer.timestamp_dir_path
+        timestamp_dir_path = self._data_writer.get_timestamp_dir_path()
         time_of_run_file_name = os.path.join(
             timestamp_dir_path, TIMESTAMP_FILENAME)
         _, timestamp = os.path.split(timestamp_dir_path)
@@ -214,7 +214,7 @@ class ConfigHandler(object):
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
-            self._data_writer.timestamp_dir_path, file_name)
+            self._data_writer.get_timestamp_dir_path(), file_name)
         with open(app_file_name, "w") as f:
             f.writelines("file_name")
 

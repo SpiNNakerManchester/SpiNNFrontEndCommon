@@ -354,8 +354,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # There are NO has or get methods for directories
     # This allow directories to be created on the fly
 
-    @property
-    def report_dir_path(self):
+    @classmethod
+    def get_report_dir_path(cls):
         """
         Returns path to existing reports directory
 
@@ -366,14 +366,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._report_dir_path:
-            return self.__fec_data._report_dir_path
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
-        raise self._exception("report_dir_path")
+        if cls.__fec_data._report_dir_path:
+            return cls.__fec_data._report_dir_path
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
+        raise cls._exception("report_dir_path")
 
-    @property
-    def timestamp_dir_path(self):
+    @classmethod
+    def get_timestamp_dir_path(cls):
         """
         Returns path to existing timestamped director in the reports directory
 
@@ -384,16 +384,16 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.__fec_data._timestamp_dir_path:
-            return self.__fec_data._timestamp_dir_path
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
-        raise self._exception("timestamp_dir_path")
+        if cls.__fec_data._timestamp_dir_path:
+            return cls.__fec_data._timestamp_dir_path
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
+        raise cls._exception("timestamp_dir_path")
 
     # run_dir_path in UtilsDataView
 
-    @property
-    def json_dir_path(self):
+    @classmethod
+    def get_json_dir_path(cls):
         """
         Returns the path to the directory that holds all json files
 
@@ -407,13 +407,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
 
-        return self._child_folder(self.get_run_dir_path(), "json_files")
+        return cls._child_folder(cls.get_run_dir_path(), "json_files")
 
-    @property
-    def provenance_dir_path(self):
+    @classmethod
+    def get_provenance_dir_path(cls):
         """
         Returns the path to the directory that holds all provenance files
 
@@ -427,12 +427,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
-        return self._child_folder(self.get_run_dir_path(), "provenance_data")
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
+        return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
 
-    @property
-    def app_provenance_dir_path(self):
+    @classmethod
+    def get_app_provenance_dir_path(cls):
         """
         Returns the path to the directory that holds all app provenance files
 
@@ -446,14 +446,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SimulatorNotSetupException:
             If the simulator has not been setup
         """
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
 
-        return self._child_folder(
-            self.provenance_dir_path, "app_provenance_data")
+        return cls._child_folder(
+            cls.get_provenance_dir_path(), "app_provenance_data")
 
-    @property
-    def system_provenance_dir_path(self):
+    @classmethod
+    def get_system_provenance_dir_path(cls):
         """
         Returns the path to the directory that holds all provenance files
 
@@ -467,12 +467,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if self.get_status() == Data_Status.MOCKED:
-            return self._temporary_dir_path()
-        return self._child_folder(
-            self.provenance_dir_path, "system_provenance_data")
+        if cls.get_status() == Data_Status.MOCKED:
+            return cls._temporary_dir_path()
+        return cls._child_folder(
+            cls.get_provenance_dir_path(), "system_provenance_data")
 
-    def _child_folder(self, parent, child_name, must_create=False):
+    @classmethod
+    def _child_folder(cls, parent, child_name, must_create=False):
         """
         :param str parent:
         :param str child_name:
@@ -491,7 +492,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             # directory exists.
             os.makedirs(child)
         elif not os.path.exists(child):
-            self._make_dirs(child)
+            cls._make_dirs(child)
         return child
 
     @staticmethod
