@@ -23,10 +23,9 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(tags, runtime, router_tables):
+def database_interface(runtime, router_tables):
     """ Writes a database of the graph(s) and other information.
 
-        :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param router_tables:
         :type router_tables:
@@ -35,7 +34,7 @@ def database_interface(tags, runtime, router_tables):
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface()
-    return interface._run(tags, runtime, router_tables)
+    return interface._run(runtime, router_tables)
 
 
 class _DatabaseInterface(object):
@@ -56,9 +55,8 @@ class _DatabaseInterface(object):
         self._needs_db = self._writer.auto_detect_database()
 
     def _run(
-            self, tags, runtime, router_tables):
+            self, runtime, router_tables):
         """
-        :param ~pacman.model.tags.Tags tags:
         :param int runtime:
         :param router_tables:
         :type router_tables:
@@ -78,17 +76,16 @@ class _DatabaseInterface(object):
         if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(runtime, router_tables, tags)
+            self._write_to_db(runtime, router_tables)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
-    def _write_to_db(self, runtime, router_tables, tags):
+    def _write_to_db(self, runtime, router_tables):
         """
         :param int runtime:
         :param ~.MulticastRoutingTables router_tables:
-        :param ~.Tags tags:
         """
         # pylint: disable=too-many-arguments
 
