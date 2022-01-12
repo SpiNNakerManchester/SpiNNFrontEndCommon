@@ -16,8 +16,8 @@
 import unittest
 from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
-from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
-from pacman_test_objects import SimpleTestVertex
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placements
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     insert_live_packet_gatherers_to_graphs)
@@ -34,9 +34,6 @@ class TestInsertLPGs(unittest.TestCase):
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = virtual_machine(width=12, height=12)
-        app_graph = ApplicationGraph("Test")
-        app_graph.add_vertex(
-            SimpleTestVertex(10, "New AbstractConstrainedVertex 1", 256))
 
         default_params = {
             'use_prefix': False,
@@ -61,30 +58,20 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
+        placements = Placements()
         lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherers, machine, app_graph)
+            live_packet_gatherers, machine, placements)
 
-        lpg_app_vertex = lpg_verts_mapping[default_params_holder]
-        self.assertEqual(len(lpg_app_vertex.machine_vertices), 3)
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        for vertex in lpg_app_vertex.machine_vertices:
-            x = list(vertex.constraints)[0].x
-            y = list(vertex.constraints)[0].y
-            key = (x, y)
-            locs.remove(key)
+        locs = set()
+        locs.add((0, 0))
+        locs.add((4, 8))
+        locs.add((8, 4))
+        for (_, x, y), m_vertex in lpg_verts_mapping.items():
+            locs.remove((x, y))
+            self.assertIsNotNone(m_vertex)
+            self.assertIsInstance(m_vertex, MachineVertex)
 
         self.assertEqual(len(locs), 0)
-
-        app_verts = set()
-        for app_vertex in lpg_verts_mapping.values():
-            self.assertIsNotNone(app_vertex)
-            self.assertIsInstance(app_vertex, ApplicationVertex)
-            app_verts.add(app_vertex)
-        # Should only be a single app vertex for one set of params
-        self.assertEqual(len(app_verts), 1)
 
 
 if __name__ == "__main__":
