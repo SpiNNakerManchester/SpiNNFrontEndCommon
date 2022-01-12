@@ -17,7 +17,6 @@ import logging
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.database import DatabaseWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
