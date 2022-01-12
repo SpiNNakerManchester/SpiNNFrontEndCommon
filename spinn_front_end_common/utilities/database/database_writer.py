@@ -269,7 +269,8 @@ class DatabaseWriter(SQLiteDB):
                     (self.__vertex_to_id[vertex],
                      partition.identifier, key_mask.key, key_mask.mask)
                     for partition in app_graph.outgoing_edge_partitions
-                    for vertex in partition.pre_vertex.machine_vertices
+                    for vertex in partition.pre_vertex.splitter
+                    .get_out_going_vertices(partition.identifier)
                     for key_mask in routing_infos
                     .get_routing_info_from_pre_vertex(
                         vertex, partition.identifier)))
