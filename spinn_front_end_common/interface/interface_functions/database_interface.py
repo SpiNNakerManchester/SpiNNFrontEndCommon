@@ -92,33 +92,25 @@ class _DatabaseInterface(object):
         """
         # pylint: disable=too-many-arguments
 
-        app_graph = FecDataView.get_runtime_graph()
-        machine_graph = FecDataView.get_runtime_machine_graph()
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
-            w.add_system_params(runtime, FecDataView.get_app_id())
+            w.add_system_params(runtime)
             p.update()
             w.add_machine_objects()
             p.update()
-            if app_graph is not None and app_graph.n_vertices:
-                w.add_application_vertices(app_graph)
             p.update()
-            w.add_vertices(
-                machine_graph, FecDataView.get_max_run_time_steps(), app_graph)
+            w.add_vertices()
             p.update()
             w.add_placements()
             p.update()
-            w.add_routing_infos(machine_graph)
+            w.add_routing_infos()
             p.update()
             w.add_routing_tables(router_tables)
             p.update()
-            w.add_tags(machine_graph, tags)
+            w.add_tags()
             p.update()
-            if app_graph is not None:
-                if get_config_bool(
-                        "Database",
-                        "create_routing_info_to_neuron_id_mapping"):
-                    w.create_atom_to_event_id_mapping(
-                        application_graph=app_graph,
-                        machine_graph=machine_graph)
+            if get_config_bool(
+                    "Database",
+                    "create_routing_info_to_neuron_id_mapping"):
+                w.create_atom_to_event_id_mapping()
             p.update()

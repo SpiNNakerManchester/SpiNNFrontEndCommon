@@ -144,13 +144,13 @@ class DatabaseWriter(SQLiteDB):
                     for chip in machine.chips
                     for proc in chip.processors))
 
-    def add_application_vertices(self, application_graph):
+    def add_application_vertices(self):
         """ Stores the main application graph description (vertices, edges).
 
-        :param application_graph: The graph to add from
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         """
+        application_graph = FecDataView.get_runtime_graph()
+        if application_graph.n_vertices == 0:
+            return
         with self.transaction() as cur:
             # add vertices
             for vertex in application_graph.vertices:
@@ -190,11 +190,12 @@ class DatabaseWriter(SQLiteDB):
                     for edge in application_graph.get_edges_starting_at_vertex(
                         vertex)))
 
-    def add_system_params(self, runtime, app_id):
+    def add_system_params(self, runtime):
         """ Write system params into the database
 
         :param int runtime: the amount of time the application is to run for
         """
+        app_id = FecDataView.get_app_id()
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -209,17 +210,13 @@ class DatabaseWriter(SQLiteDB):
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", app_id)])
 
-    def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
+    def add_vertices(self):
         """ Add the machine graph into the database.
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            The machine graph object
-        :param int data_n_timesteps:
-            The number of timesteps for which data space will been reserved
-        :param application_graph: The application graph object
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         """
+        application_graph = FecDataView.get_runtime_graph()
+        data_n_timesteps = FecDataView.get_max_run_time_steps()
+        machine_graph = FecDataView.get_runtime_machine_graph()
         with self.transaction() as cur:
             for vertex in machine_graph.vertices:
                 req = vertex.resources_required
@@ -302,12 +299,11 @@ class DatabaseWriter(SQLiteDB):
                      placement.x, placement.y, placement.p, self._machine_id)
                     for placement in FecDataView.get_placements()))
 
-    def add_routing_infos(self,  machine_graph):
+    def add_routing_infos(self):
         """ Adds the routing information (key masks etc) into the database
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph object
         """
+        machine_graph = FecDataView.get_runtime_machine_graph()
         routing_infos = FecDataView.get_routing_infos()
         # Filter just the MULTICAST partitions first
         partitions_and_routing_info = (
@@ -348,13 +344,12 @@ class DatabaseWriter(SQLiteDB):
                     for counter, entry in
                     enumerate(routing_table.multicast_routing_entries)))
 
-    def add_tags(self, machine_graph, tags):
+    def add_tags(self):
         """ Adds the tags into the database
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph object
-        :param ~pacman.model.tags.Tags tags: the tags object
         """
+        tags = FecDataView.get_tags()
+        machine_graph = FecDataView.get_runtime_machine_graph()
         with self.transaction() as cur:
             for vertex in machine_graph.vertices:
                 v_id = self.__vertex_to_id[vertex]
@@ -378,14 +373,9 @@ class DatabaseWriter(SQLiteDB):
                         for ript in tags.get_reverse_ip_tags_for_vertex(
                             vertex) or ()))
 
-    def create_atom_to_event_id_mapping(
-            self, application_graph, machine_graph):
-        """
-        :param application_graph:
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        """
+    def create_atom_to_event_id_mapping(self):
+        application_graph = FecDataView.get_runtime_graph()
+        machine_graph = FecDataView.get_runtime_machine_graph()
         if application_graph.n_vertices:
             # We will be asking application vertices for key/atom mappings
             vertices_and_partitions = (

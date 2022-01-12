@@ -55,6 +55,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         t = Tags()
         t.add_ip_tag(t1, v1)
         t.add_ip_tag(t2, v2)
+        writer.set_tags(t)
 
         # Create board connections
         connections = []
@@ -76,7 +77,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         # Create buffer manager
         bm = BufferManager(
-            tags=t, extra_monitor_cores=None,
+            extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, fixed_routes=None)
 
