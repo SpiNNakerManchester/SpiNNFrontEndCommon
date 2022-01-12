@@ -63,7 +63,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractCanReset">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractCanReset</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractCanReset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Indicates an object that can be reset to time 0.</p>
 <p>This is used when AbstractSpinnakerBase.reset is called.
 All Vertices and all edges in the original graph
@@ -79,7 +79,7 @@ All Vertices and all edges in the original graph
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractChangableAfterRun</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractChangableAfterRun" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An item that can be changed after a call to run, the changes to which        might or might not require mapping or data generation.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractChangableAfterRun.mark_no_changes">
@@ -93,7 +93,7 @@ All Vertices and all edges in the original graph
 <dd><p>True if changes that have been made require that data generation            be performed.  By default this returns False but can be overridden            to indicate changes that require data regeneration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -104,7 +104,7 @@ All Vertices and all edges in the original graph
 <dd><p>True if changes that have been made require that mapping be            performed.  By default this returns False but can be overridden to            indicate changes that require mapping.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -114,7 +114,7 @@ All Vertices and all edges in the original graph
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractGeneratesDataSpecification</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_generates_data_specification.html#AbstractGeneratesDataSpecification.generate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractGeneratesDataSpecification.generate_data_specification" title="Permalink to this definition">¶</a></dt>
@@ -127,7 +127,7 @@ All Vertices and all edges in the original graph
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)">None</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -137,7 +137,7 @@ All Vertices and all edges in the original graph
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractHasAssociatedBinary</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine graph vertex that can be launched on a SpiNNaker core.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name">
@@ -145,7 +145,7 @@ All Vertices and all edges in the original graph
 <dd><p>Get the binary name to be run for this vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -166,7 +166,7 @@ All Vertices and all edges in the original graph
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractMachineAllocationController</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>An object that controls the allocation of a machine</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close">
@@ -180,7 +180,7 @@ All Vertices and all edges in the original graph
 <dd><p>Extend the allocation of the machine from the original run time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>new_total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#float" title="(in Python v3.6)"><em>float</em></a>) – The total run time that is now required starting from when the
+<dd class="field-odd"><p><strong>new_total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The total run time that is now required starting from when the
 machine was first allocated</p>
 </dd>
 </dl>
@@ -193,15 +193,15 @@ machine was first allocated</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – chip x location</p></li>
-<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – chip y location</p></li>
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – chip x location</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – chip y location</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>(cabinet, frame, board)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -211,7 +211,7 @@ machine was first allocated</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesIncomingPartitionConstraints</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex that can provide constraints for its incoming edge partitions.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesIncomingPartitionConstraints.get_incoming_partition_constraints">
@@ -225,7 +225,7 @@ machine was first allocated</p>
 <dd class="field-even"><p>A list of constraints</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)">AbstractConstraint</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)">AbstractConstraint</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -235,7 +235,7 @@ machine was first allocated</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesKeyToAtomMapping</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Interface to provide a mapping between routing key partitions and        atom IDs</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping">
@@ -252,7 +252,7 @@ machine was first allocated</p>
 <dd class="field-even"><p>a iterable of tuples of atom IDs to keys.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -262,7 +262,7 @@ machine was first allocated</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesOutgoingPartitionConstraints</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex that can provide constraints for its outgoing edge partitions.</p>
 <p>If a Machine_vertex is an instance the Application vertex will not be
 checked. However if the MachineVertex does not implement this API
@@ -279,7 +279,7 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dd class="field-even"><p>A list of constraints</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)">AbstractConstraint</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)">AbstractConstraint</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -289,7 +289,7 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractRewritesDataSpecification</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Indicates an object that allows data to be changed after run,        and so can rewrite the data specification</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification">
@@ -311,7 +311,7 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dd><p>Return true if any data region needs to be reloaded</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -325,7 +325,7 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dd class="field-odd"><p><strong>new_value</strong> – the new value</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.6/library/constants.html#None" title="(in Python v3.6)">None</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)">None</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -335,7 +335,7 @@ ProcessPartitionConstraint will then check the ApplicationVertex</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSendMeMulticastCommandsVertex</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSendMeMulticastCommandsVertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A device that may be a virtual vertex which wants to commands to be        sent to it as multicast packets at fixed points in the simulation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -381,7 +381,7 @@ never be called.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsBitFieldGeneration</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a vertex that can provide information about bitfields it wants         generated on-chip.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address">
@@ -398,7 +398,7 @@ never be called.</p>
 <dd class="field-even"><p>the SDRAM address for the bitfield address</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -418,7 +418,7 @@ never be called.</p>
 <dd class="field-even"><p>the SDRAM address for the bitfield builder data</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -428,7 +428,7 @@ never be called.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsBitFieldRoutingCompression</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine vertex that can support having the on-chip bitfield         compressor running on its core.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address">
@@ -445,7 +445,7 @@ never be called.</p>
 <dd class="field-even"><p>the SDRAM address for the bitfield address</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -465,7 +465,7 @@ never be called.</p>
 <dd class="field-even"><p>the SDRAM address for the key-to-atom data</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -488,7 +488,7 @@ bitfield tables loaded, and the size of memory chunks located
 there)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#list" title="(in Python v3.6)">list</a>(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#tuple" title="(in Python v3.6)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>,<a class="reference external" href="https://docs.python.org/3.6/library/functions.html#int" title="(in Python v3.6)">int</a>))</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -498,7 +498,7 @@ there)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractSupportsDatabaseInjection</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Marks a machine vertex as supporting injection of information via a        database running on the controlling host.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsDatabaseInjection.is_in_injection_mode">
@@ -506,7 +506,7 @@ there)</p>
 <dd><p>Whether this vertex is actually in injection mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.6/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -516,7 +516,7 @@ there)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.</span></span><span class="sig-name descname"><span class="pre">AbstractVertexWithEdgeToDependentVertices</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.6/library/functions.html#object" title="(in Python v3.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>A vertex with a dependent vertices, which should be connected to this        vertex by an edge directly to each of them</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices">
@@ -538,7 +538,7 @@ there)</p>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>iterable(<a class="reference external" href="https://docs.python.org/3.6/library/stdtypes.html#str" title="(in Python v3.6)">str</a>)</p>
+<dd class="field-even"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -614,7 +614,7 @@ there)</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>
