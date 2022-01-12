@@ -31,6 +31,7 @@ from spinn_front_end_common.interface.interface_functions import (
 from pacman.model.routing_table_by_partition import (
     MulticastRoutingTableByPartition)
 
+
 class TestInsertLPGEdges(unittest.TestCase):
     """ tests the interaction of the EDGE INSERTION OF LPGS
     """
