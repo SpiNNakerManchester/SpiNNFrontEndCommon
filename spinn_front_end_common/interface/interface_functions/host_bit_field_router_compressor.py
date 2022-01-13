@@ -376,12 +376,13 @@ class _HostBasedBitFieldRouterCompressor(object):
         new_table = UnCompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        # go through the bitfields and get the routing table for it
-        for base_key in self._bit_fields_by_key.keys():
+        # go through the routing tables and convert when needed
+        for original_entry in router_table.multicast_routing_entries:
+            base_key = original_entry.routing_entry_key
+            if base_key not in self._bit_fields_by_key:
+                continue
             n_neurons = key_to_n_atoms_map[base_key]
             core_map = dict()
-            original_entry = (
-                router_table.get_entry_by_routing_entry_key(base_key))
             entry_links = original_entry.link_ids
             # Assume all neurons for each processor to be kept
             for processor_id in original_entry.processor_ids:
