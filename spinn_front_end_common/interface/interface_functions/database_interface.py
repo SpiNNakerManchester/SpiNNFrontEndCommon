@@ -94,6 +94,7 @@ class _DatabaseInterface(object):
             p.update()
             w.add_machine_objects()
             p.update()
+            w.add_application_vertices()
             p.update()
             w.add_vertices()
             p.update()
