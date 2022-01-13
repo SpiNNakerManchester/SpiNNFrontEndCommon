@@ -150,7 +150,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         self._process_partitions(m_partitions)
 
     def _connect_lpg_vertex_in_machine_graph(
-            self, m_graph, m_vertex, lpg_params, p_ids, n_keys_map):
+            self, m_graph, m_vertex, lpg_params, p_ids):
         """
         :param ~.MachineGraph m_graph:
         :param ~.MachineVertex m_vertex:
