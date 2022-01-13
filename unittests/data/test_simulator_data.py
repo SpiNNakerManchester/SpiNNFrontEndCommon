@@ -326,7 +326,7 @@ class TestSimulatorData(unittest.TestCase):
                          FecDataWriter.get_data_in_multicast_routing_tables())
         self.assertEqual(
             system_multicast_router_timeout_keys,
-             FecDataWriter.get_system_multicast_router_timeout_keys())
+            FecDataWriter.get_system_multicast_router_timeout_keys())
 
         writer.hard_reset()
         with self.assertRaises(DataNotYetAvialable):
