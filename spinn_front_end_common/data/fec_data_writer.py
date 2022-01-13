@@ -23,6 +23,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from pacman.data.pacman_data_writer import PacmanDataWriter
+from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -296,3 +297,30 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._hardware_time_step_us = rounded
         self.__fec_data._hardware_time_step_ms = (
                 rounded / MICRO_TO_MILLISECOND_CONVERSION)
+
+    def set_system_multicast_routing_data(self, data):
+        """
+        Sets the system_multicast_routing_data
+
+        These are data_in_multicast_routing_tables,
+                 data_in_multicast_key_to_chip_map,
+                 system_multicast_router_timeout_keys
+
+        :param tuple(dict, MulticastRoutingTables, dict) data: new value
+        """
+        (data_in_multicast_routing_tables,
+         data_in_multicast_key_to_chip_map,
+         system_multicast_router_timeout_keys) = data
+        if not isinstance(data_in_multicast_routing_tables,
+                          MulticastRoutingTables):
+            raise TypeError("First element must be a MulticastRoutingTables")
+        if not isinstance(data_in_multicast_key_to_chip_map, dict):
+            raise TypeError("Second element must be dict")
+        if not isinstance(system_multicast_router_timeout_keys, dict):
+            raise TypeError("Third element must be a dict")
+        self.__fec_data._data_in_multicast_key_to_chip_map = \
+            data_in_multicast_key_to_chip_map
+        self.__fec_data._data_in_multicast_routing_tables = \
+            data_in_multicast_routing_tables
+        self.__fec_data._system_multicast_router_timeout_keys = \
+            system_multicast_router_timeout_keys

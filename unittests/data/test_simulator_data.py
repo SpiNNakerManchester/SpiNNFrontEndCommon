@@ -21,6 +21,7 @@ from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
+from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.data import FecDataView
@@ -303,3 +304,34 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(2, FecDataView.get_n_calls_to_run())
         writer.start_run()
         self.assertEqual(2, FecDataView.get_n_calls_to_run())
+
+    def test_system_multicast_routing_data(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_data_in_multicast_key_to_chip_map()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_data_in_multicast_routing_tables()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_system_multicast_router_timeout_keys()
+        data_in_multicast_key_to_chip_map = dict()
+        data_in_multicast_routing_tables = MulticastRoutingTables()
+        system_multicast_router_timeout_keys = dict()
+        data = (data_in_multicast_routing_tables,
+                data_in_multicast_key_to_chip_map,
+                system_multicast_router_timeout_keys)
+        writer.set_system_multicast_routing_data(data)
+        self.assertEqual(data_in_multicast_key_to_chip_map,
+                         FecDataView.get_data_in_multicast_key_to_chip_map())
+        self.assertEqual(data_in_multicast_routing_tables,
+                         FecDataWriter.get_data_in_multicast_routing_tables())
+        self.assertEqual(
+            system_multicast_router_timeout_keys,
+             FecDataWriter.get_system_multicast_router_timeout_keys())
+
+        writer.hard_reset()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_data_in_multicast_key_to_chip_map()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_data_in_multicast_routing_tables()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_system_multicast_router_timeout_keys()

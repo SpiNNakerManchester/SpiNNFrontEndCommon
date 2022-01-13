@@ -41,6 +41,8 @@ class _FecDataModel(object):
         # Data values cached
         "_app_id",
         "_current_run_timesteps",
+        "_data_in_multicast_key_to_chip_map",
+        "_data_in_multicast_routing_tables",
         "_first_machine_time_step",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
@@ -52,6 +54,7 @@ class _FecDataModel(object):
         "_simulation_time_step_per_s",
         "_simulation_time_step_s",
         "_simulation_time_step_us",
+        "_system_multicast_router_timeout_keys",
         "_timestamp_dir_path",
         "_time_scale_factor",
     ]
@@ -87,7 +90,10 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graaph change
         """
         self._app_id = None
+        self._data_in_multicast_key_to_chip_map = None
+        self._data_in_multicast_routing_tables = None
         self._max_run_time_steps = None
+        self._system_multicast_router_timeout_keys = None
         self._soft_reset()
 
     def _soft_reset(self):
@@ -389,6 +395,26 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.get_status() == Data_Status.MOCKED:
             return cls._temporary_dir_path()
         raise cls._exception("timestamp_dir_path")
+
+    # system multicast routing data
+
+    @classmethod
+    def get_data_in_multicast_key_to_chip_map(cls):
+        if cls.__fec_data._data_in_multicast_key_to_chip_map is None:
+            raise cls._exception("data_in_multicast_key_to_chip_map")
+        return cls.__fec_data._data_in_multicast_key_to_chip_map
+
+    @classmethod
+    def get_data_in_multicast_routing_tables(cls):
+        if cls.__fec_data._data_in_multicast_routing_tables is None:
+            raise cls._exception("data_in_multicast_routing_tables")
+        return cls.__fec_data._data_in_multicast_routing_tables
+
+    @classmethod
+    def get_system_multicast_router_timeout_keys(cls):
+        if cls.__fec_data._system_multicast_router_timeout_keys is None:
+            raise cls._exception("system_multicast_router_timeout_keys")
+        return cls.__fec_data._system_multicast_router_timeout_keys
 
     # run_dir_path in UtilsDataView
 
