@@ -124,5 +124,4 @@ def setup_for_unittest():
     global _simulator, __temp_dir, __unittest_mode
     _simulator = None
     __unittest_mode = True
-    injection_decorator._instances = list()
     __temp_dir = None
