@@ -334,9 +334,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Mapping for partitions to how many keys they need
         "_machine_partition_n_keys_map",
 
-        # system routing timout keys
-        "_system_multicast_router_timeout_keys",
-
         # DSG to be written to the machine
         "_dsg_targets",
 
@@ -345,12 +342,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
-
-        # Reinjection routing tables
-        "_data_in_multicast_routing_tables",
-
-        # Maps injector keys to chips
-        "_data_in_multicast_key_to_chip_map",
 
         # Number of timesteps to consider when doing partitioning and placement
         "_plan_n_timesteps",
@@ -488,8 +479,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
-        self._data_in_multicast_key_to_chip_map = None
-        self._data_in_multicast_routing_tables = None
         self._dsg_targets = None
         self._executable_targets = None
         self._executable_types = []
@@ -506,7 +495,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._region_sizes = None
         self._router_tables = None
         self._routing_table_by_partition = None
-        self._system_multicast_router_timeout_keys = None
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
@@ -562,10 +550,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             exception, but that indicates a programming mismatch
         """
         results = []
-        for key in ["DataInMulticastKeyToChipMap",
-                    "DataInMulticastRoutingTables",
-                    "MachinePartitionNKeysMap",
-                    "SystemMulticastRouterTimeoutKeys"]:
+        for key in ["MachinePartitionNKeysMap"]:
             item = self._unchecked_gettiem(key)
             if item is not None:
                 results.append((key, item))
@@ -582,14 +567,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: Object or None
         :raise KeyError: It the item is one that is never provided
         """
-        if item == "DataInMulticastKeyToChipMap":
-            return self._data_in_multicast_key_to_chip_map
-        if item == "DataInMulticastRoutingTables":
-            return self._data_in_multicast_routing_tables
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
-        if item == "SystemMulticastRouterTimeoutKeys":
-            return self._system_multicast_router_timeout_keys
         raise KeyError(f"Unexpected Item {item}")
 
     def set_n_boards_required(self, n_boards_required):
@@ -1649,11 +1628,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            (self._data_in_multicast_routing_tables,
-             self._data_in_multicast_key_to_chip_map,
-             self._system_multicast_router_timeout_keys) = (
-                system_multicast_routing_generator(
-                    self._extra_monitor_to_chip_mapping))
+            data = system_multicast_routing_generator(
+                self._extra_monitor_to_chip_mapping)
+            self._data_writer.set_system_multicast_routing_data(data)
 
     def _execute_fixed_route_router(self):
         """

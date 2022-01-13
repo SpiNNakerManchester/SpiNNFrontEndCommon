@@ -19,7 +19,6 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
@@ -254,37 +253,19 @@ class ExtraMonitorSupportMachineVertex(
         """
         return "extra_monitor_support.aplx"
 
-    @inject_items({"data_in_routing_tables": "DataInMulticastRoutingTables",
-                   "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-                   "router_timeout_keys": "SystemMulticastRouterTimeoutKeys"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={
-                   "data_in_routing_tables",
-                   "mc_data_chips_to_keys", "app_id", "router_timeout_keys"})
-    def generate_data_specification(
-            self, spec, placement,
-            data_in_routing_tables, mc_data_chips_to_keys,
-            router_timeout_keys):
-        """
-        :param data_in_routing_tables: (injected)
-        :type data_in_routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        """
-        # pylint: disable=arguments-differ
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
+
         # storing for future usage
         self._placement = placement
         self._app_id = FecDataView.get_app_id()
         # write reinjection config
-        self._generate_reinjection_config(
-            spec, router_timeout_keys, placement)
+        self._generate_reinjection_config(spec, placement)
         # write data speed up out config
         self._generate_data_speed_up_out_config(spec)
         # write data speed up in config
         self._generate_data_speed_up_in_config(
-            spec, data_in_routing_tables,
-            FecDataView().get_chip_at(placement.x, placement.y),
-            mc_data_chips_to_keys)
+            spec, FecDataView().get_chip_at(placement.x, placement.y))
         self._generate_provenance_area(spec)
         spec.end_specification()
 
@@ -315,11 +296,9 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(Gatherer.TRANSACTION_ID_KEY)
             spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(
-            self, spec, router_timeout_keys, placement):
+    def _generate_reinjection_config(self, spec, placement):
         """
         :param ~.DataSpecificationGenerator spec: spec file
-        :param dict(tuple(int,int),int) router_timeout_keys:
         :param ~.Placement placement:
         """
         spec.reserve_memory_region(
@@ -336,21 +315,18 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(int(not value))
 
         # add the reinjection mc interface
+        router_timeout_keys = \
+            FecDataView.get_system_multicast_router_timeout_keys()
         chip = FecDataView().get_chip_at(placement.x, placement.y)
         reinjector_base_mc_key = (
             router_timeout_keys[
                 (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
         spec.write_value(reinjector_base_mc_key)
 
-    def _generate_data_speed_up_in_config(
-            self, spec, data_in_routing_tables, chip, mc_data_chips_to_keys):
+    def _generate_data_speed_up_in_config(self, spec, chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.MulticastRoutingTables data_in_routing_tables:
-            routing tables for all chips
         :param ~.Chip chip: the chip where this monitor will run
-        :param dict(tuple(int,int),int) mc_data_chips_to_keys:
-            data in keys to chips map.
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_IN_CONFIG,
@@ -360,12 +336,16 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(_DSG_REGIONS.DATA_IN_CONFIG)
 
         # write address key and data key
+        mc_data_chips_to_keys = \
+            FecDataView.get_data_in_multicast_key_to_chip_map()
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.BOUNDARY_KEY_OFFSET.value)
 
         # write table entries
+        data_in_routing_tables = \
+            FecDataView.get_data_in_multicast_routing_tables()
         table = data_in_routing_tables.get_routing_table_for_chip(
             chip.x, chip.y)
         spec.write_value(table.number_of_entries)

@@ -27,7 +27,6 @@ from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
@@ -370,24 +369,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.SYSTEM
 
-    @inject_items({
-        "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
-    })
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "mc_data_chips_to_keys", "router_timeout_key"
-        })
-    def generate_data_specification(
-            self, spec, placement,  mc_data_chips_to_keys, router_timeout_key):
-        """
-        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        :param dict(tuple(int,int),int) router_timeout_key: (injected)
-        """
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         machine = FecDataView.get_machine()
         machine_graph = FecDataView.get_runtime_machine_graph()
-        # pylint: disable=too-many-arguments, arguments-differ
+        mc_data_chips_to_keys = \
+            FecDataView.get_data_in_multicast_key_to_chip_map()
+        router_timeout_key = \
+            FecDataView.get_system_multicast_router_timeout_keys()
 
         # update my placement for future knowledge
         self._placement = placement
