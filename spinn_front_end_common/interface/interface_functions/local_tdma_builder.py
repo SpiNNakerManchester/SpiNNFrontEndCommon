@@ -30,7 +30,7 @@ FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
 FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
-def local_tdma_builder(n_keys_map):
+def local_tdma_builder():
     """ Builds a localised TDMA
 
     Builds a localised TDMA which allows a number of machine vertices
@@ -85,13 +85,11 @@ def local_tdma_builder(n_keys_map):
         X is pop0 firing,
         Y is pop1 firing
 
-    :param n_keys_map: the map of partitions to n keys.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
     """
     if FecDataView.get_runtime_graph().n_vertices == 0:
         return
 
+    n_keys_map = FecDataView.get_machine_partition_n_keys_map()
     # get config params
     us_per_cycle = FecDataView.get_hardware_time_step_us()
     clocks_per_cycle = us_per_cycle * CLOCKS_PER_US

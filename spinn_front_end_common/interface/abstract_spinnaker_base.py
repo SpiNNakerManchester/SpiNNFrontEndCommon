@@ -331,9 +331,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # vertices added to support Buffer Extractor
         "_extra_monitor_vertices",
 
-        # Mapping for partitions to how many keys they need
-        "_machine_partition_n_keys_map",
-
         # DSG to be written to the machine
         "_dsg_targets",
 
@@ -487,7 +484,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._fixed_routes = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
-        self._machine_partition_n_keys_map = None
         self._max_machine = False
         self._multicast_routes_loaded = False
         self._n_chips_needed = None
@@ -550,10 +546,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             exception, but that indicates a programming mismatch
         """
         results = []
-        for key in ["MachinePartitionNKeysMap"]:
-            item = self._unchecked_gettiem(key)
-            if item is not None:
-                results.append((key, item))
+        #for key in ["MachinePartitionNKeysMap"]:
+        #    item = self._unchecked_gettiem(key)
+        #    if item is not None:
+        #        results.append((key, item))
         return results
 
     def _unchecked_gettiem(self, item):
@@ -567,8 +563,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: Object or None
         :raise KeyError: It the item is one that is never provided
         """
-        if item == "MachinePartitionNKeysMap":
-            return self._machine_partition_n_keys_map
         raise KeyError(f"Unexpected Item {item}")
 
     def set_n_boards_required(self, n_boards_required):
@@ -1485,14 +1479,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "machine_partition_n_keys_map" data
         """
         with FecTimer(MAPPING, "Edge to n keys mapper"):
-            self._machine_partition_n_keys_map = edge_to_n_keys_mapper()
+            self._data_writer.set_machine_partition_n_keys_map(
+                edge_to_n_keys_mapper())
 
     def _execute_local_tdma_builder(self):
         """
         Runs times and logs the LocalTDMABuilder
         """
         with FecTimer(MAPPING, "Local TDMA builder"):
-            local_tdma_builder(self._machine_partition_n_keys_map)
+            local_tdma_builder()
 
     def _json_partition_n_keys_map(self):
         """
@@ -1502,8 +1497,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_partition_n_keys_map"):
                 return
-            write_json_partition_n_keys_map(
-                self._machine_partition_n_keys_map)
+            write_json_partition_n_keys_map()
             # Output ignored as never used
 
     def _execute_connective_based_placer(self):
@@ -1559,8 +1553,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Spreader placer"):
-            self._data_writer.set_placements(spreader_placer(
-                self._machine_partition_n_keys_map, self._plan_n_timesteps))
+            self._data_writer.set_placements(
+                spreader_placer(self._plan_n_timesteps))
 
     def _do_placer(self):
         """
@@ -1600,8 +1594,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             insert_edges_to_live_packet_gatherers(
                 self._live_packet_recorder_params,
-                self._live_packet_recorder_parameters_mapping,
-                self._machine_partition_n_keys_map)
+                self._live_packet_recorder_parameters_mapping)
 
     def _execute_insert_edges_to_extra_monitor(self):
         """
@@ -1782,8 +1775,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Global allocate"):
-            self._data_writer.set_routing_infos(global_allocate(
-                self._machine_partition_n_keys_map))
+            self._data_writer.set_routing_infos(global_allocate())
 
     def _execute_flexible_allocate(self):
         """
@@ -1797,8 +1789,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Zoned routing info allocator"):
-            self._data_writer.set_routing_infos(flexible_allocate(
-                self._machine_partition_n_keys_map))
+            self._data_writer.set_routing_infos(flexible_allocate())
 
     def _execute_malloc_based_routing_info_allocator(self):
         """
@@ -1813,8 +1804,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Malloc based routing info allocator"):
             self._data_writer.set_routing_infos(
-                malloc_based_routing_info_allocator(
-                    self._machine_partition_n_keys_map))
+                malloc_based_routing_info_allocator())
 
     def do_info_allocator(self):
         """
@@ -1903,8 +1893,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Router collision potential report"):
             # TODO cfg flag!
             router_collision_potential_report(
-                self._routing_table_by_partition,
-                self._machine_partition_n_keys_map)
+                self._routing_table_by_partition)
 
     def _execute_locate_executable_start_type(self):
         """

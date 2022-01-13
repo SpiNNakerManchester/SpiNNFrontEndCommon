@@ -27,11 +27,9 @@ N_KEYS_MAP_FILENAME = "n_keys_map.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def write_json_partition_n_keys_map(partition_to_n_keys_map):
+def write_json_partition_n_keys_map():
     """ Converter from MulticastRoutingTables to JSON.
 
-    :param AbstractMachinePartitionNKeysMap partition_to_n_keys_map:
-        The number of keys needed for each partition.
     :param str json_folder: the folder to which the JSON are being written
     :return: the name of the generated file
     :rtype: str
@@ -41,7 +39,7 @@ def write_json_partition_n_keys_map(partition_to_n_keys_map):
 
     file_path = os.path.join(
         FecDataView.get_json_dir_path(), N_KEYS_MAP_FILENAME)
-    json_obj = partition_to_n_keys_map_to_json(partition_to_n_keys_map)
+    json_obj = partition_to_n_keys_map_to_json()
 
     if progress:
         progress.update()

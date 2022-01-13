@@ -21,7 +21,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 def insert_edges_to_live_packet_gatherers(
         live_packet_gatherer_parameters,
-        live_packet_gatherers_to_vertex_mapping, n_keys_map=None):
+        live_packet_gatherers_to_vertex_mapping):
     """
         Add edges from the recorded vertices to the local Live PacketGatherers.
 
@@ -37,13 +37,10 @@ def insert_edges_to_live_packet_gatherers(
             tuple(LivePacketGather or None,
             dict(tuple(int,int),LivePacketGatherMachineVertex)))
         :param ~spinn_machine.Machine machine: the SpiNNaker machine
-        :param n_keys_map: key map
-        :type n_keys_map:
-            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
     """
     inserter = _InsertEdgesToLivePacketGatherers(
         live_packet_gatherers_to_vertex_mapping)
-    inserter._run(live_packet_gatherer_parameters, n_keys_map)
+    inserter._run(live_packet_gatherer_parameters)
 
 
 class _InsertEdgesToLivePacketGatherers(object):
@@ -69,15 +66,12 @@ class _InsertEdgesToLivePacketGatherers(object):
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
 
-    def _run(self, live_packet_gatherer_parameters, n_keys_map=None):
+    def _run(self, live_packet_gatherer_parameters):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :type live_packet_gatherer_parameters:
             dict(LivePacketGatherParameters,
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-        :param n_keys_map: key map
-        :type n_keys_map:
-            ~pacman.model.routing_info.DictBasedMachinePartitionNKeysMap
         """
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
@@ -96,7 +90,7 @@ class _InsertEdgesToLivePacketGatherers(object):
                 for vertex, p_ids in live_packet_gatherer_parameters[
                         lpg_params]:
                     self._connect_lpg_vertex_in_machine_graph(
-                        machine_graph, vertex, lpg_params, p_ids, n_keys_map)
+                        machine_graph, vertex, lpg_params, p_ids)
         else:
             for lpg_params in progress.over(live_packet_gatherer_parameters):
                 # locate vertices to connect to a LPG with these params
@@ -104,31 +98,30 @@ class _InsertEdgesToLivePacketGatherers(object):
                         lpg_params]:
                     self._connect_lpg_vertex_in_application_graph(
                         application_graph, machine_graph, vertex, lpg_params,
-                        p_ids, n_keys_map)
+                        p_ids)
 
     @staticmethod
-    def _process_partitions(partitions, n_keys_map):
+    def _process_partitions(partitions):
         """ helper method to add to n keys map
 
         :param set partitions: the partitions to add keys for
         :param ~.DictBasedMachinePartitionNKeysMap n_keys_map: the key map
         :return:
         """
+        n_keys_map = FecDataView.get_machine_partition_n_keys_map()
         for partition in partitions:
             n_keys = partition.pre_vertex.get_n_keys_for_partition(
                 partition)
             n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
     def _connect_lpg_vertex_in_application_graph(
-            self, app_graph, m_graph, app_vertex, lpg_params, p_ids,
-            n_keys_map):
+            self, app_graph, m_graph, app_vertex, lpg_params, p_ids):
         """
         :param ~.ApplicationGraph app_graph:
         :param ~.MachineGraph m_graph:
         :param ~.ApplicationVertex app_vertex:
         :param LivePacketGatherParameters lpg_params:
         :param list(str) p_ids:
-        :param ~.DictBasedMachinePartitionNKeysMap n_keys_map:
         """
         if not app_vertex.machine_vertices or not p_ids:
             return
@@ -151,11 +144,10 @@ class _InsertEdgesToLivePacketGatherers(object):
                 lpg.add_incoming_edge(machine_edge)
 
                 # add to n_keys_map if needed
-                if n_keys_map:
-                    m_partitions.add(m_graph.get_outgoing_partition_for_edge(
-                        machine_edge))
+                m_partitions.add(m_graph.get_outgoing_partition_for_edge(
+                    machine_edge))
 
-        self._process_partitions(m_partitions, n_keys_map)
+        self._process_partitions(m_partitions)
 
     def _connect_lpg_vertex_in_machine_graph(
             self, m_graph, m_vertex, lpg_params, p_ids, n_keys_map):
@@ -175,10 +167,8 @@ class _InsertEdgesToLivePacketGatherers(object):
         for partition_id in p_ids:
             edge = MachineEdge(m_vertex, lpg)
             m_graph.add_edge(edge, partition_id)
-            # add to n_keys_map if needed
-            if n_keys_map:
-                partitions.add(m_graph.get_outgoing_partition_for_edge(edge))
-        self._process_partitions(partitions, n_keys_map)
+            partitions.add(m_graph.get_outgoing_partition_for_edge(edge))
+        self._process_partitions(partitions)
 
     def _find_closest_live_packet_gatherer(self, m_vertex, machine_lpgs):
         """ Locates the LPG on the nearest Ethernet-connected chip to the\
