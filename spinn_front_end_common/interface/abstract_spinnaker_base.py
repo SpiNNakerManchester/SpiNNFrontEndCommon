@@ -45,8 +45,6 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
-from pacman.executor.injection_decorator import (
-    clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
     ApplicationEdge, ApplicationVertex)
 from pacman.model.graphs.machine import MachineVertex
@@ -460,9 +458,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._hostname = None
 
         FecTimer.setup(self)
-
-        # Safety in case a previous run left a bad state
-        clear_injectables()
 
     def _new_run_clear(self):
         """
@@ -906,7 +901,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
-        provide_injectables(self)
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
@@ -920,7 +914,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._data_writer.has_max_run_time_steps():
             self._data_writer.set_max_run_time_steps(
                 self._deduce_data_n_timesteps())
-        clear_injectables()
 
         # Work out an array of timesteps to perform
         steps = None
@@ -1941,7 +1934,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # time the time it takes to do all pacman stuff
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
-        provide_injectables(self)
 
         self._setup_java_caller()
         self._do_extra_mapping_algorithms()
@@ -1996,7 +1988,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
 
-        clear_injectables()
         self._mapping_time += convert_time_diff_to_total_milliseconds(
             mapping_total_timer.take_sample())
 
@@ -2020,9 +2011,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         data_gen_timer = Timer()
         data_gen_timer.start_timing()
 
-        provide_injectables(self)
         self._execute_graph_data_specification_writer()
-        clear_injectables()
 
         self._dsg_time += convert_time_diff_to_total_milliseconds(
             data_gen_timer.take_sample())
@@ -2784,8 +2773,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.increment_current_run_timesteps(
             n_machine_time_steps)
 
-        provide_injectables(self)
-
         self._execute_sdram_usage_report_per_chip()
         if not self._has_ran or graph_changed:
             self._execute_create_database_interface(run_time)
@@ -2799,7 +2786,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_reset_last = False
         self._has_ran = True
         # reset at the end of each do_run cycle
-        clear_injectables()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
         """

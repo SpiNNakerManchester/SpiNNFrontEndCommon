@@ -15,7 +15,6 @@
 
 import logging
 from spinn_utilities.log import FormatAdapter
-from pacman.executor import injection_decorator
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS)
 from spinn_front_end_common.utilities.exceptions import (
