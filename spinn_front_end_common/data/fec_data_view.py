@@ -192,7 +192,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Returns the buffer manager if known
 
-        :rtype: ~spinn_front_end_common.interface.buffer_management.BufferManager
+        :rtype:
+            ~spinn_front_end_common.interface.buffer_management.BufferManager
         :raises SpiNNUtilsException:
             If the buffer manager unavailable
         """

@@ -105,7 +105,6 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(TypeError):
             writer.set_buffer_manager("bacon")
 
-
     def test_run_times(self):
         writer = FecDataWriter.setup()
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
