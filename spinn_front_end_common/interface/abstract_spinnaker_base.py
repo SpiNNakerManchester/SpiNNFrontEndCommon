@@ -1059,7 +1059,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
-            self._do_data_generation()
 
             self._do_load(graph_changed)
 
@@ -2645,6 +2644,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # loading_algorithms
         compressor = self._compressor_name()
         compressed = self._do_early_compression(compressor)
+
+        self._do_data_generation()
+
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
         processor_to_app_data_base_address = \
