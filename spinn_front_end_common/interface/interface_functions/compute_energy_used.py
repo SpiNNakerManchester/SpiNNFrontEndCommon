@@ -61,7 +61,7 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        version, buffer_manager, mapping_time,
+        version, mapping_time,
         load_time, execute_time, dsg_time, extraction_time,
         spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
@@ -70,7 +70,6 @@ def compute_energy_used(
 
     :param int version:
         The version of the SpiNNaker boards in use.
-    :param BufferManager buffer_manager:
     :param float mapping_time:
         From simulator via :py:class:`~.FinaliseTimingData`.
     :param float load_time:
@@ -109,7 +108,7 @@ def compute_energy_used(
     using_spalloc = bool(spalloc_server or remote_spinnaker_url)
     _compute_energy_consumption(
          placements, machine, version, using_spalloc,
-         dsg_time, buffer_manager, load_time,
+         dsg_time, load_time,
          mapping_time, execute_time + load_time + extraction_time,
          machine_allocation_controller,
          runtime_total_ms, power_used)
@@ -118,7 +117,7 @@ def compute_energy_used(
 
 
 def _compute_energy_consumption(
-        placements, machine, version, using_spalloc, dsg_time, buffer_manager,
+        placements, machine, version, using_spalloc, dsg_time,
         load_time, mapping_time, total_booted_time, job, runtime_total_ms,
         power_used):
     """
@@ -127,7 +126,6 @@ def _compute_energy_consumption(
     :param int version:
     :param bool using_spalloc:
     :param float dsg_time:
-    :param BufferManager buffer_manager:
     :param float load_time:
     :param float mapping_time:
     :param float total_booted_time:
@@ -169,7 +167,7 @@ def _compute_energy_consumption(
     # figure out active chips cost
     power_used.chip_energy_joules = sum(
         _calculate_chips_active_energy(
-            chip, placements, buffer_manager, runtime_total_ms, power_used)
+            chip, placements, runtime_total_ms, power_used)
         for chip in active_chips)
 
     # figure out cooling/internet router idle cost during runtime
@@ -219,12 +217,11 @@ def _router_packet_energy(power_used):
 
 
 def _calculate_chips_active_energy(
-        chip, placements, buffer_manager, runtime_total_ms, power_used):
+        chip, placements, runtime_total_ms, power_used):
     """ Figure out the chip active cost during simulation
 
     :param ~.Chip chip: the chip to consider
     :param ~.Placements placements: placements
-    :param BufferManager buffer_manager: buffer manager
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     :return: energy cost
@@ -236,8 +233,7 @@ def _calculate_chips_active_energy(
 
     # get recordings from the chip power monitor
     recorded_measurements = chip_power_monitor.get_recorded_data(
-        placement=FecDataView.get_placement_of_vertex(chip_power_monitor),
-        buffer_manager=buffer_manager)
+        placement=FecDataView.get_placement_of_vertex(chip_power_monitor))
 
     # deduce time in milliseconds per recording element
     n_samples_per_recording = get_config_int(

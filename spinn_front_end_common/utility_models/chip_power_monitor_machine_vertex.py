@@ -246,19 +246,18 @@ class ChipPowerMonitorMachineVertex(
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement, buffer_manager):
+    def get_recorded_data(self, placement):
         """ Get data from SDRAM given placement and buffer manager. \
             Also arranges for provenance data to be available.
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from
-        :param BufferManager buffer_manager:
-            the buffer manager that might have data
         :return: results, an array with 1 dimension of uint32 values
         :rtype: ~numpy.ndarray
         """
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
+        buffer_manager = FecDataView.get_buffer_manager()
         record_raw, data_missing = buffer_manager.get_data_by_placement(
             placement, self._SAMPLE_RECORDING_CHANNEL)
         if data_missing:

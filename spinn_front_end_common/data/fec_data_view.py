@@ -185,7 +185,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
          reset
         :rtype: bool
         """
-        return cls.__fec_data.__buffer_manager is not None
+        return cls.__fec_data._buffer_manager is not None
 
     @classmethod
     def get_buffer_manager(cls):

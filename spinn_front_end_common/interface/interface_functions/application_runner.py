@@ -29,12 +29,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def application_runner(
-        buffer_manager, notification_interface, executable_types,
+        notification_interface, executable_types,
         runtime, no_sync_changes, time_threshold, run_until_complete=False):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
-        :param BufferManager buffer_manager:
         :param NotificationProtocol notification_interface:
         :param executable_types:
         :type executable_types:
@@ -49,7 +48,7 @@ def application_runner(
     """
     runner = _ApplicationRunner(
         executable_types, no_sync_changes)
-    return runner._run(buffer_manager, notification_interface, runtime,
+    return runner._run(notification_interface, runtime,
                        time_threshold, run_until_complete)
 
 
@@ -69,10 +68,9 @@ class _ApplicationRunner(object):
 
     # Wraps up as a PACMAN algorithm
     def _run(
-            self, buffer_manager, notification_interface, runtime,
+            self, notification_interface, runtime,
             time_threshold, run_until_complete=False):
         """
-        :param BufferManager buffer_manager:
         :param NotificationProtocol notification_interface:
         :param executable_types:
         :type executable_types:
@@ -93,6 +91,7 @@ class _ApplicationRunner(object):
         # wait for all cores to be ready
         self._wait_for_start()
 
+        buffer_manager = FecDataView.get_buffer_manager()
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
         buffer_manager.resume()

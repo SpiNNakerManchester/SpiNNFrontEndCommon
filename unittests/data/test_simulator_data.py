@@ -90,15 +90,18 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
+        self.assertFalse(FecDataView.has_buffer_manager())
         bm = BufferManager(
             extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, fixed_routes=None)
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
+        self.assertTrue(FecDataView.has_buffer_manager())
         writer.hard_reset()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
+        self.assertFalse(FecDataView.has_buffer_manager())
         with self.assertRaises(TypeError):
             writer.set_buffer_manager("bacon")
 

@@ -24,10 +24,9 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def buffer_extractor(buffer_manager):
+def buffer_extractor():
     """ Extracts data in between runs.
 
-    :param BufferManager buffer_manager:
     """
     # Count the regions to be read
     n_regions_to_read, recording_placements = _count_regions()
@@ -38,6 +37,7 @@ def buffer_extractor(buffer_manager):
     # Read back the regions
     progress = ProgressBar(
         n_regions_to_read, "Extracting buffers from the last run")
+    buffer_manager = FecDataView.get_buffer_manager()
     try:
         buffer_manager.get_data_for_placements(
             recording_placements, progress)

@@ -208,10 +208,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the holder for the fixed routes generated, if there are any
         "_fixed_routes",
 
-        # The manager of streaming buffered data in and out of the SpiNNaker
-        # machine
-        "_buffer_manager",
-
         # Handler for keep all the calls to Java in a single space.
         # May be null is configs request not to use Java
         "_java_caller",
@@ -468,7 +464,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
         self._data_writer.hard_reset()
-        self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
         self._dsg_targets = None
@@ -1841,17 +1836,18 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the buffer_manager data
         """
-        if self._buffer_manager:
+        if self._data_writer.has_buffer_manager():
             return
         with FecTimer(MAPPING, "Buffer manager creator") as timer:
             if timer.skip_if_virtual_board():
                 return
 
-            self._buffer_manager = buffer_manager_creator(
-                self._extra_monitor_vertices,
-                self._extra_monitor_to_chip_mapping,
-                self._vertex_to_ethernet_connected_chip_mapping,
-                self._fixed_routes, self._java_caller)
+            self._data_writer.set_buffer_manager(
+                buffer_manager_creator(
+                    self._extra_monitor_vertices,
+                    self._extra_monitor_to_chip_mapping,
+                    self._vertex_to_ethernet_connected_chip_mapping,
+                    self._fixed_routes, self._java_caller))
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """
@@ -2541,11 +2537,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Energy report") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return []
+            if timer.skip_if_virtual_board():
+                return []
+
 
             # TODO runtime is None
             power_used = compute_energy_used(
-                self._board_version,
-                self._buffer_manager, self._mapping_time,
+                self._board_version, self._mapping_time,
                 self._load_time, self._execute_time, self._dsg_time,
                 self._extraction_time,
                 self._spalloc_server, self._remote_spinnaker_url,
@@ -2558,8 +2556,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._spalloc_server, self._remote_spinnaker_url)
 
             # run energy report
-            energy_reporter.write_energy_report(
-                self._buffer_manager, power_used)
+            energy_reporter.write_energy_report(power_used)
 
     def _do_provenance_reports(self):
         """
@@ -2642,7 +2639,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
             self._no_sync_changes = application_runner(
-                self._buffer_manager, self._notification_interface,
+                self._notification_interface,
                 self._executable_types, run_time,
                 self._no_sync_changes, time_threshold,
                 self._run_until_complete)
@@ -2668,7 +2665,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Buffer extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
-            buffer_extractor(self._buffer_manager)
+            buffer_extractor()
 
     def _do_extract_from_machine(self):
         """
@@ -2885,8 +2882,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
-        if self._buffer_manager is not None:
-            self._buffer_manager.reset()
+        if self._data_writer.has_buffer_manager():
+            self._data_writer.get_buffer_manager().reset()
 
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
@@ -2982,15 +2979,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         """
         return self._fixed_routes
-
-    @property
-    def buffer_manager(self):
-        """ The buffer manager being used for loading/extracting buffers
-
-        :rtype:
-            ~spinn_front_end_common.interface.buffer_management.BufferManager
-        """
-        return self._buffer_manager
 
     @property
     def none_labelled_edge_count(self):

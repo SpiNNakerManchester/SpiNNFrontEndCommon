@@ -52,19 +52,15 @@ class EnergyReport(object):
         """
         self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
-    def write_energy_report(self, buffer_manager, power_used):
+    def write_energy_report(self, power_used):
         """ Writes the report.
 
         :param ~spinn_machine.Machine machine: the machine
-        :param BufferManager buffer_manager:
         :param PowerUsed power_used:
         :rtype: None
         """
         report_dir = FecDataView.get_run_dir_path()
         # pylint: disable=too-many-arguments, too-many-locals
-        if buffer_manager is None:
-            logger.info("Skipping Energy report as no buffer_manager set")
-            return
 
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
