@@ -24,6 +24,7 @@ from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
+from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -128,6 +129,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def clear_app_id(self):
         self.__fec_data._app_id = None
+
+    def set_buffer_manager(self, buffer_manager):
+        """
+        Sets the Buffer manager variable
+
+        :param BufferManager buffer_manager:
+        """
+        if not isinstance(buffer_manager, BufferManager):
+            raise TypeError("buffer_manager must be a BufferManager")
+        self.__fec_data._buffer_manager = buffer_manager
 
     def increment_current_run_timesteps(self, increment):
         """

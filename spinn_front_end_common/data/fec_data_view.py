@@ -40,6 +40,7 @@ class _FecDataModel(object):
     __slots__ = [
         # Data values cached
         "_app_id",
+        "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
@@ -90,6 +91,7 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graaph change
         """
         self._app_id = None
+        self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._max_run_time_steps = None
@@ -173,6 +175,32 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
 
+    # _buffer_manager
+    @classmethod
+    def has_buffer_manager(cls):
+        """
+        Reports if a BufferManager object has already been set
+
+        :return: True if and only if a Buffermanager has been added and not
+         reset
+        :rtype: bool
+        """
+        return cls.__fec_data.__buffer_manager is not None
+
+    @classmethod
+    def get_buffer_manager(cls):
+        """
+        Returns the buffer manager if known
+
+        :rtype: ~spinn_front_end_common.interface.buffer_management.BufferManager
+        :raises SpiNNUtilsException:
+            If the buffer manager unavailable
+        """
+        if cls.__fec_data._buffer_manager is None:
+            raise cls._exception("buffer_manager")
+
+        return cls.__fec_data._buffer_manager
+
     @classmethod
     def get_first_machine_time_step(cls):
         """
@@ -197,6 +225,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Guranteed to be possitve
 
         :rtype: None or int
+        :raises SpiNNUtilsException:
+            If the max run time is currently unavailable
         """
         if cls.__fec_data._max_run_time_steps is None:
             raise cls._exception("max_run_time_steps")

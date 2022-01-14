@@ -22,6 +22,7 @@ from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from pacman.model.routing_tables import MulticastRoutingTables
+from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.data import FecDataView
@@ -84,6 +85,23 @@ class TestSimulatorData(unittest.TestCase):
         self.assertNotEqual(app_id1, writer.get_app_id())
         writer.hard_reset()
         self.assertEqual(app_id1, writer.get_app_id())
+
+    def test_buffer_manager(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_buffer_manager()
+        bm = BufferManager(
+            extra_monitor_cores=None,
+            packet_gather_cores_to_ethernet_connection_map=None,
+            extra_monitor_to_chip_mapping=None, fixed_routes=None)
+        writer.set_buffer_manager(bm)
+        self.assertEqual(bm, FecDataView.get_buffer_manager())
+        writer.hard_reset()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_buffer_manager()
+        with self.assertRaises(TypeError):
+            writer.set_buffer_manager("bacon")
+
 
     def test_run_times(self):
         writer = FecDataWriter.setup()
