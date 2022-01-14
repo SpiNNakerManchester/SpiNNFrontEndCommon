@@ -2120,6 +2120,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.do_info_allocator()
         self._report_router_info()
         self._execute_basic_routing_table_generator()
+        self._report_uncompressed_routing_table()
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
@@ -2442,7 +2443,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the router report from router tables if requested
         """
-        # TODO why not during mapping?
         with FecTimer(LOADING, "Uncompressed routing table report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
@@ -2643,7 +2643,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_routing_setup()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
-        self._report_uncompressed_routing_table()
         compressor = self._compressor_name()
         compressed = self._do_early_compression(compressor)
         if graph_changed or not self._has_ran:
