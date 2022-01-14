@@ -1651,7 +1651,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer(MAPPING, "Spreader placer"):
+        with FecTimer(MAPPING, "Application Placer"):
             self._placements = place_application_graph(
                 self._machine, self._application_graph, self._plan_n_timesteps,
                 system_placements)
@@ -1822,7 +1822,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         .. note::
             Calling of this method is based on the cfg router value
         """
-        with FecTimer(MAPPING, "Basic dijkstra routing"):
+        with FecTimer(MAPPING, "Application Router"):
             self._routing_table_by_partition = route_application_graph(
                 self._machine, self._application_graph, self._placements)
 
