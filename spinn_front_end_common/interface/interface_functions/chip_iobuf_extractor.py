@@ -16,14 +16,13 @@
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
-def chip_io_buf_extractor(executable_targets, executable_finder):
+def chip_io_buf_extractor(executable_targets):
     """ Extract the logging output buffers from the machine, and separates\
         lines based on their prefix.
 
     :param ~spinnman.model.ExecutableTargets executable_targets:
-    :param ExecutableFinder executable_finder:
     :return: error_entries, warn_entries
     :rtype: tuple(list(str),list(str))
     """
-    extractor = IOBufExtractor(executable_targets, executable_finder)
+    extractor = IOBufExtractor(executable_targets)
     return extractor.extract_iobuf()

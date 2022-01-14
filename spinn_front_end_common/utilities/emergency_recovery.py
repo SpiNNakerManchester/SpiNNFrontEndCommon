@@ -67,9 +67,8 @@ def _emergency_iobuf_extract(executable_targets):
     :param ExecutableTargets executable_targets:
     """
     # pylint: disable=protected-access
-    sim = get_simulator()
     extractor = IOBufExtractor(
-        executable_targets, sim._executable_finder,
+        executable_targets,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor.extract_iobuf()
 

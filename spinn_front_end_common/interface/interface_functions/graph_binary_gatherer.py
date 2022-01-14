@@ -26,16 +26,13 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_binary_gatherer(executable_finder):
+def graph_binary_gatherer():
     """
     Extracts binaries to be executed.
 
-    :param executable_finder:
-    :type executable_finder:
-        ~spinn_utilities.executable_finder.ExecutableFinder
     :rtype: ExecutableTargets
     """
-    gatherer = _GraphBinaryGatherer(executable_finder)
+    gatherer = _GraphBinaryGatherer()
     return gatherer._run()
 
 
@@ -43,16 +40,9 @@ class _GraphBinaryGatherer(object):
     """ Extracts binaries to be executed.
     """
 
-    __slots__ = ["_exe_finder", "_exe_targets"]
+    __slots__ = ["_exe_targets"]
 
-    def __init__(self, executable_finder):
-        """
-
-        :param executable_finder:
-        :type executable_finder:
-            ~spinn_utilities.executable_finder.ExecutableFinder
-        """
-        self._exe_finder = executable_finder
+    def __init__(self):
         self._exe_targets = ExecutableTargets()
 
     def _run(self):
@@ -88,7 +78,7 @@ class _GraphBinaryGatherer(object):
         exec_type = vertex.get_binary_start_type()
 
         # Attempt to find this within search paths
-        binary_path = self._exe_finder.get_executable_path(binary_name)
+        binary_path = FecDataView.get_executable_finder().get_executable_path(binary_name)
         if binary_path is None:
             raise ExecutableNotFoundException(binary_name)
 

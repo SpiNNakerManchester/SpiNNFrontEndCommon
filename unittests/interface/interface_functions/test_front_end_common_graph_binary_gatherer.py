@@ -78,7 +78,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         writer.set_runtime_machine_graph(graph)
         writer.set_placements(placements)
-        targets = graph_binary_gatherer(_TestExecutableFinder())
+        # UGLY HACK to bring in WEIRD finder NOT SUPPPORTED!
+        writer._set_executable_finder(_TestExecutableFinder())
+        targets = graph_binary_gatherer()
         start_type = locate_executable_start_type()
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)

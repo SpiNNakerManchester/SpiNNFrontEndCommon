@@ -167,11 +167,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     # pylint: disable=broad-except
 
     __slots__ = [
-        # the object that contains a set of file paths, which should encompass
-        # all locations where binaries are for this simulation.
-        # init param and never changed
-        "_executable_finder",
-
         # the number of boards requested by the user during setup
         # init param and never changed
         "_n_boards_required",
@@ -362,14 +357,11 @@ class AbstractSpinnakerBase(ConfigHandler):
     ]
 
     def __init__(
-            self, executable_finder, graph_label=None,
+            self, graph_label=None,
             database_socket_addresses=None, n_chips_required=None,
             n_boards_required=None, front_end_versions=[],
             data_writer_cls=None):
         """
-        :param executable_finder: How to find APLX files to deploy to SpiNNaker
-        :type executable_finder:
-            ~spinn_utilities.executable_finder.ExecutableFinder
         :param str graph_label: A label for the overall application graph
         :param database_socket_addresses: How to talk to notification databases
         :type database_socket_addresses:
@@ -393,12 +385,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._dsg_time = 0.0
         self._extraction_time = 0.0
 
-        self._executable_finder = executable_finder
-
         # output locations of binaries to be searched for end user info
         logger.info(
             "Will search these locations for binaries: {}",
-            self._executable_finder.binary_paths)
+            self._data_writer.get_executable_finder().binary_paths)
 
         if n_chips_required is None or n_boards_required is None:
             self._n_chips_required = n_chips_required
@@ -1967,8 +1957,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
-                self._executable_targets = graph_binary_gatherer(
-                    self._executable_finder)
+                self._executable_targets = graph_binary_gatherer()
             except KeyError:
                 if self.use_virtual_board:
                     logger.warning(
@@ -2014,8 +2003,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             machine_bit_field_ordered_covering_compressor(
-                self._router_tables, self._executable_finder,
-                self._executable_targets)
+                self._router_tables, self._executable_targets)
             self._multicast_routes_loaded = True
             return None
 
@@ -2036,8 +2024,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
-                self._router_tables, self._executable_finder,
-                self._executable_targets)
+                self._router_tables, self._executable_targets)
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -2070,8 +2057,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            ordered_covering_compression(
-                self._router_tables, self._executable_finder)
+            ordered_covering_compression(self._router_tables)
             self._multicast_routes_loaded = True
             return None
 
@@ -2105,8 +2091,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Pair on chip router compression") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            pair_compression(
-                self._router_tables, self._executable_finder)
+            pair_compression(self._router_tables)
             self._multicast_routes_loaded = True
             return None
 
@@ -2654,8 +2639,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "extract_iobuf"):
                 return
             # ErrorMessages, WarnMessages output ignored as never used!
-            chip_io_buf_extractor(
-                self._executable_targets, self._executable_finder)
+            chip_io_buf_extractor(self._executable_targets)
 
     def _execute_buffer_extractor(self):
         """
@@ -2851,8 +2835,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.exception(f"Could not read provenance due to {pro_e}")
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = IOBufExtractor(
-            self._executable_targets, self._executable_finder)
+        iobuf = IOBufExtractor(self._executable_targets)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:

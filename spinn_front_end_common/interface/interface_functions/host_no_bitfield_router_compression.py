@@ -18,7 +18,6 @@ import struct
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
@@ -37,8 +36,7 @@ _SDRAM_TAG = 1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def pair_compression(
-        routing_tables, executable_finder):
+def pair_compression(routing_tables):
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
@@ -48,9 +46,6 @@ def pair_compression(
         the memory routing tables to be compressed
     :param ~spinnman.transceiver.Transceiver transceiver:
         How to talk to the machine
-    :param executable_finder: tracker of binaries.
-    :type executable_finder:
-        ~spinn_utilities.executable_finder.ExecutableFinder
     :param bool compress_as_much_as_possible:
         If False, the compressor will only reduce the table until it fits in
         the router space, otherwise it will try to reduce until it until it
@@ -58,6 +53,7 @@ def pair_compression(
     :raises SpinnFrontEndException: If compression fails
      """
     # pylint: disable=too-many-arguments
+    executable_finder = FecDataView.get_executable_finder()
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
@@ -66,7 +62,7 @@ def pair_compression(
     compression.compress()
 
 
-def ordered_covering_compression(routing_tables, executable_finder):
+def ordered_covering_compression(routing_tables):
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
@@ -75,12 +71,10 @@ def ordered_covering_compression(routing_tables, executable_finder):
 
     :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the memory routing tables to be compressed
-    :param executable_finder: tracker of binaries.
-    :type executable_finder:
-        ~spinn_utilities.executable_finder.ExecutableFinder
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
+    executable_finder = FecDataView.get_executable_finder()
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
@@ -155,9 +149,8 @@ class Compression(object):
         # load the router compressor executable
         executable_targets = self._load_executables()
 
-        executable_finder = ExecutableFinder(binary_search_paths=[])
         run_system_application(
-            executable_targets, self._compressor_app_id, executable_finder,
+            executable_targets, self._compressor_app_id,
             get_config_bool("Reports", "write_compressor_iobuf"),
             self._check_for_success,
             [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",

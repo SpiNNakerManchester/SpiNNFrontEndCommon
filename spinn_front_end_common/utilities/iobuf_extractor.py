@@ -48,10 +48,10 @@ class IOBufExtractor(object):
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
                  "__app_path", "__sys_path",
                  "__suppress_progress", "__from_cores", "__binary_types",
-                 "__executable_targets", "__executable_finder"]
+                 "__executable_targets"]
 
     def __init__(self, executable_targets,
-                 executable_finder, recovery_mode=False,
+                 recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
         """
@@ -59,7 +59,6 @@ class IOBufExtractor(object):
         :param str filename_template:
         :param bool suppress_progress:
         :param ~spinnman.model.ExecutableTargets executable_targets:
-        :param ExecutableFinder executable_finder:
         :param str from_cores:
         :param str binary_types:
         """
@@ -74,7 +73,6 @@ class IOBufExtractor(object):
         self.__binary_types = get_config_str(
             "Reports", "extract_iobuf_from_binary_types")
         self.__executable_targets = executable_targets
-        self.__executable_finder = executable_finder
 
         self.__system_binaries = set()
         try:
@@ -145,7 +143,7 @@ class IOBufExtractor(object):
         warn_entries = list()
         # bit of both
         progress = self.__progress(self.__executable_targets.binaries)
-        binaries = self.__executable_finder.get_executable_paths(
+        binaries = FecDataView.get_executable_finder().get_executable_paths(
             self.__binary_types)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
         for binary in progress.over(self.__executable_targets.binaries):
@@ -184,7 +182,7 @@ class IOBufExtractor(object):
         error_entries = list()
         warn_entries = list()
         # some binaries
-        binaries = self.__executable_finder.get_executable_paths(
+        binaries = FecDataView.get_executable_finder().get_executable_paths(
             self.__binary_types)
         progress = self.__progress(binaries)
         for binary in progress.over(binaries):

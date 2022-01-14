@@ -16,7 +16,6 @@
 import os
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
@@ -70,8 +69,6 @@ def mock_aplx(name):
     return os.path.join(path, "mock{}.aplx".format(name))
 
 
-executableFinder = ExecutableFinder([path])
-
 executable_targets = ExecutableTargets()
 core_subsets = CoreSubsets([CoreSubset(0, 0, [1, 2])])
 fooaplx = mock_aplx("foo")
@@ -92,15 +89,16 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
              IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
              IOBuffer(0, 0, 3, text003)]))
+        FecDataView.get_executable_finder().add_path(path)
 
     def testExectuableFinder(self):
+        executableFinder = FecDataView.get_executable_finder()
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
 
     def testCallSimple(self):
         folder = FecDataView.get_app_provenance_dir_path()
         error_entries, warn_entries = chip_io_buf_extractor(
-            executable_targets=executable_targets,
-            executable_finder=None)
+            executable_targets=executable_targets)
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         testfile = os.path.join(
@@ -135,8 +133,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         error_entries, warn_entries = chip_io_buf_extractor(
-            executable_targets=executable_targets,
-            executable_finder=None)
+            executable_targets=executable_targets)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertFalse(os.path.exists(testfile))
@@ -170,8 +167,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
         error_entries, warn_entries = chip_io_buf_extractor(
-            executable_targets=executable_targets,
-            executable_finder=executableFinder)
+            executable_targets=executable_targets)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
@@ -201,8 +197,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
         error_entries, warn_entries = chip_io_buf_extractor(
-            executable_targets=executable_targets,
-            executable_finder=executableFinder)
+            executable_targets=executable_targets)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))

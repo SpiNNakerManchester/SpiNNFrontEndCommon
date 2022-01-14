@@ -119,16 +119,13 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_type = compressor_type
 
     def run(
-            self, routing_tables, executable_finder,
-            executable_targets,
+            self, routing_tables, executable_targets,
             compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
@@ -167,8 +164,7 @@ class _MachineBitFieldRouterCompressor(object):
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
          bit_field_compressor_executable_path) = self._generate_core_subsets(
-            routing_tables, executable_finder, progress_bar,
-            executable_targets)
+            routing_tables, progress_bar, executable_targets)
 
         # load data into sdram
         on_host_chips = self._load_data(
@@ -183,7 +179,7 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             run_system_application(
                 compressor_executable_targets,
-                routing_table_compressor_app_id, executable_finder,
+                routing_table_compressor_app_id,
                 get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
@@ -238,12 +234,10 @@ class _MachineBitFieldRouterCompressor(object):
         return compressor_executable_targets
 
     def _generate_core_subsets(
-            self, routing_tables, executable_finder, progress_bar,
-            system_executable_targets):
+            self, routing_tables, progress_bar, system_executable_targets):
         """ generates the core subsets for the binaries
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
-        :param ~.ExecutableFinder executable_finder: the executable path finder
         :param ~.ProgressBar progress_bar: progress bar
         :param ExecutableTargets system_executable_targets:
             the executables targets to cores
@@ -279,6 +273,7 @@ class _MachineBitFieldRouterCompressor(object):
         executable_targets = ExecutableTargets()
 
         # bit field executable paths
+        executable_finder = FecDataView.get_executable_finder()
         bit_field_sorter_executable_path = \
             executable_finder.get_executable_path(
                 self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
@@ -754,16 +749,13 @@ class _MachineBitFieldRouterCompressor(object):
 
 
 def machine_bit_field_ordered_covering_compressor(
-        routing_tables,
-        executable_finder, executable_targets,
+        routing_tables, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
         :param routing_tables: routing tables
         :type routing_tables:
             ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
@@ -775,13 +767,11 @@ def machine_bit_field_ordered_covering_compressor(
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
     return compressor.run(
-        routing_tables, executable_finder, executable_targets,
-        compress_as_much_as_possible)
+        routing_tables, executable_targets, compress_as_much_as_possible)
 
 
 def machine_bit_field_pair_router_compressor(
-        routing_tables,
-        executable_finder, executable_targets,
+        routing_tables, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
@@ -790,8 +780,6 @@ def machine_bit_field_pair_router_compressor(
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param ~pacman.model.placements.Placements placements:
             placements on machine
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
@@ -803,5 +791,4 @@ def machine_bit_field_pair_router_compressor(
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
     return compressor.run(
-        routing_tables, executable_finder, executable_targets,
-        compress_as_much_as_possible)
+        routing_tables, executable_targets, compress_as_much_as_possible)

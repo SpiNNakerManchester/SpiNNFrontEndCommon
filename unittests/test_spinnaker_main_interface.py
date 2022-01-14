@@ -20,7 +20,6 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
-from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
 
 
 class Close_Once(object):
@@ -45,7 +44,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase(ExecutableFinder())
+        interface = AbstractSpinnakerBase()
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -58,7 +57,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase(ExecutableFinder())
+        AbstractSpinnakerBase()
 
 
 if __name__ == "__main__":
