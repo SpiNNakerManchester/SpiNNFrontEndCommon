@@ -47,7 +47,10 @@ class _FecDataModel(object):
         "_first_machine_time_step",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
+        "_n_boards_required",
         "_n_calls_to_run",
+        "_n_chips_required",
+        "_n_chips_in_graph",
         "_max_run_time_steps",
         "_report_dir_path",
         "_simulation_time_step_ms",
@@ -75,7 +78,9 @@ class _FecDataModel(object):
         """
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
+        self._n_boards_required = None
         self._n_calls_to_run = None
+        self._n_chips_required = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
@@ -94,6 +99,7 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
+        self._n_chips_in_graph = None
         self._max_run_time_steps = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
@@ -390,6 +396,42 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # Report directories
     # There are NO has or get methods for directories
     # This allow directories to be created on the fly
+
+    # n_boards/chips required
+
+    @classmethod
+    def get_n_boards_required(cls):
+        """
+        Gets the number of boards requested by the user during setup.
+
+        Highly likely to be None
+
+        Guaranteed to be positive if not None
+
+        :rtype: int or None
+        """
+        return cls.__fec_data._n_boards_required
+
+    @classmethod
+    def get_n_chips_needed(cls):
+        """
+        Gets the number of chips needed.
+
+        This will be the number of chips requested by the use during setup,
+        even if this is less that what the partitioner reported.
+
+        If the partitioner has run and the user has not specified a number,
+        this will be what the partitioner requested.
+
+        Highly likely to be None before the partitioner has run
+
+        Guaranteed to be positive if not None
+
+        :rtype: int or None
+        """
+        if cls.__fec_data._n_chips_required:
+            return cls.__fec_data._n_chips_required
+        return cls.__fec_data._n_chips_in_graph
 
     @classmethod
     def get_report_dir_path(cls):
