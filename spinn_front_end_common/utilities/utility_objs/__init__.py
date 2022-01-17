@@ -15,13 +15,12 @@
 
 from .data_written import DataWritten
 from .dpri_flags import DPRIFlags
-from .executable_finder import ExecutableFinder
 from .executable_type import ExecutableType
 from .live_packet_gather_parameters import LivePacketGatherParameters
 from .power_used import PowerUsed
 from .reinjection_status import ReInjectionStatus
 
 __all__ = [
-    "DataWritten", "DPRIFlags", "ExecutableFinder",
+    "DataWritten", "DPRIFlags",
     "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
     "ReInjectionStatus"]
