@@ -79,19 +79,25 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         writer.set_runtime_machine_graph(graph)
         writer.set_placements(placements)
         # UGLY HACK to bring in WEIRD finder NOT SUPPPORTED!
-        writer._set_executable_finder(_TestExecutableFinder())
-        targets = graph_binary_gatherer()
-        start_type = locate_executable_start_type()
-        self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
-        self.assertEqual(targets.total_processors, 3)
+        normal_ef = writer._UtilsDataView__data._executable_finder
+        try:
+            writer._UtilsDataView__data._executable_finder = \
+                _TestExecutableFinder()
+            targets = graph_binary_gatherer()
+            start_type = locate_executable_start_type()
+            self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
+            self.assertEqual(targets.total_processors, 3)
 
-        test_cores = targets.get_cores_for_binary("test.aplx")
-        test_2_cores = targets.get_cores_for_binary("test2.aplx")
-        self.assertEqual(len(test_cores), 1)
-        self.assertEqual(len(test_2_cores), 2)
-        self.assertIn((0, 0, 0), test_cores)
-        self.assertIn((0, 0, 1), test_2_cores)
-        self.assertIn((0, 0, 2), test_2_cores)
+            test_cores = targets.get_cores_for_binary("test.aplx")
+            test_2_cores = targets.get_cores_for_binary("test2.aplx")
+            self.assertEqual(len(test_cores), 1)
+            self.assertEqual(len(test_2_cores), 2)
+            self.assertIn((0, 0, 0), test_cores)
+            self.assertIn((0, 0, 1), test_2_cores)
+            self.assertIn((0, 0, 2), test_2_cores)
+        finally:
+            # put back normal finder
+            writer._UtilsDataView__data._executable_finder = normal_ef
 
     def test_mixed_binaries(self):
         """ Test calling the binary gatherer with mixed executable types
