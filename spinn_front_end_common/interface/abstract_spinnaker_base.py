@@ -19,6 +19,7 @@ main interface for the SpiNNaker tools
 from collections import defaultdict
 import logging
 import math
+import os
 import signal
 import sys
 import threading
@@ -72,6 +73,7 @@ from pacman.operations.routing_table_generators import (
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 
 from spinn_front_end_common import __version__ as fec_version
+from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
@@ -444,6 +446,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._hostname = None
 
         FecTimer.setup(self)
+
+        self._data_writer.get_executable_finder().add_path(
+            os.path.dirname(common_model_binaries.__file__))
 
     def _new_run_clear(self):
         """
