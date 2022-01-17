@@ -78,7 +78,8 @@ class _GraphBinaryGatherer(object):
         exec_type = vertex.get_binary_start_type()
 
         # Attempt to find this within search paths
-        binary_path = FecDataView.get_executable_finder().get_executable_path(binary_name)
+        ef = FecDataView.get_executable_finder()
+        binary_path = ef.get_executable_path(binary_name)
         if binary_path is None:
             raise ExecutableNotFoundException(binary_name)
 
