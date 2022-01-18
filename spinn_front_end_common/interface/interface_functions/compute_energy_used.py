@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import itertools
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
@@ -63,7 +63,6 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 def compute_energy_used(
         placements, machine, version, runtime, buffer_manager, mapping_time,
         load_time, execute_time, dsg_time, extraction_time,
-        spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
@@ -105,10 +104,9 @@ def compute_energy_used(
     power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
-    using_spalloc = bool(spalloc_server or remote_spinnaker_url)
     runtime_total_ms = runtime * time_scale_factor()
     _compute_energy_consumption(
-         placements, machine, version, using_spalloc,
+         placements, machine, version,
          dsg_time, buffer_manager, load_time,
          mapping_time, execute_time + load_time + extraction_time,
          machine_allocation_controller,
@@ -118,14 +116,13 @@ def compute_energy_used(
 
 
 def _compute_energy_consumption(
-        placements, machine, version, using_spalloc, dsg_time, buffer_manager,
+        placements, machine, version, dsg_time, buffer_manager,
         load_time, mapping_time, total_booted_time, job, runtime_total_ms,
         power_used):
     """
     :param ~.Placements placements:
     :param ~.Machine machine:
     :param int version:
-    :param bool using_spalloc:
     :param float dsg_time:
     :param BufferManager buffer_manager:
     :param float load_time:
@@ -143,7 +140,7 @@ def _compute_energy_consumption(
 
     # figure FPGA cost over all booted and during runtime cost
     _calculate_fpga_energy(
-        machine, version, using_spalloc, total_booted_time,
+        machine, version, total_booted_time,
         runtime_total_ms, power_used)
 
     # figure how many frames are using, as this is a constant cost of
@@ -291,12 +288,11 @@ def __get_chip_power_monitor(chip, placements):
 
 
 def _calculate_fpga_energy(
-        machine, version, using_spalloc, total_runtime, runtime_total_ms,
+        machine, version, total_runtime, runtime_total_ms,
         power_used):
     """
     :param ~.Machine machine:
     :param int version:
-    :param bool using_spalloc:
     :param float total_runtime:
     :param float runtime_total_ms:
     :param PowerUsed power_used:
@@ -305,7 +301,8 @@ def _calculate_fpga_energy(
 
     total_fpgas = 0
     # if not spalloc, then could be any type of board
-    if not using_spalloc:
+    if (not get_config_str("Machine", "spalloc_server") and
+            not get_config_str("Machine", "remote_spinnaker_url")):
         # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
         if int(version) in (2, 3):
             return 0, 0

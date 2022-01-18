@@ -15,6 +15,7 @@
 
 import logging
 import requests
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
@@ -108,12 +109,10 @@ class _HBPJobController(MachineAllocationController):
         return self._check_lease(self._WAIT_TIME_MS)["allocated"]
 
 
-def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
+def hbp_allocator(total_run_time, n_chips=None, n_boards=None):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips.
 
-    :param str hbp_server_url:
-        The URL of the HBP server from which to get the machine
     :param int total_run_time: The total run time to request
     :param int n_chips: The number of chips required.
         Only used if n_boards is None
@@ -127,7 +126,7 @@ def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         If neither `n_chips` or `n_boards` provided
     """
 
-    url = hbp_server_url
+    url = get_config_str("Machine", "remote_spinnaker_url")
     if url.endswith("/"):
         url = url[:-1]
 
