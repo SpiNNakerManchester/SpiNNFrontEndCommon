@@ -233,11 +233,11 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: the file writer
         """
 
+        version = get_config_int("Machine", "version")
         # if not spalloc, then could be any type of board
         if (not get_config_str("Machine", "spalloc_server") and
                 not get_config_str("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            version = get_config_int("Machine", "version")
             if int(version) in (2, 3):
                 f.write(
                     f"A SpiNN-{version} board does not contain any FPGA's,"
