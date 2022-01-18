@@ -190,7 +190,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Either hostname or the ipaddress form the allocator
         "_ipaddress",
 
-         # the connection to allocted spalloc and HBP machines
+        # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
         # the pacman application graph, used to hold vertices which need to be
