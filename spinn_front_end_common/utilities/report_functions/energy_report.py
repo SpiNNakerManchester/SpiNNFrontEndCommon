@@ -180,18 +180,11 @@ class EnergyReport(object):
         # sort what to report by chip
         active_chips = defaultdict(dict)
         for placement in placements:
-<<<<<<< HEAD
-            if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
-                active_chips.add(
-                    FecDataView.get_chip_at(placement.x, placement.y))
-        for chip in active_chips:
-=======
             vertex = placement.vertex
             if not isinstance(vertex, ChipPowerMonitorMachineVertex):
                 labels = active_chips[placement.x, placement.y]
                 labels[placement.p] = vertex.label
         for xy in active_chips:
->>>>>>> refs/remotes/origin/master
             self._write_chips_active_cost(
                 xy, active_chips[xy], runtime_total_ms, power_used, f)
 
