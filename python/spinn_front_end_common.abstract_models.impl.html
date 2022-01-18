@@ -88,7 +88,7 @@
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -103,12 +103,12 @@
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Where this node is on the SpiNNaker machine.</p></li>
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – The graph containing this node.</p></li>
 <li><p><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a>) – The routing info.</p></li>
-<li><p><strong>iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><em>IPTag</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The (forward) IP tags for the vertex, if any</p></li>
-<li><p><strong>reverse_iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><em>ReverseIPTag</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The reverse IP tags for the vertex, if any</p></li>
+<li><p><strong>iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><em>IPTag</em></a><em>) or </em><em>None</em>) – The (forward) IP tags for the vertex, if any</p></li>
+<li><p><strong>reverse_iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><em>ReverseIPTag</em></a><em>) or </em><em>None</em>) – The reverse IP tags for the vertex, if any</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -149,8 +149,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The name of the vertex.</p></li>
-<li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)"><em>AbstractConstraint</em></a><em>) or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The initial constraints of the vertex.</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The name of the vertex.</p></li>
+<li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)"><em>AbstractConstraint</em></a><em>) or </em><em>None</em>) – The initial constraints of the vertex.</p></li>
 <li><p><strong>max_atoms_per_core</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The max number of atoms that can be
 placed on a core, used in partitioning.</p></li>
 </ul>
@@ -275,20 +275,26 @@ placed on a core, used in partitioning.</p></li>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.abstract_models.impl package</a><ul>
 <li><a class="reference internal" href="#module-spinn_front_end_common.abstract_models.impl">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="spinn_front_end_common.abstract_models.html"
-                        title="previous chapter">spinn_front_end_common.abstract_models package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="spinn_front_end_common.common_model_binaries.html"
-                        title="next chapter">spinn_front_end_common.common_model_binaries package</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="spinn_front_end_common.abstract_models.html"
+                          title="previous chapter">spinn_front_end_common.abstract_models package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="spinn_front_end_common.common_model_binaries.html"
+                          title="next chapter">spinn_front_end_common.common_model_binaries package</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -334,7 +340,7 @@ placed on a core, used in partitioning.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

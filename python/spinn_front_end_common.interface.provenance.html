@@ -109,7 +109,7 @@ is deleted the class will no longer work.</p>
 <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_last_run_database_path()</span></code></a> to find the correct path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>provenance_data_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Path to the provenance database to wrap</p>
+<dd class="field-odd"><p><strong>provenance_data_path</strong> (<em>None</em><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Path to the provenance database to wrap</p>
 </dd>
 </dl>
 <dl class="py method">
@@ -390,7 +390,7 @@ where the number and type of the values corresponds to the where
 statement</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Row" title="(in Python v3.8)">Row</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Row" title="(in Python v3.8)"><em>Row</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -415,7 +415,7 @@ You can’t port to a different database engine without a lot of work.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The name of a file that contains (or will contain) an SQLite
+<li><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The name of a file that contains (or will contain) an SQLite
 database holding the data.
 If omitted, either the default file path or an unshared in-memory
 database will be used (suitable only for testing).</p></li>
@@ -583,7 +583,7 @@ cfg provenance_report_cutoff</p>
 <li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
 <li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Runtime</p></li>
 <li><p><strong>n_run</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The end user run number</p></li>
-<li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – The run loop within the ned user run</p></li>
+<li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
 <li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
 it was not skipped</p></li>
 </ul>
@@ -754,20 +754,26 @@ position) to be used for provenance error reporting to the user.</p></li>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.provenance package</a><ul>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.provenance">Module contents</a></li>
 </ul>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="spinn_front_end_common.interface.profiling.html"
-                        title="previous chapter">spinn_front_end_common.interface.profiling package</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="spinn_front_end_common.interface.simulation.html"
-                        title="next chapter">spinn_front_end_common.interface.simulation package</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="spinn_front_end_common.interface.profiling.html"
+                          title="previous chapter">spinn_front_end_common.interface.profiling package</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="spinn_front_end_common.interface.simulation.html"
+                          title="next chapter">spinn_front_end_common.interface.simulation package</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -813,7 +819,7 @@ position) to be used for provenance error reporting to the user.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

@@ -51,6 +51,7 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
@@ -231,14 +232,16 @@
         <span class="c1"># figure extraction time cost</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_data_extraction_time_cost</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
-        <span class="c1"># figure out active chips idle time</span>
-        <span class="n">active_chips</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="c1"># sort what to report by chip</span>
+        <span class="n">active_chips</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">):</span>
-                <span class="n">active_chips</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">active_chips</span><span class="p">:</span>
+            <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">):</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="n">active_chips</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_chips_active_cost</span><span class="p">(</span>
-                <span class="n">chip</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                <span class="n">xy</span><span class="p">,</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">xy</span><span class="p">],</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Writes the warning about this being only an estimate</span>
@@ -324,33 +327,31 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_chips_active_cost</span><span class="p">(</span>
-            <span class="n">chip</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+            <span class="n">xy</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Figure out the chip active cost during simulation</span>
 
-<span class="sd">        :param ~.Chip chip: the chip to consider</span>
-<span class="sd">        :param ~.Placements placements: placements</span>
+<span class="sd">        :param (int, int) xy: the x,y of the chip to consider</span>
+<span class="sd">        :param dict(int, str) labels: vertex labels for the acte cores</span>
 <span class="sd">        :param float runtime_total_ms:</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :return: energy cost</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">xy</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># detailed report print out</span>
         <span class="k">for</span> <span class="n">core</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Machine</span><span class="o">.</span><span class="n">DEFAULT_MAX_CORES_PER_CHIP</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">placements</span><span class="o">.</span><span class="n">is_processor_occupied</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">):</span>
-                <span class="n">vertex</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span>
-                    <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">)</span>
-                <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot; (running </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
+                <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot; (running </span><span class="si">{</span><span class="n">labels</span><span class="p">[</span><span class="n">core</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
             <span class="n">energy</span> <span class="o">=</span> <span class="n">power_used</span><span class="o">.</span><span class="n">get_core_active_energy_joules</span><span class="p">(</span>
-                <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">)</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
                 <span class="s2">&quot;processor </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}{}</span><span class="s2"> used </span><span class="si">{}</span><span class="s2"> Joules of energy by &quot;</span>
                 <span class="s2">&quot;being active during the execution of the simulation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy</span><span class="p">))</span>
+                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">energy</span><span class="p">))</span>
 
         <span class="c1"># TAKE INTO ACCOUNT IDLE COST</span>
         <span class="n">idle_cost</span> <span class="o">=</span> <span class="p">(</span>
@@ -359,7 +360,7 @@
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
             <span class="s2">&quot;The chip at </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> used </span><span class="si">{}</span><span class="s2"> Joules of energy for by being idle &quot;</span>
             <span class="s2">&quot;during the execution of the simulation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">idle_cost</span><span class="p">))</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">idle_cost</span><span class="p">))</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_load_time_cost</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
@@ -452,7 +453,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>
