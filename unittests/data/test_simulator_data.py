@@ -358,30 +358,34 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_required(self):
         writer = FecDataWriter.setup()
-        self.assertIsNone(FecDataView.get_n_boards_required())
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        with self.assertRaises(DataNotYetAvialable):
+            self.assertIsNone(FecDataView.get_n_boards_required())
+        self.assertFalse(FecDataView.has_n_boards_required())
+        with self.assertRaises(DataNotYetAvialable):
+            self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # required higher than in graph
         writer.set_n_required(None, 20)
-        self.assertIsNone(FecDataView.get_n_boards_required())
+        self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
         writer.set_n_chips_in_graph(15)
-        self.assertIsNone(FecDataView.get_n_boards_required())
+        self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
 
         # required higher than in graph
         writer.set_n_chips_in_graph(25)
-        self.assertIsNone(FecDataView.get_n_boards_required())
+        self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
 
         # reset does not remove required
         writer.hard_reset()
-        self.assertIsNone(FecDataView.get_n_boards_required())
+        self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
 
         writer = FecDataWriter.setup()
-        self.assertIsNone(FecDataView.get_n_boards_required())
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_boards_required())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # in graph only
         writer.set_n_chips_in_graph(25)
@@ -389,13 +393,13 @@ class TestSimulatorData(unittest.TestCase):
 
         # reset clears in graph
         writer.hard_reset()
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # N boards
         writer = FecDataWriter.setup()
         writer.set_n_required(5, None)
         self.assertEquals(5, FecDataView.get_n_boards_required())
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # boards does not hide in graph
         writer.set_n_chips_in_graph(40)
@@ -405,13 +409,13 @@ class TestSimulatorData(unittest.TestCase):
         # reset does not clear required
         writer.hard_reset()
         self.assertEquals(5, FecDataView.get_n_boards_required())
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # two Nones fine
         writer = FecDataWriter.setup()
         writer.set_n_required(None, None)
-        self.assertIsNone(FecDataView.get_n_boards_required())
-        self.assertIsNone(FecDataView.get_n_chips_needed())
+        self.assertFalse(FecDataView.has_n_boards_required())
+        self.assertFalse(FecDataView.has_n_chips_needed())
 
         # Ilegal calls
         with self.assertRaises(ConfigurationException):

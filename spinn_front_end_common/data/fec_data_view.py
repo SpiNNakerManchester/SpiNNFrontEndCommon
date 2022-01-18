@@ -400,22 +400,33 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # n_boards/chips required
 
     @classmethod
+    def has_n_boards_required(cls):
+        """
+        Reports is a user has sets the number of boards requested during setup
+
+        :rtype: bool
+        :raises SpiNNUtilsException:
+            If n_boards_required is not set or set to None
+        """
+        return cls.__fec_data._n_boards_required is not None
+
+    @classmethod
     def get_n_boards_required(cls):
         """
-        Gets the number of boards requested by the user during setup.
+        Gets the number of boards requested by the user during setup is known.
 
-        Highly likely to be None
+        Guaranteed to be positive
 
-        Guaranteed to be positive if not None
-
-        :rtype: int or None
+        :rtype: int
         """
+        if cls.__fec_data._n_boards_required is None:
+            raise cls._exception("n_boards_requiredr")
         return cls.__fec_data._n_boards_required
 
     @classmethod
     def get_n_chips_needed(cls):
         """
-        Gets the number of chips needed.
+        Gets the number of chips needed if set
 
         This will be the number of chips requested by the use during setup,
         even if this is less that what the partitioner reported.
@@ -423,15 +434,31 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         If the partitioner has run and the user has not specified a number,
         this will be what the partitioner requested.
 
-        Highly likely to be None before the partitioner has run
+        Guaranteed to be positive if set
 
-        Guaranteed to be positive if not None
-
-        :rtype: int or None
+        :rtype: int
+        :raises SpiNNUtilsException:
+            If data for n_chips_needed is not available
         """
         if cls.__fec_data._n_chips_required:
             return cls.__fec_data._n_chips_required
-        return cls.__fec_data._n_chips_in_graph
+        if cls.__fec_data._n_chips_in_graph:
+            return cls.__fec_data._n_chips_in_graph
+        raise cls._exception("n_chips_requiredr")
+
+    @classmethod
+    def has_n_chips_needed(cls):
+        """
+        Detects if the number of chips needed has been set.
+
+        This will be the number of chips requested by the use during setup or
+        what the partitioner requested.
+
+        :rtype: bool
+        """
+        if cls.__fec_data._n_chips_required is not None:
+            return True
+        return cls.__fec_data._n_chips_in_graph is not None
 
     @classmethod
     def get_report_dir_path(cls):
