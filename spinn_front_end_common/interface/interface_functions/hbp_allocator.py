@@ -20,6 +20,7 @@ from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
+from spinn_front_end_common.data import FecDataView
 from pacman.exceptions import PacmanConfigurationException
 
 
@@ -108,16 +109,13 @@ class _HBPJobController(MachineAllocationController):
         return self._check_lease(self._WAIT_TIME_MS)["allocated"]
 
 
-def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
+def hbp_allocator(hbp_server_url, total_run_time):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips.
 
     :param str hbp_server_url:
         The URL of the HBP server from which to get the machine
     :param int total_run_time: The total run time to request
-    :param int n_chips: The number of chips required.
-        Only used if n_boards is None
-    :param int n_boards: The number of boards required
     :return: machine name, machine version, BMP details (if any),
         reset on startup flag, auto-detect BMP, SCAMP connection details,
         boot port, allocation controller
@@ -131,7 +129,7 @@ def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
     if url.endswith("/"):
         url = url[:-1]
 
-    machine = _get_machine(url, n_chips, n_boards, total_run_time)
+    machine = _get_machine(url, total_run_time)
     hbp_job_controller = _HBPJobController(url, machine["machineName"])
 
     bmp_details = None
@@ -144,20 +142,20 @@ def hbp_allocator(hbp_server_url, total_run_time, n_chips=None, n_boards=None):
         hbp_job_controller)
 
 
-def _get_machine(url, n_chips, n_boards, total_run_time):
+def _get_machine(url, total_run_time):
     """
     :param str url:
-    :param int n_chips:
-    :param int n_boards:
     :param int total_run_time:
     :rtype: dict
     """
-    if n_boards:
+    if FecDataView.has_n_boards_required():
         get_machine_request = requests.get(
-            url, params={"nBoards": n_boards, "runTime": total_run_time})
-    elif n_chips:
+            url, params={"nBoards": FecDataView.get_n_boards_required(),
+                         "runTime": total_run_time})
+    elif FecDataView.has_n_chips_needed():
         get_machine_request = requests.get(
-            url, params={"nChips": n_chips, "runTime": total_run_time})
+            url, params={"nChips": FecDataView.get_n_chips_needed(),
+                         "runTime": total_run_time})
     else:
         raise PacmanConfigurationException(
             "At least one of n_chips or n_boards must be provided")

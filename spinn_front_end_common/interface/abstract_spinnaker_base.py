@@ -169,14 +169,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     # pylint: disable=broad-except
 
     __slots__ = [
-        # the number of boards requested by the user during setup
-        # init param and never changed
-        "_n_boards_required",
-
-        # the number of chips requested by the user during setup.
-        # init param and never changed
-        "_n_chips_required",
-
         # The IP-address of the SpiNNaker machine
         # provided during init and never changed
         # init or cfg param and never changed
@@ -351,17 +343,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the temp /max machine is held in the "machine" slot
         "_max_machine",
 
-        # Number of chips computed to be needed
-        "_n_chips_needed",
-
         # Notification interface if needed
         "_notification_interface",
     ]
 
     def __init__(
             self, graph_label=None,
-            database_socket_addresses=None, n_chips_required=None,
-            n_boards_required=None, front_end_versions=[],
+            database_socket_addresses=None, front_end_versions=[],
             data_writer_cls=None):
         """
         :param str graph_label: A label for the overall application graph
@@ -392,13 +380,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Will search these locations for binaries: {}",
             self._data_writer.get_executable_finder().binary_paths)
 
-        if n_chips_required is None or n_boards_required is None:
-            self._n_chips_required = n_chips_required
-            self._n_boards_required = n_boards_required
-        else:
-            raise ConfigurationException(
-                "Please use at most one of n_chips_required or "
-                "n_boards_required")
         self._spalloc_server = None
         self._remote_spinnaker_url = None
 
@@ -471,7 +452,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._live_packet_recorder_parameters_mapping = None
         self._max_machine = False
         self._multicast_routes_loaded = False
-        self._n_chips_needed = None
         self._plan_n_timesteps = None
         self._region_sizes = None
         self._router_tables = None
@@ -484,29 +464,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _machine_clear(self):
         pass
-
-    def set_n_boards_required(self, n_boards_required):
-        """ Sets the machine requirements.
-
-        .. warning::
-
-            This method should not be called after the machine
-            requirements have be computed based on the graph.
-
-        :param int n_boards_required: The number of boards required
-        :raises: ConfigurationException
-            If any machine requirements have already been set
-        """
-        # Catch the unchanged case including leaving it None
-        if n_boards_required == self._n_boards_required:
-            return
-        if self._n_boards_required is not None:
-            raise ConfigurationException(
-                "Illegal attempt to change previously set value.")
-        if self._n_chips_required is not None:
-            raise ConfigurationException(
-                "Clash with n_chips_required.")
-        self._n_boards_required = n_boards_required
 
     def add_extraction_timing(self, timing):
         """ Record the time taken for doing data extraction.
@@ -1049,22 +1006,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if self._hostname:
             return None
-        if self._n_chips_needed:
-            n_chips_required = self._n_chips_needed
-        else:
-            n_chips_required = self._n_chips_required
-        if n_chips_required is None and self._n_boards_required is None:
-            return None
+        if (not self._data_writer.has_n_boards_required() and
+                not self._data_writer.has_n_chips_needed()):
+            return
         if self._spalloc_server is not None:
             with FecTimer(category, "SpallocAllocator"):
-                return spalloc_allocator(
-                    self._spalloc_server, n_chips_required,
-                    self._n_boards_required)
+                return spalloc_allocator(self._spalloc_server)
         else:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(
-                    self._remote_spinnaker_url, total_run_time,
-                    n_chips_required, self._n_boards_required)
+                    self._remote_spinnaker_url, total_run_time)
 
     def _execute_machine_generator(self, category, allocator_data):
         """
@@ -1332,15 +1283,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._data_writer.get_runtime_graph().n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
-            machine_graph, self._n_chips_needed = splitter_partitioner(
+            machine_graph, n_chips_in_graph = splitter_partitioner(
                 self._plan_n_timesteps, pre_allocated_resources)
             self._data_writer.set_runtime_machine_graph(machine_graph)
+            self._data_writer.set_n_chips_in_graph(n_chips_in_graph)
 
     def _execute_graph_measurer(self):
         """
         Runs, times and logs GraphMeasurer is required
 
-        Sets self._n_chips_needed if no machine exists
+        Sets self._n_chips_in_graph if no machine exists
 
         Warning if the users has specified a machine size he gets what he
         asks for and if it is too small the placer will tell him.
@@ -1351,7 +1303,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._data_writer.has_machine():
                 return
         with FecTimer(MAPPING, "Graph measurer"):
-            self._n_chips_needed = graph_measurer(self._plan_n_timesteps)
+            self._data_writer.set_n_chips_in_graph(
+                graph_measurer(self._plan_n_timesteps))
 
     def _execute_insert_chip_power_monitors(self):
         """

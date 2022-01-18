@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_front_end_common.data import FecDataView
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -104,24 +105,22 @@ class _SpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
+def spalloc_allocator(spalloc_server):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
     :param str spalloc_server:
         The server from which the machine should be requested
-    :param n_chips: The number of chips required.
-        IGNORED if n_boards is not None
-    :type n_chips: int or None
-    :param int n_boards: The number of boards required
-    :type n_boards: int or None
     :rtype: tuple(str, int, None, bool, bool, None, None,
         MachineAllocationController)
     """
 
     # Work out how many boards are needed
-    if n_boards is None:
-        n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
+    if FecDataView.has_n_boards_required():
+        n_boards = FecDataView.get_n_boards_required()
+    else:
+        n_boards = (FecDataView.get_n_chips_needed() /
+                    Machine.MAX_CHIPS_PER_48_BOARD)
         # If the number of boards rounded up is less than 10% of a board
         # bigger than the actual number of boards,
         # add another board just in case.
