@@ -382,3 +382,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 f"n_chips_in_graph must be positive and not "
                 f"{n_chips_in_graph}")
         self.__fec_data._n_chips_in_graph = n_chips_in_graph
+
+    def set_ipaddress(self, ipaddress):
+        """
+
+        :param ipaddress:
+        :return:
+        """
+        if not isinstance(ipaddress, str):
+            raise TypeError("ipaddress must be a str")
+        self.__fec_data._ipaddress = ipaddress

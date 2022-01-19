@@ -174,10 +174,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # init or cfg param and never changed
         "_hostname",
 
-        # The IP-address of the SpiNNaker machine
-        # Either hostname or the ipaddress form the allocator
-        "_ipaddress",
-
         # the ip_address of the spalloc server
         # provided during init and never changed
         # cfg param and never changed
@@ -459,7 +455,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
-        self._ipaddress = None
         self._board_version = None
 
     def _machine_clear(self):
@@ -988,6 +983,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(GET_MACHINE, "Virtual machine generator"):
             self._data_writer.set_machine(virtual_machine_generator())
+            self._data_writer.set_ipaddress("virtual")
 
     def _execute_allocator(self, category, total_run_time):
         """
@@ -1035,7 +1031,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_machine():
             return
         if self._hostname:
-            self._ipaddress = self._hostname
+            self._data_writer.set_ipaddress(self._hostname)
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
@@ -1049,16 +1045,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine", "version")
 
         elif allocator_data:
-            (self._ipaddress, self._board_version, bmp_details,
+            (ipaddress, self._board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
              boot_port_num, self._machine_allocation_controller
              ) = allocator_data
+            self._data_writer.set_ipaddress(ipaddress)
         else:
             return
 
         with FecTimer(category, "Machine generator"):
             machine, transceiver = machine_generator(
-                self._ipaddress, bmp_details, self._board_version,
+                bmp_details, self._board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
             self._data_writer.set_transceiver(transceiver)
@@ -1341,7 +1338,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_partitioner_reports"):
                 return
-            partitioner_report(self._ipaddress)
+            partitioner_report()
 
     def _execute_edge_to_n_keys_mapper(self):
         """
@@ -1521,7 +1518,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_application_graph_placer_report"):
                 return
-            placer_reports_with_application_graph(self._ipaddress)
+            placer_reports_with_application_graph()
 
     def _report_placements_with_machine_graph(self):
         """
@@ -1532,7 +1529,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_machine_graph_placer_report"):
                 return
-            placer_reports_without_application_graph(self._ipaddress)
+            placer_reports_without_application_graph()
 
     def _json_placements(self):
         """
@@ -1734,7 +1731,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_reports"):
                 return
-        router_report_from_paths(self._router_tables, self._ipaddress)
+        router_report_from_paths(self._router_tables)
 
     def _report_router_summary(self):
         """
@@ -1744,7 +1741,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_summary_report"):
                 return
-            router_summary_report(self._router_tables,  self._ipaddress)
+            router_summary_report(self._router_tables)
 
     def _json_routing_tables(self):
         """
@@ -1880,7 +1877,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
             self._dsg_targets, self._region_sizes = \
-                graph_data_specification_writer(self._ipaddress)
+                graph_data_specification_writer()
 
     def _do_data_generation(self):
         """
@@ -2318,8 +2315,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             generate_comparison_router_report(self._router_tables, compressed)
 
-            router_compressed_summary_report(
-                self._router_tables, self._ipaddress)
+            router_compressed_summary_report(self._router_tables)
 
             routing_table_from_machine_report(compressed)
 
@@ -2396,8 +2392,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_sdram_usage_report_per_chip"):
                 return
-            sdram_usage_report_per_chip(
-                self._ipaddress, self._plan_n_timesteps)
+            sdram_usage_report_per_chip(self._plan_n_timesteps)
 
     def _execute_dsg_region_reloader(self):
         """
@@ -2413,7 +2408,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
                 return
-            dsg_region_reloader(self._ipaddress)
+            dsg_region_reloader()
 
     def _execute_graph_provenance_gatherer(self):
         """
@@ -2960,10 +2955,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._n_loops
 
     def __repr__(self):
-        if self._ipaddress:
-            return f"general front end instance for machine {self._ipaddress}"
-        else:
-            return f"general front end instance for machine {self._hostname}"
+        return f"general front end instance for machine " \
+               f"{self._data_writer.get_ipaddress()}"
 
     def add_application_vertex(self, vertex):
         """

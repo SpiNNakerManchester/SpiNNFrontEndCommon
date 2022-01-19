@@ -71,27 +71,25 @@ def tag_allocator_report():
                      "writing.", file_name)
 
 
-def placer_reports_with_application_graph(hostname):
+def placer_reports_with_application_graph():
     """ Reports that can be produced from placement given a application\
         graph's existence
 
-    :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: None
     """
-    placement_report_with_application_graph_by_vertex(hostname)
-    placement_report_with_application_graph_by_core(hostname)
+    placement_report_with_application_graph_by_vertex()
+    placement_report_with_application_graph_by_core()
 
 
-def placer_reports_without_application_graph(hostname):
+def placer_reports_without_application_graph():
     """
-    :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: None
     """
-    placement_report_without_application_graph_by_vertex(hostname)
-    placement_report_without_application_graph_by_core(hostname)
+    placement_report_without_application_graph_by_vertex()
+    placement_report_without_application_graph_by_core()
 
 
-def router_summary_report(routing_tables,  hostname):
+def router_summary_report(routing_tables):
     """ Generates a text file of routing summaries
 
     :param MulticastRoutingTables routing_tables:
@@ -103,33 +101,28 @@ def router_summary_report(routing_tables,  hostname):
         FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
-    return _do_router_summary_report(
-        file_name, progress, routing_tables,  hostname)
+    return _do_router_summary_report(file_name, progress, routing_tables)
 
 
-def router_compressed_summary_report(routing_tables, hostname):
+def router_compressed_summary_report(routing_tables):
     """ Generates a text file of routing summaries
 
     :param MulticastRoutingTables routing_tables:
         The in-operation routing tables.
-    :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: RouterSummary
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPRESSED_ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
-    return _do_router_summary_report(
-        file_name, progress, routing_tables, hostname)
+    return _do_router_summary_report(file_name, progress, routing_tables)
 
 
-def _do_router_summary_report(
-        file_name, progress, routing_tables, hostname):
+def _do_router_summary_report(file_name, progress, routing_tables):
     """
     :param str file_name:
     :param ~spinn_utilities.progress_bar.Progress progress:
     :param MulticastRoutingTables routing_tables:
-    :param str hostname:
     :return: RouterSummary
     """
     time_date_string = time.strftime("%c")
@@ -138,8 +131,8 @@ def _do_router_summary_report(
         with open(file_name, "w") as f:
             f.write("        Routing Summary Report\n")
             f.write("        ======================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             total_entries = 0
             max_entries = 0
@@ -185,11 +178,10 @@ def _do_router_summary_report(
                          "Can't open file {} for writing.", file_name)
 
 
-def router_report_from_paths(routing_tables, hostname):
+def router_report_from_paths(routing_tables):
     """ Generates a text file of routing paths
 
     :param MulticastRoutingTables routing_tables: The original routing tables.
-    :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: None
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
@@ -204,8 +196,8 @@ def router_report_from_paths(routing_tables, hostname):
 
             f.write("        Edge Routing Report\n")
             f.write("        ===================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for partition in progress.over(
                     machine_graph.outgoing_edge_partitions):
@@ -245,10 +237,8 @@ def _write_one_router_partition_report(
         f.write("\n")
 
 
-def partitioner_report(hostname):
+def partitioner_report():
     """ Generate report on the placement of vertices onto cores.
-
-    :param str hostname: the machine's hostname to which the placer worked on
 
     """
 
@@ -264,8 +254,8 @@ def partitioner_report(hostname):
 
             f.write("        Partitioning Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for vertex in progress.over(
                     FecDataView.get_runtime_graph().vertices):
@@ -300,11 +290,9 @@ def _write_one_vertex_partition(f, vertex):
     f.write("\n")
 
 
-def placement_report_with_application_graph_by_vertex(hostname):
+def placement_report_with_application_graph_by_vertex():
     """ Generate report on the placement of vertices onto cores by vertex.
 
-    :param str hostname: the machine's hostname to which the placer worked on
-    :param ApplicationGraph graph: the graph to which placements were built
     """
 
     # Cycle through all vertices, and for each cycle through its vertices.
@@ -319,8 +307,8 @@ def placement_report_with_application_graph_by_vertex(hostname):
 
             f.write("        Placement Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for vertex in progress.over(
                     FecDataView.get_runtime_graph().vertices):
@@ -360,11 +348,9 @@ def _write_one_vertex_application_placement(f, vertex):
     f.write("\n")
 
 
-def placement_report_without_application_graph_by_vertex(hostname):
+def placement_report_without_application_graph_by_vertex():
     """ Generate report on the placement of vertices onto cores by vertex.
 
-    :param str hostname: the machine's hostname to which the placer worked on
-    :param Placements placements: the placements objects built by the placer.
     """
     machine_graph = FecDataView.get_runtime_machine_graph()
     # Cycle through all vertices, and for each cycle through its vertices.
@@ -379,8 +365,8 @@ def placement_report_without_application_graph_by_vertex(hostname):
 
             f.write("        Placement Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for vertex in progress.over(machine_graph.vertices):
                 _write_one_vertex_machine_placement(f, vertex)
@@ -404,10 +390,9 @@ def _write_one_vertex_machine_placement(f, vertex):
     f.write(" Placed on core ({}, {}, {})\n\n".format(x, y, p))
 
 
-def placement_report_with_application_graph_by_core(hostname):
+def placement_report_with_application_graph_by_core():
     """ Generate report on the placement of vertices onto cores by core.
 
-    :param str hostname: the machine's hostname to which the placer worked on
     """
 
     # File 2: Placement by core.
@@ -425,8 +410,8 @@ def placement_report_with_application_graph_by_core(hostname):
 
             f.write("        Placement Information by Core\n")
             f.write("        =============================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for chip in progress.over(machine.chips):
                 _write_one_chip_application_placement(f, chip, placements)
@@ -467,10 +452,9 @@ def _write_one_chip_application_placement(f, chip, placements):
             f.write("              Model: {}\n\n".format(vertex_model))
 
 
-def placement_report_without_application_graph_by_core(hostname):
+def placement_report_without_application_graph_by_core():
     """ Generate report on the placement of vertices onto cores by core.
 
-    :param str hostname: the machine's hostname to which the placer worked on
     """
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
@@ -488,7 +472,7 @@ def placement_report_without_application_graph_by_core(hostname):
             f.write("        Placement Information by Core\n")
             f.write("        =============================\n\n")
             f.write("Generated: {}".format(time_date_string))
-            f.write(" for target machine '{}'".format(hostname))
+            f.write(f" for target machine '{FecDataView.get_ipaddress()}'")
             f.write("\n\n")
 
             for chip in progress.over(machine.chips):
@@ -521,10 +505,9 @@ def _write_one_chip_machine_placement(f, c, placements):
             f.write("\n")
 
 
-def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
+def sdram_usage_report_per_chip(plan_n_timesteps):
     """ Reports the SDRAM used per chip
 
-    :param str hostname: the machine's hostname to which the placer worked on
     :param int plan_n_timesteps:
         The number of timesteps for which placer reserved space.
     :rtype: None
@@ -539,8 +522,8 @@ def sdram_usage_report_per_chip(hostname, plan_n_timesteps):
         with open(file_name, "w") as f:
             f.write("        Memory Usage by Core\n")
             f.write("        ====================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} "
+                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
             f.write("Planned by partitioner\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(

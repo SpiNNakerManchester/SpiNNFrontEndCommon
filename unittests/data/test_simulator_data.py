@@ -428,3 +428,15 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_n_required(None, "five")
         with self.assertRaises(TypeError):
             writer.set_n_required("2.3", None)
+
+    def test_ipaddress(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_ipaddress()
+        writer.set_ipaddress("127.0.0.0")
+        self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
+        writer.hard_reset()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_ipaddress()
+        with self.assertRaises(TypeError):
+            writer.set_ipaddress(127)

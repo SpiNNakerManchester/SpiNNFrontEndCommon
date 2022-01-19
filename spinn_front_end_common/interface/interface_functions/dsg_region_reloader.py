@@ -30,23 +30,18 @@ from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
 
 
-def dsg_region_reloader(hostname):
-    reloader = _DSGRegionReloader(hostname)
+def dsg_region_reloader():
+    reloader = _DSGRegionReloader()
     reloader._run()
 
 
 class _DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
-    __slots__ = ["_txrx", "_host", "_data_dir"]
+    __slots__ = ["_txrx", "_data_dir"]
 
-    def __init__(self, hostname):
-        """
-        :param str hostname:
-            the machine name
-        """
+    def __init__(self):
         self._txrx = FecDataView.get_transceiver()
-        self._host = hostname
 
     def _run(self):
         """
@@ -92,7 +87,7 @@ class _DSGRegionReloader(object):
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._host, self._data_dir)
+            placement.x, placement.y, placement.p, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)

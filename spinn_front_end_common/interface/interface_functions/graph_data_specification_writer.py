@@ -32,9 +32,8 @@ from spinn_front_end_common.utilities.utility_calls import get_report_writer
 logger = logging.getLogger(__name__)
 
 
-def graph_data_specification_writer(hostname, placement_order=None):
+def graph_data_specification_writer(placement_order=None):
     """
-    :param str hostname: SpiNNaker machine name
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
     :return: DSG targets (map of placement tuple and filename)
@@ -42,7 +41,7 @@ def graph_data_specification_writer(hostname, placement_order=None):
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    writer = _GraphDataSpecificationWriter(hostname)
+    writer = _GraphDataSpecificationWriter()
     return writer._run(placement_order)
 
 
@@ -56,19 +55,15 @@ class _GraphDataSpecificationWriter(object):
         # Dict of list of region sizes by core coordinates
         "_region_sizes",
         # Dict of list of vertices by chip coordinates
-        "_vertices_by_chip",
-        # hostname
-        "_hostname")
+        "_vertices_by_chip")
 
-    def __init__(self, hostname):
+    def __init__(self):
         self._sdram_usage = defaultdict(lambda: 0)
         self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
-        self._hostname = hostname
 
     def _run(self, placement_order=None):
         """
-        :param str hostname: SpiNNaker machine name
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets (map of placement tuple and filename)
@@ -133,8 +128,7 @@ class _GraphDataSpecificationWriter(object):
             return False
 
         with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
-            report_writer = get_report_writer(
-                pl.x, pl.y, pl.p, self._hostname)
+            report_writer = get_report_writer(pl.x, pl.y, pl.p)
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the DSG file

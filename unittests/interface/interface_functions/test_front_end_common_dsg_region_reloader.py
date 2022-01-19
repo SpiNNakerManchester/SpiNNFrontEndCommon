@@ -139,7 +139,8 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses)
         writer.set_transceiver(transceiver)
         writer.set_placements(placements)
-        dsg_region_reloader("localhost")
+        writer.set_ipaddress("localhost")
+        dsg_region_reloader()
 
         regions_rewritten = transceiver._regions_rewritten
 

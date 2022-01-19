@@ -20,6 +20,7 @@ from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import time
 import logging
@@ -45,12 +46,10 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 
 def machine_generator(
-        hostname, bmp_details, board_version, auto_detect_bmp,
+        bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, boot_port_num, reset_machine_on_start_up):
     """ Makes a transceiver and a machine object.
 
-    :param str hostname:
-        the hostname or IP address of the SpiNNaker machine
     :param str bmp_details: the details of the BMP connections
     :param set(tuple(int,int)) downed_chips:
         the chips that are down which SARK thinks are alive
@@ -82,7 +81,7 @@ def machine_generator(
             for piece in scamp_connection_data.split(":")]
 
     txrx = create_transceiver_from_hostname(
-        hostname=hostname,
+        hostname=FecDataView.get_ipaddress(),
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
         auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,

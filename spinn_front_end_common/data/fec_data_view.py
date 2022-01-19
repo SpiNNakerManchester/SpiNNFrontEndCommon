@@ -47,6 +47,7 @@ class _FecDataModel(object):
         "_first_machine_time_step",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
+        "_ipaddress",
         "_n_boards_required",
         "_n_calls_to_run",
         "_n_chips_required",
@@ -99,6 +100,7 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
+        self._ipaddress = None
         self._n_chips_in_graph = None
         self._max_run_time_steps = None
         self._system_multicast_router_timeout_keys = None
@@ -515,6 +517,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._system_multicast_router_timeout_keys is None:
             raise cls._exception("system_multicast_router_timeout_keys")
         return cls.__fec_data._system_multicast_router_timeout_keys
+
+    # ipaddress
+
+    @classmethod
+    def get_ipaddress(cls):
+        """
+        Gets the ipaddress or the board with chip 0,0 if it has been set
+
+        :rtype: str
+        """
+        if cls.__fec_data._ipaddress is None:
+            raise cls._exception("ipaddress")
+        return cls.__fec_data._ipaddress
+
 
     # run_dir_path in UtilsDataView
 
