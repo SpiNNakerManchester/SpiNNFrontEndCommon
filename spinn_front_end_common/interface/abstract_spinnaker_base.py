@@ -526,8 +526,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Safety in case a previous run left a bad state
         clear_injectables()
 
-        self.check_machine_specifics()
-
     def _new_run_clear(self):
         """
         This clears all data that if no longer valid after a hard reset
@@ -742,6 +740,8 @@ class AbstractSpinnakerBase(ConfigHandler):
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
 
+        Not this can only be called from a class that sets the config file
+        to read this data from.
         """
         n_items_specified = 0
         if get_config_str("Machine", "machine_name"):
