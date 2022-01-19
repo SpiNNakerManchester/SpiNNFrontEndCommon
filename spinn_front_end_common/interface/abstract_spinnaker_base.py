@@ -526,6 +526,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Safety in case a previous run left a bad state
         clear_injectables()
 
+        self.check_machine_specifics()
+
     def _new_run_clear(self):
         """
         This clears all data that if no longer valid after a hard reset
@@ -764,24 +766,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only one of machineName, spalloc_server, "
                 "remote_spinnaker_url and virtual_board should be specified "
                 "in your configuration files")
-
-    @property
-    def hostname(self):
-        """
-        The machine_name, spalloc_server, remote_spinnaker_url or Virtual
-
-        This method assume one and only one of those is set
-
-        :rtype: str
-        """
-        hostname = get_config_str("Machine", "machine_name")
-        if hostname is None:
-            hostname = get_config_str("Machine", "spalloc_server")
-            if hostname is None:
-                hostname = get_config_str("Machine", "remote_spinnaker_url")
-                if hostname is None:
-                    hostname = "Virtual_machine"
-        return hostname
 
     def _setup_java_caller(self):
         if get_config_bool("Java", "use_java"):
@@ -3401,7 +3385,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return 0.0
 
     def __repr__(self):
-        return f"general front end instance for machine {self.hostname}"
+        return f"general front end instance for machine {self._ipaddress}"
 
     def add_application_vertex(self, vertex):
         """
