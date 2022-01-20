@@ -2959,7 +2959,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return f"general front end instance for machine " \
                    f"{self._data_writer.get_ipaddress()}"
         else:
-            return f"general front end instance no machine set"
+            return "general front end instance no machine set"
 
     def add_application_vertex(self, vertex):
         """
