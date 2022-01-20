@@ -77,6 +77,17 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.get_timer_sum_by_algorithm("junk")
         self.assertIsNone(data)
 
+    def test_category_timings(self):
+        with ProvenanceWriter() as db:
+            db.insert_category_timing("mapping", 12, 1, 1)
+            db.insert_category_timing("mapping", 123, 1, 2)
+            db.insert_category_timing("execute", 134, 1, None)
+            db.insert_category_timing("execute", 344, 1, 2)
+        reader = ProvenanceReader()
+        data = reader.get_category_timer_sum("mapping")
+        self.assertEqual(12 + 123, data)
+
+
     def test_other(self):
         with ProvenanceWriter() as db:
             db.insert_other("foo", "bar", 12)

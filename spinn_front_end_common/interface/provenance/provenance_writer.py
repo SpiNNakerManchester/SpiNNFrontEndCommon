@@ -93,6 +93,25 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
+    def insert_category_timing(self, category, the_value, n_run, n_loop):
+        """
+        Inserts algorithms run times into the timer_provenance table
+
+        :param str category: Category of the Algorithms run
+        :param int the_value: Runtime
+        :param int n_run: The end user run number
+        :param n_loop: The run loop within the ned user run
+        :type n_loop: int or None
+        """
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, the_value, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                """,
+                [category, the_value, n_run, n_loop])
+
     def insert_timing(
             self, category, algorithm, the_value, n_run, n_loop, skip_reason):
         """
