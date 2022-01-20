@@ -346,3 +346,21 @@ def report_default_directory():
     else:
         # underscore param used avoid exposing a None PyNN parameter
         return _simulator._report_default_directory
+
+
+def where_is_chip(chip):
+    if _simulator is None:
+        raise SimulatorNotSetupException(
+            "You need to have ran a simulator before asking for its "
+            "generated output.")
+    else:
+        return _simulator.machine.where_is_chip(chip)
+
+
+def where_is_xy(x, y):
+    if _simulator is None:
+        raise SimulatorNotSetupException(
+            "You need to have ran a simulator before asking for its "
+            "generated output.")
+    else:
+        return _simulator.machine.where_is_xy(x, y)
