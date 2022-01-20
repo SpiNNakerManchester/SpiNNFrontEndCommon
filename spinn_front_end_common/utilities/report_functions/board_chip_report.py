@@ -49,8 +49,21 @@ def _write_report(writer, machine, progress_bar):
     :param ~spinn_machine.Machine machine:
     :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
     """
+    down_links = list()
+    down_chips = list()
     for chip in progress_bar.over(machine.ethernet_connected_chips):
-        xys = machine.get_existing_xys_on_board(chip)
+        existing_chips = list()
+        for x, y in machine.get_xys_by_ethernet(chip.x, chip.y):
+            if machine.is_chip_at(x, y):
+                existing_chips.append((x, y))
+            else:
+                down_chips.append((x, y))
         writer.write(
-            "board with IP address : {} : has chips {}\n".format(
-                chip.ip_address, list(xys)))
+            f"board with IP address: {chip.ip_address} has chips"
+            f" {existing_chips}\n")
+        for x, y in existing_chips:
+            for link in range(6):
+                if not machine.is_link_at(x, y, link):
+                    down_links.append((x, y, link))
+    writer.write(f"Down chips: {down_chips}")
+    writer.write(f"Down Links: {down_links}")
