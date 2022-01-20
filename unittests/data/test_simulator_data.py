@@ -431,11 +431,14 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_ipaddress(self):
         writer = FecDataWriter.setup()
+        self.assertFalse(FecDataView.has_ipaddress())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_ipaddress()
         writer.set_ipaddress("127.0.0.0")
         self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
+        self.assertTrue(FecDataView.has_ipaddress())
         writer.hard_reset()
+        self.assertFalse(FecDataView.has_ipaddress())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_ipaddress()
         with self.assertRaises(TypeError):

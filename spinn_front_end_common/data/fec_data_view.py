@@ -521,6 +521,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # ipaddress
 
     @classmethod
+    def has_ipaddress(cls):
+        return cls.__fec_data._ipaddress is not None
+
+    @classmethod
     def get_ipaddress(cls):
         """
         Gets the ipaddress or the board with chip 0,0 if it has been set
@@ -530,7 +534,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._ipaddress is None:
             raise cls._exception("ipaddress")
         return cls.__fec_data._ipaddress
-
 
     # run_dir_path in UtilsDataView
 

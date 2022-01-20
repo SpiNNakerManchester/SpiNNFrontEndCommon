@@ -2955,8 +2955,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._n_loops
 
     def __repr__(self):
-        return f"general front end instance for machine " \
-               f"{self._data_writer.get_ipaddress()}"
+        if self._data_writer.has_ipaddress():
+            return f"general front end instance for machine " \
+                   f"{self._data_writer.get_ipaddress()}"
+        else:
+            return f"general front end instance no machine set"
 
     def add_application_vertex(self, vertex):
         """
