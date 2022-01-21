@@ -15,13 +15,11 @@
 
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import (
-    supports_injection, inject_items)
+from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
 
 
-@supports_injection
 class MachineDataSpecableVertex(
         AbstractGeneratesDataSpecification, allow_derivation=True):
     """ Support for a vertex that simplifies generating a data specification.
