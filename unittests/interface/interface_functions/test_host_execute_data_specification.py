@@ -25,7 +25,7 @@ from data_specification.constants import (
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
-    HostExecuteDataSpecification)
+    execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
 from spinn_front_end_common.interface.ds import DataSpecificationTargets
@@ -77,7 +77,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         set_config("Machine", "enable_advanced_monitor_support", "False")
 
     def test_call(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
 
@@ -103,7 +102,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        infos = executor.execute_application_data_specs(
+        infos = execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
             region_sizes=region_sizes)
 
@@ -144,7 +143,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(info.memory_written, 152)
 
     def test_multi_spec_with_references(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         machine = virtual_machine(2, 2)
@@ -182,7 +180,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
-        infos = executor.execute_application_data_specs(
+        infos = execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
             region_sizes=region_sizes)
 
@@ -221,7 +219,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(header_data[2][2], header_data[1][2])
 
     def test_multispec_with_reference_error(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
@@ -253,12 +250,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
-            executor.execute_application_data_specs(
+            execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
                 region_sizes=region_sizes)
 
     def test_multispec_with_double_reference(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
@@ -282,12 +278,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
-            executor.execute_application_data_specs(
+            execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
                 region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
@@ -319,12 +314,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            executor.execute_application_data_specs(
+            execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
                 region_sizes=region_sizes)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
-        executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
@@ -356,7 +350,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            executor.execute_application_data_specs(
+            execute_application_data_specs(
                 transceiver, machine, 30, dsg_targets, targets,
                 region_sizes=region_sizes)
 
