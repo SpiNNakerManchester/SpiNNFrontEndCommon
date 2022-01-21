@@ -672,11 +672,14 @@ def _write_vertex_virtual_keys(f, part, routing_infos):
     :param RoutingInfo routing_infos:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
-    f.write("Vertex: {}\n".format(part.pre_vertex))
     rinfo = routing_infos.get_routing_info_from_pre_vertex(
         part.pre_vertex, part.identifier)
-    f.write("    Partition: {}, Routing Info: {}\n".format(
-        part.identifier, rinfo.keys_and_masks))
+    # Might be None if the partition has no outgoing vertices e.g. a Poisson
+    # source replaced by SDRAM comms
+    if rinfo is not None:
+        f.write("Vertex: {}\n".format(part.pre_vertex))
+        f.write("    Partition: {}, Routing Info: {}\n".format(
+            part.identifier, rinfo.keys_and_masks))
 
 
 def router_report_from_router_tables(routing_tables):
