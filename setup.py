@@ -65,10 +65,10 @@ setup(
 
         "Programming Language :: C",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
     ],
     packages=packages,
     package_data=package_data,
@@ -79,11 +79,9 @@ setup(
                       'SpiNNaker_DataSpecification == 1!6.0.1',
                       'spalloc == 1!6.0.1',
                       'requests >= 2.4.1',
-                      "numpy > 1.13, < 1.20; python_version == '3.6'",
-                      "numpy > 1.13, < 1.21; python_version == '3.7'",
-                      "numpy; python_version >= '3.8'",
                       "scipy >= 0.16.0, < 1.6; python_version == '3.6'",
-                      "scipy >= 0.16.0; python_version >= '3.7'"],
+                      "scipy >= 0.16.0, < 1.8; python_version == '3.7'",
+                      "scipy >= 0.16.0; python_version >= '3.8'"],
     extras_require={
         'plotting': [
             'matplotlib',

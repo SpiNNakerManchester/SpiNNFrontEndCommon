@@ -275,6 +275,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # status flag
         "_has_reset_last",
 
+        # flag to say user has been give machine info
+        "_user_accessed_machine",
+
         # count of time from previous runs since setup/reset
         # During do_run points to the end timestep of that cycle
         "_current_run_timesteps",
@@ -490,6 +493,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_allocation_controller = None
         self._txrx = None
         self._new_run_clear()
+        self._machine_clear()
 
         # pacman executor objects
 
@@ -506,6 +510,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._has_reset_last = False
+        self._user_accessed_machine = False
         self._n_calls_to_run = 1
         self._n_loops = None
         self._current_run_timesteps = 0
@@ -538,9 +543,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         This clears all data that if no longer valid after a hard reset
 
         """
-        self.__close_allocation_controller()
         self._application_graph = None
-        self._board_version = None
         self._buffer_manager = None
         self._database_file_path = None
         self._notification_interface = None
@@ -552,10 +555,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._fixed_routes = None
-        self._ipaddress = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
-        self._machine = None
         self._machine_graph = None
         self._machine_partition_n_keys_map = None
         self._max_machine = False
@@ -570,11 +571,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
         self._tags = None
+        self._vertex_to_ethernet_connected_chip_mapping = None
+
+    def _machine_clear(self):
+        self._ipaddress = None
+        self._board_version = None
         if self._txrx is not None:
+            if self._has_ran:
+                self._txrx.stop_application(self._app_id)
             self._txrx.close()
             self._app_id = None
+        self.__close_allocation_controller()
+        self._machine = None
         self._txrx = None
-        self._vertex_to_ethernet_connected_chip_mapping = None
 
     def __getitem__(self, item):
         """
@@ -1001,6 +1010,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._new_run_clear()
+                if not self._user_accessed_machine:
+                    self._machine_clear()
 
             if self._has_ran:
                 # create new sub-folder for reporting data
@@ -1017,7 +1028,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._plan_n_timesteps = n_machine_time_steps
 
             if self._machine is None:
-                self._get_machine(total_run_time)
+                self._get_known_machine(total_run_time)
+            if self._machine is None:
+                self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -1234,10 +1247,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set then "machine" value
         """
-        if self._machine:
-            return
-        if not self._use_virtual_board:
-            return
         with FecTimer(GET_MACHINE, "Virtual machine generator"):
             self._machine = virtual_machine_generator()
 
@@ -1351,11 +1360,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             raise NotImplementedError("No machine generataion possible")
 
-    def _get_machine(self, total_run_time=0.0):
+    def _get_known_machine(self, total_run_time=0.0):
         """ The python machine description object.
 
-        :param total_run_time: The total run time to request
-        :param n_machine_time_steps:
+        :param float total_run_time: The total run time to request
         :rtype: ~spinn_machine.Machine
         """
         if self._app_id is None:
@@ -1364,11 +1372,29 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-        self._execute_get_virtual_machine()
-        allocator_data = self._execute_allocator(GET_MACHINE, total_run_time)
-        self._execute_machine_generator(GET_MACHINE, allocator_data)
-        self._execute_get_max_machine(total_run_time)
-        return self._machine
+        if not self._machine:
+            if self._use_virtual_board:
+                self._execute_get_virtual_machine()
+            else:
+                allocator_data = self._execute_allocator(
+                    GET_MACHINE, total_run_time)
+                self._execute_machine_generator(GET_MACHINE, allocator_data)
+
+    def _get_machine(self, total_run_time=0.0):
+        """ The python machine description object.
+
+        :param bool max: If True will produce a max machine if required
+        :param float total_run_time: The total run time to request
+        :rtype: ~spinn_machine.Machine
+        :raise Exception: No known size machine possible
+        """
+        if self._has_reset_last and not self._user_accessed_machine:
+            self._machine_clear()
+        self._get_known_machine(total_run_time)
+        self._user_accessed_machine = True
+        if not self._machine:
+            raise ConfigurationException(
+                "Not enough information provided to supply a machine")
 
     def _create_version_provenance(self, front_end_versions):
         """ Add the version information to the provenance data at the start.
@@ -3174,6 +3200,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
 
+        # User must assume on reset any previous machine (info) is dead
+        self._user_accessed_machine = False
+        assert (not self._user_accessed_machine)
+
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
 
@@ -3186,6 +3216,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         changed = False
         data_changed = False
+
+        if self._has_reset_last and self._user_accessed_machine:
+            changed = True
 
         # if application graph is filled, check their changes
         if self._original_application_graph.n_vertices:
@@ -3248,7 +3281,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
          :rtype: ~spinn_machine.Machine
          """
-        return self._get_machine()
+        self._get_machine()
+        return self._machine
 
     @property
     def no_machine_time_steps(self):
@@ -3597,9 +3631,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: number of available cores
         :rtype: int
         """
-        # get machine if not got already
-        if self._machine is None:
-            self._get_machine()
+        self._get_machine()
 
         # get cores of machine
         cores = self._machine.total_available_user_cores

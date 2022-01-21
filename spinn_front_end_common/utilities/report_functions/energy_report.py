@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
@@ -193,14 +194,16 @@ class EnergyReport(object):
         # figure extraction time cost
         self._write_data_extraction_time_cost(power_used, f)
 
-        # figure out active chips idle time
-        active_chips = set()
+        # sort what to report by chip
+        active_chips = defaultdict(dict)
         for placement in placements:
-            if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
-                active_chips.add(machine.get_chip_at(placement.x, placement.y))
-        for chip in active_chips:
+            vertex = placement.vertex
+            if not isinstance(vertex, ChipPowerMonitorMachineVertex):
+                labels = active_chips[placement.x, placement.y]
+                labels[placement.p] = vertex.label
+        for xy in active_chips:
             self._write_chips_active_cost(
-                chip, placements, runtime_total_ms, power_used, f)
+                xy, active_chips[xy], runtime_total_ms, power_used, f)
 
     def _write_warning(self, f):
         """ Writes the warning about this being only an estimate
@@ -286,33 +289,31 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_chips_active_cost(
-            chip, placements, runtime_total_ms, power_used, f):
+            xy, labels, runtime_total_ms, power_used, f):
         """ Figure out the chip active cost during simulation
 
-        :param ~.Chip chip: the chip to consider
-        :param ~.Placements placements: placements
+        :param (int, int) xy: the x,y of the chip to consider
+        :param dict(int, str) labels: vertex labels for the acte cores
         :param float runtime_total_ms:
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         :return: energy cost
         """
-
+        (x, y) = xy
         f.write("\n")
 
         # detailed report print out
         for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
-            if placements.is_processor_occupied(chip.x, chip.y, core):
-                vertex = placements.get_vertex_on_processor(
-                    chip.x, chip.y, core)
-                label = " (running {})".format(vertex.label)
+            if core in labels:
+                label = f" (running {labels[core]})"
             else:
                 label = ""
             energy = power_used.get_core_active_energy_joules(
-                chip.x, chip.y, core)
+                x, y, core)
             f.write(
                 "processor {}:{}:{}{} used {} Joules of energy by "
                 "being active during the execution of the simulation\n".format(
-                    chip.x, chip.y, core, label, energy))
+                    x, y, core, label, energy))
 
         # TAKE INTO ACCOUNT IDLE COST
         idle_cost = (
@@ -321,7 +322,7 @@ class EnergyReport(object):
         f.write(
             "The chip at {},{} used {} Joules of energy for by being idle "
             "during the execution of the simulation\n".format(
-                chip.x, chip.y, idle_cost))
+                x, y, idle_cost))
 
     @staticmethod
     def _write_load_time_cost(power_used, f):
