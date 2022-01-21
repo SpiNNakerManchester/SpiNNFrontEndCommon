@@ -89,7 +89,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.get_category_timer_sum("mapping")
         self.assertEqual((12 + 123) * 1000, data)
 
-
     def test_other(self):
         with ProvenanceWriter() as db:
             db.insert_other("foo", "bar", 12)
