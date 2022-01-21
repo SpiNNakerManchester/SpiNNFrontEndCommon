@@ -87,15 +87,10 @@ def _add_structured_provenance(placement, errors):
         dtcm = placement.vertex.resources_required.dtcm.get_value()
 
         label = placement.vertex.label
-        slices = label.split(":")
-        if len(slices) == 2:  # a non-population vertex e.g. extra monitor
-            max_atom = 0
-            min_atom = 0
-            no_atoms = 0
-        else:
-            max_atom = int(slices[-1])
-            min_atom = int(slices[-2])
-            no_atoms = max_atom - min_atom + 1
+        slice = placement.vertex.vertex_slice
+        max_atom = slice.hi_atom
+        min_atom = slice.lo_atom
+        no_atoms = slice.n_atoms
 
         structured_provenance = [
             pop, label, min_atom, max_atom, no_atoms,
