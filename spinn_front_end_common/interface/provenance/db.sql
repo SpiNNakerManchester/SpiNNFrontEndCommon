@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS category_timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
     the_value INTEGER NOT NULL,
-    n_run INTEGER NOT NULL,
+    n_run INTEGER,
     n_loop INTEGER);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

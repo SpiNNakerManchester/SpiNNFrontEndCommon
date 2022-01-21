@@ -221,25 +221,6 @@ class ProvenanceReader(object):
         """
         return self.get_timer_provenance("%BufferExtractor")
 
-    def get_category_time(self, category):
-        """
-        Gets the total time for a category
-
-        :param str category: Category of the Algorithms run
-        :return: sum of all times for this category
-        :rtype: int
-        """
-        query = """
-            SELECT the_sum
-            FROM category_timer_view
-            WHERE category = ?
-            """
-        data = self.run_query(query, [category])
-        try:
-            return data
-        except IndexError:
-            return None
-
     def get_provenance_for_router(self, x, y):
         """
         Gets the provenance item(s) from the last run relating to a chip
