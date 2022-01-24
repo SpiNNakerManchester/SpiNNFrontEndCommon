@@ -1951,7 +1951,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            machine_bit_field_ordered_covering_compressor()
+            machine_bit_field_ordered_covering_compressor(
+                self._executable_targets)
             self._multicast_routes_loaded = True
             return None
 
