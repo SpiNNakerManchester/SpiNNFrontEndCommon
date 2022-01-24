@@ -119,13 +119,10 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_type = compressor_type
 
     def run(
-            self, routing_tables, executable_targets,
-            compress_as_much_as_possible=False):
+            self, executable_targets, compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
@@ -137,6 +134,7 @@ class _MachineBitFieldRouterCompressor(object):
         view = FecDataView()
         app_id = FecDataView.get_app_id()
         machine_graph = FecDataView.get_runtime_machine_graph()
+        routing_tables = FecDataView.get_router_tables()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
@@ -749,15 +747,9 @@ class _MachineBitFieldRouterCompressor(object):
 
 
 def machine_bit_field_ordered_covering_compressor(
-        routing_tables, executable_targets,
-        compress_as_much_as_possible=False):
+        executable_targets, compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
-        :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the set of targets and executables
         :param bool compress_as_much_as_possible:
@@ -766,22 +758,13 @@ def machine_bit_field_ordered_covering_compressor(
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
-    return compressor.run(
-        routing_tables, executable_targets, compress_as_much_as_possible)
+    return compressor.run(executable_targets, compress_as_much_as_possible)
 
 
 def machine_bit_field_pair_router_compressor(
-        routing_tables, executable_targets,
-        compress_as_much_as_possible=False):
+        executable_targets, compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~pacman.model.placements.Placements placements:
-            placements on machine
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
-        :param bool produce_report:
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the set of targets and executables
         :param bool compress_as_much_as_possible:
@@ -790,5 +773,4 @@ def machine_bit_field_pair_router_compressor(
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
-    return compressor.run(
-        routing_tables, executable_targets, compress_as_much_as_possible)
+    return compressor.run(executable_targets, compress_as_much_as_possible)

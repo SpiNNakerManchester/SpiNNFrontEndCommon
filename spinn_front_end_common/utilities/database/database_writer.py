@@ -323,13 +323,11 @@ class DatabaseWriter(SQLiteDB):
                     for edge in partition.edges
                     for key_mask in rinfo.keys_and_masks))
 
-    def add_routing_tables(self, routing_tables):
+    def add_routing_tables(self):
         """ Adds the routing tables into the database
 
-        :param routing_tables: the routing tables object
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         """
+        routing_tables = FecDataView.get_router_tables().routing_tables
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -340,7 +338,7 @@ class DatabaseWriter(SQLiteDB):
                     (routing_table.x, routing_table.y, counter,
                      entry.routing_entry_key, entry.mask,
                      entry.spinnaker_route)
-                    for routing_table in routing_tables.routing_tables
+                    for routing_table in routing_tables
                     for counter, entry in
                     enumerate(routing_table.multicast_routing_entries)))
 

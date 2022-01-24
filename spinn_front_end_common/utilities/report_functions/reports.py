@@ -89,18 +89,16 @@ def placer_reports_without_application_graph():
     placement_report_without_application_graph_by_core()
 
 
-def router_summary_report(routing_tables):
+def router_summary_report():
     """ Generates a text file of routing summaries
 
-    :param MulticastRoutingTables routing_tables:
-        The original routing tables.
-    :param str hostname: The machine's hostname to which the placer worked on.
     :rtype: RouterSummary
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
+    routing_tables = FecDataView.get_router_tables()
     return _do_router_summary_report(file_name, progress, routing_tables)
 
 
@@ -108,7 +106,7 @@ def router_compressed_summary_report(routing_tables):
     """ Generates a text file of routing summaries
 
     :param MulticastRoutingTables routing_tables:
-        The in-operation routing tables.
+        The in-operation COMPRESSED routing tables.
     :rtype: RouterSummary
     """
     file_name = os.path.join(
@@ -123,6 +121,7 @@ def _do_router_summary_report(file_name, progress, routing_tables):
     :param str file_name:
     :param ~spinn_utilities.progress_bar.Progress progress:
     :param MulticastRoutingTables routing_tables:
+        The compressed or uncompressed tables being reported
     :return: RouterSummary
     """
     time_date_string = time.strftime("%c")
@@ -178,10 +177,9 @@ def _do_router_summary_report(file_name, progress, routing_tables):
                          "Can't open file {} for writing.", file_name)
 
 
-def router_report_from_paths(routing_tables):
+def router_report_from_paths():
     """ Generates a text file of routing paths
 
-    :param MulticastRoutingTables routing_tables: The original routing tables.
     :rtype: None
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
@@ -203,20 +201,19 @@ def router_report_from_paths(routing_tables):
                     machine_graph.outgoing_edge_partitions):
                 if partition.traffic_type == EdgeTrafficType.MULTICAST:
                     _write_one_router_partition_report(
-                        f, partition, routing_infos, routing_tables)
+                        f, partition, routing_infos)
     except IOError:
         logger.exception("Generate_routing_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
-def _write_one_router_partition_report(
-        f, partition, routing_infos, routing_tables):
+def _write_one_router_partition_report(f, partition, routing_infos):
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
     :param RoutingInfo routing_infos:
-    :param MulticastRoutingTables routing_tables:
     """
+    routing_tables = FecDataView.get_router_tables()
     source_placement = FecDataView.get_placement_of_vertex(
         partition.pre_vertex)
     key_and_mask = routing_infos.get_routing_info_from_partition(
@@ -622,20 +619,19 @@ def _write_vertex_virtual_keys(
             partition.identifier, rinfo.keys_and_masks))
 
 
-def router_report_from_router_tables(routing_tables):
+def router_report_from_router_tables():
     """
-    :param MulticastRoutingTables routing_tables:
-        the original routing tables
     :rtype: None
     """
 
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
+    routing_tables = FecDataView.get_router_tables().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
-    progress = ProgressBar(routing_tables.routing_tables,
+    progress = ProgressBar(routing_tables,
                            "Generating Router table report")
-    for routing_table in progress.over(routing_tables.routing_tables):
+    for routing_table in progress.over(routing_tables):
         if routing_table.number_of_entries:
             generate_routing_table(routing_table, top_level_folder)
 
@@ -705,29 +701,27 @@ def _compression_ratio(uncompressed, compressed):
     return (uncompressed - compressed) / float(uncompressed) * 100
 
 
-def generate_comparison_router_report(
-        routing_tables, compressed_routing_tables):
+def generate_comparison_router_report(compressed_routing_tables):
     """ Make a report on comparison of the compressed and uncompressed \
         routing tables
 
-    :param MulticastRoutingTables routing_tables:
-        the original routing tables
     :param MulticastRoutingTables compressed_routing_tables:
         the compressed routing tables
     :rtype: None
     """
+    routing_tables = FecDataView.get_router_tables().routing_tables
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
     try:
         with open(file_name, "w") as f:
             progress = ProgressBar(
-                routing_tables.routing_tables,
+                routing_tables,
                 "Generating comparison of router table report")
             total_uncompressed = 0
             total_compressed = 0
             max_compressed = 0
             uncompressed_for_max = 0
-            for table in progress.over(routing_tables.routing_tables):
+            for table in progress.over(routing_tables):
                 x = table.x
                 y = table.y
                 compressed_table = compressed_routing_tables.\

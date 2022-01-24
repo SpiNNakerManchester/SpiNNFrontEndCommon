@@ -36,20 +36,12 @@ _SDRAM_TAG = 1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def pair_compression(routing_tables):
+def pair_compression():
     """ Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
     the exact same algorithm implemented in Python.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the memory routing tables to be compressed
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        How to talk to the machine
-    :param bool compress_as_much_as_possible:
-        If False, the compressor will only reduce the table until it fits in
-        the router space, otherwise it will try to reduce until it until it
-        can't reduce it any more
     :raises SpinnFrontEndException: If compression fails
      """
     # pylint: disable=too-many-arguments
@@ -57,20 +49,18 @@ def pair_compression(routing_tables):
     binary_path = executable_finder.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
-        binary_path, routing_tables,
+        binary_path,
         "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
 
-def ordered_covering_compression(routing_tables):
+def ordered_covering_compression():
     """ Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
     :py:func:`mundy_on_chip_router_compression`, except this one is still
     buildable and can be maintained.
 
-    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
-        the memory routing tables to be compressed
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
@@ -78,7 +68,7 @@ def ordered_covering_compression(routing_tables):
     binary_path = executable_finder.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
-        binary_path, routing_tables,
+        binary_path,
         "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
@@ -100,14 +90,10 @@ class Compression(object):
         "__failures"]
 
     def __init__(
-            self, binary_path, routing_tables,
-            progress_text, result_register):
+            self, binary_path,  progress_text, result_register):
         """
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model
-        :param routing_tables: the memory routing tables to be compressed
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         :param str progress_text: Text to use in progress bar
         :param int result_register:
             number of the user register to check for the result code
@@ -117,7 +103,7 @@ class Compression(object):
             "Mapping", "router_table_compress_as_far_as_possible")
         # Only used by mundy compressor we can not rebuild
         self._compress_only_when_needed = None
-        self._routing_tables = routing_tables
+        self._routing_tables = FecDataView.get_router_tables()
         self._progresses_text = progress_text
         self._compressor_app_id = None
         self.__failures = []

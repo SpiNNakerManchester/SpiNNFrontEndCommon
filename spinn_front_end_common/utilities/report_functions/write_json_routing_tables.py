@@ -27,7 +27,7 @@ def write_json_routing_tables(router_tables):
     """ Runs the code to write the machine in Java readable JSON.
 
     :param MulticastRoutingTables router_tables:
-        Routing Tables to convert
+        Routing Tables to convert. Could be uncompressed or compressed
     :param str json_folder: the folder to which the JSON are being written
     """
     # Steps are tojson, validate and writefile

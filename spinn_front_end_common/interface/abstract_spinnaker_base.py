@@ -186,10 +186,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # The holder for the routing table entries for all used routers in this
-        # simulation
-        "_router_tables",
-
         # the holder for the fixed routes generated, if there are any
         "_fixed_routes",
 
@@ -450,7 +446,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._multicast_routes_loaded = False
         self._plan_n_timesteps = None
         self._region_sizes = None
-        self._router_tables = None
         self._routing_table_by_partition = None
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
@@ -1719,8 +1714,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             To add an additional Generator copy the pattern of do_placer
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
-            self._router_tables = basic_routing_table_generator(
-                self._routing_table_by_partition)
+            self._data_writer.set_router_tables(basic_routing_table_generator(
+                self._routing_table_by_partition))
         # TODO Nuke ZonedRoutingTableGenerator
 
     def _report_routers(self):
@@ -1731,7 +1726,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_reports"):
                 return
-        router_report_from_paths(self._router_tables)
+        router_report_from_paths()
 
     def _report_router_summary(self):
         """
@@ -1741,7 +1736,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_summary_report"):
                 return
-            router_summary_report(self._router_tables)
+            router_summary_report()
 
     def _json_routing_tables(self):
         """
@@ -1751,7 +1746,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_routing_tables"):
                 return
-            write_json_routing_tables(self._router_tables)
+            write_json_routing_tables(self._data_writer.get_router_tables())
             # Output ignored as never used
 
     def _report_router_collision_potential(self):
@@ -1903,7 +1898,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             # Only needs the x and y of chips with routing tables
-            routing_setup(self._router_tables)
+            routing_setup()
 
     def _execute_graph_binary_gatherer(self):
         """
@@ -1937,8 +1932,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = False
-            compressed = host_based_bit_field_router_compressor(
-                self._router_tables)
+            compressed = host_based_bit_field_router_compressor()
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
@@ -1957,8 +1951,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            machine_bit_field_ordered_covering_compressor(
-                self._router_tables, self._executable_targets)
+            machine_bit_field_ordered_covering_compressor()
             self._multicast_routes_loaded = True
             return None
 
@@ -1978,8 +1971,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             self._multicast_routes_loaded = True
-            machine_bit_field_pair_router_compressor(
-                self._router_tables, self._executable_targets)
+            machine_bit_field_pair_router_compressor(self._executable_targets)
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -1995,7 +1987,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Ordered covering compressor"):
             self._multicast_routes_loaded = False
-            compressed = ordered_covering_compressor(self._router_tables)
+            compressed = ordered_covering_compressor()
             return compressed
 
     def _execute_ordered_covering_compression(self):
@@ -2012,7 +2004,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            ordered_covering_compression(self._router_tables)
+            ordered_covering_compression()
             self._multicast_routes_loaded = True
             return None
 
@@ -2028,7 +2020,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair compressor"):
-            compressed = pair_compressor(self._router_tables)
+            compressed = pair_compressor()
             self._multicast_routes_loaded = False
             return compressed
 
@@ -2046,7 +2038,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Pair on chip router compression") as timer:
             if timer.skip_if_virtual_board():
                 return None, []
-            pair_compression(self._router_tables)
+            pair_compression()
             self._multicast_routes_loaded = True
             return None
 
@@ -2062,7 +2054,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair unordered compressor"):
-            compressed = pair_compressor(self._router_tables, ordered=False)
+            compressed = pair_compressor(ordered=False)
             self._multicast_routes_loaded = False
             return compressed
 
@@ -2164,7 +2156,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
-            router_report_from_router_tables(self._router_tables)
+            router_report_from_router_tables()
 
     def _report_bit_field_compressor(self):
         """
@@ -2308,14 +2300,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             if compressed is None:
                 if timer.skip_if_virtual_board():
                     return
-                compressed = read_routing_tables_from_machine(
-                    self._router_tables)
+                compressed = read_routing_tables_from_machine()
 
             router_report_from_compressed_router_tables(compressed)
 
-            generate_comparison_router_report(self._router_tables, compressed)
+            generate_comparison_router_report(compressed)
 
-            router_compressed_summary_report(self._router_tables)
+            router_compressed_summary_report(compressed)
 
             routing_table_from_machine_report(compressed)
 
@@ -2442,7 +2433,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             router_provenance_gatherer(
-                self._router_tables,
                 self._extra_monitor_vertices)
 
     def _execute_profile_data_gatherer(self):
@@ -2544,8 +2534,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Create database interface"):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
-            self._database_file_path = database_interface(
-                run_time, self._router_tables)
+            self._database_file_path = database_interface(run_time)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -2709,7 +2698,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Extract router provenance
         try:
             router_provenance_gatherer(
-                router_tables=self._router_tables,
                 extra_monitor_vertices=self._extra_monitor_vertices)
         except Exception:
             logger.exception("Error reading router provenance")
@@ -3069,7 +3057,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if clearing routing table entries, clear
         machine = self._data_writer.get_machine()
         if clear_routing_tables:
-            for router_table in self._router_tables.routing_tables:
+            for router_table in self._data_writer.get_router_tables():
                 if not machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
                     transceiver.clear_multicast_routes(

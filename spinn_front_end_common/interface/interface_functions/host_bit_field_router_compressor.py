@@ -54,9 +54,10 @@ def host_based_bit_field_router_compressor(router_tables):
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
+    routing_tables = FecDataView.get_router_tables().routing_tables
     # create progress bar
     progress = ProgressBar(
-        len(router_tables.routing_tables) * 2,
+        len(routing_tables) * 2,
         "Compressing routing Tables with bitfields in host")
 
     # create report
@@ -72,7 +73,7 @@ def host_based_bit_field_router_compressor(router_tables):
     key_atom_map = generate_key_to_atom_map()
 
     # start the routing table choice conversion
-    for router_table in progress.over(router_tables.routing_tables):
+    for router_table in progress.over(routing_tables):
         start_compression_selection_process(
             router_table, report_folder_path,
             compressed_pacman_router_tables, key_atom_map)

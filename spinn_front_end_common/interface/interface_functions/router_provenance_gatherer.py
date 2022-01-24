@@ -23,16 +23,12 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer(
-        router_tables, extra_monitor_vertices=None):
+def router_provenance_gatherer(extra_monitor_vertices=None):
     """
-    :param router_tables: the router tables that have been generated
-    :type router_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
         vertices which represent the extra monitor code
     """
-    gather = _RouterProvenanceGatherer(router_tables, extra_monitor_vertices)
+    gather = _RouterProvenanceGatherer(extra_monitor_vertices)
     gather._add_router_provenance_data()
 
 
@@ -43,22 +39,16 @@ class _RouterProvenanceGatherer(object):
     __slots__ = [
         # Extra monitor vertices if any
         '_extra_monitor_vertices',
-        # routingtables passed in
-        '_router_tables',
     ]
 
-    def __init__(self, router_tables, extra_monitor_vertices=None):
+    def __init__(self, extra_monitor_vertices=None):
         """
-        :param router_tables: the router tables that have been generated
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
             vertices which represent the extra monitor code
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
         self._extra_monitor_vertices = extra_monitor_vertices
-        self._router_tables = router_tables
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
@@ -76,7 +66,7 @@ class _RouterProvenanceGatherer(object):
                 extra_monitor_cores_for_data=self._extra_monitor_vertices)
 
         for router_table in progress.over(
-                self._router_tables.routing_tables, False):
+                FecDataView.get_router_tables().routing_tables, False):
             seen_chips.add(self._add_router_table_diagnostic(
                 router_table, reinjection_data))
 

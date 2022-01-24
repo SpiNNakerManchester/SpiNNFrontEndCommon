@@ -22,18 +22,15 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime, router_tables):
+def database_interface(runtime):
     """ Writes a database of the graph(s) and other information.
 
         :param int runtime:
-        :param router_tables:
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface()
-    return interface._run(runtime, router_tables)
+    return interface._run(runtime)
 
 
 class _DatabaseInterface(object):
@@ -53,13 +50,9 @@ class _DatabaseInterface(object):
         # add database generation if requested
         self._needs_db = self._writer.auto_detect_database()
 
-    def _run(
-            self, runtime, router_tables):
+    def _run(self, runtime):
         """
         :param int runtime:
-        :param router_tables:
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
         :return: Database interface, where the database is located
         :rtype: tuple(DatabaseInterface, str)
         """
@@ -75,13 +68,13 @@ class _DatabaseInterface(object):
         if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
-            self._write_to_db(runtime, router_tables)
+            self._write_to_db(runtime)
 
         if self._needs_db:
             return self._writer.database_path
         return None
 
-    def _write_to_db(self, runtime, router_tables):
+    def _write_to_db(self, runtime):
         """
         :param int runtime:
         :param ~.MulticastRoutingTables router_tables:
@@ -102,7 +95,7 @@ class _DatabaseInterface(object):
             p.update()
             w.add_routing_infos()
             p.update()
-            w.add_routing_tables(router_tables)
+            w.add_routing_tables()
             p.update()
             w.add_tags()
             p.update()
