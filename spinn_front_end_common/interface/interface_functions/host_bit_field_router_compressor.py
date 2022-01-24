@@ -44,7 +44,7 @@ from pacman.operations.router_compressors.pair_compressor import (
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 
-def host_based_bit_field_router_compressor(router_tables):
+def host_based_bit_field_router_compressor():
     """
     Entry point when using the PACMANAlgorithmExecutor
 
