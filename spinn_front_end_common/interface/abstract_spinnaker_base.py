@@ -1936,7 +1936,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             unexpected
         """
         name = get_config_str("Mapping", "info_allocator")
-        if name == "GlobalZonedRoutingInfoAllocator ":
+        if name == "GlobalZonedRoutingInfoAllocator":
             return self._execute_global_allocate()
         if name == "MallocBasedRoutingInfoAllocator":
             return self._execute_malloc_based_routing_info_allocator()
