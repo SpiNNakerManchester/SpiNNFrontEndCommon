@@ -63,7 +63,8 @@ from pacman.operations.placer_algorithms import (
     connective_based_placer, one_to_one_placer, radial_placer, spreader_placer)
 from pacman.operations.router_algorithms import (
     basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
-from pacman.operations.router_compressors import pair_compressor
+from pacman.operations.router_compressors import (
+    pair_compressor, range_compressor)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
@@ -230,6 +231,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The holder for the routing table entries for all used routers in this
         # simulation
         "_router_tables",
+
+        # The holder for the routing table entries after possible
+        # pre compression but before main compression
+        "_precompressed",
 
         # the holder for the keys used by the machine vertices for
         # communication
@@ -572,6 +577,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._plan_n_timesteps = None
         self._region_sizes = None
         self._router_tables = None
+        self._precompressed = None
         self._routing_table_by_partition = None
         self._routing_infos = None
         self._system_multicast_router_timeout_keys = None
@@ -2276,7 +2282,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
-                self._router_tables, self._machine, self._placements,
+                self._precompressed, self._machine, self._placements,
                 self._txrx, self._machine_graph, self._routing_infos)
             return compressed
 
@@ -2297,7 +2303,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             machine_bit_field_ordered_covering_compressor(
-                self._router_tables, self._txrx, self._machine, self._app_id,
+                self._precompressed, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             self._multicast_routes_loaded = True
@@ -2320,7 +2326,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
-                self._router_tables, self._txrx, self._machine, self._app_id,
+                self._precompressed, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None
@@ -2338,7 +2344,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Ordered covering compressor"):
             self._multicast_routes_loaded = False
-            compressed = ordered_covering_compressor(self._router_tables)
+            compressed = ordered_covering_compressor(self._precompressed)
             return compressed
 
     def _execute_ordered_covering_compression(self):
@@ -2356,7 +2362,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             ordered_covering_compression(
-                self._router_tables, self._txrx, self._executable_finder,
+                self._precompressed, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
             self._multicast_routes_loaded = True
             return None
@@ -2373,7 +2379,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair compressor"):
-            compressed = pair_compressor(self._router_tables)
+            compressed = pair_compressor(self._precompressed)
             self._multicast_routes_loaded = False
             return compressed
 
@@ -2392,7 +2398,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             pair_compression(
-                self._router_tables, self._txrx, self._executable_finder,
+                self._precompressed, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
             self._multicast_routes_loaded = True
             return None
@@ -2409,7 +2415,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: MulticastRoutingTables
         """
         with FecTimer(LOADING, "Pair unordered compressor"):
-            compressed = pair_compressor(self._router_tables, ordered=False)
+            compressed = pair_compressor(self._precompressed, ordered=False)
             self._multicast_routes_loaded = False
             return compressed
 
@@ -2423,6 +2429,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             name = get_config_str("Mapping", "compressor")
         return name
+
+    def _execute_pre_compression(self):
+        name = get_config_str("Mapping", "precompressor")
+        if name is None:
+            self._precompressed = self._router_tables
+        elif name == "Ranged":
+            with FecTimer(LOADING, "Routing table loader"):
+                self._precompressed, _ = range_compressor(self._router_tables)
+        else:
+            raise ConfigurationException(
+                f"Unexpected cfg setting precompressor: {name}")
 
     def _do_early_compression(self, name):
         """
@@ -2709,6 +2726,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_graph_binary_gatherer()
         # loading_algorithms
         self._report_uncompressed_routing_table()
+        self._execute_pre_compression()
         compressor = self._compressor_name()
         compressed = self._do_early_compression(compressor)
         if graph_changed or not self._has_ran:
