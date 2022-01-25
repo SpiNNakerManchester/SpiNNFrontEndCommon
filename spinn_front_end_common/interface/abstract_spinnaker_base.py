@@ -2303,7 +2303,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None, []
             machine_bit_field_ordered_covering_compressor(
-                self._precompressed, self._txrx, self._machine, self._app_id,
+                self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             self._multicast_routes_loaded = True
@@ -2326,7 +2326,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None, []
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
-                self._precompressed, self._txrx, self._machine, self._app_id,
+                self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
                 self._routing_infos, self._executable_targets)
             return None
