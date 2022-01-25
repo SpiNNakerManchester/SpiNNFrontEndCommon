@@ -680,6 +680,13 @@ def _write_vertex_virtual_keys(f, part, routing_infos):
         f.write("Vertex: {}\n".format(part.pre_vertex))
         f.write("    Partition: {}, Routing Info: {}\n".format(
             part.identifier, rinfo.keys_and_masks))
+        for m_vertex in part.pre_vertex.splitter.get_out_going_vertices(
+                part.identifier):
+            r_info = routing_infos.get_routing_info_from_pre_vertex(
+                m_vertex, part.identifier)
+            if r_info is not None:
+                f.write("    Machine Vertex: {}, Routing Info: {}\n".format(
+                    m_vertex, r_info.keys_and_masks))
 
 
 def router_report_from_router_tables(routing_tables):
