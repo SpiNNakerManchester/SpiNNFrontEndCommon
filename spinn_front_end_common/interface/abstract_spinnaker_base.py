@@ -71,7 +71,7 @@ from pacman.operations.routing_info_allocator_algorithms.\
 from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
-    basic_routing_table_generator)
+    basic_routing_table_generator, merged_routing_table_generator)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 
 from spinn_front_end_common import __version__ as fec_version
@@ -1969,7 +1969,44 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Basic routing table generator"):
             self._router_tables = basic_routing_table_generator(
                 self._routing_infos, self._routing_table_by_partition)
+
+    def _execute_merged_routing_table_generator(self):
+        """
+        Runs, times and logs the Routing Table Generator
+
+        .. note::
+            Currently no other Routing Table Generator supported.
+            To add an additional Generator copy the pattern of do_placer
+        """
+        with FecTimer(MAPPING, "Merged routing table generator"):
+            self._router_tables = merged_routing_table_generator(
+                self._routing_infos, self._routing_table_by_partition)
         # TODO Nuke ZonedRoutingTableGenerator
+
+    def _do_routing_table_generator(self):
+        """
+        Runs, times and logs one of the routing table generators
+
+        Sets the "routing_info" data
+
+        Which alloactor is run depends on the cfg info_allocator value
+
+        This method is the entry point for adding a new Info Allocator
+
+        :raise ConfigurationException: if the cfg info_allocator value is
+            unexpected
+        """
+        name = get_config_str("Mapping", "routing_table_generator")
+        if name == "BasicRoutingTableGenerator":
+            return self._execute_basic_routing_table_generator()
+        if name == "MergedRoutingTableGenerator":
+            return self._execute_merged_routing_table_generator()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for"
+                " routing_table_generator")
+        raise ConfigurationException(
+            f"Unexpected cfg setting routing_table_generator: {name}")
 
     def _report_routers(self):
         """
@@ -2118,7 +2155,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # self._execute_process_partition_constraints()
         self.do_info_allocator()
         self._report_router_info()
-        self._execute_basic_routing_table_generator()
+        self._do_routing_table_generator()
         self._report_uncompressed_routing_table()
         self._report_routers()
         self._report_router_summary()
