@@ -2447,7 +2447,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return name, pre_compress
 
     def _compression_skipable(self, tables):
-        if not get_config_bool(
+        if get_config_bool(
                 "Mapping", "router_table_compress_as_far_as_possible"):
             return False
         return tables.max_number_of_entries <= Machine.ROUTER_ENTRIES
@@ -2461,6 +2461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 with FecTimer(LOADING, "Ranged Compressor") as timer:
                     if self._compression_skipable(self._router_tables):
                         timer.skip("Tables already small enough")
+                        self._precompressed = self._router_tables
                         return
                     self._precompressed = range_compressor(
                         self._router_tables)
