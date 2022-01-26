@@ -32,7 +32,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.timer import Timer
 
 from spinn_machine import __version__ as spinn_machine_version
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Machine
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
@@ -2428,18 +2428,32 @@ class AbstractSpinnakerBase(ConfigHandler):
                 name = get_config_str("Mapping", "compressor")
         else:
             name = get_config_str("Mapping", "compressor")
-        return name
+        pre_compress = "BitField" not in name
+        return name, pre_compress
 
-    def _execute_pre_compression(self):
-        name = get_config_str("Mapping", "precompressor")
-        if name is None:
-            self._precompressed = self._router_tables
-        elif name == "Ranged":
-            with FecTimer(LOADING, "Routing table loader"):
-                self._precompressed, _ = range_compressor(self._router_tables)
+    def _compression_skipable(self, tables):
+        if not get_config_bool(
+                "Mapping", "router_table_compress_as_far_as_possible"):
+            return False
+        return tables.max_number_of_entries <= Machine.ROUTER_ENTRIES
+
+    def _execute_pre_compression(self, pre_compress):
+        if pre_compress:
+            name = get_config_str("Mapping", "precompressor")
+            if name is None:
+                self._precompressed = self._router_tables
+            elif name == "Ranged":
+                with FecTimer(LOADING, "Ranged Compressor") as timer:
+                    if self._compression_skipable(self._router_tables):
+                        timer.skip("Tables already small enough")
+                    self._precompressed = range_compressor(
+                        self._router_tables)
+            else:
+                raise ConfigurationException(
+                    f"Unexpected cfg setting precompressor: {name}")
         else:
-            raise ConfigurationException(
-                f"Unexpected cfg setting precompressor: {name}")
+            self._precompressed = self._router_tables
+
 
     def _do_early_compression(self, name):
         """
@@ -2726,8 +2740,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_graph_binary_gatherer()
         # loading_algorithms
         self._report_uncompressed_routing_table()
-        self._execute_pre_compression()
-        compressor = self._compressor_name()
+        compressor, pre_compress = self._compressor_name()
+        self._execute_pre_compression(pre_compress)
         compressed = self._do_early_compression(compressor)
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
