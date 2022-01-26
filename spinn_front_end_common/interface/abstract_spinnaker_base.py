@@ -2279,7 +2279,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(
                 LOADING, "Host based bitfield router compressor") as timer:
             if timer.skip_if_virtual_board():
-                return None, []
+                return None
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
                 self._router_tables, self._machine, self._placements,
@@ -2301,7 +2301,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 LOADING,
                 "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
-                return None, []
+                return None
             machine_bit_field_ordered_covering_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
                 self._machine_graph, self._placements, self._executable_finder,
@@ -2323,7 +2323,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(
                 LOADING, "Machine bitfield pair router compressor") as timer:
             if timer.skip_if_virtual_board():
-                return None, []
+                return None
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
@@ -2342,8 +2342,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTables
         :rtype: MulticastRoutingTables
         """
-        with FecTimer(LOADING, "Ordered covering compressor"):
+        with FecTimer(LOADING, "Ordered covering compressor") as timer:
             self._multicast_routes_loaded = False
+            if self._compression_skipable(self._precompressed):
+                timer.skip("Tables already small enough")
+                return self._precompressed
             compressed = ordered_covering_compressor(self._precompressed)
             return compressed
 
@@ -2360,7 +2363,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
-                return None, []
+                return None
+            if self._compression_skipable(self._precompressed):
+                timer.skip("Tables already small enough")
+                return self._precompressed
             ordered_covering_compression(
                 self._precompressed, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
@@ -2378,9 +2384,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTable
         :rtype: MulticastRoutingTables
         """
-        with FecTimer(LOADING, "Pair compressor"):
-            compressed = pair_compressor(self._precompressed)
+        with FecTimer(LOADING, "Pair compressor") as timer:
             self._multicast_routes_loaded = False
+            if self._compression_skipable(self._precompressed):
+                timer.skip("Tables already small enough")
+                return self._precompressed
+            compressed = pair_compressor(self._precompressed)
             return compressed
 
     def _execute_pair_compression(self):
@@ -2396,7 +2405,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Pair on chip router compression") as timer:
             if timer.skip_if_virtual_board():
-                return None, []
+                return None
+            if self._compression_skipable(self._precompressed):
+                timer.skip("Tables already small enough")
+                return self._precompressed
             pair_compression(
                 self._precompressed, self._txrx, self._executable_finder,
                 self._machine, self._app_id)
@@ -2414,7 +2426,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: CompressedRoutingTables
         :rtype: MulticastRoutingTables
         """
-        with FecTimer(LOADING, "Pair unordered compressor"):
+        with FecTimer(LOADING, "Pair unordered compressor") as timer:
+            if self._compression_skipable(self._precompressed):
+                timer.skip("Tables already small enough")
+                return self._precompressed
             compressed = pair_compressor(self._precompressed, ordered=False)
             self._multicast_routes_loaded = False
             return compressed
@@ -2446,6 +2461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 with FecTimer(LOADING, "Ranged Compressor") as timer:
                     if self._compression_skipable(self._router_tables):
                         timer.skip("Tables already small enough")
+                        return
                     self._precompressed = range_compressor(
                         self._router_tables)
             else:
