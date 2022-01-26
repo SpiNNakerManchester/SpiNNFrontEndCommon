@@ -2471,7 +2471,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             self._precompressed = self._router_tables
 
-
     def _do_early_compression(self, name):
         """
         Calls a compressor based on the name provided
