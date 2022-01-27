@@ -179,7 +179,7 @@ class EnergyReport(object):
 
         # sort what to report by chip
         active_chips = defaultdict(dict)
-        for placement in placements:
+        for placement in placements:  # pylint: disable=not-an-iterable
             vertex = placement.vertex
             if not isinstance(vertex, ChipPowerMonitorMachineVertex):
                 labels = active_chips[placement.x, placement.y]
