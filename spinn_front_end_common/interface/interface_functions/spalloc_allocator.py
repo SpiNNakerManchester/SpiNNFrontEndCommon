@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -131,7 +132,7 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
 
     spalloc_kw_args = {
         'hostname': spalloc_server,
-        'owner': get_config_str("Machine", "spalloc_user")
+        'owner': get_config_str("Machine", "spalloc_user"),
     }
     spalloc_port = get_config_int("Machine", "spalloc_port")
     if spalloc_port is not None:
@@ -149,17 +150,23 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
         False, None, None, machine_allocation_controller
     )
 
-
 def _launch_checked_job(n_boards, spalloc_kw_args):
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []
     job, hostname = _launch_job(n_boards, spalloc_kw_args)
-    while hostname in avoid_boards:
-        avoid_jobs.append(job)
-        logger.warning(
-            f"Asking for new job as {hostname} "
-            f"as in the spalloc_avoid_boards list")
-        job, hostname = _launch_job(n_boards, spalloc_kw_args)
+    while True:
+        connections = job.connections
+        info = str(connections).replace("{", "[").replace("}", "]")
+        logger.info("boards: " + info)
+        ProvenanceWriter().insert_board_provenance(connections)
+        if hostname in avoid_boards:
+            avoid_jobs.append(job)
+            logger.warning(
+                f"Asking for new job as {hostname} "
+                f"as in the spalloc_avoid_boards list")
+            job, hostname = _launch_job(n_boards, spalloc_kw_args)
+        else:
+            break
     for avoid_job in avoid_jobs:
         avoid_job.destroy("Asked to avoid by cfg")
     return job, hostname
