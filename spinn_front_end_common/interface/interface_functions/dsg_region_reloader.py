@@ -99,7 +99,7 @@ class _DSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # execute the spec
-        with open(spec_file, "rb", encoding="utf-8") as spec_reader:
+        with open(spec_file, "rb") as spec_reader:
             data_spec_executor = DataSpecificationExecutor(
                 spec_reader, SDRAM.max_sdram_found)
             data_spec_executor.execute()
