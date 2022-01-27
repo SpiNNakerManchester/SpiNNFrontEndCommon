@@ -585,7 +585,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 raise Exception(
                     "when using a file, you can only have a offset of 0")
 
-            with open(data, "rb", encoding="utf-8") as reader:
+            with open(data, "rb") as reader:
                 # n_bytes=None already means 'read everything'
                 data = reader.read(n_bytes)  # pylint: disable=no-member
             # Number of bytes to write is now length of buffer we have
