@@ -300,7 +300,7 @@ class ConfigHandler(object):
         # store timestamp in latest/time_stamp for provenance reasons
         time_of_run_file_name = os.path.join(
             self._report_simulation_top_directory, TIMESTAMP_FILENAME)
-        with open(time_of_run_file_name, "w") as f:
+        with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(self._this_run_time_string)
 
         if get_config_bool("Logging", "warnings_at_end_to_file"):
@@ -353,7 +353,7 @@ class ConfigHandler(object):
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
             self._report_simulation_top_directory, file_name)
-        with open(app_file_name, "w") as f:
+        with open(app_file_name, "w", encoding="utf-8") as f:
             f.writelines("file_name")
 
     def write_finished_file(self):

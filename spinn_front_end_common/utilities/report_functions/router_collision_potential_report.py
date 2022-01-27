@@ -31,7 +31,7 @@ def router_collision_potential_report(
         report_default_directory(),
         "routing_collision_protential_report.rpt")
 
-    with open(file_name, "w") as writer:
+    with open(file_name, "w", encoding="utf-8") as writer:
         collision_counts = _generate_data(
             router_tables_by_partition, n_keys_map, machine)
         _write_report(collision_counts, writer)

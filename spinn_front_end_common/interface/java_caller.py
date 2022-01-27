@@ -343,7 +343,7 @@ class JavaCaller(object):
             json_obj.append(json_gather)
 
         # dump to json file
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
 
         return path
@@ -364,7 +364,7 @@ class JavaCaller(object):
 
         # dump to json file
         with open(path, "w") as f:
-            json.dump(json_obj, f)
+            json.dump(json_obj, f, encoding="utf-8")
 
         return path
 

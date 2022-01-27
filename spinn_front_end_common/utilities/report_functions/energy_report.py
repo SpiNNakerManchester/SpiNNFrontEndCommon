@@ -84,12 +84,12 @@ class EnergyReport(object):
         runtime_total_ms = time_scale_factor()
 
         # create detailed report
-        with open(detailed_report, "w") as f:
+        with open(detailed_report, "w", encoding="utf-8") as f:
             self._write_detailed_report(
                 placements, machine, power_used, f, runtime_total_ms)
 
         # create summary report
-        with open(summary_report, "w") as f:
+        with open(summary_report, "w", encoding="utf-8") as f:
             self._write_summary_report(runtime_total_ms, f, power_used)
 
     @classmethod

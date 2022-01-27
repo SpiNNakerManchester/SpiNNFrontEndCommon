@@ -355,7 +355,7 @@ class _HostBasedBitFieldRouterCompressor(object):
             report_file_path = os.path.join(
                 report_folder_path,
                 self._REPORT_NAME.format(router_table.x, router_table.y))
-            with open(report_file_path, "w") as report_out:
+            with open(report_file_path, "w", encoding="utf-8") as report_out:
                 self._create_table_report(router_table, report_out)
 
         generate_provenance_item(
