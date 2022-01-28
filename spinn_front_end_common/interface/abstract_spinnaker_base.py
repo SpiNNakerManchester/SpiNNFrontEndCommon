@@ -1521,8 +1521,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                                    "live_packet_recorder_params"):
                 return
             preallocate_resources_for_live_packet_gatherers(
-                self._live_packet_recorder_params,
-                self._machine, pre_allocated_resources)
+                self._live_packet_recorder_params, pre_allocated_resources)
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
