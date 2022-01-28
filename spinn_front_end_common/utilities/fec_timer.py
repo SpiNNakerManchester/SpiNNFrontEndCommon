@@ -52,6 +52,7 @@ else:
 
 _simulator = None
 _provenance_path = None
+_print_timings = False
 
 
 class FecTimer(object):
@@ -167,19 +168,19 @@ class FecTimer(object):
         self._start_time = None
         return _convert_to_timedelta(diff)
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
-        if type is None:
+        if exc_type is None:
             message = f"{self._algorithm} took {time_taken} "
             skip = None
         else:
             try:
-                message = f"{self._algorithm} exited with {type.__name__} " \
-                          f"after {time_taken}"
-                skip = type.__name__
-            except Exception as ex:
+                message = (f"{self._algorithm} exited with "
+                           f"{exc_type.__name__} after {time_taken}")
+                skip = exc_type.__name__
+            except Exception as ex:  # pylint: disable=broad-except
                 message = f"{self._algorithm} exited with an exception" \
                           f"after {time_taken}"
                 skip = f"Exception {ex}"
