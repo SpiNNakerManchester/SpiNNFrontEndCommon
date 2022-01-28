@@ -2850,9 +2850,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # run energy report
             energy_reporter.write_energy_report(
-                self._placements, self._machine,
-                self._current_run_timesteps,
-                self._buffer_manager, power_used)
+                self._placements, self._buffer_manager, power_used)
 
     def _do_provenance_reports(self):
         """
