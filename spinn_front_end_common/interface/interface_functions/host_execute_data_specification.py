@@ -417,62 +417,6 @@ class _HostExecuteDataSpecification(object):
         progress.update()
         return dw_write_info
 
-    def __java_all(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Java
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :return: map of of cores to descriptions of what was written
-        :rtype: DsWriteInfo
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            3, "Executing data specifications and loading data using Java")
-
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
-
-        self._java.execute_data_specification()
-
-        progress.end()
-        return dw_write_info
-
-    def __python_all(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Python
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :param dict(tuple(int,int,int),int) region_sizes:
-            map between vertex and list of region sizes
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int), DataWritten)
-        """
-        # While the database supports having the info in it a python bugs does
-        # not like iterating over and writing intermingled so using a dict
-        results = self._write_info_map
-        if results is None:
-            results = dict()
-
-        # create a progress bar for end users
-        progress = ProgressBar(
-            dsg_targets.n_targets(),
-            "Executing data specifications and loading data")
-
-        # allocate and set user 0 before loading data
-        base_addresses = dict()
-        for core, _ in dsg_targets.items():
-            base_addresses[core] = self.__malloc_region_storage(
-                core, region_sizes[core])
-
-        with _ExecutionContext(self._txrx, self._machine) as context:
-            for core, reader in progress.over(dsg_targets.items()):
-                results[core] = context.execute(
-                    core, reader, self._txrx.write_memory,
-                    base_addresses[core], region_sizes[core])
-
-        return results
-
     def execute_application_data_specs(
             self, dsg_targets,
             executable_targets, region_sizes,
