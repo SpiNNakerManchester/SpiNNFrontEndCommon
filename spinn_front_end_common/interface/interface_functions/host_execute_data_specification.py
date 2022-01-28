@@ -421,8 +421,7 @@ class _HostExecuteDataSpecification(object):
             self, dsg_targets,
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
-            extra_monitor_cores_to_ethernet_connection_map=None,
-            processor_to_app_data_base_address=None):
+            extra_monitor_cores_to_ethernet_connection_map=None):
         """ Execute the data specs for all non-system targets.
 
         :param dict(tuple(int,int,int),int) region_sizes:
@@ -441,8 +440,6 @@ class _HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int), DsWriteInfo)
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
@@ -566,9 +563,7 @@ class _HostExecuteDataSpecification(object):
         return dw_write_info
 
     def execute_system_data_specs(
-            self, dsg_targets, region_sizes,
-            executable_targets,
-            processor_to_app_data_base_address=None):
+            self, dsg_targets, region_sizes, executable_targets):
         """ Execute the data specs for all system targets.
 
         :param dict(tuple(int,int,int),str) dsg_targets:
@@ -577,9 +572,6 @@ class _HostExecuteDataSpecification(object):
             the coordinates for region sizes for each core
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),DataWritten)
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
