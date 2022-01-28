@@ -2837,7 +2837,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
-            energy_provenance_reporter(power_used, self._placements)
+            energy_provenance_reporter(power_used)
 
             # create energy reporter
             energy_reporter = EnergyReport(
