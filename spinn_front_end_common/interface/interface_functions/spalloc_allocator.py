@@ -143,10 +143,10 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
     if spalloc_machine is not None:
         spalloc_kw_args['machine'] = spalloc_machine
 
-    job, hostname = _launch_checked_job(n_boards, spalloc_kw_args)
+    job, hostname, scamp_connection_data = _launch_checked_job(
+        n_boards, spalloc_kw_args)
     machine_allocation_controller = _SpallocJobController(job)
 
-    scamp_connection_data = job.connections
     return (
         hostname, _MACHINE_VERSION, None, False,
         False, scamp_connection_data, None, machine_allocation_controller
@@ -170,9 +170,15 @@ def _launch_checked_job(n_boards, spalloc_kw_args):
             job, hostname = _launch_job(n_boards, spalloc_kw_args)
         else:
             break
+    if avoid_boards:
+        for key in list(connections.keys()):
+            if connections[key] in avoid_boards:
+                logger.warning(
+                    f"Remvoing connection info for {connections[key]}")
+                del connections[key]
     for avoid_job in avoid_jobs:
         avoid_job.destroy("Asked to avoid by cfg")
-    return job, hostname
+    return job, hostname, connections
 
 
 def _launch_job(n_boards, spalloc_kw_args):
