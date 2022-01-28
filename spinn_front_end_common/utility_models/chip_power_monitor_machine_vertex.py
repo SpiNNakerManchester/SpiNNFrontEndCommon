@@ -148,6 +148,7 @@ class ChipPowerMonitorMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             data_n_time_steps):
+        # pylint: arguments-differ
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec
