@@ -153,6 +153,7 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
 
 
 def _launch_checked_job(n_boards, spalloc_kw_args):
+    logger.info(f"Requesting job with {n_boards} boards")
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []
     job, hostname = _launch_job(n_boards, spalloc_kw_args)
