@@ -132,8 +132,6 @@ class JavaCaller(object):
                 java_spinnaker_path, "JavaSpiNNaker")
             if os.path.isdir(indirect_path):
                 java_spinnaker_path = indirect_path
-            else:
-                java_spinnaker_path = java_spinnaker_path
         auto_jar_file = os.path.join(
             java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
