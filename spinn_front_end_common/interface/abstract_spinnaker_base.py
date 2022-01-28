@@ -2237,8 +2237,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             # Only needs the x and y of chips with routing tables
-            routing_setup(
-                self._router_tables, self._app_id, self._txrx, self._machine)
+            routing_setup(self._router_tables, self._txrx, self._machine)
 
     def _execute_graph_binary_gatherer(self):
         """
