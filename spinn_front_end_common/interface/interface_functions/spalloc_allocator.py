@@ -20,7 +20,6 @@ from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
 from spinn_machine import Machine
-from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)

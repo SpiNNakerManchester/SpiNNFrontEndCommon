@@ -160,6 +160,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertListEqual(expected, data)
 
     def test_board(self):
-        data =  {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
+        data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
         with ProvenanceWriter() as db:
             db.insert_board_provenance(data)
