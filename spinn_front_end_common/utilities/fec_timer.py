@@ -92,8 +92,8 @@ class FecTimer(object):
 
     def _report(self, message):
         if _provenance_path is not None:
-            with open(_provenance_path, "a", encoding="utf-8") as provenance_file:
-                provenance_file.write(f"{message}\n")
+            with open(_provenance_path, "a", encoding="utf-8") as p_file:
+                p_file.write(f"{message}\n")
         if _print_timings:
             logger.info(message)
 
