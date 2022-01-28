@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import PreAllocatedResourceContainer
 from spinn_front_end_common.interface.config_setup import unittest_setup
