@@ -174,11 +174,10 @@ class _GraphDataSpecificationWriter(object):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))
                     est_size = est_size.get_total_sdram(data_n_timesteps)
                     if size > est_size:
-                        logger.warn(
-                            "Region {} of vertex {} is bigger than expected: "
-                            "{} estimated vs. {} actual".format(
-                                i, vertex.label, est_size, size))
-
+                        logger.warning(
+                            f"Region {i} of vertex {vertex.label} is bigger "
+                            f"than expected: {est_size} estimated "
+                            f"vs. {size} actual")
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
             if (self._sdram_usage[pl.x, pl.y] <=
