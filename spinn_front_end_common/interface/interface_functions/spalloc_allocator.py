@@ -20,6 +20,7 @@ from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
 from spinn_machine import Machine
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
@@ -145,10 +146,12 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None):
     job, hostname = _launch_checked_job(n_boards, spalloc_kw_args)
     machine_allocation_controller = _SpallocJobController(job)
 
+    scamp_connection_data = job.connections
     return (
         hostname, _MACHINE_VERSION, None, False,
-        False, None, None, machine_allocation_controller
+        False, scamp_connection_data, None, machine_allocation_controller
     )
+
 
 def _launch_checked_job(n_boards, spalloc_kw_args):
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")

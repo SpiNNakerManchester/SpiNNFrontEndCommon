@@ -66,9 +66,9 @@ def machine_generator(
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
     :param scamp_connection_data:
-        the list of SC&MP connection data or None
+        Job.connection dict,a String SC&MP connection data or None
     :type scamp_connection_data:
-        list(~spinnman.connections.SocketAddressWithChip)
+        dict((int,int), str), str or None
     :param int boot_port_num: the port number used for the boot connection
     :param bool reset_machine_on_start_up:
     :return: Transceiver, and description of machine it is connected to
@@ -77,18 +77,21 @@ def machine_generator(
     """
     # pylint: disable=too-many-arguments
 
-    # if the end user gives you SCAMP data, use it and don't discover them
+    scamp_data = None
+    # if the end user gives you SCAMP data as a str parse and use it
+    # TODO consider removing str style as no known use
     if scamp_connection_data is not None:
-        scamp_connection_data = [
-            _parse_scamp_connection(piece)
-            for piece in scamp_connection_data.split(":")]
+        if isinstance(scamp_connection_data, str):
+            scamp_data = [
+                _parse_scamp_connection(piece)
+                for piece in scamp_connection_data.split(":")]
 
     txrx = create_transceiver_from_hostname(
         hostname=hostname,
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
         auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
-        scamp_connections=scamp_connection_data,
+        scamp_connections=scamp_data,
         default_report_directory=report_default_directory())
 
     if reset_machine_on_start_up:
@@ -106,7 +109,10 @@ def machine_generator(
             "Please set a machine version number in the "
             "corresponding configuration (cfg) file")
     txrx.ensure_board_is_ready()
-    txrx.discover_scamp_connections()
+    if isinstance(scamp_connection_data, dict):
+        txrx.add_scamp_connections(scamp_connection_data)
+    else:
+        txrx.discover_scamp_connections()
     return txrx.get_machine_details(), txrx
 
 
