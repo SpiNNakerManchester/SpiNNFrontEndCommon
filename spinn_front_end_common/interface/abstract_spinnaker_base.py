@@ -435,7 +435,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, n_chips_required=None,
-            n_boards_required=None, front_end_versions=[]):
+            n_boards_required=None, front_end_versions=None):
         """
         :param executable_finder: How to find APLX files to deploy to SpiNNaker
         :type executable_finder:
@@ -485,8 +485,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # update graph label if needed
         if graph_label is None:
             graph_label = "Application_graph"
-        else:
-            graph_label = graph_label
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
@@ -1414,8 +1412,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             db.insert_version("front_end_common_version", fec_version)
             db.insert_version("numpy_version", numpy_version)
             db.insert_version("scipy_version", scipy_version)
-            for description, the_value in front_end_versions:
-                db.insert_version(description, the_value)
+            if front_end_versions:
+                for description, the_value in front_end_versions:
+                    db.insert_version(description, the_value)
 
     def _do_extra_mapping_algorithms(self):
         """
@@ -2609,7 +2608,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs any extra load algorithms
 
         """
-        pass
 
     def _report_memory_on_host(self, processor_to_app_data_base_address):
         """
@@ -2857,7 +2855,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs any reports based on provenance
 
         """
-        pass
 
     def _execute_clear_io_buf(self, runtime):
         """
