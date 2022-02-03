@@ -25,7 +25,7 @@ def buffer_manager_creator(
         extra_monitor_cores=None,
         extra_monitor_to_chip_mapping=None,
         packet_gather_cores_to_ethernet_connection_map=None,
-        fixed_routes=None, java_caller=None):
+        java_caller=None):
     """ Creates a buffer manager.
 
     :param bool uses_advanced_monitors:
@@ -36,8 +36,6 @@ def buffer_manager_creator(
     :param packet_gather_cores_to_ethernet_connection_map:
     :type packet_gather_cores_to_ethernet_connection_map:
         dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex)
-    :param fixed_routes:
-    :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
     :param JavaCaller java_caller:
     :rtype: BufferManager
     """
@@ -51,7 +49,6 @@ def buffer_manager_creator(
         packet_gather_cores_to_ethernet_connection_map=(
             packet_gather_cores_to_ethernet_connection_map),
         extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
-        fixed_routes=fixed_routes,
         java_caller=java_caller)
 
     for placement in progress.over(placements):

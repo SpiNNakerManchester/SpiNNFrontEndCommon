@@ -113,9 +113,6 @@ class BufferManager(object):
         # monitor cores via chip ID
         "_extra_monitor_cores_by_chip",
 
-        # fixed routes, used by the speed up functionality for reports
-        "_fixed_routes",
-
         # machine object
         "_machine",
 
@@ -125,7 +122,7 @@ class BufferManager(object):
 
     def __init__(self, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping, fixed_routes,
+                 extra_monitor_to_chip_mapping,
                  java_caller=None):
         """
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
@@ -138,8 +135,6 @@ class BufferManager(object):
         :param extra_monitor_to_chip_mapping:
         :type extra_monitor_to_chip_mapping:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        :param fixed_routes:
-        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param JavaCaller java_caller:
             Support class to call Java, or ``None`` to use Python
         """
@@ -148,7 +143,6 @@ class BufferManager(object):
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
-        self._fixed_routes = fixed_routes
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -205,7 +199,7 @@ class BufferManager(object):
             self._packet_gather_cores_to_ethernet_connection_map)
         extra_mon_data = receiver.get_data(
             sender, FecDataView.get_placement_of_vertex(sender),
-            address, length, self._fixed_routes)
+            address, length)
         if VERIFY:
             txrx_data = FecDataView.read_memory(
                 placement_x, placement_y, address, length)

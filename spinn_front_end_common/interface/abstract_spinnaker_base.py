@@ -186,9 +186,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # the holder for the fixed routes generated, if there are any
-        "_fixed_routes",
-
         # Handler for keep all the calls to Java in a single space.
         # May be null is configs request not to use Java
         "_java_caller",
@@ -432,7 +429,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = []
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
-        self._fixed_routes = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
         self._max_machine = False
@@ -1489,8 +1485,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Machine", "enable_advanced_monitor_support"):
                 return
-            self._fixed_routes = fixed_route_router(
-                DataSpeedUpPacketGatherMachineVertex)
+            self._data_writer.set_fixed_routes(fixed_route_router(
+                DataSpeedUpPacketGatherMachineVertex))
 
     def _report_placements_with_application_graph(self):
         """
@@ -1778,7 +1774,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._extra_monitor_vertices,
                     self._extra_monitor_to_chip_mapping,
                     self._vertex_to_ethernet_connected_chip_mapping,
-                    self._fixed_routes, self._java_caller))
+                    self._java_caller))
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """
@@ -2171,7 +2167,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            load_fixed_routes(self._fixed_routes)
+            load_fixed_routes()
 
     def _execute_system_data_specification(self):
         """
@@ -2887,13 +2883,6 @@ class AbstractSpinnakerBase(ConfigHandler):
          """
         self._get_machine()
         return self._data_writer.get_machine()
-
-    @property
-    def fixed_routes(self):
-        """
-        :rtype: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
-        """
-        return self._fixed_routes
 
     @property
     def none_labelled_edge_count(self):

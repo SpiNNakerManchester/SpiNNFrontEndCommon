@@ -1060,7 +1060,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def get_data(
             self, extra_monitor, placement, memory_address,
-            length_in_bytes, fixed_routes):
+            length_in_bytes):
         """ Gets data from a given core and memory address.
 
         :param ExtraMonitorSupportMachineVertex extra_monitor:
@@ -1069,9 +1069,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             placement object for where to get data from
         :param int memory_address: the address in SDRAM to start reading from
         :param int length_in_bytes: the length of data to read in bytes
-        :param fixed_routes: the fixed routes, used in the report of which
-            chips were used by the speed up process
-        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :return: byte array of the data
         :rtype: bytearray
         """
@@ -1140,7 +1137,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
             routers_been_in_use = self._determine_which_routers_were_used(
-                placement, fixed_routes)
+                placement)
             self._write_routers_used_into_report(
                 self._out_report_path, routers_been_in_use,
                 placement)
@@ -1191,18 +1188,16 @@ class DataSpeedUpPacketGatherMachineVertex(
         return lost_seq_nums
 
     @staticmethod
-    def _determine_which_routers_were_used(placement, fixed_routes):
+    def _determine_which_routers_were_used(placement):
         """ Traverse the fixed route paths from a given location to its\
             destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
-        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:
-            the fixed routes for each router
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
         routers = [(placement.x, placement.y)]
-        entry = fixed_routes[placement.x, placement.y]
+        entry = FecDataView.get_fixed_routes()[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
         while len(entry.processor_ids) == 0:

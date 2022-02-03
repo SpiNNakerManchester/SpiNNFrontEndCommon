@@ -17,14 +17,12 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 
 
-def load_fixed_routes(fixed_routes):
+def load_fixed_routes():
     """ Load a set of fixed routes onto a SpiNNaker machine.
 
-    :param fixed_routes:
-    :type fixed_routes:
-        dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
+    fixed_routes = FecDataView.get_fixed_routes()
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(fixed_routes),
         string_describing_what_being_progressed="loading fixed routes")
