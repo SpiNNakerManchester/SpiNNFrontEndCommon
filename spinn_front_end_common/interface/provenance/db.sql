@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS connector_provenance(
 
 ---------------------------------------------------------------------
 -- A table to store job.info
-CREATE TABLE IF NOT EXISTS boards_provenanc(
+CREATE TABLE IF NOT EXISTS boards_provenance(
     board_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ip_addres STRING NOT NULL,
     ethernet_x INTEGER NOT NULL,
