@@ -170,3 +170,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.run_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
+
+    def test_board(self):
+        data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(data)
