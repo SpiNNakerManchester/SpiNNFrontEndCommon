@@ -289,7 +289,7 @@ class ProvenanceWriter(SQLiteDB):
         with self.transaction() as cursor:
             cursor.executemany(
                 """
-                INSERT OR IGNORE INTO boards_provenanc(
+                INSERT OR IGNORE INTO boards_provenance(
                 ethernet_x, ethernet_y, ip_addres)
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
