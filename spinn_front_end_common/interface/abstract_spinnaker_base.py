@@ -277,10 +277,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO energy report cleanup
         "_extraction_time",
 
-        # Version information from the front end
-        # TODO provenance cleanup
-        "_front_end_versions",
-
         # Used in exception handling and control c
         "_last_except_hook",
 
@@ -340,8 +336,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     ]
 
     def __init__(
-            self, graph_label=None,
-            database_socket_addresses=None, front_end_versions=[],
+            self, graph_label=None, database_socket_addresses=None,
             data_writer_cls=None):
         """
         :param str graph_label: A label for the overall application graph
@@ -352,8 +347,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
             Overrides the number of boards to allocate from spalloc
-        :param list(tuple(str,str)) front_end_versions:
-            Information about what software is in use
         :param FecDataWriter data_writer_cls:
             The Global data writer class
         """
@@ -411,7 +404,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         globals_variables.set_simulator(self)
 
-        self._create_version_provenance(front_end_versions)
+        self._create_version_provenance()
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
@@ -1114,7 +1107,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException(
                 "Not enough information provided to supply a machine")
 
-    def _create_version_provenance(self, front_end_versions):
+    def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
         """
         with ProvenanceWriter() as db:
@@ -1127,8 +1120,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             db.insert_version("front_end_common_version", fec_version)
             db.insert_version("numpy_version", numpy_version)
             db.insert_version("scipy_version", scipy_version)
-            for description, the_value in front_end_versions:
-                db.insert_version(description, the_value)
 
     def _do_extra_mapping_algorithms(self):
         """
