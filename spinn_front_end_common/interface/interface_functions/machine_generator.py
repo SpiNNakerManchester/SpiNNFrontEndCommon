@@ -16,7 +16,6 @@
 import re
 
 from spinn_utilities.log import FormatAdapter
-from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
@@ -68,7 +67,7 @@ def machine_generator(
     :param scamp_connection_data:
         Job.connection dict,a String SC&MP connection data or None
     :type scamp_connection_data:
-        dict((int,int), str), str or None
+        dict((int,int), str) or None
     :param int boot_port_num: the port number used for the boot connection
     :param bool reset_machine_on_start_up:
     :return: Transceiver, and description of machine it is connected to
@@ -77,21 +76,11 @@ def machine_generator(
     """
     # pylint: disable=too-many-arguments
 
-    scamp_data = None
-    # if the end user gives you SCAMP data as a str parse and use it
-    # TODO consider removing str style as no known use
-    if scamp_connection_data is not None:
-        if isinstance(scamp_connection_data, str):
-            scamp_data = [
-                _parse_scamp_connection(piece)
-                for piece in scamp_connection_data.split(":")]
-
     txrx = create_transceiver_from_hostname(
         hostname=hostname,
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
         auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
-        scamp_connections=scamp_data,
         default_report_directory=report_default_directory())
 
     if reset_machine_on_start_up:
@@ -114,28 +103,6 @@ def machine_generator(
     else:
         txrx.discover_scamp_connections()
     return txrx.get_machine_details(), txrx
-
-
-def _parse_scamp_connection(scamp_connection):
-    """
-    :param str scamp_connection:
-    :rtype: ~.SocketAddressWithChip
-    :raises Exception: If the parse fails
-    """
-    pieces = scamp_connection.split(",")
-    if len(pieces) == 3:
-        port_num = None
-        hostname, chip_x, chip_y = pieces
-    elif len(pieces) == 4:
-        hostname, port_num, chip_x, chip_y = pieces
-    else:
-        raise Exception("bad SC&MP connection descriptor")
-
-    return SocketAddressWithChip(
-        hostname=hostname,
-        port_num=None if port_num is None else int(port_num),
-        chip_x=int(chip_x),
-        chip_y=int(chip_y))
 
 
 def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
