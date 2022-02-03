@@ -174,7 +174,7 @@ def _launch_checked_job(n_boards, spalloc_kw_args):
         for key in list(connections.keys()):
             if connections[key] in avoid_boards:
                 logger.warning(
-                    f"Remvoing connection info for {connections[key]}")
+                    f"Removing connection info for {connections[key]} as in the spalloc avoid_boards list")
                 del connections[key]
     for avoid_job in avoid_jobs:
         avoid_job.destroy("Asked to avoid by cfg")
