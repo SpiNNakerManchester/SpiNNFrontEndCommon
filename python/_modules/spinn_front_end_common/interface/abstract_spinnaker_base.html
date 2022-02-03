@@ -389,10 +389,6 @@
         <span class="c1"># TODO energy report cleanup</span>
         <span class="s2">&quot;_extraction_time&quot;</span><span class="p">,</span>
 
-        <span class="c1"># Version information from the front end</span>
-        <span class="c1"># TODO provenance cleanup</span>
-        <span class="s2">&quot;_front_end_versions&quot;</span><span class="p">,</span>
-
         <span class="c1"># Used in exception handling and control c</span>
         <span class="s2">&quot;_last_except_hook&quot;</span><span class="p">,</span>
 
@@ -473,7 +469,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span> <span class="n">graph_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">database_socket_addresses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_chips_required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">n_boards_required</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">front_end_versions</span><span class="o">=</span><span class="p">[]):</span>
+            <span class="n">n_boards_required</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param executable_finder: How to find APLX files to deploy to SpiNNaker</span>
 <span class="sd">        :type executable_finder:</span>
@@ -486,8 +482,6 @@
 <span class="sd">            Overrides the number of chips to allocate from spalloc</span>
 <span class="sd">        :param int n_boards_required:</span>
 <span class="sd">            Overrides the number of boards to allocate from spalloc</span>
-<span class="sd">        :param list(tuple(str,str)) front_end_versions:</span>
-<span class="sd">            Information about what software is in use</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
@@ -568,7 +562,7 @@
 
         <span class="n">globals_variables</span><span class="o">.</span><span class="n">set_simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_create_version_provenance</span><span class="p">(</span><span class="n">front_end_versions</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_version_provenance</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertices_or_edges_added</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1439,7 +1433,7 @@
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Not enough information provided to supply a machine&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">front_end_versions</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -1452,8 +1446,6 @@
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;front_end_common_version&quot;</span><span class="p">,</span> <span class="n">fec_version</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;numpy_version&quot;</span><span class="p">,</span> <span class="n">numpy_version</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;scipy_version&quot;</span><span class="p">,</span> <span class="n">scipy_version</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span> <span class="ow">in</span> <span class="n">front_end_versions</span><span class="p">:</span>
-                <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_extra_mapping_algorithms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
