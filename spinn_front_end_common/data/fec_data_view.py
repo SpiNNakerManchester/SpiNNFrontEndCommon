@@ -45,6 +45,7 @@ class _FecDataModel(object):
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_first_machine_time_step",
+        "_fixed_routes",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_ipaddress",
@@ -100,6 +101,7 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
+        self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
         self._max_run_time_steps = None
@@ -534,6 +536,18 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._ipaddress is None:
             raise cls._exception("ipaddress")
         return cls.__fec_data._ipaddress
+
+    # fixed_routes
+    @classmethod
+    def get_fixed_routes(cls):
+        """
+        Gets the fixed routes if they have been created
+
+        :rtype: dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
+        """
+        if cls.__fec_data._fixed_routes is None:
+            raise cls._exception("fixed_routes")
+        return cls.__fec_data._fixed_routes
 
     # run_dir_path in UtilsDataView
 

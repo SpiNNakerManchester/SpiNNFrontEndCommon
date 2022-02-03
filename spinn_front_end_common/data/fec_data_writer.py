@@ -386,9 +386,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_ipaddress(self, ipaddress):
         """
 
-        :param ipaddress:
-        :return:
+        :param str ipaddress:
         """
         if not isinstance(ipaddress, str):
             raise TypeError("ipaddress must be a str")
         self.__fec_data._ipaddress = ipaddress
+
+    def set_fixed_routes(self, fixed_routes):
+        """
+
+        :param dict(tuple(int,int), ~spinn_machine.FixedRouteEntry) fixed_routes:
+        """
+        if not isinstance(fixed_routes, dict):
+            raise TypeError("fixed_routes must be a dict")
+        self.__fec_data._fixed_routes = fixed_routes

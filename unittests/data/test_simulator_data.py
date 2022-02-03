@@ -443,3 +443,13 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_ipaddress()
         with self.assertRaises(TypeError):
             writer.set_ipaddress(127)
+
+    def test_fixed_routes(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_fixed_routes()
+        data = dict()
+        writer.set_fixed_routes(data)
+        self.assertEqual(data, FecDataView.get_fixed_routes())
+        with self.assertRaises(TypeError):
+            writer.set_fixed_routes(writer)
