@@ -26,6 +26,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -130,7 +131,7 @@ def spalloc_allocator(spalloc_server):
 
     spalloc_kw_args = {
         'hostname': spalloc_server,
-        'owner': get_config_str("Machine", "spalloc_user")
+        'owner': get_config_str("Machine", "spalloc_user"),
     }
     spalloc_port = get_config_int("Machine", "spalloc_port")
     if spalloc_port is not None:
@@ -140,28 +141,44 @@ def spalloc_allocator(spalloc_server):
     if spalloc_machine is not None:
         spalloc_kw_args['machine'] = spalloc_machine
 
-    job, hostname = _launch_checked_job(n_boards, spalloc_kw_args)
+    job, hostname, scamp_connection_data = _launch_checked_job(
+        n_boards, spalloc_kw_args)
     machine_allocation_controller = _SpallocJobController(job)
 
     return (
         hostname, _MACHINE_VERSION, None, False,
-        False, None, None, machine_allocation_controller
+        False, scamp_connection_data, None, machine_allocation_controller
     )
 
 
 def _launch_checked_job(n_boards, spalloc_kw_args):
+    logger.info(f"Requesting job with {n_boards} boards")
     avoid_boards = get_config_str_list("Machine", "spalloc_avoid_boards")
     avoid_jobs = []
     job, hostname = _launch_job(n_boards, spalloc_kw_args)
-    while hostname in avoid_boards:
-        avoid_jobs.append(job)
-        logger.warning(
-            f"Asking for new job as {hostname} "
-            f"as in the spalloc_avoid_boards list")
-        job, hostname = _launch_job(n_boards, spalloc_kw_args)
+    while True:
+        connections = job.connections
+        info = str(connections).replace("{", "[").replace("}", "]")
+        logger.info("boards: " + info)
+        ProvenanceWriter().insert_board_provenance(connections)
+        if hostname in avoid_boards:
+            avoid_jobs.append(job)
+            logger.warning(
+                f"Asking for new job as {hostname} "
+                f"as in the spalloc_avoid_boards list")
+            job, hostname = _launch_job(n_boards, spalloc_kw_args)
+        else:
+            break
+    if avoid_boards:
+        for key in list(connections.keys()):
+            if connections[key] in avoid_boards:
+                logger.warning(
+                    f"Removing connection info for {connections[key]} "
+                    f"as in the spalloc avoid_boards list")
+                del connections[key]
     for avoid_job in avoid_jobs:
         avoid_job.destroy("Asked to avoid by cfg")
-    return job, hostname
+    return job, hostname, connections
 
 
 def _launch_job(n_boards, spalloc_kw_args):
