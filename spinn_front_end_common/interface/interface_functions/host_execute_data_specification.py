@@ -473,14 +473,13 @@ class _HostExecuteDataSpecification(object):
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
 
-        if FecDataView.has_java_caller():
-            impl_method = self.__java_app
-        else:
-            impl_method = self.__python_app
         try:
-            return impl_method(
-                dsg_targets, executable_targets, uses_advanced_monitors,
-                region_sizes)
+            if FecDataView.has_java_caller():
+                return self.__java_app(dsg_targets, executable_targets,
+                                       uses_advanced_monitors, region_sizes)
+            else:
+                return self.__python_app(dsg_targets, executable_targets,
+                                         uses_advanced_monitors, region_sizes)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(executable_targets)
@@ -604,10 +603,9 @@ class _HostExecuteDataSpecification(object):
         # pylint: disable=too-many-arguments
 
         if FecDataView.has_java_caller():
-            impl_method = self.__java_app
+            self.__java_sys(dsg_targets, executable_targets, region_sizes)
         else:
-            impl_method = self.__python_app
-        return impl_method(dsg_targets, executable_targets, region_sizes)
+            self.__python_sys(dsg_targets, executable_targets, region_sizes)
 
     def __java_sys(self, dsg_targets, executable_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
