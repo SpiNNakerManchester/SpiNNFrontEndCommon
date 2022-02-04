@@ -185,7 +185,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-       # vertex label count used to ensure unique names of edges
+        # vertex label count used to ensure unique names of edges
         "_none_labelled_edge_count",
 
         # Set of addresses.
