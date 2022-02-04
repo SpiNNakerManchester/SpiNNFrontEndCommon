@@ -167,8 +167,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 ALANS_DEFAULT_RANDOM_APP_ID = 16
 
 
-# pylint: defining-attr-methods=__init__,_new_run_clear,_machine_clear()
-
 class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
     """
