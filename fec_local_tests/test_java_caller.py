@@ -16,12 +16,16 @@
 import unittest
 
 from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
-# This test will not run on travis as there is no Java directory
+# This test will not run on github actions as there is no Java
 
 
 class TestJavaCaller(unittest.TestCase):
 
+    def setUp(cls):
+        unittest_setup()
+
     def test_creation(self):
-        caller = JavaCaller("java")
+        caller = JavaCaller()
         assert caller is not None

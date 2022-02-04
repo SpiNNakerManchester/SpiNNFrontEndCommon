@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import subprocess
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from spinn_front_end_common.data import FecDataView
@@ -64,29 +65,14 @@ class JavaCaller(object):
         "_java_properties"
     ]
 
-    def __init__(self, java_call, java_spinnaker_path=None,
-                 java_properties=None, java_jar_path=None):
+    def __init__(self):
         """ Creates a java caller and checks the user/config parameters.
 
-        :param str java_call:
-            Call to start java. Including the path if required.
-        :param str java_spinnaker_path:
-            The path where the java code can be found.
-            This must point to a local copy of
-            `https://github.com/SpiNNakerManchester/JavaSpiNNaker`.
-            It must also have been built!
-            If `None` the assumption is that it is the same parent directory as
-            `https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon`.
-        :param str java_properties:
-            Optional properties that will be passed to Java.\
-            Must start with ``-D``.
-            For example ``-Dlogging.level=DEBUG``
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
         self._report_folder = FecDataView.get_run_dir_path()
-
-        self._java_call = java_call
+        self._java_call = get_config_str("Java", "java_call")
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
@@ -94,14 +80,14 @@ class JavaCaller(object):
                 "Please set [Java] java_call to the absolute path "
                 "to start java. (in config file)".format(self._java_call))
 
-        self._find_java_jar(java_spinnaker_path, java_jar_path)
+        self._find_java_jar()
 
         self._machine_json_path = None
         self._placement_json = None
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
-        self._java_properties = java_properties
+        self._java_properties = get_config_str("Java", "java_properties")
         self._chipxy_by_ethernet = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
@@ -111,7 +97,9 @@ class JavaCaller(object):
                         "Java Properties must start with -D found at {}".
                         format(_property))
 
-    def _find_java_jar(self, java_spinnaker_path, java_jar_path):
+    def _find_java_jar(self):
+        java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
+        java_jar_path = get_config_str("Java", "java_jar_path")
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)

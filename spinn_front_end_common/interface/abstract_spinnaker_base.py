@@ -528,15 +528,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _setup_java_caller(self):
         if get_config_bool("Java", "use_java"):
-            java_call = get_config_str("Java", "java_call")
-            java_spinnaker_path = get_config_str(
-                "Java", "java_spinnaker_path")
-            java_jar_path = get_config_str(
-                "Java", "java_jar_path")
-            java_properties = get_config_str(
-                "Java", "java_properties")
-            self._java_caller = JavaCaller(
-                java_call, java_spinnaker_path, java_properties, java_jar_path)
+            self._java_caller = JavaCaller()
 
     def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
