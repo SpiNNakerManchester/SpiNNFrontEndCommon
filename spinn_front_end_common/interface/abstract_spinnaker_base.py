@@ -171,6 +171,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     """ Main interface into the tools logic flow.
     """
     # pylint: disable=broad-except
+    # pylint: defining-attr-methods=__init__,_new_run_clear,_machine_clear()
 
     __slots__ = [
         # the object that contains a set of file paths, which should encompass
