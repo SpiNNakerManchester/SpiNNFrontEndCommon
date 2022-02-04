@@ -352,7 +352,7 @@ class ProvenanceReader(object):
         return self.run_query(query, [])
 
     @staticmethod
-    def _demo():
+    def demo():
         """ A demonstration of how to use this class.
 
         See also unittests/interface/provenance/test_provenance_database.py
@@ -380,4 +380,4 @@ class ProvenanceReader(object):
 
 
 if __name__ == '__main__':
-    ProvenanceReader._demo()
+    ProvenanceReader.demo()
