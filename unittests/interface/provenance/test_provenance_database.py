@@ -159,6 +159,11 @@ class TestProvenanceDatabase(unittest.TestCase):
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
 
+    def test_board(self):
+        data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(data)
+
     def test_lut(self):
         with ProvenanceWriter() as db:
             db.insert_lut("the pre", "A post", "OneToOne", "foo", 0.5)

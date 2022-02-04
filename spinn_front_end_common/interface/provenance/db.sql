@@ -202,6 +202,14 @@ CREATE TABLE IF NOT EXISTS connector_provenance(
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
+---------------------------------------------------------------------
+-- A table to store job.info
+CREATE TABLE IF NOT EXISTS boards_provenance(
+    board_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_addres STRING NOT NULL,
+    ethernet_x INTEGER NOT NULL,
+    ethernet_y INTEGER NOT NULL);
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table LUT provenance
 CREATE TABLE IF NOT EXISTS lut_provenance(
@@ -211,5 +219,3 @@ CREATE TABLE IF NOT EXISTS lut_provenance(
     the_type  STRING NOT NULL,
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
-
-

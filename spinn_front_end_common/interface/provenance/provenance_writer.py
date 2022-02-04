@@ -277,6 +277,24 @@ class ProvenanceWriter(SQLiteDB):
                 [pre_population, post_population, the_type, description,
                  the_value])
 
+    def insert_board_provenance(self, connections):
+        """
+        Write the conection treived from spalloc job
+
+        :param connections: {(x, y): hostname, ...} or None
+        :type connections: dict((int, int): str) or None
+        """
+        if not connections:
+            return
+        with self.transaction() as cursor:
+            cursor.executemany(
+                """
+                INSERT OR IGNORE INTO boards_provenance(
+                ethernet_x, ethernet_y, ip_addres)
+                VALUES (?, ?, ?)
+                """, ((x, y, ipaddress)
+                      for ((x, y), ipaddress) in connections.items()))
+
     def insert_lut(
             self, pre_population, post_population, the_type, description,
             the_value):
