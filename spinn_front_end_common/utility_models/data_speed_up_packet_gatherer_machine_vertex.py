@@ -1197,7 +1197,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: list(tuple(int,int))
         """
         routers = [(placement.x, placement.y)]
-        entry = FecDataView.get_fixed_routes()[placement.x, placement.y]
+        fixed_routes = FecDataView.get_fixed_routes()
+        entry = fixed_routes[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
         while len(entry.processor_ids) == 0:

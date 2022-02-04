@@ -395,7 +395,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_fixed_routes(self, fixed_routes):
         """
 
-        :param dict(tuple(int,int), ~spinn_machine.FixedRouteEntry) fixed_routes:
+        :type fixed_routes:
+            dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
         """
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")
