@@ -118,7 +118,6 @@ from spinn_front_end_common.interface.interface_functions.\
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
-from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
     ProvenanceWriter, MAPPING, RUN_LOOP)
@@ -186,11 +185,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # Handler for keep all the calls to Java in a single space.
-        # May be null is configs request not to use Java
-        "_java_caller",
-
-        # vertex label count used to ensure unique names of edges
+       # vertex label count used to ensure unique names of edges
         "_none_labelled_edge_count",
 
         # Set of addresses.
@@ -429,7 +424,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_types = []
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
-        self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
         self._max_machine = False
         self._multicast_routes_loaded = False
@@ -525,10 +519,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
-
-    def _setup_java_caller(self):
-        if get_config_bool("Java", "use_java"):
-            self._java_caller = JavaCaller()
 
     def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
@@ -1765,8 +1755,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 buffer_manager_creator(
                     self._extra_monitor_vertices,
                     self._extra_monitor_to_chip_mapping,
-                    self._vertex_to_ethernet_connected_chip_mapping,
-                    self._java_caller))
+                    self._vertex_to_ethernet_connected_chip_mapping))
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """
@@ -1785,7 +1774,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
 
-        self._setup_java_caller()
         self._do_extra_mapping_algorithms()
         self._report_network_specification()
         self._execute_splitter_reset()
@@ -2174,8 +2162,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None
             return execute_system_data_specs(
                 self._dsg_targets,
-                self._region_sizes, self._executable_targets,
-                self._java_caller)
+                self._region_sizes, self._executable_targets)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2202,7 +2189,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._executable_targets, self._region_sizes,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,
-                self._java_caller, processor_to_app_data_base_address)
+                processor_to_app_data_base_address)
 
     def _execute_tags_from_machine_report(self):
         """

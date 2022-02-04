@@ -24,8 +24,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 def buffer_manager_creator(
         extra_monitor_cores=None,
         extra_monitor_to_chip_mapping=None,
-        packet_gather_cores_to_ethernet_connection_map=None,
-        java_caller=None):
+        packet_gather_cores_to_ethernet_connection_map=None):
     """ Creates a buffer manager.
 
     :param bool uses_advanced_monitors:
@@ -36,7 +35,6 @@ def buffer_manager_creator(
     :param packet_gather_cores_to_ethernet_connection_map:
     :type packet_gather_cores_to_ethernet_connection_map:
         dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex)
-    :param JavaCaller java_caller:
     :rtype: BufferManager
     """
     placements = FecDataView.get_placements()
@@ -48,8 +46,7 @@ def buffer_manager_creator(
         extra_monitor_cores=extra_monitor_cores,
         packet_gather_cores_to_ethernet_connection_map=(
             packet_gather_cores_to_ethernet_connection_map),
-        extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
-        java_caller=java_caller)
+        extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping)
 
     for placement in progress.over(placements):
         vertex = placement.vertex

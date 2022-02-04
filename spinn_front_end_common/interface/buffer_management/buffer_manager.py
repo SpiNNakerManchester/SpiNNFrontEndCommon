@@ -122,8 +122,7 @@ class BufferManager(object):
 
     def __init__(self, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping,
-                 java_caller=None):
+                 extra_monitor_to_chip_mapping):
         """
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
@@ -135,8 +134,6 @@ class BufferManager(object):
         :param extra_monitor_to_chip_mapping:
         :type extra_monitor_to_chip_mapping:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        :param JavaCaller java_caller:
-            Support class to call Java, or ``None`` to use Python
         """
         # pylint: disable=too-many-arguments
         self._extra_monitor_cores = extra_monitor_cores
@@ -162,12 +159,15 @@ class BufferManager(object):
 
         self._finished = False
         self._listener_port = None
-        self._java_caller = java_caller
-        if self._java_caller is not None:
+
+        if FecDataView.has_java_caller():
+            self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors(
                     self._extra_monitor_cores_by_chip,
                     self._packet_gather_cores_to_ethernet_connection_map)
+        else:
+            self._java_caller = None
 
     def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.

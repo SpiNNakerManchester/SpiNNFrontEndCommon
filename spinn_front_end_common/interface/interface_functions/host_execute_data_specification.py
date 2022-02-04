@@ -273,7 +273,7 @@ class _ExecutionContext(object):
 
 def execute_system_data_specs(
         dsg_targets, region_sizes,
-        executable_targets,  java_caller=None,
+        executable_targets,
         processor_to_app_data_base_address=None):
     """ Execute the data specs for all system targets.
 
@@ -283,7 +283,6 @@ def execute_system_data_specs(
         the coordinates for region sizes for each core
     :param ~spinnman.model.ExecutableTargets executable_targets:
         the map between binaries and locations and executable types
-    :param JavaCaller java_caller:
     :param processor_to_app_data_base_address:
     :type processor_to_app_data_base_address:
         dict(tuple(int,int,int),DataWritten)
@@ -291,7 +290,7 @@ def execute_system_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        java_caller, processor_to_app_data_base_address)
+        processor_to_app_data_base_address)
     return specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
@@ -300,7 +299,7 @@ def execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes,
         extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
-        java_caller=None, processor_to_app_data_base_address=None):
+        processor_to_app_data_base_address=None):
     """ Execute the data specs for all non-system targets.
 
     :param dict(tuple(int,int,int),int) region_sizes:
@@ -325,7 +324,7 @@ def execute_application_data_specs(
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        java_caller, processor_to_app_data_base_address)
+        processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
@@ -339,8 +338,6 @@ class _HostExecuteDataSpecification(object):
         # the application ID of the simulation
         "_app_id",
         "_core_to_conn_map",
-        # The support class to run via Java. If None pure python is used.
-        "_java",
         "_monitors",
         # The write info; a dict of cores to a dict of
         # 'start_address', 'memory_used', 'memory_written'
@@ -348,15 +345,13 @@ class _HostExecuteDataSpecification(object):
 
     first = True
 
-    def __init__(self, java_caller, processor_to_app_data_base_address):
+    def __init__(self, processor_to_app_data_base_address):
         """
-        :param JavaCaller java_caller:
         :param processor_to_app_data_base_address:
             map of placement and DSG data
         """
         self._app_id = FecDataView.get_app_id()
         self._core_to_conn_map = None
-        self._java = java_caller
         self._monitors = None
         if processor_to_app_data_base_address:
             self._write_info_map = processor_to_app_data_base_address
@@ -402,7 +397,7 @@ class _HostExecuteDataSpecification(object):
         dw_write_info = self.__java_database(
             dsg_targets, progress, region_sizes)
 
-        self._java.execute_data_specification()
+        FecDataView.get_java_caller().execute_data_specification()
 
         progress.end()
         return dw_write_info
@@ -447,8 +442,7 @@ class _HostExecuteDataSpecification(object):
             self, dsg_targets,
             executable_targets, region_sizes,
             extra_monitor_cores=None,
-            extra_monitor_cores_to_ethernet_connection_map=None,
-            processor_to_app_data_base_address=None):
+            extra_monitor_cores_to_ethernet_connection_map=None):
         """ Execute the data specs for all non-system targets.
 
         :param dict(tuple(int,int,int),int) region_sizes:
@@ -465,8 +459,6 @@ class _HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int), DsWriteInfo)
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
@@ -481,7 +473,10 @@ class _HostExecuteDataSpecification(object):
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
 
-        impl_method = self.__java_app if self._java else self.__python_app
+        if FecDataView.has_java_caller():
+            impl_method = self.__java_app
+        else:
+            impl_method = self.__python_app
         try:
             return impl_method(
                 dsg_targets, executable_targets, uses_advanced_monitors,
@@ -578,11 +573,12 @@ class _HostExecuteDataSpecification(object):
         # Copy data from WriteMemoryIOData to database
         dw_write_info = self.__java_database(
             dsg_targets, progress, region_sizes)
+        java_caller = FecDataView.get_java_caller()
         if use_monitors:
             # Method also called with just recording params
-            self._java.set_placements(FecDataView.get_placements())
+            java_caller.set_placements(FecDataView.get_placements())
 
-        self._java.execute_app_data_specification(use_monitors)
+        java_caller.execute_app_data_specification(use_monitors)
 
         progress.end()
         return dw_write_info
@@ -607,7 +603,10 @@ class _HostExecuteDataSpecification(object):
         """
         # pylint: disable=too-many-arguments
 
-        impl_method = self.__java_sys if self._java else self.__python_sys
+        if FecDataView.has_java_caller():
+            impl_method = self.__java_app
+        else:
+            impl_method = self.__python_app
         return impl_method(dsg_targets, executable_targets, region_sizes)
 
     def __java_sys(self, dsg_targets, executable_targets, region_sizes):
@@ -634,7 +633,7 @@ class _HostExecuteDataSpecification(object):
         dw_write_info = self.__java_database(
             dsg_targets, progress, region_sizes)
 
-        self._java.execute_system_data_specification()
+        FecDataView.get_java_caller().execute_system_data_specification()
 
         progress.end()
         return dw_write_info
