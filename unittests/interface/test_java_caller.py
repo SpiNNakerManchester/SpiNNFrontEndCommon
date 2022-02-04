@@ -16,6 +16,8 @@
 import os
 import unittest
 from spinn_utilities.config_holder import set_config
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -71,3 +73,10 @@ class TestJavaCaller(unittest.TestCase):
         set_config("Java", "java_spinnaker_path", self.mock_jar)
         with self.assertRaises(ConfigurationException):
             JavaCaller()
+
+    def test_view(self):
+        set_config("Java", "use_java", "True")
+        set_config("Java", "java_spinnaker_path", self.mock)
+        FecDataWriter.setup()
+        assert FecDataView.has_java_caller()
+        assert FecDataView.get_java_caller() is not None

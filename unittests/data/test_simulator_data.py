@@ -453,3 +453,15 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(data, FecDataView.get_fixed_routes())
         with self.assertRaises(TypeError):
             writer.set_fixed_routes(writer)
+
+    def test_java_caller(self):
+        """
+        Test the java caller with use_Java == false
+
+        use_java = True tested by unittests/interface/test_java_caller.py
+        """
+        set_config("Java", "use_java", "False")
+        FecDataWriter.setup()
+        self.assertFalse(FecDataView.has_java_caller())
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_java_caller()

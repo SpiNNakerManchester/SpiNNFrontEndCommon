@@ -49,6 +49,7 @@ class _FecDataModel(object):
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_ipaddress",
+        "_java_caller",
         "_n_boards_required",
         "_n_calls_to_run",
         "_n_chips_required",
@@ -80,6 +81,7 @@ class _FecDataModel(object):
         """
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
+        self._java_caller = None
         self._n_boards_required = None
         self._n_calls_to_run = None
         self._n_chips_required = None
@@ -548,6 +550,31 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._fixed_routes is None:
             raise cls._exception("fixed_routes")
         return cls.__fec_data._fixed_routes
+
+    @classmethod
+    def has_java_caller(cls):
+        """
+        Reports if there is a Java called that can be used.
+
+        Equivellent to get_config_bool("Java", "use_java") as the writer will
+        have created the caller durring setup
+
+        The behaviour when Mocked is currently to always return False.
+
+        :rtype: bool
+        """
+        return cls.__fec_data._java_caller is not None
+
+    @classmethod
+    def get_java_caller(cls):
+        """
+        Gets the Java_caller
+
+        :rtype: str
+        """
+        if cls.__fec_data._java_caller is None:
+            raise cls._exception("java_caller")
+        return cls.__fec_data._java_caller
 
     # run_dir_path in UtilsDataView
 

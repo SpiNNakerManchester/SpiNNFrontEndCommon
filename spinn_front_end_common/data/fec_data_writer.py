@@ -18,13 +18,15 @@ import logging
 import math
 import os
 import time
-from spinn_utilities.config_holder import (get_config_int, get_config_str)
+from spinn_utilities.config_holder import (
+    get_config_bool, get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -65,6 +67,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__create_reports_directory()
         self.__create_timestamp_directory()
         self.__create_run_dir_path()
+        self._setup_java_caller()
 
     def start_run(self):
         PacmanDataWriter.start_run(self)
@@ -401,3 +404,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")
         self.__fec_data._fixed_routes = fixed_routes
+
+    def _setup_java_caller(self):
+        if get_config_bool("Java", "use_java"):
+            self.__fec_data._java_caller = JavaCaller()
