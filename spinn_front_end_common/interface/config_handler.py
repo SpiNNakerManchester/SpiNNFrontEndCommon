@@ -112,6 +112,8 @@ class ConfigHandler(object):
         self.__machine_time_step = None
         self.__machine_time_step_ms = None
         self.__time_scale_factor = None
+        self._app_provenance_file_path = None
+        self._system_provenance_file_path = None
 
     def _debug_configs(self):
         """ Adjust and checks config based on mode and reports_enabled

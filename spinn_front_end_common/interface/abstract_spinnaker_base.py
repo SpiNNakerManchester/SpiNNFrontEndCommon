@@ -569,6 +569,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
+        self._run_timer = None
 
     def _machine_clear(self):
         self._ipaddress = None
