@@ -968,7 +968,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(threading.current_thread(), threading.main_thread()):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self._last_except_hook
@@ -1109,7 +1109,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(threading.current_thread(), threading.main_thread()):
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
