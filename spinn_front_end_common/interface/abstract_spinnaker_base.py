@@ -446,6 +446,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Overrides the number of boards to allocate from spalloc
         """
         # pylint: disable=too-many-arguments
+        logger.warn(f"Does pylint catch this {1}")
         super().__init__()
 
         # timings
