@@ -71,6 +71,7 @@ class FecTimer(object):
 
     @classmethod
     def setup(cls, simulator):
+        # pylint: disable=global-statement, protected-access
         global _simulator, _provenance_path, _print_timings
         _simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
