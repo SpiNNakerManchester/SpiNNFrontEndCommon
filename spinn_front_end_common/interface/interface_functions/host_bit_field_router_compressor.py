@@ -153,6 +153,7 @@ def start_compression_selection_process(
         should be allowed to handle per time step
     """
     compressor = _HostBasedBitFieldRouterCompressor()
+    # pylint: disable=protected-access
     compressor._run(
         router_table, report_folder_path, transceiver, machine_graph,
         placements, machine, compressed_pacman_router_tables, key_atom_map)
@@ -269,6 +270,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         self._best_midpoint = -1
         self._bit_fields_by_key = None
         self._compression_attempts = dict()
+        self._n_bitfields = None
 
     def get_bit_field_sdram_base_addresses(
             self, chip_x, chip_y, machine, placements, transceiver):

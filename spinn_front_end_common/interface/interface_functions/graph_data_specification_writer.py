@@ -50,6 +50,7 @@ def graph_data_specification_writer(
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter(hostname, machine)
+    # pylint: disable=protected-access
     return writer._run(placements, data_n_timesteps, placement_order)
 
 

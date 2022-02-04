@@ -40,6 +40,7 @@ def router_provenance_gatherer(transceiver, machine, router_tables,
     gather = _RouterProvenanceGatherer(
         transceiver, machine, router_tables, extra_monitor_vertices,
         placements)
+    # pylint: disable=protected-access
     gather._add_router_provenance_data()
 
 

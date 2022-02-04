@@ -41,6 +41,7 @@ def insert_edges_to_extra_monitor_functionality(
     """
     inserter = _InsertEdgesToExtraMonitorFunctionality(
         placements, machine, vertex_to_ethernet_connected_chip_mapping)
+    # pylint: disable=protected-access
     inserter._run(machine_graph, application_graph)
 
 

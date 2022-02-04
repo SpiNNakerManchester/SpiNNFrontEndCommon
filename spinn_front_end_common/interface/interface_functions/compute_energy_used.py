@@ -460,6 +460,7 @@ def _calculate_data_extraction_energy(machine, active_chips, n_frames):
 
     # find time
     # TODO is this what was desired
+    # pylint: disable=protected-access
     total_time_ms = get_simulator()._execute_time
 
     # min between chips that are active and fixed monitor, as when 1
