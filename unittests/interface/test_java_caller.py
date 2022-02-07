@@ -45,9 +45,7 @@ class TestJavaCaller(unittest.TestCase):
         assert caller is not None
         FecDataWriter.mock().set_java_caller(caller)
         assert FecDataView.has_java_caller()
-        a = FecDataView.get_java_caller()
         self.assertEqual(FecDataView.get_java_caller(), caller)
-
 
     def test_creation_java_spinnaker_path(self):
         set_config("Java", "java_spinnaker_path", self.mock)
