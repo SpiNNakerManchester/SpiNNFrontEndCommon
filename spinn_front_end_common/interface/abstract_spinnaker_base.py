@@ -123,6 +123,7 @@ from spinn_front_end_common.interface.provenance import (
     ProvenanceWriter, MAPPING, RUN_LOOP)
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
@@ -519,6 +520,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
+
+    def _setup_java_caller(self):
+        if get_config_bool("Java", "use_java"):
+            self._data_writer.set_java_caller(JavaCaller())
 
     def __signal_handler(self, _signal, _frame):
         """ Handles closing down of script via keyboard interrupt
@@ -1774,6 +1779,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         mapping_total_timer = Timer()
         mapping_total_timer.start_timing()
 
+        self._setup_java_caller()
         self._do_extra_mapping_algorithms()
         self._report_network_specification()
         self._execute_splitter_reset()

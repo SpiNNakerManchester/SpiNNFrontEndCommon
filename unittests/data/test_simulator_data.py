@@ -24,6 +24,7 @@ from spinn_utilities.exceptions import (
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -460,8 +461,11 @@ class TestSimulatorData(unittest.TestCase):
 
         use_java = True tested by unittests/interface/test_java_caller.py
         """
-        set_config("Java", "use_java", "False")
         FecDataWriter.setup()
         self.assertFalse(FecDataView.has_java_caller())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_java_caller()
+        try:
+            java_caller = JavaCaller()
+        except ConfigurationException:
+            raise unittest.SkipTest("Unable to create JavaCaller")

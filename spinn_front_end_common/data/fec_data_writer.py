@@ -19,7 +19,7 @@ import math
 import os
 import time
 from spinn_utilities.config_holder import (
-    get_config_bool, get_config_int, get_config_str)
+    get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
@@ -67,7 +67,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__create_reports_directory()
         self.__create_timestamp_directory()
         self.__create_run_dir_path()
-        self._setup_java_caller()
 
     def start_run(self):
         PacmanDataWriter.start_run(self)
@@ -405,6 +404,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("fixed_routes must be a dict")
         self.__fec_data._fixed_routes = fixed_routes
 
-    def _setup_java_caller(self):
-        if get_config_bool("Java", "use_java"):
-            self.__fec_data._java_caller = JavaCaller()
+    def set_java_caller(self, java_caller):
+        """
+
+        :param  JavaCaller java_caller:
+        """
+        if not isinstance(java_caller, JavaCaller):
+            raise TypeError("java_calle must be a JavaCaller")
+        self.__fec_data._java_caller = java_caller

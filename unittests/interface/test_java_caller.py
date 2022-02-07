@@ -43,6 +43,11 @@ class TestJavaCaller(unittest.TestCase):
         set_config("Java", "java_jar_path", self.mock_jar)
         caller = JavaCaller()
         assert caller is not None
+        FecDataWriter.mock().set_java_caller(caller)
+        assert FecDataView.has_java_caller()
+        a = FecDataView.get_java_caller()
+        self.assertEqual(FecDataView.get_java_caller(), caller)
+
 
     def test_creation_java_spinnaker_path(self):
         set_config("Java", "java_spinnaker_path", self.mock)
@@ -73,10 +78,3 @@ class TestJavaCaller(unittest.TestCase):
         set_config("Java", "java_spinnaker_path", self.mock_jar)
         with self.assertRaises(ConfigurationException):
             JavaCaller()
-
-    def test_view(self):
-        set_config("Java", "use_java", "True")
-        set_config("Java", "java_spinnaker_path", self.mock)
-        FecDataWriter.setup()
-        assert FecDataView.has_java_caller()
-        assert FecDataView.get_java_caller() is not None
