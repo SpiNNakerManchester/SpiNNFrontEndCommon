@@ -186,9 +186,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # vertex label count used to ensure unique names of edges
-        "_none_labelled_edge_count",
-
         # Set of addresses.
         # Set created at init. Added to but never new object
         "_database_socket_addresses",
@@ -369,10 +366,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_allocation_controller = None
         self._has_ran = False
         self._new_run_clear()
-
-        # pacman executor objects
-
-        self._none_labelled_edge_count = 0
 
         # database objects
         self._database_socket_addresses = set()
@@ -2868,19 +2861,6 @@ class AbstractSpinnakerBase(ConfigHandler):
          """
         self._get_machine()
         return self._data_writer.get_machine()
-
-    @property
-    def none_labelled_edge_count(self):
-        """ The number of times edges have not been labelled.
-
-        :rtype: int
-        """
-        return self._none_labelled_edge_count
-
-    def increment_none_labelled_edge_count(self):
-        """ Increment the number of new edges which have not been labelled.
-        """
-        self._none_labelled_edge_count += 1
 
     @property
     def use_virtual_board(self):

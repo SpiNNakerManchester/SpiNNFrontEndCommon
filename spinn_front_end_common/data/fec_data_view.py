@@ -692,11 +692,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             if e.errno != errno.EEXIST:
                 raise
 
-    def get_next_none_labelled_edge_number(self):
+    @classmethod
+    def get_next_none_labelled_edge_number(cls):
         """
         Returns an unused number for a none_labelled_edge
 
         :rtpye int:
         """
-        self.__fec_data._none_labelled_edge_count += 1
-        return self.__fec_data._none_labelled_edge_count
+        cls.__fec_data._none_labelled_edge_count += 1
+        return cls.__fec_data._none_labelled_edge_count

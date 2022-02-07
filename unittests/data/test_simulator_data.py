@@ -455,12 +455,14 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_fixed_routes(writer)
 
     def test_java_caller(self):
-        """
-        Test the java caller with use_Java == false
-
-        use_java = True tested by unittests/interface/test_java_caller.py
-        """
         FecDataWriter.setup()
         self.assertFalse(FecDataView.has_java_caller())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_java_caller()
+
+    def test_next_none_labelled_edge_number(self):
+        a = FecDataView.get_next_none_labelled_edge_number()
+        b = FecDataView.get_next_none_labelled_edge_number()
+        c = FecDataView.get_next_none_labelled_edge_number()
+        self.assertEqual(a + 1, b)
+        self.assertEqual(b + 1, c)
