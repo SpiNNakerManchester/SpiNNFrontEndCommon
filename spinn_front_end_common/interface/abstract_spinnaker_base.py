@@ -1433,7 +1433,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
@@ -1445,7 +1445,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
