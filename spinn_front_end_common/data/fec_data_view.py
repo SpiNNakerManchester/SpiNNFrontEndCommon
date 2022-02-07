@@ -54,6 +54,7 @@ class _FecDataModel(object):
         "_n_calls_to_run",
         "_n_chips_required",
         "_n_chips_in_graph",
+        "_none_labelled_edge_count",
         "_max_run_time_steps",
         "_report_dir_path",
         "_simulation_time_step_ms",
@@ -85,6 +86,7 @@ class _FecDataModel(object):
         self._n_boards_required = None
         self._n_calls_to_run = None
         self._n_chips_required = None
+        self._none_labelled_edge_count = 0
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
@@ -689,3 +691,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+
+    def get_next_none_labelled_edge_number(self):
+        """
+        Returns an unused number for a none_labelled_edge
+
+        :rtpye int:
+        """
+        self.__fec_data._none_labelled_edge_count += 1
+        return self.__fec_data._none_labelled_edge_count
