@@ -31,7 +31,6 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
