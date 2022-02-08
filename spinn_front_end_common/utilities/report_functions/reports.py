@@ -471,6 +471,7 @@ def _write_one_chip_application_placement(f, chip, placements):
     :param Placements placements:
     """
     written_header = False
+    total_sdram = None
     for processor in chip.processors:
         if placements.is_processor_occupied(
                 chip.x, chip.y, processor.processor_id):
@@ -494,12 +495,23 @@ def _write_one_chip_application_placement(f, chip, placements):
                     pro_id, vertex_label, vertex_atoms))
                 f.write("              Slice on this core: {}:{} ({} atoms)\n"
                         .format(lo_atom, hi_atom, num_atoms))
-                f.write("              Model: {}\n\n".format(vertex_model))
+                f.write("              Model: {}\n".format(vertex_model))
             else:
                 f.write("  Processor {}: System Vertex: '{}'\n".format(
                     pro_id, vertex.label))
                 f.write("              Model: {}\n\n".format(
                     vertex.__class__.__name__))
+
+            sdram = vertex.resources_required.sdram
+            f.write("              SDRAM required: {}; {} per timestep\n\n"
+                    .format(sdram.fixed, sdram.per_timestep))
+            if total_sdram is None:
+                total_sdram = sdram
+            else:
+                total_sdram += sdram
+        f.write("Total SDRAM on chip ({} available}: {}; {} per-timestep"
+                .format(chip.sdram.size, total_sdram.fixed,
+                        total_sdram.per_timestep))
 
 
 def placement_report_without_application_graph_by_core(
