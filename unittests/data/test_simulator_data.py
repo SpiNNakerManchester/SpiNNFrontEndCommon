@@ -481,3 +481,11 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
         writer.reset_sync_signal()
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+
+    def test_executable_types(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_executable_types()
+        data = dict()
+        writer.set_executable_types(data)
+        self.assertEqual(data, FecDataView.get_executable_types())
