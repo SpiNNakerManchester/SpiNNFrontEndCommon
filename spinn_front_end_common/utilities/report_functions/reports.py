@@ -509,9 +509,11 @@ def _write_one_chip_application_placement(f, chip, placements):
                 total_sdram = sdram
             else:
                 total_sdram += sdram
-        f.write("Total SDRAM on chip ({} available}: {}; {} per-timestep"
-                .format(chip.sdram.size, total_sdram.fixed,
-                        total_sdram.per_timestep))
+
+        if total_sdram is not None:
+            f.write("Total SDRAM on chip ({} available}: {}; {} per-timestep"
+                    .format(chip.sdram.size, total_sdram.fixed,
+                            total_sdram.per_timestep))
 
 
 def placement_report_without_application_graph_by_core(
