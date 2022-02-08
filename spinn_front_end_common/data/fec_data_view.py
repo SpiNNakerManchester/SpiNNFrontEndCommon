@@ -45,6 +45,7 @@ class _FecDataModel(object):
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
+        "_executable_types",
         "_first_machine_time_step",
         "_fixed_routes",
         "_hardware_time_step_ms",
@@ -107,6 +108,7 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
+        self._executable_types = None
         self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
@@ -718,3 +720,16 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         else:
             cls.__fec_data._next_sync_signal = Signal.SYNC0
             return Signal.SYNC1
+
+    @classmethod
+    def get_executable_types(cls):
+        """
+        Gets the _executable_types if they have been created
+
+        :rtype: dict(
+            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+            ~spinn_machine.CoreSubsets or None)
+        """
+        if cls.__fec_data._executable_types is None:
+            raise cls._exception("executable_types")
+        return cls.__fec_data._executable_types

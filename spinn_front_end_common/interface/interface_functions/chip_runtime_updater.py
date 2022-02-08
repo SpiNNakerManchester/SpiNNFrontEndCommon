@@ -19,19 +19,14 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
-def chip_runtime_updater(executable_types, n_sync_steps):
+def chip_runtime_updater(n_sync_steps):
     """ Updates the runtime of an application running on a SpiNNaker machine.
 
-        :param executable_types:
-        :type executable_types: dict(ExecutableType,~spinn_machine.CoreSubsets)
-        :param run_until_timesteps:
-        :type run_until_timesteps: int or None
-        :param int current_timesteps:
         :param n_sync_steps:
         :type n_sync_steps: int or None
     """
-    core_subsets = \
-        executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+    core_subsets = FecDataView.get_executable_types()[
+        ExecutableType.USES_SIMULATION_INTERFACE]
 
     ready_progress = ProgressBar(
         total_number_of_things_to_do=1,

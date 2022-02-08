@@ -29,21 +29,17 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 _ONE_WORD = struct.Struct("<I")
 
 
-def application_finisher(executable_types):
+def application_finisher():
     """ Handles finishing the running of an application, collecting the\
         status of the cores that the application was running on.
 
-    :param executable_types:
-    :type executable_types:
-        dict(ExecutableType,~spinn_machine.CoreSubsets)
     :raises ExecutableFailedToStopException:
     """
     app_id = FecDataView.get_app_id()
     txrx = FecDataView.get_transceiver()
-    total_processors = \
-        len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
-    all_core_subsets = \
-        executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+    all_core_subsets = FecDataView.get_executable_types()[
+        ExecutableType.USES_SIMULATION_INTERFACE]
+    total_processors = len(all_core_subsets)
 
     progress = ProgressBar(
         total_processors,

@@ -29,21 +29,18 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def application_runner(
-        notification_interface, executable_types,
+        notification_interface,
         runtime, time_threshold, run_until_complete=False):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
         :param NotificationProtocol notification_interface:
-        :param executable_types:
-        :type executable_types:
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
         :param int runtime:
         :param int time_threshold:
         :param bool run_until_complete:
         :raises ConfigurationException:
     """
-    runner = _ApplicationRunner(executable_types)
+    runner = _ApplicationRunner()
     runner._run(
         notification_interface, runtime, time_threshold, run_until_complete)
 
@@ -53,12 +50,11 @@ class _ApplicationRunner(object):
         successfully.
     """
 
-    __slots__ = ["__txrx", "__app_id", "__executable_types"]
+    __slots__ = ["__txrx", "__app_id"]
 
-    def __init__(self, executable_types):
+    def __init__(self):
         self.__txrx = FecDataView.get_transceiver()
         self.__app_id = FecDataView.get_app_id()
-        self.__executable_types = executable_types
 
     # Wraps up as a PACMAN algorithm
     def _run(
@@ -66,9 +62,6 @@ class _ApplicationRunner(object):
             time_threshold, run_until_complete=False):
         """
         :param NotificationProtocol notification_interface:
-        :param executable_types:
-        :type executable_types:
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
         :param int app_id:
         :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
@@ -149,18 +142,18 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for executable_type in self.__executable_types:
+        for cores, ex_type in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                self.__executable_types[executable_type], self.__app_id,
-                executable_type.start_state, timeout=timeout)
+                cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
         """ Let apps that use the simulation interface or sync signals \
             commence running their main processing loops. This is done with \
             a very fast synchronisation barrier and a signal.
         """
-        if (ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types
-                or ExecutableType.SYNC in self.__executable_types):
+        executable_types = FecDataView.get_executable_types()
+        if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
+                or ExecutableType.SYNC in executable_types):
             # locate all signals needed to set off executables
             sync_signal = self._determine_simulation_sync_signals()
 
@@ -172,10 +165,9 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for executable_type in self.__executable_types:
+        for cores, ex_type in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                self.__executable_types[executable_type], self.__app_id,
-                executable_type.end_state, timeout=timeout)
+                cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
     def _determine_simulation_sync_signals(self):
         """ Determines the start states, and creates core subsets of the\
@@ -187,12 +179,13 @@ class _ApplicationRunner(object):
         """
         sync_signal = None
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types:
+        executable_types = FecDataView.get_executable_types()
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             sync_signal = FecDataView.get_next_sync_signal()
 
         # handle the sync states, but only send once if they work with
         # the simulation interface requirement
-        if ExecutableType.SYNC in self.__executable_types:
+        if ExecutableType.SYNC in executable_types:
             if sync_signal == Signal.SYNC1:
                 raise ConfigurationException(
                     "There can only be one SYNC signal per run. This is "

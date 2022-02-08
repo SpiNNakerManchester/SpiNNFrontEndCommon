@@ -223,9 +223,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
-        # dict of exucutable types to cores
-        "_executable_types",
-
         # mapping between parameters and the vertices which need to talk to
         # them
         # Created during init. Added to but never new object
@@ -409,7 +406,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._notification_interface = None
         self._dsg_targets = None
         self._executable_targets = None
-        self._executable_types = []
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._live_packet_recorder_parameters_mapping = None
@@ -667,7 +663,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._has_ran and not self._use_virtual_board:
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
-                for executable_type in self._executable_types)
+                for executable_type in
+                self._data_writer.get_executable_types())
             if not can_keep_running:
                 raise NotImplementedError(
                     "Only binaries that use the simulation interface can be"
@@ -739,7 +736,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Disable auto pause and resume if the binary can't do it
         if not self._use_virtual_board:
-            for executable_type in self._executable_types:
+            for executable_type in self._data_writer.get_executable_types():
                 if not executable_type.supports_auto_pause_and_resume:
                     set_config(
                         "Buffers", "use_auto_pause_and_resume", "False")
@@ -1728,7 +1725,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO why skip if virtual ?
             if timer.skip_if_virtual_board():
                 return
-            self._executable_types = locate_executable_start_type()
+            self._data_writer.set_executable_types(
+                locate_executable_start_type())
 
     def _execute_buffer_manager_creator(self):
         """
@@ -2464,7 +2462,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO Why check empty_graph is always false??
             if timer.skip_if_cfg_false("Reports", "clear_iobuf_during_run"):
                 return
-            chip_io_buf_clearer(self._executable_types)
+            chip_io_buf_clearer()
 
     def _execute_runtime_update(self, n_sync_steps):
         """
@@ -2477,8 +2475,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             if (ExecutableType.USES_SIMULATION_INTERFACE in
-                    self._executable_types):
-                chip_runtime_updater(self._executable_types, n_sync_steps)
+                    self._data_writer.get_executable_types()):
+                chip_runtime_updater(n_sync_steps)
             else:
                 timer.skip("No Simulation Interface used")
 
@@ -2524,9 +2522,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
             application_runner(
-                self._notification_interface,
-                self._executable_types, run_time,
-                time_threshold)
+                self._notification_interface, run_time, time_threshold)
 
     def _execute_extract_iobuff(self):
         """
@@ -2669,10 +2665,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # their finished state
         if not unsuccessful_cores:
             transceiver = self._data_writer.get_transceiver()
-            for executable_type in self._executable_types:
+            for cores, executable_type in \
+                    self._data_writer.get_executable_types().items():
                 failed_cores = transceiver.get_cores_not_in_state(
-                    self._executable_types[executable_type],
-                    executable_type.end_state)
+                    cores, executable_type.end_state)
                 for (x, y, p) in failed_cores:
                     unsuccessful_cores.add_processor(
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
@@ -2708,7 +2704,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If there are any cores that are not in RTE, extract data from them
         if (non_rte_cores and
                 ExecutableType.USES_SIMULATION_INTERFACE in
-                self._executable_types):
+                self._data_writer.get_executable_types()):
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
                 non_rte_core_subsets.add_processor(x, y, p)
@@ -3070,7 +3066,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
-            application_finisher(self._executable_types)
+            application_finisher()
 
     def _do_stop_workflow(self):
         """

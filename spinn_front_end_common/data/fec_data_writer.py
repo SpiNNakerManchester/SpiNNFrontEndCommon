@@ -31,6 +31,7 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .fec_data_view import FecDataView, _FecDataModel
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -416,3 +417,14 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def reset_sync_signal(self):
         self.__fec_data._next_sync_signal = Signal.SYNC0
+
+    def set_executable_types(self, executable_types):
+        """
+
+        :type executable_types:  dict(
+            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+            ~spinn_machine.CoreSubsets or None)
+        """
+        if not isinstance(executable_types, dict):
+            raise TypeError("executable_types must be a Dict")
+        self.__fec_data._executable_types = executable_types
