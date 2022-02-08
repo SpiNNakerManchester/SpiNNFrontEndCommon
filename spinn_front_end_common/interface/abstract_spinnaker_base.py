@@ -707,6 +707,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.get_transceiver().stop_application(
                     self._data_writer.get_app_id())
 
+            self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
             # Reset the machine if the graph has changed

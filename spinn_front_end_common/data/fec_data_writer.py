@@ -23,6 +23,7 @@ from spinn_utilities.config_holder import (
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
+from spinnman.messages.scp.enums.signal import Signal
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
@@ -412,3 +413,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(java_caller, JavaCaller):
             raise TypeError("java_calle must be a JavaCaller")
         self.__fec_data._java_caller = java_caller
+
+    def reset_sync_signal(self):
+        self.__fec_data._next_sync_signal = Signal.SYNC0

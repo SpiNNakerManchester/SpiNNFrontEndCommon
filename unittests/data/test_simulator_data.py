@@ -478,3 +478,6 @@ class TestSimulatorData(unittest.TestCase):
         writer.hard_reset()
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
         self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        writer.reset_sync_signal()
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
