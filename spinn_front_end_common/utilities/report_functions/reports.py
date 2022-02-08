@@ -499,7 +499,7 @@ def _write_one_chip_application_placement(f, chip, placements):
             else:
                 f.write("  Processor {}: System Vertex: '{}'\n".format(
                     pro_id, vertex.label))
-                f.write("              Model: {}\n\n".format(
+                f.write("              Model: {}\n".format(
                     vertex.__class__.__name__))
 
             sdram = vertex.resources_required.sdram
@@ -510,10 +510,10 @@ def _write_one_chip_application_placement(f, chip, placements):
             else:
                 total_sdram += sdram
 
-        if total_sdram is not None:
-            f.write("Total SDRAM on chip ({} available): {}; {} per-timestep"
-                    .format(chip.sdram.size, total_sdram.fixed,
-                            total_sdram.per_timestep))
+    if total_sdram is not None:
+        f.write("Total SDRAM on chip ({} available): {}; {} per-timestep"
+                .format(chip.sdram.size, total_sdram.fixed,
+                        total_sdram.per_timestep))
 
 
 def placement_report_without_application_graph_by_core(
