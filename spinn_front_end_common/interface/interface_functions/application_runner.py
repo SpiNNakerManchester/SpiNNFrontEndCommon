@@ -30,7 +30,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def application_runner(
         notification_interface, executable_types,
-        runtime, no_sync_changes, time_threshold, run_until_complete=False):
+        runtime, time_threshold, run_until_complete=False):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
@@ -39,17 +39,13 @@ def application_runner(
         :type executable_types:
             dict(ExecutableType,~spinn_machine.CoreSubsets)
         :param int runtime:
-        :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
         :param bool run_until_complete:
-        :return: Number of synchronisation changes
-        :rtype: int
         :raises ConfigurationException:
     """
-    runner = _ApplicationRunner(
-        executable_types, no_sync_changes)
-    return runner._run(notification_interface, runtime,
-                       time_threshold, run_until_complete)
+    runner = _ApplicationRunner(executable_types)
+    runner._run(
+        notification_interface, runtime, time_threshold, run_until_complete)
 
 
 class _ApplicationRunner(object):
@@ -57,14 +53,12 @@ class _ApplicationRunner(object):
         successfully.
     """
 
-    __slots__ = ["__txrx", "__app_id", "__executable_types", "__syncs"]
+    __slots__ = ["__txrx", "__app_id", "__executable_types"]
 
-    def __init__(
-            self, executable_types, no_sync_changes):
+    def __init__(self, executable_types):
         self.__txrx = FecDataView.get_transceiver()
         self.__app_id = FecDataView.get_app_id()
         self.__executable_types = executable_types
-        self.__syncs = no_sync_changes
 
     # Wraps up as a PACMAN algorithm
     def _run(
@@ -130,8 +124,6 @@ class _ApplicationRunner(object):
             # Send stop notification to external applications
             notification_interface.send_stop_pause_notification()
 
-        return self.__syncs
-
     def _run_wait(self, run_until_complete, runtime, time_threshold):
         """
         :param bool run_until_complete:
@@ -196,13 +188,7 @@ class _ApplicationRunner(object):
         sync_signal = None
 
         if ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types:
-            if self.__syncs % 2 == 0:
-                sync_signal = Signal.SYNC0
-            else:
-                sync_signal = Signal.SYNC1
-            # when it falls out of the running, it'll be in a next sync
-            # state, thus update needed
-            self.__syncs += 1
+            sync_signal = FecDataView.get_next_sync_signal()
 
         # handle the sync states, but only send once if they work with
         # the simulation interface requirement

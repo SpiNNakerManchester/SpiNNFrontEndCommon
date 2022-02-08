@@ -21,6 +21,7 @@ from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
+from spinnman.messages.scp.enums.signal import Signal
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -466,3 +467,14 @@ class TestSimulatorData(unittest.TestCase):
         c = FecDataView.get_next_none_labelled_edge_number()
         self.assertEqual(a + 1, b)
         self.assertEqual(b + 1, c)
+
+    def test_next_sync_signal(self):
+        writer = FecDataWriter.setup()
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        writer.hard_reset()
+        self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())

@@ -18,6 +18,7 @@ import os
 from spinn_utilities.data.data_status import Data_Status
 from spinnman.data import SpiNNManDataView
 from pacman.data import PacmanDataView
+from spinnman.messages.scp.enums.signal import Signal
 
 
 class _FecDataModel(object):
@@ -54,6 +55,7 @@ class _FecDataModel(object):
         "_n_calls_to_run",
         "_n_chips_required",
         "_n_chips_in_graph",
+        "_next_sync_signal",
         "_none_labelled_edge_count",
         "_max_run_time_steps",
         "_report_dir_path",
@@ -108,6 +110,7 @@ class _FecDataModel(object):
         self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
+        self._next_sync_signal = Signal.SYNC0
         self._max_run_time_steps = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
@@ -701,3 +704,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         cls.__fec_data._none_labelled_edge_count += 1
         return cls.__fec_data._none_labelled_edge_count
+
+    @classmethod
+    def get_next_sync_signal(cls):
+        """
+        Returns alteratively Signal.SYNC0 and Signal.SYNC1
+
+        :rtpye  ~spinnman.messages.scp.enums.signal.Signal:
+        """
+        if cls.__fec_data._next_sync_signal == Signal.SYNC0:
+            cls.__fec_data._next_sync_signal = Signal.SYNC1
+            return Signal.SYNC0
+        else:
+            cls.__fec_data._next_sync_signal = Signal.SYNC0
+            return Signal.SYNC1

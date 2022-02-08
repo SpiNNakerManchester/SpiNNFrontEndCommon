@@ -206,10 +206,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # flag to say user has been give machine info
         "_user_accessed_machine",
 
-        # change number of resets as loading the binary again resets the
-        # sync to 0
-        "_no_sync_changes",
-
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
@@ -380,7 +376,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._user_accessed_machine = False
         self._n_calls_to_run = 1
         self._n_loops = None
-        self._no_sync_changes = 0
 
         # folders
         self._set_up_report_specifics()
@@ -712,8 +707,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if not self.has_reset_last or not self._user_accessed_machine:
                 self._data_writer.get_transceiver().stop_application(
                     self._data_writer.get_app_id())
-
-            self._no_sync_changes = 0
 
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
@@ -2530,11 +2523,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
-            self._no_sync_changes = application_runner(
+            application_runner(
                 self._notification_interface,
                 self._executable_types, run_time,
-                self._no_sync_changes, time_threshold,
-                self._run_until_complete)
+                time_threshold)
 
     def _execute_extract_iobuff(self):
         """
@@ -3009,9 +3001,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     transceiver.clear_multicast_routes(
                         router_table.x, router_table.y)
 
-        # clear values
-        self._no_sync_changes = 0
-
     def __stop_app(self):
         if self._data_writer.has_transceiver():
             transceiver = self._data_writer.get_transceiver()
@@ -3142,13 +3131,9 @@ class AbstractSpinnakerBase(ConfigHandler):
     def continue_simulation(self):
         """ Continue a simulation that has been started in stepped mode
         """
-        if self._no_sync_changes % 2 == 0:
-            sync_signal = Signal.SYNC0
-        else:
-            sync_signal = Signal.SYNC1
+        sync_signal = self._data_writer.get_next_sync_signal()
         transceiver = self._data_writer.get_transceiver()
         transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
-        self._no_sync_changes += 1
 
     @staticmethod
     def __reset_object(obj):
