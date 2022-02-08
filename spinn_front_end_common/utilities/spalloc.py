@@ -447,33 +447,6 @@ class SpallocClient:
         url = r.headers["Location"]
         return SpallocJob(self.__session, url)
 
-    def launch_keepalive_task(self, job):
-        """
-        Starts a periodic task to keep a job alive.
-
-        Tricky! *Cannot* be done with a thread, as the main thread is known
-        to do significant amounts of CPU-intensive work.
-
-        :param SpallocJob job:
-            The job to keep alive
-        :return:
-            Some kind of closeable task handle; closing it terminates the task.
-            Destroying the job will also terminate the task.
-        """
-        term_queue = Queue(1)
-
-        class Closer:
-            def close(self):
-                term_queue.put("quit")
-
-        closer = Closer()
-        job._keepalive_handle = closer
-        cookies, headers = self.__session._credentials
-        p = Process(target=_SpallocKeepalive, args=(
-            job._keepalive_url, cookies, headers, 30, term_queue), daemon=True)
-        p.start()
-        return closer
-
     def close(self):
         if self.__session is not None:
             self.__session._purge()
@@ -490,7 +463,10 @@ class SpallocClient:
         return False
 
 
-def _SpallocKeepalive(url, cookies, headers, interval, term_queue):
+def _SpallocKeepalive(url, interval, term_queue, cookies, headers):
+    """
+    Actual keepalive task implementation. Don't use directly.
+    """
     headers["Content-Type"] = "text/plain; charset=UTF-8"
     while True:
         requests.put(url, data="alive", cookies=cookies, headers=headers,
@@ -502,14 +478,43 @@ def _SpallocKeepalive(url, cookies, headers, interval, term_queue):
             continue
 
 
-class SpallocMachine:
+class _SpallocSessionAware:
+    """
+    Connects to the session.
+    """
+    __slots__ = ("__session", "_url")
+
+    def __init__(self, session, url):
+        self.__session = session
+        self._url = _clean_url(url)
+
+    @property
+    def _session_credentials(self):
+        """
+        Get the current session credentials.
+        Only supposed to be called by subclasses.
+
+        :rtype: tuple(dict(str,str),dict(str,str))
+        """
+        return self.__session._credentials
+
+    def _get(self, *args, **kwargs):
+        return self.__session.get(*args, **kwargs)
+
+    def _put(self, *args, **kwargs):
+        return self.__session.put(*args, **kwargs)
+
+    def _delete(self, *args, **kwargs):
+        return self.__session.delete(*args, **kwargs)
+
+
+class SpallocMachine(_SpallocSessionAware):
     """
     Represents a spalloc-controlled machine.
 
     Don't make this yourself. Use :py:class:`SpallocClient` instead.
     """
-    __slots__ = ("__session", "__url",
-                 "name", "tags", "width", "height",
+    __slots__ = ("name", "tags", "width", "height",
                  "dead_boards", "dead_links")
 
     def __init__(self, session, machine_data):
@@ -517,12 +522,11 @@ class SpallocMachine:
         :param _Session session:
         :param dict machine_data:
         """
-        self.__session = session
+        super().__init__(session, machine_data["uri"])
         #: The name of the machine.
         self.name = machine_data["name"]
         #: The tags of the machine.
         self.tags = frozenset(machine_data["tags"])
-        self.__url = _clean_url(machine_data["uri"])
         #: The width of the machine, in boards.
         self.width = machine_data["width"]
         #: The height of the machine, in boards.
@@ -548,13 +552,13 @@ class SpallocMachine:
             self.dead_links))
 
 
-class SpallocJob:
+class SpallocJob(_SpallocSessionAware):
     """
     Represents a job in spalloc.
 
     Don't make this yourself. Use :py:class:`SpallocClient` instead.
     """
-    __slots__ = ("__session", "__url", "__machine_url", "__chip_url",
+    __slots__ = ("__machine_url", "__chip_url",
                  "_keepalive_url", "__keepalive_handle")
 
     def __init__(self, session, job_handle):
@@ -562,12 +566,11 @@ class SpallocJob:
         :param _Session session:
         :param str job_handle:
         """
+        super().__init__(session, job_handle)
         logger.info("established job at {}", job_handle)
-        self.__session = session
-        self.__url = _clean_url(job_handle)
-        self.__machine_url = self.__url + "machine"
-        self.__chip_url = self.__url + "chip"
-        self._keepalive_url = self.__url + "keepalive"
+        self.__machine_url = self._url + "machine"
+        self.__chip_url = self._url + "chip"
+        self._keepalive_url = self._url + "keepalive"
         self.__keepalive_handle = None
 
     def get_state(self):
@@ -576,7 +579,7 @@ class SpallocJob:
 
         :rtype: SpallocState
         """
-        obj = self.__session.get(self.__url).json()
+        obj = self._get(self._url).json()
         return SpallocState[obj["state"]]
 
     def get_root_host(self):
@@ -586,7 +589,7 @@ class SpallocJob:
         :return: The IP address, or ``None`` if not allocated.
         :rtype: str or None
         """
-        r = self.__session.get(self.__machine_url)
+        r = self._get(self.__machine_url)
         if r.status_code == 204:
             return None
         obj = r.json()
@@ -595,6 +598,21 @@ class SpallocJob:
             if x == 0 and y == 0:
                 return host
         return None
+
+    def get_connections(self):
+        """
+        Get the mapping from board coordinates to IP addresses.
+
+        :return: (x,y)->IP mapping, or ``None`` if not allocated
+        :rtype: dict(tuple(int,int), str) or None
+        """
+        r = self._get(self.__machine_url)
+        if r.status_code == 204:
+            return None
+        return {
+            (int(x), int(y)): str(host)
+            for ((x, y), host) in r.json()["connections"]
+        }
 
     def wait_for_state_change(self, old_state):
         """
@@ -607,10 +625,11 @@ class SpallocJob:
         :rtype: SpallocState
         """
         while old_state != SpallocState.DESTROYED:
-            obj = self.__session.get(self.__url, wait="true").json()
+            obj = self._get(self._url, wait="true").json()
             s = SpallocState[obj["state"]]
             if s != old_state or s == SpallocState.DESTROYED:
                 return s
+        return old_state
 
     def wait_until_ready(self):
         """
@@ -633,14 +652,43 @@ class SpallocJob:
         if self.__keepalive_handle:
             self.__keepalive_handle.close()
             self.__keepalive_handle = None
-        self.__session.delete(self.__url, reason=reason)
-        logger.info("deleted job at {}", self.__url)
+        self._delete(self._url, reason=reason)
+        logger.info("deleted job at {}", self._url)
 
     def keepalive(self):
         """
         Signal the job that we want it to stay alive for a while longer.
         """
-        self.__session.put(self._keepalive_url, "alive")
+        self._put(self._keepalive_url, "alive")
+
+    def launch_keepalive_task(self, period=30):
+        """
+        Starts a periodic task to keep a job alive.
+
+        Tricky! *Cannot* be done with a thread, as the main thread is known
+        to do significant amounts of CPU-intensive work.
+
+        :param SpallocJob job:
+            The job to keep alive
+        :param int period:
+            How often to send a keepalive message (in seconds)
+        :return:
+            Some kind of closeable task handle; closing it terminates the task.
+            Destroying the job will also terminate the task.
+        """
+        class Closer:
+            def __init__(self):
+                self._queue = Queue(1)
+
+            def close(self):
+                self._queue.put("quit")
+
+        self._keepalive_handle = Closer()
+        p = Process(target=_SpallocKeepalive, args=(
+            self._keepalive_url, period, self._keepalive_handle._queue,
+            *self._session_credentials), daemon=True)
+        p.start()
+        return self._keepalive_handle
 
     def where_is_machine(self, x, y):
         """
@@ -653,7 +701,7 @@ class SpallocJob:
             the chip lies outside the allocation.
         :rtype: tuple(int,int,int) or None
         """
-        r = self.__session.get(self.__chip_url, x=int(x), y=int(y))
+        r = self._get(self.__chip_url, x=int(x), y=int(y))
         if r.status_code == 204:
             return None
         return tuple(r.json()["physical-board-coordinates"])
@@ -669,7 +717,7 @@ class SpallocJob:
         self.__keepalive_handle = handle
 
     def __repr__(self):
-        return f"SpallocJob({self.__url})"
+        return f"SpallocJob({self._url})"
 
 
 class SpallocState(IntEnum):

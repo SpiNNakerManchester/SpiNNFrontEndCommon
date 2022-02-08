@@ -16,9 +16,7 @@
 import re
 
 from spinn_utilities.log import FormatAdapter
-from spinnman.connections import SocketAddressWithChip
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
-from spinnman.exceptions import SpinnmanIOException
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -67,9 +65,9 @@ def machine_generator(
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
     :param scamp_connection_data:
-        the list of SC&MP connection data or None
+        Job.connection dict,a String SC&MP connection data or None
     :type scamp_connection_data:
-        list(~spinnman.connections.SocketAddressWithChip)
+        dict((int,int), str) or None
     :param int boot_port_num: the port number used for the boot connection
     :param bool reset_machine_on_start_up:
     :return: Transceiver, and description of machine it is connected to
@@ -78,64 +76,33 @@ def machine_generator(
     """
     # pylint: disable=too-many-arguments
 
-    # if the end user gives you SCAMP data, use it and don't discover them
-    if scamp_connection_data is not None:
-        scamp_connection_data = [
-            _parse_scamp_connection(piece)
-            for piece in scamp_connection_data.split(":")]
-
     txrx = create_transceiver_from_hostname(
         hostname=hostname,
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
         auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
-        scamp_connections=scamp_connection_data,
         default_report_directory=report_default_directory())
 
-    try:
-        if reset_machine_on_start_up:
-            success = txrx.power_off_machine()
-            if success:
-                logger.warning(POWER_CYCLE_WARNING)
-                time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
-                logger.warning("Power cycle wait complete")
-            else:
-                logger.warning(POWER_CYCLE_FAILURE_WARNING)
+    if reset_machine_on_start_up:
+        success = txrx.power_off_machine()
+        if success:
+            logger.warning(POWER_CYCLE_WARNING)
+            time.sleep(POWER_CYCLE_WAIT_TIME_IN_SECONDS)
+            logger.warning("Power cycle wait complete")
+        else:
+            logger.warning(POWER_CYCLE_FAILURE_WARNING)
 
-        # do auto boot if possible
-        if board_version is None:
-            raise ConfigurationException(
-                "Please set a machine version number in the "
-                "corresponding configuration (cfg) file")
-        txrx.ensure_board_is_ready()
-        txrx.discover_scamp_connections()
-        return txrx.get_machine_details(), txrx
-    except SpinnmanIOException as e:
+    # do auto boot if possible
+    if board_version is None:
         raise ConfigurationException(
-            "could not talk to machine; "
-            "do you need to configure your VPN?") from e
-
-
-def _parse_scamp_connection(scamp_connection):
-    """
-    :param str scamp_connection:
-    :rtype: ~.SocketAddressWithChip
-    :raises Exception: If the parse fails
-    """
-    pieces = scamp_connection.split(",")
-    if len(pieces) == 3:
-        port_num = None
-        hostname, chip_x, chip_y = pieces
-    elif len(pieces) == 4:
-        hostname, port_num, chip_x, chip_y = pieces
+            "Please set a machine version number in the "
+            "corresponding configuration (cfg) file")
+    txrx.ensure_board_is_ready()
+    if isinstance(scamp_connection_data, dict):
+        txrx.add_scamp_connections(scamp_connection_data)
     else:
-        raise Exception("bad SC&MP connection descriptor")
-
-    return SocketAddressWithChip(
-        hostname=hostname,
-        port_num=None if port_num is None else int(port_num),
-        chip_x=int(chip_x),
-        chip_y=int(chip_y))
+        txrx.discover_scamp_connections()
+    return txrx.get_machine_details(), txrx
 
 
 def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
