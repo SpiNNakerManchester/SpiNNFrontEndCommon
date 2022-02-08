@@ -37,7 +37,6 @@ from spinn_machine import CoreSubsets
 
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
-from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums.cpu_state import CPUState
 
