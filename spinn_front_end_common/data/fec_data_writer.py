@@ -25,13 +25,19 @@ from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data.pacman_data_writer import PacmanDataWriter
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
+
 from .fec_data_view import FecDataView, _FecDataModel
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
@@ -427,3 +433,55 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(executable_types, dict):
             raise TypeError("executable_types must be a Dict")
         self.__fec_data._executable_types = executable_types
+
+    def add_live_packet_gatherer_parameters(
+            self, live_packet_gatherer_params, vertex_to_record_from,
+            partition_ids):
+        """ Adds parameters for a new LPG if needed, or adds to the tracker \
+            for parameters.
+
+            Note If the Application Graph is used the vertex must be an
+            Application Vertex if not it must be a MachineVertex
+
+        :param LivePacketGatherParameters live_packet_gatherer_params:
+            params to look for a LPG
+        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
+            the vertex that needs to send to a given LPG
+        :param list(str) partition_ids:
+            the IDs of the partitions to connect from the vertex
+        """
+        if self.get_graph().n_vertices > 0:
+            if not isinstance(vertex_to_record_from, ApplicationVertex):
+                raise ConfigurationException(
+                    "vertex_to_record_from must be an ApplicationVertex when "
+                    "Application level used")
+        elif self.get_machine_graph().n_vertices > 0:
+            if not isinstance(vertex_to_record_from, MachineVertex):
+                raise ConfigurationException(
+                    "vertex_to_record_from must be an MachineVertex when"
+                    "only Machine Level used")
+        else:
+            raise ConfigurationException(
+                "Please add vertices to the Graph before calling this method")
+
+        if not isinstance(
+                live_packet_gatherer_params, LivePacketGatherParameters):
+            raise ConfigurationException(
+                "live_packet_gatherer_params must be a "
+                "LivePacketGatherParameters")
+
+        if not isinstance(partition_ids, list):
+            raise ConfigurationException(
+                "partition_ids must be a list of str")
+
+        if self.__fec_data._live_packet_recorder_params is None:
+            self.__fec_data._live_packet_recorder_params = dict()
+        if live_packet_gatherer_params in \
+                self.__fec_data._live_packet_recorder_params:
+            self.__fec_data._live_packet_recorder_params[
+                live_packet_gatherer_params].append(
+                vertex_to_record_from, partition_ids)
+        else:
+            self.__fec_data._live_packet_recorder_params[
+                live_packet_gatherer_params] = [
+                (vertex_to_record_from, partition_ids)]

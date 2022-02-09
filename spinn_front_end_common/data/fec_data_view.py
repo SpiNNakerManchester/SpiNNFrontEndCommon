@@ -52,6 +52,7 @@ class _FecDataModel(object):
         "_hardware_time_step_us",
         "_ipaddress",
         "_java_caller",
+        "_live_packet_recorder_params",
         "_n_boards_required",
         "_n_calls_to_run",
         "_n_chips_required",
@@ -87,6 +88,7 @@ class _FecDataModel(object):
         self._executable_types = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
+        self._live_packet_recorder_params = None
         self._java_caller = None
         self._n_boards_required = None
         self._n_calls_to_run = None
@@ -734,3 +736,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._executable_types is None:
             raise cls._exception("executable_types")
         return cls.__fec_data._executable_types
+
+    @classmethod
+    def has_live_packet_recorder_params(cls):
+        """
+        Reports if there are live_packet_recorder_params
+
+        If True the live_packet_recorder_params not be empty
+
+        :rtype bool
+        """
+        return cls.__fec_data._live_packet_recorder_params is not None
+
+    @classmethod
+    def get_live_packet_recorder_params(cls):
+        if cls.__fec_data._live_packet_recorder_params is None:
+            raise cls._exception("live_packet_recorder_params")
+        return cls.__fec_data._live_packet_recorder_params
