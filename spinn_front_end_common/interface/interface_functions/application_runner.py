@@ -142,7 +142,7 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for cores, ex_type in FecDataView.get_executable_types().items():
+        for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
@@ -165,7 +165,7 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for cores, ex_type in FecDataView.get_executable_types().items():
+        for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 

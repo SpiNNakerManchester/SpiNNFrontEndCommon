@@ -2665,10 +2665,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         # their finished state
         if not unsuccessful_cores:
             transceiver = self._data_writer.get_transceiver()
-            for cores, executable_type in \
+            for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
                 failed_cores = transceiver.get_cores_not_in_state(
-                    cores, executable_type.end_state)
+                    core_subsets, executable_type.end_state)
                 for (x, y, p) in failed_cores:
                     unsuccessful_cores.add_processor(
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
