@@ -83,6 +83,8 @@ class _FecDataModel(object):
         """
         Clears out all data
         """
+        # Can not be cleared during hard reset as previous runs data checked
+        self._executable_types = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._java_caller = None
@@ -108,7 +110,6 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
-        self._executable_types = None
         self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
