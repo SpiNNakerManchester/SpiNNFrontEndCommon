@@ -103,7 +103,7 @@ class Compression(object):
             "Mapping", "router_table_compress_as_far_as_possible")
         # Only used by mundy compressor we can not rebuild
         self._compress_only_when_needed = None
-        self._routing_tables = FecDataView.get_router_tables()
+        self._routing_tables = FecDataView.get_precompressed_router_tables()
         self._progresses_text = progress_text
         self._compressor_app_id = None
         self.__failures = []
