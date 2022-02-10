@@ -755,6 +755,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_live_packet_recorder_params(cls):
+        """
+        Mapping of live_packet_gatherer_params to a list of tuples\
+        (vertex and list of ids))
+
+        :rtype: dict(live_packet_gatherer_params, (vertex, list(str))
+        """
         if cls.__fec_data._live_packet_recorder_params is None:
             raise cls._exception("live_packet_recorder_params")
         return cls.__fec_data._live_packet_recorder_params
@@ -774,7 +780,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             params to look for a LPG
         :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
-        :param list(str) partition_ids:
+        :param iterable(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
         if cls.get_graph().n_vertices > 0:
@@ -797,9 +803,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 "live_packet_gatherer_params must be a "
                 "LivePacketGatherParameters")
 
-        if not isinstance(partition_ids, list):
-            raise ConfigurationException(
-                "partition_ids must be a list of str")
+        # As partition_ids may come in as ain iterable such as odict_keys
+        partition_ids = list(partition_ids)
+        for id in partition_ids:
+            if not isinstance(id, str):
+                raise ConfigurationException(
+                    "partition_ids must be a iterable of str")
 
         if cls.__fec_data._live_packet_recorder_params is None:
             cls.__fec_data._live_packet_recorder_params = dict()
