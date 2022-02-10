@@ -480,7 +480,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 self.__fec_data._live_packet_recorder_params:
             self.__fec_data._live_packet_recorder_params[
                 live_packet_gatherer_params].append(
-                vertex_to_record_from, partition_ids)
+                (vertex_to_record_from, partition_ids))
         else:
             self.__fec_data._live_packet_recorder_params[
                 live_packet_gatherer_params] = [

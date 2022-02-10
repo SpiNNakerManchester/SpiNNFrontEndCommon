@@ -22,12 +22,16 @@ from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from spinnman.messages.scp.enums.signal import Signal
+from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
+from pacman_test_objects import SimpleTestVertex
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
 
 
 class TestSimulatorData(unittest.TestCase):
@@ -489,3 +493,55 @@ class TestSimulatorData(unittest.TestCase):
         data = dict()
         writer.set_executable_types(data)
         self.assertEqual(data, FecDataView.get_executable_types())
+
+    def test_live_packet_recorder_params(self):
+        writer = FecDataWriter.setup()
+        self.assertFalse(FecDataView.has_live_packet_recorder_params())
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_live_packet_recorder_params()
+        lpg1 = LivePacketGatherParameters(1)
+        lpg2 = LivePacketGatherParameters(2)
+        lpg3 = LivePacketGatherParameters(3)
+        vertex1 = SimpleMachineVertex(None)
+        vertex2 = SimpleMachineVertex(None)
+        vertex3 = SimpleMachineVertex(None)
+        vertex4 = SimpleTestVertex(12, "app1")
+        writer.create_graphs("test")
+        FecDataView.get_machine_graph().add_vertices(
+            [vertex1, vertex2, vertex3])
+        # Critically NO app vertex in graph!
+        partition_ids1 = ["a"]
+        partition_ids2 = ["a", "b"]
+        partition_ids3 = ["c"]
+        writer.add_live_packet_gatherer_parameters(
+            lpg1, vertex1, partition_ids1)
+        self.assertTrue(FecDataView.has_live_packet_recorder_params())
+        writer.add_live_packet_gatherer_parameters(
+            lpg2, vertex2, partition_ids2)
+        writer.add_live_packet_gatherer_parameters(
+            lpg1, vertex3, partition_ids3)
+        params = FecDataView.get_live_packet_recorder_params()
+        self.assertEqual(2, len(params))
+        self.assertIn(lpg1, params)
+        self.assertIn(lpg2, params)
+        self.assertEqual(2, len(params[lpg1]))
+        with self.assertRaises(ConfigurationException):
+            writer.add_live_packet_gatherer_parameters(
+                lpg3, vertex4, partition_ids2)
+        params = FecDataView.get_live_packet_recorder_params()
+        self.assertEqual(2, len(params))
+
+        writer = FecDataWriter.setup()
+        writer.create_graphs("test")
+        # Critically app vertex in graph!
+        FecDataView.get_graph().add_vertex(vertex4)
+        # Does not matter if there are also machine vertices
+        FecDataView.get_machine_graph().add_vertices(
+            [vertex1, vertex2, vertex3])
+        writer.add_live_packet_gatherer_parameters(
+            lpg3, vertex4, partition_ids2)
+        with self.assertRaises(ConfigurationException):
+            writer.add_live_packet_gatherer_parameters(
+                lpg2, vertex2, partition_ids2)
+        params = FecDataView.get_live_packet_recorder_params()
+        self.assertEqual(1, len(params))
