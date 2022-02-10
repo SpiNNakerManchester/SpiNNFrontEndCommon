@@ -129,6 +129,23 @@ where their where late arriving spikes.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum">
+<span class="sig-name descname"><span class="pre">get_category_timer_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_category_timer_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one category of algorithms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace">
 <span class="sig-name descname"><span class="pre">get_cores_with_provenace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_cores_with_provenace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the cores with provenance</p>
@@ -449,6 +466,22 @@ if different.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>connections</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>: str</em><em>) or </em><em>None</em>) – {(x, y): hostname, …} or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">
+<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts algorithms run times into the timer_provenance table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Category of the Algorithms run</p></li>
+<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
+<li><p><strong>n_run</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The end user run number</p></li>
+<li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

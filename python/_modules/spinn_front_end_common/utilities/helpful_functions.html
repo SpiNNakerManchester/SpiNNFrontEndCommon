@@ -60,7 +60,6 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utility_calls</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
-<span class="kn">from</span> <span class="nn">.constants</span> <span class="kn">import</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 <span class="n">_n_word_structs</span> <span class="o">=</span> <span class="p">[]</span>
@@ -220,17 +219,6 @@
     <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
         <span class="s2">&quot;cannot find the Ethernet connected chip with the board address </span><span class="si">{}</span><span class="s2">&quot;</span>
         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">board_address</span><span class="p">))</span></div>
-
-
-<div class="viewcode-block" id="convert_time_diff_to_total_milliseconds"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_time_diff_to_total_milliseconds">[docs]</a><span class="k">def</span> <span class="nf">convert_time_diff_to_total_milliseconds</span><span class="p">(</span><span class="n">sample</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Convert between a time diff and total milliseconds.</span>
-
-<span class="sd">    :param ~datetime.timedelta sample:</span>
-<span class="sd">    :return: total milliseconds</span>
-<span class="sd">    :rtype: float</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">((</span><span class="n">sample</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>
-            <span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="determine_flow_states"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.determine_flow_states">[docs]</a><span class="k">def</span> <span class="nf">determine_flow_states</span><span class="p">(</span><span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">):</span>

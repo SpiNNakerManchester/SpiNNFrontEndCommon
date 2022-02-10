@@ -74,11 +74,12 @@
     <span class="n">BufferableRegionTooSmall</span><span class="p">,</span> <span class="n">SpinnFrontEndException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">locate_memory_region_for_placement</span><span class="p">,</span> <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="n">get_simulator</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
     <span class="kn">import</span> <span class="p">(</span><span class="n">BuffersSentDeque</span><span class="p">,</span> <span class="n">BufferedReceivingData</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> \
     <span class="kn">import</span> <span class="nn">AbstractReceiveBuffersToHost</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BUFFER</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.recording_utilities</span> <span class="kn">import</span> <span class="n">get_recording_header_size</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -647,7 +648,9 @@
                         <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span><span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
-        <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">add_extraction_timing</span><span class="p">(</span><span class="n">timer</span><span class="o">.</span><span class="n">measured_interval</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
+                <span class="n">BUFFER</span><span class="p">,</span> <span class="n">timer</span><span class="o">.</span><span class="n">measured_interval</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
