@@ -134,7 +134,7 @@ class _MachineBitFieldRouterCompressor(object):
         view = FecDataView()
         app_id = FecDataView.get_app_id()
         machine_graph = FecDataView.get_runtime_machine_graph()
-        routing_tables = FecDataView.get_uncompressed_router_tables()
+        routing_tables = FecDataView.get_uncompressed()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()

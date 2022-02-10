@@ -54,7 +54,7 @@ def host_based_bit_field_router_compressor():
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
-    routing_tables = FecDataView.get_uncompressed_router_tables().routing_tables
+    routing_tables = FecDataView.get_uncompressed().routing_tables
     # create progress bar
     progress = ProgressBar(
         len(routing_tables) * 2,

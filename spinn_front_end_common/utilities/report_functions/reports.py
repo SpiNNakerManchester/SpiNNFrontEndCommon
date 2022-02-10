@@ -98,7 +98,7 @@ def router_summary_report():
         FecDataView.get_run_dir_path(), _ROUTING_SUMMARY_FILENAME)
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
-    routing_tables = FecDataView.get_uncompressed_router_tables()
+    routing_tables = FecDataView.get_uncompressed()
     return _do_router_summary_report(file_name, progress, routing_tables)
 
 
@@ -213,7 +213,7 @@ def _write_one_router_partition_report(f, partition, routing_infos):
     :param AbstractSingleSourcePartition partition:
     :param RoutingInfo routing_infos:
     """
-    routing_tables = FecDataView.get_uncompressed_router_tables()
+    routing_tables = FecDataView.get_uncompressed()
     source_placement = FecDataView.get_placement_of_vertex(
         partition.pre_vertex)
     key_and_mask = routing_infos.get_routing_info_from_partition(
@@ -626,7 +626,7 @@ def router_report_from_router_tables():
 
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
-    routing_tables = FecDataView.get_uncompressed_router_tables().routing_tables
+    routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables,
@@ -709,7 +709,7 @@ def generate_comparison_router_report(compressed_routing_tables):
         the compressed routing tables
     :rtype: None
     """
-    routing_tables = FecDataView.get_uncompressed_router_tables().routing_tables
+    routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
     try:

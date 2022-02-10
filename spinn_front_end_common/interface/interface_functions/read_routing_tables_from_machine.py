@@ -24,7 +24,7 @@ def read_routing_tables_from_machine():
 
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
-    routing_tables = FecDataView.get_uncompressed_router_tables()
+    routing_tables = FecDataView.get_uncompressed()
     progress = ProgressBar(
         routing_tables, "Reading Routing Tables from Machine")
     machine_routing_tables = MulticastRoutingTables()
