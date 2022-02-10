@@ -328,7 +328,7 @@ class DatabaseWriter(SQLiteDB):
         """ Adds the routing tables into the database
 
         """
-        routing_tables = FecDataView.get_router_tables().routing_tables
+        routing_tables = FecDataView.get_uncompressed_router_tables().routing_tables
         with self.transaction() as cur:
             cur.executemany(
                 """

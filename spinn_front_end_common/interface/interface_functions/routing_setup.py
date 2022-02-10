@@ -30,7 +30,7 @@ def routing_setup():
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
     transceiver = FecDataView.get_transceiver()
-    routing_tables = FecDataView.get_router_tables().routing_tables
+    routing_tables = FecDataView.get_uncompressed_router_tables().routing_tables
     progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
     # Clear the routing table for each router that needs to be set up

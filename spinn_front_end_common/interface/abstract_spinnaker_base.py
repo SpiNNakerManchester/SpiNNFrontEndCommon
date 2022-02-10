@@ -1672,7 +1672,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             To add an additional Generator copy the pattern of do_placer
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
-            self._data_writer.set_router_tables(basic_routing_table_generator(
+            self._data_writer.set_uncompressed_router_tables(basic_routing_table_generator(
                 self._routing_table_by_partition))
         # TODO Nuke ZonedRoutingTableGenerator
 
@@ -1704,7 +1704,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_json_routing_tables"):
                 return
-            write_json_routing_tables(self._data_writer.get_router_tables())
+            write_json_routing_tables(self._data_writer.get_uncompressed_router_tables())
             # Output ignored as never used
 
     def _report_router_collision_potential(self):
@@ -2062,14 +2062,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             name = get_config_str("Mapping", "precompressor")
             if name is None:
                 self._data_writer.set_precompressed_router_tables(
-                    self._data_writer.get_router_tables())
+                    self._data_writer.get_uncompressed_router_tables())
             elif name == "Ranged":
                 with FecTimer(LOADING, "Ranged Compressor") as timer:
                     if self._compression_skipable(
-                            self._data_writer.get_router_tables()):
+                            self._data_writer.get_uncompressed_router_tables()):
                         timer.skip("Tables already small enough")
                         self._data_writer.set_precompressed_router_tables(
-                            self._data_writer.get_router_tables())
+                            self._data_writer.get_uncompressed_router_tables())
                         return
                     self._data_writer.set_precompressed_router_tables(
                         range_compressor())
@@ -2078,7 +2078,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     f"Unexpected cfg setting precompressor: {name}")
         else:
             self._data_writer.set_precompressed_router_tables(
-                self._data_writer.get_router_tables())
+                self._data_writer.get_uncompressed_router_tables())
 
     def _do_early_compression(self, name):
         """
@@ -3045,7 +3045,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if clearing routing table entries, clear
         machine = self._data_writer.get_machine()
         if clear_routing_tables:
-            for router_table in self._data_writer.get_router_tables():
+            for router_table in self._data_writer.get_uncompressed_router_tables():
                 if not machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
                     transceiver.clear_multicast_routes(

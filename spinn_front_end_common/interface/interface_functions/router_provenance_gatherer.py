@@ -66,7 +66,7 @@ class _RouterProvenanceGatherer(object):
                 extra_monitor_cores_for_data=self._extra_monitor_vertices)
 
         for router_table in progress.over(
-                FecDataView.get_router_tables().routing_tables, False):
+                FecDataView.get_uncompressed_router_tables().routing_tables, False):
             seen_chips.add(self._add_router_table_diagnostic(
                 router_table, reinjection_data))
 
