@@ -34,7 +34,8 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         unittest_setup()
 
     def test_one_lpg_params(self):
-        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
+        writer = FecDataWriter.mock()
+        writer.set_machine(virtual_machine(width=12, height=12))
 
         default_params = {
             'use_prefix': False,
@@ -57,11 +58,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         live_packet_gatherers = dict()
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
-
+        writer.set_live_packet_gatherer_parameters(live_packet_gatherers)
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
-            live_packet_gatherer_parameters=live_packet_gatherers,
-            pre_allocated_resources=PreAllocatedResourceContainer())
+           pre_allocated_resources=PreAllocatedResourceContainer())
 
         # verify sdram
         self.assertEqual(
@@ -74,11 +74,11 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 1)
 
     def test_none(self):
-        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
-        live_packet_gatherers = dict()
+        writer = FecDataWriter.mock()
+        writer.set_machine(virtual_machine(width=12, height=12))
+        writer.set_live_packet_gatherer_parameters(dict())
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
-            live_packet_gatherer_parameters=live_packet_gatherers,
             pre_allocated_resources=PreAllocatedResourceContainer())
         self.assertEqual(
             pre_res.sdram_all.get_total_sdram(0), 0)
@@ -89,11 +89,12 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 0)
 
     def test_fail(self):
-        FecDataWriter.mock().set_machine(virtual_machine(width=12, height=12))
-        live_packet_gatherers = {'foo': 'bar'}
+        writer = FecDataWriter.mock()
+        writer.set_machine(virtual_machine(width=12, height=12))
+        writer.set_live_packet_gatherer_parameters({'foo': 'bar'})
+
         with self.assertRaises(Exception) as exn:
             preallocate_resources_for_live_packet_gatherers(
-                live_packet_gatherer_parameters=live_packet_gatherers,
                 pre_allocated_resources=PreAllocatedResourceContainer())
         # Make sure we know what the exception was; NOT an important test!
         self.assertEqual(

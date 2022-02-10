@@ -68,7 +68,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         live_packet_gatherers = dict()
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
-
+        writer.set_live_packet_gatherer_parameters(live_packet_gatherers)
         live_packet_gatherers_to_vertex_mapping = dict()
         mac_vtxs = dict()
         live_packet_gatherers_to_vertex_mapping[default_params_holder] = (
@@ -120,7 +120,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         writer.set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
-            live_packet_gatherer_parameters=live_packet_gatherers,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping))
 
@@ -159,6 +158,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         live_packet_gatherers = dict()
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
+        writer.set_live_packet_gatherer_parameters(live_packet_gatherers)
 
         live_packet_gatherers_to_vertex_mapping = dict()
 
@@ -229,7 +229,6 @@ class TestInsertLPGEdges(unittest.TestCase):
         writer.set_placements(placements)
         # run edge inserter that should go boom
         insert_edges_to_live_packet_gatherers(
-            live_packet_gatherer_parameters=live_packet_gatherers,
             live_packet_gatherers_to_vertex_mapping=(
                 live_packet_gatherers_to_vertex_mapping))
 

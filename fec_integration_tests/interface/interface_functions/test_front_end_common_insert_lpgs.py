@@ -61,11 +61,11 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers = dict()
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
+        writer.set_live_packet_gatherer_parameters(live_packet_gatherers)
 
         writer.set_runtime_machine_graph(graph)
         writer._set_runtime_graph(ApplicationGraph("empty"))
-        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers)
+        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs()
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = [(0, 0), (4, 8), (8, 4)]
@@ -110,11 +110,11 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers = dict()
         default_params_holder = LivePacketGatherParameters(**default_params)
         live_packet_gatherers[default_params_holder] = list()
+        writer.set_live_packet_gatherer_parameters(live_packet_gatherers)
 
         writer.set_runtime_machine_graph(graph)
         writer._set_runtime_graph(app_graph)
-        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherer_parameters=live_packet_gatherers)
+        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs()
 
         self.assertEqual(len(lpg_verts_mapping[default_params_holder][1]), 3)
         locs = list()

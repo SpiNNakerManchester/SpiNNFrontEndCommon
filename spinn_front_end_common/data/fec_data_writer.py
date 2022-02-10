@@ -20,6 +20,7 @@ import os
 import time
 from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
+from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
@@ -441,3 +442,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         FecDataView.add_live_packet_gatherer_parameters(
             live_packet_gatherer_params, vertex_to_record_from,
             partition_ids)
+
+    def set_live_packet_gatherer_parameters(self, params):
+        """
+        testing method will not work outisde of mock
+        """
+        if self.get_status() != Data_Status.MOCKED:
+            raise NotImplementedError("This call is only for testing")
+        self.__fec_data._live_packet_recorder_params = params
