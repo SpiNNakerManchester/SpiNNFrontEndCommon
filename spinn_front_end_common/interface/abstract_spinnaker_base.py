@@ -1949,7 +1949,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             precompressed = self._data_writer.get_precompressed_router_tables()
             if self._compression_skipable(precompressed):
                 timer.skip("Tables already small enough")
-                return self.precompressed
+                return precompressed
             compressed = ordered_covering_compressor()
             return compressed
 
@@ -1971,7 +1971,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._compression_skipable(precompressed):
                 timer.skip("Tables already small enough")
                 self._multicast_routes_loaded = False
-                return self.precompressed
+                return precompressed
             ordered_covering_compression()
             self._multicast_routes_loaded = True
             return None
@@ -1992,7 +1992,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = False
             if self._compression_skipable(precompressed):
                 timer.skip("Tables already small enough")
-                return self.precompressed
+                return precompressed
             compressed = pair_compressor()
             return compressed
 
