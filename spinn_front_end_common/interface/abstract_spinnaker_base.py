@@ -16,7 +16,6 @@
 """
 main interface for the SpiNNaker tools
 """
-from collections import defaultdict
 import logging
 import math
 import os
@@ -45,9 +44,7 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
-from pacman.model.graphs.application import (
-    ApplicationEdge, ApplicationVertex)
-from pacman.model.graphs.machine import MachineVertex
+from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.model.resources import (

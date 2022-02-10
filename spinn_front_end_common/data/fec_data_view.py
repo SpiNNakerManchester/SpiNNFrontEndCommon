@@ -753,7 +753,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._live_packet_recorder_params is not None
 
-
     @classmethod
     def get_live_packet_recorder_params(cls):
         if cls.__fec_data._live_packet_recorder_params is None:
