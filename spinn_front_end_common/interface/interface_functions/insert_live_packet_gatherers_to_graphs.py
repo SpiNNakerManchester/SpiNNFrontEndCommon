@@ -22,14 +22,9 @@ from spinn_front_end_common.utility_models import (
 from spinn_front_end_common.data import FecDataView
 
 
-def insert_live_packet_gatherers_to_graphs(live_packet_gatherer_parameters):
+def insert_live_packet_gatherers_to_graphs():
     """ Add LPG vertices on Ethernet connected chips as required.
 
-    :param live_packet_gatherer_parameters:
-        the Live Packet Gatherer parameters requested by the script
-    :type live_packet_gatherer_parameters:
-        dict(LivePacketGatherParameters,
-        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
     :return: mapping between LPG parameters and LPG application and
         machine vertices
     :rtype: dict(LivePacketGatherParameters,
@@ -37,7 +32,7 @@ def insert_live_packet_gatherers_to_graphs(live_packet_gatherer_parameters):
         dict(tuple(int,int),LivePacketGatherMachineVertex)))
     """
     inserter = _InsertLivePacketGatherersToGraphs()
-    return inserter._run(live_packet_gatherer_parameters)
+    return inserter._run()
 
 
 class _InsertLivePacketGatherersToGraphs(object):
@@ -59,14 +54,9 @@ class _InsertLivePacketGatherersToGraphs(object):
         self._machine_graph = FecDataView.get_runtime_machine_graph()
         self._application_graph = FecDataView.get_runtime_graph()
 
-    def _run(self, live_packet_gatherer_parameters):
+    def _run(self):
         """ Add LPG vertices on Ethernet connected chips as required.
 
-        :param live_packet_gatherer_parameters:
-            the Live Packet Gatherer parameters requested by the script
-        :type live_packet_gatherer_parameters:
-            dict(LivePacketGatherParameters,
-            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
         :return: mapping between LPG parameters and LPG application and
             machine vertices
         :rtype: dict(LivePacketGatherParameters,
@@ -83,6 +73,8 @@ class _InsertLivePacketGatherersToGraphs(object):
         # Keep track of the vertices added by parameters and board address
         lpg_params_to_vertices = defaultdict(dict)
 
+        live_packet_gatherer_parameters = \
+            FecDataView.get_live_packet_recorder_params()
         # for every Ethernet connected chip, add the gatherers required
         if self._application_graph.n_vertices > 0:
             for params in live_packet_gatherer_parameters:

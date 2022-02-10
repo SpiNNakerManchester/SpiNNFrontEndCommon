@@ -20,15 +20,10 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 def insert_edges_to_live_packet_gatherers(
-        live_packet_gatherer_parameters,
         live_packet_gatherers_to_vertex_mapping):
     """
         Add edges from the recorded vertices to the local Live PacketGatherers.
 
-        :param live_packet_gatherer_parameters: the set of parameters
-        :type live_packet_gatherer_parameters:
-            dict(LivePacketGatherParameters,
-            list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
         :param live_packet_gatherers_to_vertex_mapping:
             the mapping of LPG parameters and the machine vertices associated
             with it
@@ -40,7 +35,7 @@ def insert_edges_to_live_packet_gatherers(
     """
     inserter = _InsertEdgesToLivePacketGatherers(
         live_packet_gatherers_to_vertex_mapping)
-    inserter._run(live_packet_gatherer_parameters)
+    inserter._run()
 
 
 class _InsertEdgesToLivePacketGatherers(object):
@@ -66,7 +61,7 @@ class _InsertEdgesToLivePacketGatherers(object):
         # These are all contextual, and unmodified by this algorithm
         self._lpg_to_vertex = live_packet_gatherers_to_vertex_mapping
 
-    def _run(self, live_packet_gatherer_parameters):
+    def _run(self):
         """
         :param live_packet_gatherer_parameters: the set of parameters
         :type live_packet_gatherer_parameters:
@@ -77,6 +72,8 @@ class _InsertEdgesToLivePacketGatherers(object):
 
         machine_graph = FecDataView.get_runtime_machine_graph()
         application_graph = FecDataView.get_runtime_graph()
+        live_packet_gatherer_parameters = \
+            FecDataView.get_live_packet_recorder_params()
         progress = ProgressBar(
             live_packet_gatherer_parameters,
             string_describing_what_being_progressed=(

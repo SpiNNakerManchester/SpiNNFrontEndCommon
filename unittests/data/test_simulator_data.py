@@ -516,9 +516,9 @@ class TestSimulatorData(unittest.TestCase):
         writer.add_live_packet_gatherer_parameters(
             lpg1, vertex1, partition_ids1)
         self.assertTrue(FecDataView.has_live_packet_recorder_params())
-        writer.add_live_packet_gatherer_parameters(
+        FecDataView.add_live_packet_gatherer_parameters(
             lpg2, vertex2, partition_ids2)
-        writer.add_live_packet_gatherer_parameters(
+        FecDataView.add_live_packet_gatherer_parameters(
             lpg1, vertex3, partition_ids3)
         params = FecDataView.get_live_packet_recorder_params()
         self.assertEqual(2, len(params))
@@ -526,7 +526,7 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn(lpg2, params)
         self.assertEqual(2, len(params[lpg1]))
         with self.assertRaises(ConfigurationException):
-            writer.add_live_packet_gatherer_parameters(
+            FecDataView.add_live_packet_gatherer_parameters(
                 lpg3, vertex4, partition_ids2)
         params = FecDataView.get_live_packet_recorder_params()
         self.assertEqual(2, len(params))
@@ -538,10 +538,10 @@ class TestSimulatorData(unittest.TestCase):
         # Does not matter if there are also machine vertices
         FecDataView.get_machine_graph().add_vertices(
             [vertex1, vertex2, vertex3])
-        writer.add_live_packet_gatherer_parameters(
+        FecDataView.add_live_packet_gatherer_parameters(
             lpg3, vertex4, partition_ids2)
         with self.assertRaises(ConfigurationException):
-            writer.add_live_packet_gatherer_parameters(
+            FecDataView.add_live_packet_gatherer_parameters(
                 lpg2, vertex2, partition_ids2)
         params = FecDataView.get_live_packet_recorder_params()
         self.assertEqual(1, len(params))

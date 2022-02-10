@@ -14,19 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from pacman.model.resources import ConstantSDRAM, IPtagResource
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     LivePacketGatherMachineVertex)
 
 
-def preallocate_resources_for_live_packet_gatherers(
-        live_packet_gatherer_parameters, pre_allocated_resources):
+def preallocate_resources_for_live_packet_gatherers(pre_allocated_resources):
     """ Adds Live Packet Gatherer resources as required for a machine.
 
-    :param live_packet_gatherer_parameters:
-        the LPG parameters requested by the script
-    :type live_packet_gatherer_parameters:
-        dict(LivePacketGatherParameters,
-        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
     :param pre_allocated_resources: other preallocated resources
     :type pre_allocated_resources:
         ~pacman.model.resources.PreAllocatedResourceContainer
@@ -36,7 +31,7 @@ def preallocate_resources_for_live_packet_gatherers(
 
     # store how much SDRAM the LPG uses per core
     sdram = ConstantSDRAM(LivePacketGatherMachineVertex.get_sdram_usage())
-    for lpg_params in live_packet_gatherer_parameters:
+    for lpg_params in FecDataView.get_live_packet_recorder_params():
         pre_allocated_resources.add_sdram_ethernet(sdram)
         pre_allocated_resources.add_cores_ethernet(1)
         pre_allocated_resources.add_iptag_resource(IPtagResource(

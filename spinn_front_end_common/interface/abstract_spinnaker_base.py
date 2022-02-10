@@ -224,15 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
-        # mapping between parameters and the vertices which need to talk to
-        # them
-        # Created during init. Added to but never new object
-        "_live_packet_recorder_params",
-
-        # place holder for checking the vertices being added to the recorders
-        # tracker are all of the same vertex type.
-        "_live_packet_recorders_associated_vertex_type",
-
         # mapping of live packet recorder parameters to vertex
         "_live_packet_recorder_parameters_mapping",
 
@@ -351,10 +342,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._spalloc_server = None
         self._remote_spinnaker_url = None
 
-        # store for Live Packet Gatherers
-        self._live_packet_recorder_params = defaultdict(list)
-        self._live_packet_recorders_associated_vertex_type = None
-
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._has_ran = False
@@ -430,39 +417,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         ms = convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
-
-    def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters. Note that LPGs can be inserted to track behaviour \
-            either at the application graph level or at the machine graph \
-            level, but not both at the same time.
-
-        :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
-            the vertex that needs to send to a given LPG
-        :param list(str) partition_ids:
-            the IDs of the partitions to connect from the vertex
-        """
-        self._live_packet_recorder_params[live_packet_gatherer_params].append(
-            (vertex_to_record_from, partition_ids))
-
-        # verify that the vertices being added are of one vertex type.
-        if self._live_packet_recorders_associated_vertex_type is None:
-            if isinstance(vertex_to_record_from, ApplicationVertex):
-                self._live_packet_recorders_associated_vertex_type = \
-                    ApplicationVertex
-            else:
-                self._live_packet_recorders_associated_vertex_type = \
-                    MachineVertex
-        elif not isinstance(
-                vertex_to_record_from,
-                self._live_packet_recorders_associated_vertex_type):
-            raise ConfigurationException(
-                "Only one type of graph can be used during live output. "
-                "Please fix and try again")
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution.
@@ -1128,12 +1082,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 MAPPING, "Insert live packet gatherers to graphs") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            self._live_packet_recorder_parameters_mapping = \
-                insert_live_packet_gatherers_to_graphs(
-                    self._live_packet_recorder_params)
+            if self._data_writer.has_live_packet_recorder_params():
+                self._live_packet_recorder_parameters_mapping = \
+                    insert_live_packet_gatherers_to_graphs()
+            else:
+                timer.skip("No live_packet_recorder_params")
 
     def _report_board_chip(self):
         """
@@ -1179,11 +1132,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 MAPPING, "Preallocate for live packet gatherer") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            preallocate_resources_for_live_packet_gatherers(
-                self._live_packet_recorder_params, pre_allocated_resources)
+            if self._data_writer.has_live_packet_recorder_params():
+                preallocate_resources_for_live_packet_gatherers(
+                    pre_allocated_resources)
+            else:
+                timer.skip("No live_packet_recorder_params")
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
@@ -1410,12 +1363,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 MAPPING, "Insert edges to live packet gatherers") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            insert_edges_to_live_packet_gatherers(
-                self._live_packet_recorder_params,
-                self._live_packet_recorder_parameters_mapping)
+            if self._data_writer.has_live_packet_recorder_params():
+                insert_edges_to_live_packet_gatherers(
+                    self._live_packet_recorder_parameters_mapping)
+            else:
+                timer.skip("no live_packet_recorder_params")
 
     def _execute_insert_edges_to_extra_monitor(self):
         """
