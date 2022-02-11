@@ -236,9 +236,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # Path of the notification interface database
-        "_database_file_path",
-
         # Binaries to run
         "_executable_targets",
 
@@ -355,7 +352,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
         self._data_writer.hard_reset()
-        self._database_file_path = None
         self._notification_interface = None
         self._dsg_targets = None
         self._executable_targets = None
@@ -2465,7 +2461,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Create database interface"):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
-            self._database_file_path = database_interface(run_time)
+            self._data_writer.set_database_file_path(
+                database_interface(run_time))
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -2475,7 +2472,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(RUN_LOOP, "Create notification protocol"):
             self._notification_interface = create_notification_protocol(
-                self._database_socket_addresses, self._database_file_path)
+                self._database_socket_addresses)
 
     def _execute_runner(self, n_sync_steps, run_time):
         """

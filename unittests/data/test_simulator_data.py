@@ -545,3 +545,16 @@ class TestSimulatorData(unittest.TestCase):
                 lpg2, vertex2, partition_ids2)
         params = FecDataView.get_live_packet_recorder_params()
         self.assertEqual(1, len(params))
+
+    def test_database_file_path(self):
+        writer = FecDataWriter.setup()
+        self.assertIsNone(FecDataView.get_database_file_path())
+        writer.set_database_file_path(os.getcwd())
+        self.assertEqual(os.getcwd(), FecDataView.get_database_file_path())
+        writer.hard_reset()
+        self.assertIsNone(FecDataView.get_database_file_path())
+        writer.set_database_file_path(os.getcwd())
+        writer.set_database_file_path(None)
+        self.assertIsNone(FecDataView.get_database_file_path())
+        with self.assertRaises(TypeError):
+            writer.set_database_file_path(1)

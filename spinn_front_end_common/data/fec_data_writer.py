@@ -450,3 +450,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if self.get_status() != Data_Status.MOCKED:
             raise NotImplementedError("This call is only for testing")
         self.__fec_data._live_packet_recorder_params = params
+
+    def set_database_file_path(self, database_file_path):
+        """
+        Sets the database_file_path variable. Possibly to None
+
+        :type database_file_path: str or None
+        """
+        if not isinstance(database_file_path, (str, type(None))):
+            raise TypeError("database_file_path must be a str or None")
+        self.__fec_data._database_file_path = database_file_path

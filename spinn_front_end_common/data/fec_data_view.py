@@ -50,6 +50,7 @@ class _FecDataModel(object):
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
+        "_database_file_path",
         "_executable_types",
         "_first_machine_time_step",
         "_fixed_routes",
@@ -117,6 +118,7 @@ class _FecDataModel(object):
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
+        self._database_file_path = None
         self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
@@ -760,6 +762,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         (vertex and list of ids))
 
         :rtype: dict(live_packet_gatherer_params, (vertex, list(str))
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the _live_packet_recorder_params is currently unavailable
         """
         if cls.__fec_data._live_packet_recorder_params is None:
             raise cls._exception("live_packet_recorder_params")
@@ -821,3 +825,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.__fec_data._live_packet_recorder_params[
                 live_packet_gatherer_params] = [
                 (vertex_to_record_from, partition_ids)]
+
+    @classmethod
+    def get_database_file_path(cls):
+        """
+        Will return the database_file_path if set or None if not set
+        or set to None
+
+        :rtype: str or None
+        """
+        return cls.__fec_data._database_file_path
