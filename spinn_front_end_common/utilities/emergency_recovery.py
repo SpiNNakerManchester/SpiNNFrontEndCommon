@@ -62,9 +62,10 @@ def _emergency_state_check():
             errors))
 
 
-def _emergency_iobuf_extract(executable_targets):
+def _emergency_iobuf_extract(executable_targets=None):
     """
-    :param ExecutableTargets executable_targets:
+    :param executable_targets: The specific targets to extract of None for all
+    :type executable_targets: ExecutableTargets  or None
     """
     # pylint: disable=protected-access
     extractor = IOBufExtractor(
@@ -95,7 +96,7 @@ def emergency_recover_state_from_failure(vertex, placement):
     _emergency_iobuf_extract(target)
 
 
-def emergency_recover_states_from_failure(executable_targets):
+def emergency_recover_states_from_failure():
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
@@ -104,4 +105,4 @@ def emergency_recover_states_from_failure(executable_targets):
         The what/where mapping
     """
     _emergency_state_check()
-    _emergency_iobuf_extract(executable_targets)
+    _emergency_iobuf_extract()

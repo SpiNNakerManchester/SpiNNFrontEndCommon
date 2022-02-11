@@ -38,40 +38,39 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
-def system_cores(exec_targets):
+def system_cores():
     """ Get the subset of cores that are to be used for system operations.
 
-    :param ~spinnman.model.ExecutableTargets exec_targets:
     :rtype: ~spinn_machine.CoreSubsets
     """
     cores = CoreSubsets()
+    exec_targets = FecDataView.get_executable_targets()
     for binary in exec_targets.get_binaries_of_executable_type(
             ExecutableType.SYSTEM):
         cores.add_core_subsets(exec_targets.get_cores_for_binary(binary))
     return cores
 
 
-def filter_out_system_executables(dsg_targets, executable_targets):
+def filter_out_system_executables(dsg_targets):
     """ Select just the application DSG loading tasks
 
     :param DataSpecificationTargets dsg_tagets:
-    :param ~spinnman.model.ExecutableTargets executable_targets:
     :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
-    syscores = system_cores(executable_targets)
+    syscores = system_cores()
     return OrderedDict(
         (core, spec) for (core, spec) in dsg_targets.items()
         if core not in syscores)
 
 
-def filter_out_app_executables(dsg_targets, executable_targets):
+def filter_out_app_executables(dsg_targets):
     """ Select just the system DSG loading tasks
 
     :param DataSpecificationTargets dsg_tagets:
     :param ~spinnman.model.ExecutableTargets executable_targets:
     :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
     """
-    syscores = system_cores(executable_targets)
+    syscores = system_cores()
     return OrderedDict(
         (core, spec) for (core, spec) in dsg_targets.items()
         if core in syscores)
@@ -274,7 +273,6 @@ class _ExecutionContext(object):
 
 def execute_system_data_specs(
         dsg_targets, region_sizes,
-        executable_targets,
         processor_to_app_data_base_address=None):
     """ Execute the data specs for all system targets.
 
@@ -282,8 +280,6 @@ def execute_system_data_specs(
         map of placement to file path
     :param dict(tuple(int,int,int),int) region_sizes:
         the coordinates for region sizes for each core
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        the map between binaries and locations and executable types
     :param processor_to_app_data_base_address:
     :type processor_to_app_data_base_address:
         dict(tuple(int,int,int),DataWritten)
@@ -292,13 +288,11 @@ def execute_system_data_specs(
     """
     specifier = _HostExecuteDataSpecification(
         processor_to_app_data_base_address)
-    return specifier.execute_system_data_specs(
-        dsg_targets, region_sizes, executable_targets)
+    return specifier.execute_system_data_specs(dsg_targets, region_sizes)
 
 
 def execute_application_data_specs(
-        dsg_targets, executable_targets, region_sizes,
-        extra_monitor_cores=None,
+        dsg_targets, region_sizes, extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
         processor_to_app_data_base_address=None):
     """ Execute the data specs for all non-system targets.
@@ -309,8 +303,6 @@ def execute_application_data_specs(
         map of placement to file path
     :param bool uses_advanced_monitors:
         whether to use fast data in protocol
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        what core will running what binary
     :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
         the deployed extra monitors, if any
     :param extra_monitor_cores_to_ethernet_connection_map:
@@ -327,7 +319,7 @@ def execute_application_data_specs(
     specifier = _HostExecuteDataSpecification(
         processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
-        dsg_targets, executable_targets, region_sizes,
+        dsg_targets, region_sizes,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
 
 
@@ -440,8 +432,7 @@ class _HostExecuteDataSpecification(object):
         return results
 
     def execute_application_data_specs(
-            self, dsg_targets,
-            executable_targets, region_sizes,
+            self, dsg_targets, region_sizes,
             extra_monitor_cores=None,
             extra_monitor_cores_to_ethernet_connection_map=None):
         """ Execute the data specs for all non-system targets.
@@ -452,8 +443,6 @@ class _HostExecuteDataSpecification(object):
             map of placement to file path
         :param bool uses_advanced_monitors:
             whether to use fast data in protocol
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            what core will running what binary
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the deployed extra monitors, if any
         :param extra_monitor_cores_to_ethernet_connection_map:
@@ -476,14 +465,14 @@ class _HostExecuteDataSpecification(object):
 
         try:
             if FecDataView.has_java_caller():
-                return self.__java_app(dsg_targets, executable_targets,
+                return self.__java_app(dsg_targets,
                                        uses_advanced_monitors, region_sizes)
             else:
-                return self.__python_app(dsg_targets, executable_targets,
+                return self.__python_app(dsg_targets,
                                          uses_advanced_monitors, region_sizes)
         except:  # noqa: E722
             if uses_advanced_monitors:
-                emergency_recover_states_from_failure(executable_targets)
+                emergency_recover_states_from_failure()
             raise
 
     def __set_router_timeouts(self):
@@ -507,19 +496,15 @@ class _HostExecuteDataSpecification(object):
         gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
         return gatherer.send_data_into_spinnaker
 
-    def __python_app(
-            self, dsg_targets, executable_targets, use_monitors,
-            region_sizes):
+    def __python_app(self, dsg_targets, use_monitors, region_sizes):
         """
         :param DataSpecificationTargets dsg_targets:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
         :return: dict of cores to descriptions of what was written
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
-        dsg_targets = filter_out_system_executables(
-            dsg_targets, executable_targets)
+        dsg_targets = filter_out_system_executables(dsg_targets)
 
         if use_monitors:
             self.__set_router_timeouts()
@@ -551,12 +536,9 @@ class _HostExecuteDataSpecification(object):
             self.__reset_router_timeouts()
         return self._write_info_map
 
-    def __java_app(
-            self, dsg_targets, executable_targets, use_monitors,
-            region_sizes):
+    def __java_app(self, dsg_targets, use_monitors,  region_sizes):
         """
         :param DataSpecificationTargets dsg_targets:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
         :return: map of cores to descriptions of what was written
@@ -567,7 +549,7 @@ class _HostExecuteDataSpecification(object):
             4, "Executing data specifications and loading data for "
             "application vertices using Java")
 
-        dsg_targets.mark_system_cores(system_cores(executable_targets))
+        dsg_targets.mark_system_cores(system_cores())
         progress.update()
 
         # Copy data from WriteMemoryIOData to database
@@ -583,38 +565,28 @@ class _HostExecuteDataSpecification(object):
         progress.end()
         return dw_write_info
 
-    def execute_system_data_specs(
-            self, dsg_targets, region_sizes,
-            executable_targets,
-            processor_to_app_data_base_address=None):
+    def execute_system_data_specs(self, dsg_targets, region_sizes):
         """ Execute the data specs for all system targets.
 
         :param dict(tuple(int,int,int),str) dsg_targets:
             map of placement to file path
         :param dict(tuple(int,int,int),int) region_sizes:
             the coordinates for region sizes for each core
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the map between binaries and locations and executable types
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),DataWritten)
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
 
         if FecDataView.has_java_caller():
-            self.__java_sys(dsg_targets, executable_targets, region_sizes)
+            self.__java_sys(dsg_targets, region_sizes)
         else:
-            self.__python_sys(dsg_targets, executable_targets, region_sizes)
+            self.__python_sys(dsg_targets, region_sizes)
 
-    def __java_sys(self, dsg_targets, executable_targets, region_sizes):
+    def __java_sys(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
 
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
         :return: map of cores to descriptions of what was written
@@ -625,7 +597,7 @@ class _HostExecuteDataSpecification(object):
             4, "Executing data specifications and loading data for system "
             "vertices using Java")
 
-        dsg_targets.mark_system_cores(system_cores(executable_targets))
+        dsg_targets.mark_system_cores(system_cores())
         progress.update()
 
         # Copy data from WriteMemoryIOData to database
@@ -637,13 +609,11 @@ class _HostExecuteDataSpecification(object):
         progress.end()
         return dw_write_info
 
-    def __python_sys(self, dsg_targets, executable_targets, region_sizes):
+    def __python_sys(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
 
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
         :return: dict of cores to descriptions of what was written
@@ -651,8 +621,7 @@ class _HostExecuteDataSpecification(object):
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
-        sys_targets = filter_out_app_executables(
-            dsg_targets, executable_targets)
+        sys_targets = filter_out_app_executables(dsg_targets)
 
         # create a progress bar for end users
         progress = ProgressBar(

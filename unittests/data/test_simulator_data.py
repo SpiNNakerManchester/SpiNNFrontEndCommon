@@ -22,6 +22,7 @@ from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.model import ExecutableTargets
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
@@ -558,3 +559,11 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNone(FecDataView.get_database_file_path())
         with self.assertRaises(TypeError):
             writer.set_database_file_path(1)
+
+    def test_executable_targets(self):
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_executable_targets()
+        targets = ExecutableTargets()
+        writer.set_executable_targets(targets)
+        self.assertEqual(targets, FecDataView.get_executable_targets())

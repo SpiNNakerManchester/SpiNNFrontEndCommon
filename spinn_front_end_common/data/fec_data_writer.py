@@ -25,6 +25,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.model import ExecutableTargets
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
@@ -460,3 +461,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(database_file_path, (str, type(None))):
             raise TypeError("database_file_path must be a str or None")
         self.__fec_data._database_file_path = database_file_path
+
+    def set_executable_targets(self, executable_targets):
+        """
+        Sets the executable_targets
+
+        :type executable_targets: ExecutableTargets
+        """
+        if not isinstance(executable_targets, ExecutableTargets):
+            raise TypeError("executable_targets must be a str or None")
+        self.__fec_data._executable_targets = executable_targets

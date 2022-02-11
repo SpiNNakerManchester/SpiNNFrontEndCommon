@@ -20,77 +20,71 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-def load_app_images(executable_targets):
+def load_app_images():
     """ Go through the executable targets and load each binary to everywhere\
          and then send a start request to the cores that actually use it.
 
     :param ~spinnman.model.ExecutableTargets executable_targets:
     """
-    __load_images(executable_targets,
-                  lambda ty: ty is not ExecutableType.SYSTEM,
+    __load_images(lambda ty: ty is not ExecutableType.SYSTEM,
                   "Loading executables onto the machine")
 
 
-def load_sys_images(executable_targets):
+def load_sys_images():
     """ Go through the executable targets and load each binary to everywhere\
          and then send a start request to the cores that actually use it.
 
-    :param ~spinnman.model.ExecutableTargets executable_targets:
     :param ~spinnman.transceiver.Transceiver transceiver:
     """
-    __load_images(executable_targets,
-                  lambda ty: ty is ExecutableType.SYSTEM,
+    __load_images(lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
 
 
-def __load_images(executable_targets, filt, label):
+def __load_images(filt, label):
     """
-    :param ~.ExecutableTargets executable_targets:
     :param callable(ExecutableType,bool) filt:
     :param str label
     """
     # Compute what work is to be done here
     app_id = FecDataView.get_app_id()
     txrx = FecDataView.get_transceiver()
-    binaries, cores = filter_targets(executable_targets, filt)
+    binaries, cores = filter_targets(filt)
 
     # ISSUE: Loading order may be non-constant on older Python
     progress = ProgressBar(cores.total_processors + 1, label)
     for binary in binaries:
-        progress.update(__flood_fill_binary_to_spinnaker(
-            executable_targets, binary, txrx, app_id))
+        progress.update(__flood_fill_binary_to_spinnaker(binary, txrx, app_id))
 
     __start_simulation(cores, txrx, app_id)
     progress.update()
     progress.end()
 
 
-def __flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+def __flood_fill_binary_to_spinnaker(binary, txrx, app_id):
     """ Flood fills a binary to spinnaker on a given `app_id` \
         given the executable targets and binary.
 
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        the executable targets object
     :param str binary: the (name of the) binary to flood fill
     :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
     :param int app_id: the application ID to load it as
     :return: the number of cores it was loaded onto
     :rtype: int
     """
+    executable_targets = FecDataView().get_executable_targets()
     core_subset = executable_targets.get_cores_for_binary(binary)
     txrx.execute_flood(
         core_subset, binary, app_id, wait=True, is_filename=True)
     return len(core_subset)
 
 
-def filter_targets(targets, filt):
+def filter_targets(filt):
     """
-    :param ~spinnman.model.ExecutableTargets executable_targets:
     :param callable(ExecutableType,bool) filt:
     :rtype: tuple(list(str), ExecutableTargets)
     """
     binaries = []
     cores = ExecutableTargets()
+    targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
         if filt(exe_type):
             for aplx in targets.get_binaries_of_executable_type(exe_type):

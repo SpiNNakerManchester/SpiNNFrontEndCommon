@@ -50,7 +50,7 @@ class IOBufExtractor(object):
                  "__suppress_progress", "__from_cores", "__binary_types",
                  "__executable_targets"]
 
-    def __init__(self, executable_targets,
+    def __init__(self, executable_targets=None,
                  recovery_mode=False,
                  filename_template="iobuf_for_chip_{}_{}_processor_id_{}.txt",
                  suppress_progress=False):
@@ -58,7 +58,9 @@ class IOBufExtractor(object):
         :param bool recovery_mode:
         :param str filename_template:
         :param bool suppress_progress:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
+        :param executable_targets:
+            Which Binaries and core to extract from. Noe to extract from all.
+        :tpye executable_targets:  ~spinnman.model.ExecutableTargets or None
         :param str from_cores:
         :param str binary_types:
         """
@@ -72,12 +74,15 @@ class IOBufExtractor(object):
             "Reports", "extract_iobuf_from_cores")
         self.__binary_types = get_config_str(
             "Reports", "extract_iobuf_from_binary_types")
-        self.__executable_targets = executable_targets
+        if executable_targets is None:
+            self.__executable_targets = FecDataView.get_executable_targets()
+        else:
+            self.__executable_targets = executable_targets
 
         self.__system_binaries = set()
         try:
             self.__system_binaries.update(
-                executable_targets.get_binaries_of_executable_type(
+                self.__executable_targets.get_binaries_of_executable_type(
                     ExecutableType.SYSTEM))
         except KeyError:
             pass

@@ -30,7 +30,7 @@ def run_system_application(
         Used for on-chip expanders, compressors, etc.
 
     :param ~spinnman.model.ExecutableTargets executable_cores:
-        the cores to run the executable on
+        the cores to run the executable on.
     :param int app_id: the app-id for the executable
     :param bool read_algorithm_iobuf: whether to report IOBUFs
     :param callable check_for_success_function:

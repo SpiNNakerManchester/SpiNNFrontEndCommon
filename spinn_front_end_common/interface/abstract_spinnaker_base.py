@@ -236,9 +236,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # Binaries to run
-        "_executable_targets",
-
         # version of the board to requested or discovered
         "_board_version",
 
@@ -354,7 +351,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.hard_reset()
         self._notification_interface = None
         self._dsg_targets = None
-        self._executable_targets = None
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
         self._max_machine = False
@@ -1781,7 +1777,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
-                self._executable_targets = graph_binary_gatherer()
+                self._data_writer.set_executable_targets(
+                    graph_binary_gatherer())
             except KeyError:
                 if self.use_virtual_board:
                     logger.warning(
@@ -1825,8 +1822,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine bitfield ordered covering compressor") as timer:
             if timer.skip_if_virtual_board():
                 return None
-            machine_bit_field_ordered_covering_compressor(
-                self._executable_targets)
+            machine_bit_field_ordered_covering_compressor()
             self._multicast_routes_loaded = True
             return None
 
@@ -1846,7 +1842,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None
             self._multicast_routes_loaded = True
-            machine_bit_field_pair_router_compressor(self._executable_targets)
+            machine_bit_field_pair_router_compressor()
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -2120,8 +2116,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return None
             return execute_system_data_specs(
-                self._dsg_targets,
-                self._region_sizes, self._executable_targets)
+                self._dsg_targets, self._region_sizes)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2130,7 +2125,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable system Images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            load_sys_images(self._executable_targets)
+            load_sys_images()
 
     def _execute_application_data_specification(
             self, processor_to_app_data_base_address):
@@ -2144,8 +2139,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return processor_to_app_data_base_address
             return execute_application_data_specs(
-                self._dsg_targets,
-                self._executable_targets, self._region_sizes,
+                self._dsg_targets, self._region_sizes,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 processor_to_app_data_base_address)
@@ -2257,7 +2251,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Load executable app images") as timer:
             if timer.skip_if_virtual_board():
                 return
-            load_app_images(self._executable_targets)
+            load_app_images()
 
     def _do_load(self, graph_changed):
         """
@@ -2506,7 +2500,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "extract_iobuf"):
                 return
             # ErrorMessages, WarnMessages output ignored as never used!
-            chip_io_buf_extractor(self._executable_targets)
+            chip_io_buf_extractor()
 
     def _execute_buffer_extractor(self):
         """
@@ -2703,7 +2697,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.exception(f"Could not read provenance due to {pro_e}")
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf = IOBufExtractor(self._executable_targets)
+        iobuf = IOBufExtractor()
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:

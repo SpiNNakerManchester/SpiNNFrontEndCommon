@@ -51,6 +51,7 @@ class _FecDataModel(object):
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_database_file_path",
+        "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
         "_fixed_routes",
@@ -119,6 +120,7 @@ class _FecDataModel(object):
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
+        self._executable_targets = None
         self._fixed_routes = None
         self._ipaddress = None
         self._n_chips_in_graph = None
@@ -739,6 +741,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: dict(
             ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the executable_types is currently unavailable
         """
         if cls.__fec_data._executable_types is None:
             raise cls._exception("executable_types")
@@ -835,3 +839,16 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: str or None
         """
         return cls.__fec_data._database_file_path
+
+    @classmethod
+    def get_executable_targets(cls):
+        """
+        binaries to be executed.
+
+        :rtype: ExecutableTargets
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the executable_targets is currently unavailable
+        """
+        if cls.__fec_data._executable_targets is None:
+            raise cls._exception("executable_targets")
+        return cls.__fec_data._executable_targets

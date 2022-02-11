@@ -121,15 +121,12 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_aplx = compressor_aplx
         self._compressor_type = compressor_type
 
-    def run(
-            self, executable_targets, compress_as_much_as_possible=False):
+    def run(self, compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
@@ -165,7 +162,7 @@ class _MachineBitFieldRouterCompressor(object):
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
          bit_field_compressor_executable_path) = self._generate_core_subsets(
-            routing_tables, progress_bar, executable_targets)
+            routing_tables, progress_bar)
 
         # load data into sdram
         on_host_chips = self._load_data(
@@ -234,8 +231,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         return compressor_executable_targets
 
-    def _generate_core_subsets(
-            self, routing_tables, progress_bar, system_executable_targets):
+    def _generate_core_subsets(self, routing_tables, progress_bar):
         """ generates the core subsets for the binaries
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
@@ -248,8 +244,7 @@ class _MachineBitFieldRouterCompressor(object):
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
 
-        _, cores = filter_targets(
-            system_executable_targets, lambda ty: ty is ExecutableType.SYSTEM)
+        _, cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
         view = FecDataView()
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
@@ -754,30 +749,26 @@ class _MachineBitFieldRouterCompressor(object):
 
 
 def machine_bit_field_ordered_covering_compressor(
-        executable_targets, compress_as_much_as_possible=False):
+        compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
-    return compressor.run(executable_targets, compress_as_much_as_possible)
+    return compressor.run(compress_as_much_as_possible)
 
 
 def machine_bit_field_pair_router_compressor(
-        executable_targets, compress_as_much_as_possible=False):
+        compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
-    return compressor.run(executable_targets, compress_as_much_as_possible)
+    return compressor.run(compress_as_much_as_possible)
