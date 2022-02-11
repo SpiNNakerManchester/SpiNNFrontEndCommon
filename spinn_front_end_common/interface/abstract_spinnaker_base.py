@@ -221,9 +221,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
-        # mapping of live packet recorder parameters to vertex
-        "_live_packet_recorder_parameters_mapping",
-
         # the time the process takes to do mapping
         # TODO energy report cleanup
         "_mapping_time",
@@ -393,7 +390,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_targets = None
         self._extra_monitor_to_chip_mapping = None
         self._extra_monitor_vertices = None
-        self._live_packet_recorder_parameters_mapping = None
         self._max_machine = False
         self._multicast_routes_loaded = False
         self._plan_n_timesteps = None
@@ -1076,12 +1072,17 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _execute_insert_live_packet_gatherers_to_graphs(self):
         """
         Runs, times and logs the InsertLivePacketGatherersToGraphs if required
+
+        :return: mapping between LPG parameters and LPG application and
+            machine vertices
+        :rtype: dict(LivePacketGatherParameters,
+            tuple(LivePacketGather or None,
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
         """
         with FecTimer(
                 MAPPING, "Insert live packet gatherers to graphs") as timer:
             if self._data_writer.has_live_packet_recorder_params():
-                self._live_packet_recorder_parameters_mapping = \
-                    insert_live_packet_gatherers_to_graphs()
+                return insert_live_packet_gatherers_to_graphs()
             else:
                 timer.skip("No live_packet_recorder_params")
 
@@ -1354,7 +1355,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_insert_edges_to_live_packet_gatherers(self):
+    def _execute_insert_edges_to_live_packet_gatherers(
+            self, live_packet_recorder_parameters_mapping):
         """
         Runs, times and logs the InsertEdgesToLivePacketGatherers if required
         """
@@ -1362,7 +1364,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 MAPPING, "Insert edges to live packet gatherers") as timer:
             if self._data_writer.has_live_packet_recorder_params():
                 insert_edges_to_live_packet_gatherers(
-                    self._live_packet_recorder_parameters_mapping)
+                    live_packet_recorder_parameters_mapping)
             else:
                 timer.skip("no live_packet_recorder_params")
 
@@ -1735,7 +1737,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_machine_generator(MAPPING, allocator_data)
         self._json_machine()
         self._execute_chip_id_allocator()
-        self._execute_insert_live_packet_gatherers_to_graphs()
+        live_packet_recorder_parameters_mapping = \
+            self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
         self._execute_insert_chip_power_monitors()
         self._execute_insert_extra_monitor_vertices()
@@ -1744,7 +1747,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_local_tdma_builder()
         self._json_partition_n_keys_map()
         self._do_placer()
-        self._execute_insert_edges_to_live_packet_gatherers()
+        self._execute_insert_edges_to_live_packet_gatherers(
+            live_packet_recorder_parameters_mapping)
         self._execute_insert_edges_to_extra_monitor()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
