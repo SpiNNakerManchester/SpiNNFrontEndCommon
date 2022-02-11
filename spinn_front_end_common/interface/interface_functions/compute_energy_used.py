@@ -17,16 +17,12 @@ import itertools
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceReader
 from spinn_front_end_common.interface.provenance import (
     BUFFER, DATA_GENERATION, LOADING, MAPPING, ProvenanceReader, RUN_LOOP)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import get_simulator
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
