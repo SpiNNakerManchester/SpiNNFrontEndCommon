@@ -31,6 +31,7 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, DataWritten)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
+from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MEM_REGIONS = range(MAX_MEM_REGIONS)
@@ -661,7 +662,8 @@ class _HostExecuteDataSpecification(object):
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        start_address = self._txrx.malloc_sdram(x, y, size, self._app_id)
+        start_address = self._txrx.malloc_sdram(
+            x, y, size, self._app_id, tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
         # set user 0 register appropriately to the application data
         write_address_to_user0(self._txrx, x, y, p, start_address)
