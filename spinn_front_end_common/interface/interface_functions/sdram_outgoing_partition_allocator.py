@@ -18,6 +18,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
 def sdram_outgoing_partition_allocator():
@@ -34,6 +35,9 @@ def sdram_outgoing_partition_allocator():
         total_number_of_things_to_do=len(machine_graph.vertices),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
+
+    # Keep track of SDRAM tags used
+    next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
     for machine_vertex in machine_graph.vertices:
         sdram_partitions = (
@@ -63,8 +67,10 @@ def sdram_outgoing_partition_allocator():
 
             # allocate
             if transceiver is not None:
+                tag = next_tag[placement.x, placement.y]
+                next_tag[placement.x, placement.y] = tag + 1
                 sdram_base_address = transceiver.malloc_sdram(
-                    placement.x, placement.y, total_sdram, app_id)
+                    placement.x, placement.y, total_sdram, app_id, tag)
             else:
                 sdram_base_address = virtual_usage[
                     placement.x, placement.y]

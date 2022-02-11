@@ -28,10 +28,9 @@ from spinn_front_end_common.utilities.system_control_logic import (
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     get_defaultable_source_id)
+from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
 _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")
-# The SDRAM Tag used by the application - note this is fixed in the APLX
-_SDRAM_TAG = 1
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -155,7 +154,8 @@ class Compression(object):
 
         # go to spinnman and ask for a memory region of that size per chip.
         base_address = transceiver.malloc_sdram(
-            table.x, table.y, len(data), self._compressor_app_id, _SDRAM_TAG)
+            table.x, table.y, len(data), self._compressor_app_id,
+            COMPRESSOR_SDRAM_TAG)
 
         # write SDRAM requirements per chip
         transceiver.write_memory(table.x, table.y, base_address, data)

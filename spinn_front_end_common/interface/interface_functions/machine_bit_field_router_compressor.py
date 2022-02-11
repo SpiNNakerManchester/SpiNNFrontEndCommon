@@ -45,6 +45,9 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.constants import (
+    BIT_FIELD_COMMS_SDRAM_TAG, BIT_FIELD_USABLE_SDRAM_TAG,
+    BIT_FIELD_ADDRESSES_SDRAM_TAG, BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)
 from .load_executable_images import filter_targets
 from .host_bit_field_router_compressor import (
     generate_key_to_atom_map, generate_report_path,
@@ -376,7 +379,8 @@ class _MachineBitFieldRouterCompressor(object):
 
                     comms_sdram = transceiver.malloc_sdram(
                         table.x, table.y, SIZE_OF_COMMS_SDRAM,
-                        routing_table_compressor_app_id)
+                        routing_table_compressor_app_id,
+                        BIT_FIELD_COMMS_SDRAM_TAG)
 
                     self._load_address_data(
                         addresses, table.x, table.y, transceiver,
@@ -462,7 +466,8 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             sdram_address = transceiver.malloc_sdram(
                 chip_x, chip_y, len(address_data),
-                routing_table_compressor_app_id)
+                routing_table_compressor_app_id,
+                BIT_FIELD_USABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
             sdram_address = self._steal_from_matrix_addresses(
@@ -534,7 +539,8 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             sdram_address = transceiver.malloc_sdram(
                 chip_x, chip_y, len(address_data),
-                routing_table_compressor_app_id)
+                routing_table_compressor_app_id,
+                BIT_FIELD_ADDRESSES_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
             sdram_address = self._steal_from_matrix_addresses(
@@ -578,7 +584,8 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             base_address = transceiver.malloc_sdram(
                 table.x, table.y, len(routing_table_data),
-                routing_table_compressor_app_id)
+                routing_table_compressor_app_id,
+                BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
             base_address = self._steal_from_matrix_addresses(
