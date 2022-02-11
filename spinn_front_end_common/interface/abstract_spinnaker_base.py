@@ -1733,6 +1733,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
 
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                MAPPING, mapping_total_timer.take_sample(),
+                self._n_calls_to_run, self._n_loops)
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -2529,6 +2533,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # FinaliseTimingData never needed as just pushed self._ to inputs
         self._do_read_provenance()
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                RUN_LOOP, self._run_timer.take_sample(),
+                self._n_calls_to_run, self._n_loops)
         self._report_energy()
         self._do_provenance_reports()
 

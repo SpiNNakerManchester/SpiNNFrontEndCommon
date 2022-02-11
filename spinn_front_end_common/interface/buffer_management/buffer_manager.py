@@ -586,6 +586,9 @@ class BufferManager(object):
                 else:
                     self.__old_get_data_for_placements(
                         recording_placements, progress)
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                BUFFER, timer.measured_interval, None, None)
 
     def __old_get_data_for_placements_with_monitors(
             self, recording_placements, progress):
