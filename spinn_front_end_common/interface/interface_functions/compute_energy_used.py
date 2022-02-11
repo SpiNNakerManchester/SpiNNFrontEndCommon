@@ -18,11 +18,15 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceReader
+from spinn_front_end_common.interface.provenance import (
+    BUFFER, DATA_GENERATION, LOADING, MAPPING, ProvenanceReader, RUN_LOOP)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import get_simulator
+from spinn_front_end_common.utilities.globals_variables import (
+    time_scale_factor)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -61,25 +65,13 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        version, mapping_time,
-        load_time, execute_time, dsg_time, extraction_time,
-        spalloc_server=None, remote_spinnaker_url=None,
+        version, spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
 
     :param int version:
         The version of the SpiNNaker boards in use.
-    :param float mapping_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float load_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float execute_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float dsg_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float extraction_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
     :param spalloc_server: (optional)
     :type spalloc_server: str or None
     :param remote_spinnaker_url: (optional)
@@ -94,6 +86,14 @@ def compute_energy_used(
             FecDataView.get_time_scale_factor())
     machine = FecDataView.get_machine()
     placements = FecDataView.get_placements()
+    db = ProvenanceReader()
+    dsg_time = db.get_category_timer_sum(DATA_GENERATION)
+    execute_time = db.get_category_timer_sum(RUN_LOOP)
+    # TODO some extraction time is also execute_time
+    extraction_time = db.get_category_timer_sum(BUFFER)
+    load_time = db.get_category_timer_sum(LOADING)
+    mapping_time = db.get_category_timer_sum(MAPPING)
+    # TODO get_machine not include here
     power_used = PowerUsed()
 
     power_used.num_chips = machine.n_chips
@@ -457,7 +457,7 @@ def _calculate_data_extraction_energy(machine, active_chips, n_frames):
 
     # find time
     # TODO is this what was desired
-    total_time_ms = get_simulator()._execute_time
+    total_time_ms = ProvenanceReader().get_category_timer_sum(BUFFER)
 
     # min between chips that are active and fixed monitor, as when 1
     # chip is used its one monitor, if more than 1 chip,

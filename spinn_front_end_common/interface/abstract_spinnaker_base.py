@@ -125,8 +125,6 @@ from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.helpful_functions import (
-    convert_time_diff_to_total_milliseconds)
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
     fixed_route_from_machine_report, memory_map_on_host_report,
@@ -221,29 +219,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
-        # the time the process takes to do mapping
-        # TODO energy report cleanup
-        "_mapping_time",
-
-        # the time the process takes to do load
-        # TODO energy report cleanup
-        "_load_time",
-
-        # the time takes to execute the simulation
-        # TODO energy report cleanup
-        "_execute_time",
-
         # the timer used to log the execute time
         # TODO energy report cleanup
         "_run_timer",
-
-        # time takes to do data generation
-        # TODO energy report cleanup
-        "_dsg_time",
-
-        # time taken by the front end extracting things
-        # TODO energy report cleanup
-        "_extraction_time",
 
         # Used in exception handling and control c
         "_last_except_hook",
@@ -321,13 +299,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pylint: disable=too-many-arguments
         super().__init__(data_writer_cls)
 
-        # timings
-        self._mapping_time = 0.0
-        self._load_time = 0.0
-        self._execute_time = 0.0
-        self._dsg_time = 0.0
-        self._extraction_time = 0.0
-
         # output locations of binaries to be searched for end user info
         logger.info(
             "Will search these locations for binaries: {}",
@@ -402,14 +373,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _machine_clear(self):
         pass
-
-    def add_extraction_timing(self, timing):
-        """ Record the time taken for doing data extraction.
-
-        :param ~datetime.timedelta timing:
-        """
-        ms = convert_time_diff_to_total_milliseconds(timing)
-        self._extraction_time += ms
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution.
@@ -1770,8 +1733,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
 
-        self._mapping_time += convert_time_diff_to_total_milliseconds(
-            mapping_total_timer.take_sample())
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -1795,8 +1756,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_graph_data_specification_writer()
 
-        self._dsg_time += convert_time_diff_to_total_milliseconds(
-            data_gen_timer.take_sample())
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                DATA_GENERATION, data_gen_timer.take_sample(),
+                self._n_calls_to_run, self._n_loops)
 
     def _execute_routing_setup(self,):
         """
@@ -2338,8 +2301,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_fixed_routes()
         self._execute_application_load_executables()
 
-        self._load_time += convert_time_diff_to_total_milliseconds(
-            load_timer.take_sample())
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                LOADING, load_timer.take_sample(),
+                self._n_calls_to_run, self._n_loops)
 
     def _execute_sdram_usage_report_per_chip(self):
         # TODO why in do run
@@ -2434,9 +2399,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # TODO runtime is None
             power_used = compute_energy_used(
-                self._board_version, self._mapping_time,
-                self._load_time, self._execute_time, self._dsg_time,
-                self._extraction_time,
+                self._board_version,
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
@@ -2566,8 +2529,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # FinaliseTimingData never needed as just pushed self._ to inputs
         self._do_read_provenance()
-        self._execute_time += convert_time_diff_to_total_milliseconds(
-            self._run_timer.take_sample())
         self._report_energy()
         self._do_provenance_reports()
 

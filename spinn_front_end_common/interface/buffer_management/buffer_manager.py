@@ -37,11 +37,12 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.provenance import (
+    BUFFER, ProvenanceWriter)
 from .recording_utilities import get_recording_header_size
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -585,7 +586,6 @@ class BufferManager(object):
                 else:
                     self.__old_get_data_for_placements(
                         recording_placements, progress)
-        get_simulator().add_extraction_timing(timer.measured_interval)
 
     def __old_get_data_for_placements_with_monitors(
             self, recording_placements, progress):

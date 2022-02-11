@@ -23,7 +23,6 @@ from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _n_word_structs = []
@@ -173,17 +172,6 @@ def get_ethernet_chip(machine, board_address):
     raise ConfigurationException(
         "cannot find the Ethernet connected chip with the board address {}"
         .format(board_address))
-
-
-def convert_time_diff_to_total_milliseconds(sample):
-    """ Convert between a time diff and total milliseconds.
-
-    :param ~datetime.timedelta sample:
-    :return: total milliseconds
-    :rtype: float
-    """
-    return ((sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
-            (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
 
 def determine_flow_states(executable_types, no_sync_changes):
