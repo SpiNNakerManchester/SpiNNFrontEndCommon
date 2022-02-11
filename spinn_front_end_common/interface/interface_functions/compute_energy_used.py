@@ -16,13 +16,14 @@
 import itertools
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.ordered_set import OrderedSet
-from spinn_front_end_common.interface.provenance import ProvenanceReader
+from spinn_front_end_common.interface.provenance import (
+    BUFFER, DATA_GENERATION, LOADING, MAPPING, ProvenanceReader, RUN_LOOP)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator, time_scale_factor)
+    time_scale_factor)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -61,8 +62,7 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used(
-        placements, machine, version, runtime, buffer_manager, mapping_time,
-        load_time, execute_time, dsg_time, extraction_time,
+        placements, machine, version, runtime, buffer_manager,
         spalloc_server=None, remote_spinnaker_url=None,
         machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
@@ -93,7 +93,14 @@ def compute_energy_used(
     :rtype: PowerUsed
     """
     # pylint: disable=too-many-arguments
-
+    db = ProvenanceReader()
+    dsg_time = db.get_category_timer_sum(DATA_GENERATION)
+    execute_time = db.get_category_timer_sum(RUN_LOOP)
+    # TODO some extraction time is also execute_time
+    extraction_time = db.get_category_timer_sum(BUFFER)
+    load_time = db.get_category_timer_sum(LOADING)
+    mapping_time = db.get_category_timer_sum(MAPPING)
+    # TODO get_machine not include here
     power_used = PowerUsed()
 
     power_used.num_chips = machine.n_chips
@@ -460,8 +467,7 @@ def _calculate_data_extraction_energy(machine, active_chips, n_frames):
 
     # find time
     # TODO is this what was desired
-    # pylint: disable=protected-access
-    total_time_ms = get_simulator()._execute_time
+    total_time_ms = ProvenanceReader().get_category_timer_sum(BUFFER)
 
     # min between chips that are active and fixed monitor, as when 1
     # chip is used its one monitor, if more than 1 chip,
