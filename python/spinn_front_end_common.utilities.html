@@ -96,6 +96,12 @@
 </section>
 <section id="module-spinn_front_end_common.utilities.constants">
 <span id="spinn-front-end-common-utilities-constants-module"></span><h2>spinn_front_end_common.utilities.constants module<a class="headerlink" href="#module-spinn_front_end_common.utilities.constants" title="Permalink to this headline">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.BIT_FIELD_COMMS_SDRAM_TAG">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">BIT_FIELD_COMMS_SDRAM_TAG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.BIT_FIELD_COMMS_SDRAM_TAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>SDRAM Tags used for bitfield compressor</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">BUFFERING_OPERATIONS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/constants.html#BUFFERING_OPERATIONS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.constants.BUFFERING_OPERATIONS" title="Permalink to this definition">¶</a></dt>
@@ -117,6 +123,19 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.CLOCKS_PER_US">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">CLOCKS_PER_US</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.CLOCKS_PER_US" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of clock cycles per micro-second (at 200Mhz)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.COMPRESSOR_SDRAM_TAG">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">COMPRESSOR_SDRAM_TAG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.COMPRESSOR_SDRAM_TAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>SDRAM Tag used by the compressor to find the routing tables</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.CORE_DATA_SDRAM_BASE_TAG">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">CORE_DATA_SDRAM_BASE_TAG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">200</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.CORE_DATA_SDRAM_BASE_TAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base SDRAM tag used by cores when loading data
+(tags 201-217 will be used by cores 1-17)</p>
 </dd></dl>
 
 <dl class="py data">
@@ -252,6 +271,13 @@ protocol.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.SDRAM_BASE_ADDR">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">SDRAM_BASE_ADDR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1879048192</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDRAM_BASE_ADDR" title="Permalink to this definition">¶</a></dt>
 <dd><p>start of where SDRAM starts (either unbuffered or buffered)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.constants.SDRAM_EDGE_BASE_TAG">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.constants.</span></span><span class="sig-name descname"><span class="pre">SDRAM_EDGE_BASE_TAG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.constants.SDRAM_EDGE_BASE_TAG" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base SDRAM tag used by SDRAM edges when allocating
+(allows up to 100 edges per chip)</p>
 </dd></dl>
 
 <dl class="py data">

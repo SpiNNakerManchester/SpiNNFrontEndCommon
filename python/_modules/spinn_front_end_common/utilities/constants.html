@@ -162,6 +162,23 @@
 <span class="n">CLOCKS_PER_US</span> <span class="o">=</span> <span class="mi">200</span>
 
 <span class="n">PROVENANCE_DB</span> <span class="o">=</span> <span class="s2">&quot;provenance.sqlite3&quot;</span>
+
+<span class="c1">#: SDRAM Tag used by the compressor to find the routing tables</span>
+<span class="n">COMPRESSOR_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1">#: SDRAM Tags used for bitfield compressor</span>
+<span class="n">BIT_FIELD_COMMS_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">BIT_FIELD_USABLE_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">BIT_FIELD_ADDRESSES_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">BIT_FIELD_ROUTING_TABLE_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="c1">#: Base SDRAM tag used by SDRAM edges when allocating</span>
+<span class="c1">#: (allows up to 100 edges per chip)</span>
+<span class="n">SDRAM_EDGE_BASE_TAG</span> <span class="o">=</span> <span class="mi">100</span>
+
+<span class="c1">#: Base SDRAM tag used by cores when loading data</span>
+<span class="c1">#: (tags 201-217 will be used by cores 1-17)</span>
+<span class="n">CORE_DATA_SDRAM_BASE_TAG</span> <span class="o">=</span> <span class="mi">200</span>
 </pre></div>
 
             <div class="clearer"></div>
