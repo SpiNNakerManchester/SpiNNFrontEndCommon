@@ -106,12 +106,10 @@ class _SpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(spalloc_server):
+def spalloc_allocator():
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
-    :param str spalloc_server:
-        The server from which the machine should be requested
     :rtype: tuple(str, int, None, bool, bool, None, None,
         MachineAllocationController)
     """
@@ -130,8 +128,8 @@ def spalloc_allocator(spalloc_server):
         n_boards = int(math.ceil(n_boards))
 
     spalloc_kw_args = {
-        'hostname': spalloc_server,
-        'owner': get_config_str("Machine", "spalloc_user"),
+        'hostname': get_config_str("Machine", "spalloc_server"),
+        'owner': get_config_str("Machine", "spalloc_user")
     }
     spalloc_port = get_config_int("Machine", "spalloc_port")
     if spalloc_port is not None:

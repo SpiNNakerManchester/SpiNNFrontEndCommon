@@ -16,7 +16,7 @@
 from collections import defaultdict
 import logging
 import os
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
@@ -37,7 +37,7 @@ class EnergyReport(object):
         consumed by a SpiNNaker job execution.
     """
 
-    __slots__ = ("__uses_spalloc")
+    __slots__ = ()
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -46,12 +46,6 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def __init__(self, spalloc_server, remote_spinnaker_url):
-        """
-        :param str spalloc_server: spalloc server IP
-        :param str remote_spinnaker_url: remote SpiNNaker URL
-        """
-        self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
     def write_energy_report(self, power_used):
         """ Writes the report.
@@ -225,7 +219,8 @@ class EnergyReport(object):
         """
         version = get_config_int("Machine", "version")
         # if not spalloc, then could be any type of board
-        if not self.__uses_spalloc:
+        if (not get_config_str("Machine", "spalloc_server") and
+                not get_config_str("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if version in (2, 3):
                 f.write(

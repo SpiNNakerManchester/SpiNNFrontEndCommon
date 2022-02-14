@@ -141,13 +141,14 @@ class TestWriteJson(unittest.TestCase):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
             "Machine", "spalloc_user", "Integration testing ok to kill")
+        set_config("Machine", "spalloc_server", self.spalloc)
         set_config("Machine", "spalloc_port", self.spin2Port)
 
         writer = FecDataWriter.mock()
         writer.set_n_chips_in_graph(20)
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spalloc_allocator(spalloc_server=self.spalloc)
+                spalloc_allocator()
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 
