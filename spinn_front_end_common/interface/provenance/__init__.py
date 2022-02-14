@@ -30,6 +30,7 @@ LOADING = "loading"
 RUN_LOOP = "running"
 # Algorithm Names used elsewhere
 APPLICATION_RUNNER = "Application runner"
+BUFFER = "BufferExtraction"
 
 __all__ = ["AbstractProvidesLocalProvenanceData",
            "AbstractProvidesProvenanceDataFromMachine",

@@ -19,14 +19,14 @@ from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
 
 
-def spalloc_max_machine_generator(spalloc_server):
+def spalloc_max_machine_generator():
     """
     Generates a maximum virtual machine a given allocation server can generate.
 
-    :param str spalloc_server:
     :return: A virtual machine
     :rtype: ~spinn_machine.Machine
     """
+    spalloc_server = get_config_str("Machine", "spalloc_server")
     spalloc_port = get_config_int("Machine", "spalloc_port")
     spalloc_machine = get_config_str("Machine", "spalloc_machine")
     max_machine_core_reduction = get_config_int(
