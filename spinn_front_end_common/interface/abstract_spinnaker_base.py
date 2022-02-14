@@ -830,6 +830,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return None
+        if get_config_str("Machine", "spalloc_server") is not None:
+            with FecTimer(category, "SpallocAllocator"):
+                return spalloc_allocator()
+        if get_config_str("Machine", "remote_spinnaker_url") is not None:
+            with FecTimer(category, "HBPAllocator"):
+                return hbp_allocator()
+
 
     def _execute_machine_generator(self, category, allocator_data):
         """
@@ -848,6 +855,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return
+        machine_name = get_config_str("Machine", "machine_name")
+        if machine_name is not None:
+            self._data_writer.set_ipaddress(machine_name)
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
