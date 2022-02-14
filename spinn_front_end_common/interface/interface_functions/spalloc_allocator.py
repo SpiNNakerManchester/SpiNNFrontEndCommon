@@ -173,13 +173,10 @@ class _OldSpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None,
-                      bearer_token=None):
+def spalloc_allocator(n_chips=None, n_boards=None, bearer_token=None):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
-    :param str spalloc_server:
-        The server from which the machine should be requested
     :param n_chips: The number of chips required.
         IGNORED if n_boards is not None
     :type n_chips: int or None
@@ -192,6 +189,7 @@ def spalloc_allocator(spalloc_server, n_chips=None, n_boards=None,
     """
 
     # Work out how many boards are needed
+    spalloc_server = get_config_str("Machine", "spalloc_server")
     if n_boards is None:
         n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
         # If the number of boards rounded up is less than 10% of a board
@@ -233,16 +231,17 @@ def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
         logger.debug("boards: {}",
                      str(connections).replace("{", "[").replace("}", "]"))
         allocation_controller = _NewSpallocJobController(client, job, task)
-        # Success; we don't want to close the client now
+        # Success! We don't want to close the client or task now;
+        # the allocation controller now owns them.
         client = None
         task = None
         return (
             root, _MACHINE_VERSION, None, False, False, connections, None,
             allocation_controller)
     finally:
-        if task is not None:
+        if task:
             task.close()
-        if client is not None:
+        if client:
             client.close()
 
 
@@ -289,7 +288,15 @@ def _launch_checked_job_old(n_boards, spalloc_kwargs):
     avoid_jobs = []
     try:
         while True:
-            job, hostname = _launch_job_old(n_boards, spalloc_kwargs)
+            job = Job(n_boards, **spalloc_kwargs)
+            try:
+                job.wait_until_ready()
+                # get param from jobs before starting, so that hanging doesn't
+                # occur
+                hostname = job.hostname
+            except Exception as ex:
+                job.destroy(str(ex))
+                raise
             connections = job.connections
             logger.info("boards: {}",
                         str(connections).replace("{", "[").replace("}", "]"))
@@ -311,18 +318,3 @@ def _launch_checked_job_old(n_boards, spalloc_kwargs):
         for avoid_job in avoid_jobs:
             avoid_job.destroy("Asked to avoid by cfg")
     return job, hostname, connections
-
-
-def _launch_job_old(n_boards, spalloc_kwargs):
-    """
-    :rtype: tuple(~.Job, str)
-    """
-    job = Job(n_boards, **spalloc_kwargs)
-    try:
-        job.wait_until_ready()
-        # get param from jobs before starting, so that hanging doesn't
-        # occur
-        return job, job.hostname
-    except Exception as ex:
-        job.destroy(str(ex))
-        raise

@@ -21,7 +21,7 @@ from spinn_front_end_common.utilities.spalloc import (
     SpallocClient, parse_old_spalloc)
 
 
-def spalloc_max_machine_generator(spalloc_server, bearer_token=None):
+def spalloc_max_machine_generator(bearer_token=None):
     """
     Generates a maximum virtual machine a given allocation server can generate.
 
@@ -30,6 +30,7 @@ def spalloc_max_machine_generator(spalloc_server, bearer_token=None):
     :return: A virtual machine
     :rtype: ~spinn_machine.Machine
     """
+    spalloc_server = get_config_str("Machine", "spalloc_server")
     spalloc_machine = get_config_str("Machine", "spalloc_machine")
     if SpallocClient.is_server_address(spalloc_server):
         width, height = discover_max_machine_area_new(
