@@ -65,7 +65,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 1, 1, [(0, 0, 1), (0, 0, 2)], [], ["default"])
         server.start()
         set_config("Machine", "spalloc_port", server.port)
-        machine = spalloc_max_machine_generator("localhost")
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, 7)
         self.assertEqual(machine.max_chip_y, 7)
 
@@ -74,7 +75,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 1, 1, [], [], ["default"])
         server.start()
         set_config("Machine", "spalloc_port", server.port)
-        machine = spalloc_max_machine_generator("localhost")
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, 11)
         self.assertEqual(machine.max_chip_y, 11)
 
@@ -84,7 +86,8 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server.start()
         set_config("Machine", "spalloc_port", server.port)
         set_config("Machine", "spalloc_machine", "test")
-        machine = spalloc_max_machine_generator("localhost")
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, (12 * 3) - 1)
         self.assertEqual(machine.max_chip_y, (12 * 2) - 1)
 
