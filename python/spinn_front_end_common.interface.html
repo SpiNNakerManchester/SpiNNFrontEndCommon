@@ -225,6 +225,14 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.check_machine_specifics">
+<span class="sig-name descname"><span class="pre">check_machine_specifics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.check_machine_specifics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.check_machine_specifics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks machine specifics for the different modes of execution.</p>
+<p>Not this can only be called from a class that sets the config file
+to read this data from.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">
 <span class="sig-name descname"><span class="pre">continue_simulation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.continue_simulation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Continue a simulation that has been started in stepped mode</p>
@@ -490,17 +498,6 @@ requirements have be computed based on the graph.</p>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p>ConfigurationException
 If any machine requirements have already been set</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics">
-<span class="sig-name descname"><span class="pre">set_up_machine_specifics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.set_up_machine_specifics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.set_up_machine_specifics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds machine specifics for the different modes of execution.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>hostname</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – machine name</p>
 </dd>
 </dl>
 </dd></dl>

@@ -54,6 +54,7 @@
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_config_int</span><span class="p">,</span> <span class="n">get_config_str</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">LOADING</span><span class="p">,</span> <span class="n">ProvenanceReader</span><span class="p">)</span>
@@ -77,7 +78,7 @@
 <span class="sd">        consumed by a SpiNNaker job execution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;__version&quot;</span><span class="p">,</span> <span class="s2">&quot;__uses_spalloc&quot;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="c1">#: converter between joules to kilowatt hours</span>
     <span class="n">JOULES_TO_KILOWATT_HOURS</span> <span class="o">=</span> <span class="mi">3600000</span>
@@ -85,15 +86,6 @@
     <span class="c1"># energy report file name</span>
     <span class="n">_DETAILED_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;detailed_energy_report.rpt&quot;</span>
     <span class="n">_SUMMARY_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;summary_energy_report.rpt&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">remote_spinnaker_url</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int version: version of machine</span>
-<span class="sd">        :param str spalloc_server: spalloc server IP</span>
-<span class="sd">        :param str remote_spinnaker_url: remote SpiNNaker URL</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__version</span> <span class="o">=</span> <span class="n">version</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__uses_spalloc</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">spalloc_server</span> <span class="ow">or</span> <span class="n">remote_spinnaker_url</span><span class="p">)</span>
 
 <div class="viewcode-block" id="EnergyReport.write_energy_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report">[docs]</a>    <span class="k">def</span> <span class="nf">write_energy_report</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
@@ -279,15 +271,17 @@
 <span class="sd">        :param ~io.TextIOBase f: the file writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
+        <span class="n">version</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">)</span>
         <span class="c1"># if not spalloc, then could be any type of board</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__uses_spalloc</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_server&quot;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;remote_spinnaker_url&quot;</span><span class="p">)):</span>
             <span class="c1"># if a spinn2 or spinn3 (4 chip boards) then they have no fpgas</span>
-            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__version</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;A SpiNN-</span><span class="si">{}</span><span class="s2"> board does not contain any FPGA&#39;s, and so &quot;</span>
-                    <span class="s2">&quot;its energy cost is 0 </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__version</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">&quot;A SpiNN-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> board does not contain any FPGA&#39;s,&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; and so its energy cost is 0 </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span>
-            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__version</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
                 <span class="c1"># no idea where we are; version unrecognised</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="s2">&quot;Do not know what the FPGA setup is for this version of &quot;</span>
@@ -298,14 +292,13 @@
             <span class="k">if</span> <span class="n">power_used</span><span class="o">.</span><span class="n">num_fpgas</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># no active fpgas</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;The FPGA&#39;s on the SpiNN-</span><span class="si">{}</span><span class="s2"> board are turned off and &quot;</span>
-                    <span class="s2">&quot;therefore the energy used by the FPGA is 0</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__version</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">&quot;The FPGA&#39;s on the SpiNN-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> board are turned off &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;and therefore the energy used by the FPGA is 0</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span>
             <span class="c1"># active fpgas; fall through to shared main part report</span>
 
         <span class="c1"># print out as needed for spalloc and non-spalloc versions</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">version</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
                 <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> FPGAs on the Spalloc-ed boards are turned on and &quot;</span>
                 <span class="s2">&quot;therefore the energy used by the FPGA during the entire time &quot;</span>
@@ -320,7 +313,7 @@
                 <span class="s2">&quot;therefore the energy used by the FPGA during the entire time &quot;</span>
                 <span class="s2">&quot;the machine was booted (which was </span><span class="si">{}</span><span class="s2"> ms) is </span><span class="si">{}</span><span class="s2">. &quot;</span>
                 <span class="s2">&quot;The usage during execution was </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">power_used</span><span class="o">.</span><span class="n">num_fpgas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__version</span><span class="p">,</span>
+                    <span class="n">power_used</span><span class="o">.</span><span class="n">num_fpgas</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span>
                     <span class="n">power_used</span><span class="o">.</span><span class="n">total_time_secs</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span>
                     <span class="n">power_used</span><span class="o">.</span><span class="n">fpga_total_energy_joules</span><span class="p">,</span>
                     <span class="n">power_used</span><span class="o">.</span><span class="n">fpga_exec_energy_joules</span><span class="p">))</span>

@@ -256,7 +256,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.compute_energy_used">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">compute_energy_used</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spalloc_server</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_spinnaker_url</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_allocation_controller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.compute_energy_used" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">compute_energy_used</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_allocation_controller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.compute_energy_used" title="Permalink to this definition">¶</a></dt>
 <dd><p>This algorithm does the actual work of computing energy used by a        simulation (or other application) running on SpiNNaker.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -496,12 +496,11 @@ graph.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.hbp_allocator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hbp_server_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_allocator" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_allocator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request a machine from the HBP remote access server that will fit        a number of chips.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>hbp_server_url</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The URL of the HBP server from which to get the machine</p></li>
 <li><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p></li>
 <li><p><strong>n_chips</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of chips required.
 Only used if n_boards is None</p></li>
@@ -525,14 +524,11 @@ boot port, allocation controller</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.hbp_max_machine_generator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_max_machine_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hbp_server_url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_max_machine_generator" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_max_machine_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_max_machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a virtual machine of the width and height of the maximum        machine a given HBP server can generate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>hbp_server_url</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The URL of the HBP server from which to get the machine</p></li>
-<li><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p></li>
-</ul>
+<dd class="field-odd"><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
@@ -995,12 +991,11 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.spalloc_allocator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spalloc_server</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_allocator" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_allocator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request a machine from a SPALLOC server that will fit the given        number of chips.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spalloc_server</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The server from which the machine should be requested</p></li>
 <li><p><strong>n_chips</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The number of chips required.
 IGNORED if n_boards is not None</p></li>
 <li><p><strong>n_boards</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The number of boards required</p></li>
@@ -1015,17 +1010,14 @@ IGNORED if n_boards is not None</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.spalloc_max_machine_generator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_max_machine_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spalloc_server</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_max_machine_generator" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_max_machine_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_max_machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a maximum virtual machine a given allocation server can generate.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>spalloc_server</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A virtual machine</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A virtual machine</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
 </dd>
 </dl>
 </dd></dl>
