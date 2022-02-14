@@ -49,8 +49,6 @@ class ConfigHandler(object):
     """
 
     __slots__ = [
-        #
-        "_use_virtual_board",
 
         # The writer and therefor view of the global data
         "_data_writer"
@@ -70,7 +68,6 @@ class ConfigHandler(object):
             self._data_writer = FecDataWriter.setup()
 
         # set up machine targeted data
-        self._use_virtual_board = get_config_bool("Machine", "virtual_board")
         self._debug_configs()
         self._previous_handler()
 
@@ -101,7 +98,7 @@ class ConfigHandler(object):
                         logger.info(
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
-        if self._use_virtual_board:
+        if  get_config_bool("Machine", "virtual_board"):
             # TODO handle in the execute methods
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")

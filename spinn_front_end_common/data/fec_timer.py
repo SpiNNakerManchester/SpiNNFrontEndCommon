@@ -115,8 +115,8 @@ class FecTimer(object):
             return True
 
     def skip_if_virtual_board(self):
-        if _simulator.use_virtual_board:
-            self.skip("simulator.use_virtual_board")
+        if get_config_bool("Machine", "virtual_board"):
+            self.skip("virtual_board")
             return True
         else:
             return False

@@ -536,7 +536,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
 
         # verify that we can keep doing auto pause and resume
-        if self._has_ran and not self._use_virtual_board:
+        if self._has_ran and not get_config_bool("Machine", "virtual_board"):
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in
@@ -584,7 +584,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # build the graphs to modify with system requirements
         if not self._has_ran or graph_changed:
             # Reset the machine if the graph has changed
-            if not self._use_virtual_board and self._n_calls_to_run > 1:
+            if (not get_config_bool("Machine", "virtual_board") and
+                    self._n_calls_to_run > 1):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
@@ -611,7 +612,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
-        if not self._use_virtual_board:
+        if not get_config_bool("Machine", "virtual_board"):
             for executable_type in self._data_writer.get_executable_types():
                 if not executable_type.supports_auto_pause_and_resume:
                     set_config(
@@ -919,7 +920,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~spinn_machine.Machine
         """
         if not self._data_writer.has_machine():
-            if self._use_virtual_board:
+            if get_config_bool("Machine", "virtual_board"):
                 self._execute_get_virtual_machine()
             else:
                 allocator_data = self._execute_allocator(
@@ -1747,7 +1748,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.set_executable_targets(
                     graph_binary_gatherer())
             except KeyError:
-                if self.use_virtual_board:
+                if get_config_bool("Machine", "virtual_board"):
                     logger.warning(
                         "Ignoring exectable not found as using virtual")
                     timer.error("exectable not found and virtual board")
@@ -1919,7 +1920,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return compressed
 
     def _compressor_name(self):
-        if self.use_virtual_board:
+        if get_config_bool("Machine", "virtual_board"):
             name = get_config_str("Mapping", "virtual_compressor")
             if name is None:
                 logger.info("As no virtual_compressor specified "
@@ -2782,14 +2783,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._data_writer.get_machine()
 
     @property
-    def use_virtual_board(self):
-        """ True if this run is using a virtual machine
-
-        :rtype: bool
-        """
-        return self._use_virtual_board
-
-    @property
     def n_calls_to_run(self):
         """
         The number for this or the next end_user call to run
@@ -2979,7 +2972,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if (self._has_ran
                 and self._data_writer.get_current_run_timesteps() is None
-                and not self._use_virtual_board
+                and not get_config_bool("Machine", "virtual_board")
                 and not self._run_until_complete):
             try:
                 self._do_stop_workflow()
