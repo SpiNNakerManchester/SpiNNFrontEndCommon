@@ -186,22 +186,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_n_chips_required",
 
         # The IP-address of the SpiNNaker machine
-        # provided during init and never changed
-        # init or cfg param and never changed
-        "_hostname",
-
-        # The IP-address of the SpiNNaker machine
         # Either hostname or the ipaddress form the allocator
         "_ipaddress",
-
-        # the ip_address of the spalloc server
-        # provided during init and never changed
-        # cfg param and never changed
-        "_spalloc_server",
-
-        # the URL for the HBP platform interface
-        # cfg param and never changed
-        "_remote_spinnaker_url",
 
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
@@ -445,8 +431,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException(
                 "Please use at most one of n_chips_required or "
                 "n_boards_required")
-        self._spalloc_server = None
-        self._remote_spinnaker_url = None
 
         # store for Live Packet Gatherers
         self._live_packet_recorder_params = defaultdict(list)
@@ -506,7 +490,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
-        self._hostname = None
 
         FecTimer.setup(self)
 
@@ -717,46 +700,35 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only one type of graph can be used during live output. "
                 "Please fix and try again")
 
-    def set_up_machine_specifics(self, hostname):
-        """ Adds machine specifics for the different modes of execution.
+    def check_machine_specifics(self):
+        """ Checks machine specifics for the different modes of execution.
 
-        :param str hostname: machine name
+        Not this can only be called from a class that sets the config file
+        to read this data from.
         """
-        if hostname is not None:
-            self._hostname = hostname
-            logger.warning("The machine name from setup call is overriding "
-                           "the machine name defined in the config file")
-        else:
-            self._hostname = get_config_str("Machine", "machine_name")
-            self._spalloc_server = get_config_str(
-                "Machine", "spalloc_server")
-            self._remote_spinnaker_url = get_config_str(
-                "Machine", "remote_spinnaker_url")
+        n_items_specified = 0
+        if get_config_str("Machine", "machine_name"):
+            n_items_specified += 1
+        if get_config_str("Machine", "spalloc_server"):
+            if get_config_str("Machine", "spalloc_user") is None:
+                raise Exception(
+                    "A spalloc_user must be specified with a spalloc_server")
+            n_items_specified += 1
+        if get_config_str("Machine", "remote_spinnaker_url"):
+            n_items_specified += 1
+        if get_config_bool("Machine", "virtual_board"):
+            n_items_specified += 1
 
-        if (self._hostname is None and self._spalloc_server is None and
-                self._remote_spinnaker_url is None and
-                not self._use_virtual_board):
+        if n_items_specified == 0:
             raise ConfigurationException(
                 "See http://spinnakermanchester.github.io/spynnaker/"
                 "PyNNOnSpinnakerInstall.html Configuration Section")
 
-        n_items_specified = sum(
-            item is not None
-            for item in [
-                self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url])
-
-        if (n_items_specified > 1 or
-                (n_items_specified == 1 and self._use_virtual_board)):
+        if n_items_specified > 1:
             raise Exception(
                 "Only one of machineName, spalloc_server, "
                 "remote_spinnaker_url and virtual_board should be specified "
                 "in your configuration files")
-
-        if self._spalloc_server is not None:
-            if get_config_str("Machine", "spalloc_user") is None:
-                raise Exception(
-                    "A spalloc_user must be specified with a spalloc_server")
 
     def _setup_java_caller(self):
         if get_config_bool("Java", "use_java"):
@@ -1233,24 +1205,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._machine:
             return None
-        if self._hostname:
-            return None
         if self._n_chips_needed:
             n_chips_required = self._n_chips_needed
         else:
             n_chips_required = self._n_chips_required
         if n_chips_required is None and self._n_boards_required is None:
             return None
-        if self._spalloc_server is not None:
+        if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
                 return spalloc_allocator(
-                    self._spalloc_server, n_chips_required,
-                    self._n_boards_required)
-        else:
+                    n_chips_required, self._n_boards_required)
+        if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(
-                    self._remote_spinnaker_url, total_run_time,
-                    n_chips_required, self._n_boards_required)
+                    total_run_time, n_chips_required, self._n_boards_required)
 
     def _execute_machine_generator(self, category, allocator_data):
         """
@@ -1269,8 +1237,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._machine:
             return
-        if self._hostname:
-            self._ipaddress = self._hostname
+        if get_config_str("Machine", "machine_name"):
+            self._ipaddress = get_config_str("Machine", "machine_name")
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
@@ -1314,16 +1282,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._machine
 
         self._max_machine = True
-        if self._spalloc_server:
+        if get_config_str("Machine", "spalloc_server"):
             with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                self._machine = spalloc_max_machine_generator(
-                    self._spalloc_server)
+                self._machine = spalloc_max_machine_generator()
 
-        elif self._remote_spinnaker_url:
+        elif get_config_str("Machine", "remote_spinnaker_url"):
             with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
-                self._machine = hbp_max_machine_generator(
-                    self._remote_spinnaker_url, total_run_time,
-                    )
+                self._machine = hbp_max_machine_generator(total_run_time)
 
         else:
             raise NotImplementedError("No machine generataion possible")
@@ -2845,15 +2810,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             power_used = compute_energy_used(
                 self._placements, self._machine, self._board_version,
                 run_time, self._buffer_manager,
-                self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
             energy_provenance_reporter(power_used, self._placements)
 
             # create energy reporter
-            energy_reporter = EnergyReport(
-                get_config_int("Machine", "version"), self._spalloc_server,
-                self._remote_spinnaker_url)
+            energy_reporter = EnergyReport()
 
             # run energy report
             energy_reporter.write_energy_report(
@@ -3433,10 +3395,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return 0.0
 
     def __repr__(self):
-        if self._ipaddress:
-            return f"general front end instance for machine {self._ipaddress}"
-        else:
-            return f"general front end instance for machine {self._hostname}"
+        return f"general front end instance for machine {self._ipaddress}"
 
     def add_application_vertex(self, vertex):
         """
