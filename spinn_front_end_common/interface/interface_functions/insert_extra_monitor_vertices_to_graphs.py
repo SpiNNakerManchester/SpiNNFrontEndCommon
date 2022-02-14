@@ -51,12 +51,19 @@ def insert_extra_monitor_vertices_to_graphs(
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
         gatherers_by_chip[eth.x, eth.y] = gatherer
-        p = placements.n_placements_on_chip(eth.x, eth.y) + 1
+        cores = __cores(machine, eth.x, eth.y)
+        p = cores[placements.n_placements_on_chip(eth.x, eth.y) + 1]
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
             extra_monitors.append(monitor)
             extra_monitors_by_chip[x, y] = monitor
-            p = placements.n_placements_on_chip(x, y) + 1
+            cores = __cores(machine, x, y)
+            p = cores[placements.n_placements_on_chip(x, y) + 1]
             placements.add_placement(Placement(monitor, x, y, p))
     return gatherers_by_chip, extra_monitors, extra_monitors_by_chip
+
+
+def __cores(machine, x, y):
+    return [p.processor_id for p in machine.get_chip_at(x, y).processors
+            if not p.is_monitor]

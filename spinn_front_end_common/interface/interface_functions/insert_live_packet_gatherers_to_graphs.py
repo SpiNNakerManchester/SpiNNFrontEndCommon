@@ -41,8 +41,14 @@ def insert_live_packet_gatherers_to_graphs(
     for params in live_packet_gatherer_parameters:
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(params)
-            p = placements.n_placements_on_chip(eth.x, eth.y) + 1
+            cores = __cores(machine, eth.x, eth.y)
+            p = cores[placements.n_placements_on_chip(eth.x, eth.y) + 1]
             placements.add_placement(Placement(lpg_vtx, eth.x, eth.y, p))
             lpg_params_to_vertices[params, eth.x, eth.y] = lpg_vtx
 
     return lpg_params_to_vertices
+
+
+def __cores(machine, x, y):
+    return [p.processor_id for p in machine.get_chip_at(x, y).processors
+            if not p.is_monitor]

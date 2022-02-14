@@ -39,5 +39,11 @@ def insert_chip_power_monitors_to_graphs(
             vertex = ChipPowerMonitorMachineVertex(
                 f"ChipPowerMonitor on {chip.x}, {chip.y}", [],
                 sampling_frequency=sampling_frequency)
-            p = placements.n_placements_on_chip(chip.x, chip.y) + 1
+            cores = __cores(machine, chip.x, chip.y)
+            p = cores[placements.n_placements_on_chip(chip.x, chip.y) + 1]
             placements.add_placement(Placement(vertex, chip.x, chip.y, p))
+
+
+def __cores(machine, x, y):
+    return [p.processor_id for p in machine.get_chip_at(x, y).processors
+            if not p.is_monitor]
