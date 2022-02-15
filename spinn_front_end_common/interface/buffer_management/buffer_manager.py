@@ -115,9 +115,6 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # the extra monitor cores which support faster data extraction
-        "_extra_monitor_cores",
-
         # the extra_monitor to Ethernet connection map
         "_packet_gather_cores_to_ethernet_connection_map",
 
@@ -134,7 +131,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
+    def __init__(self, placements, tags, transceiver,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  java_caller=None):
@@ -144,8 +141,6 @@ class BufferManager(object):
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
         :type packet_gather_cores_to_ethernet_connection_map:
@@ -163,7 +158,6 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
-        self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
@@ -632,12 +626,12 @@ class BufferManager(object):
             for placement in placements))
 
         # update transaction id from the machine for all extra monitors
-        for extra_mon in self._extra_monitor_cores:
+        for extra_mon in self._extra_monitor_cores_by_chip.values():
             extra_mon.update_transaction_id_from_machine(self._transceiver)
 
         with StreamingContextManager(
-                receivers, self._transceiver, self._extra_monitor_cores,
-                self._placements):
+                receivers, self._transceiver,
+                self._extra_monitor_cores_by_chip, self._placements):
             # get data
             self.__old_get_data_for_placements(placements, progress)
 

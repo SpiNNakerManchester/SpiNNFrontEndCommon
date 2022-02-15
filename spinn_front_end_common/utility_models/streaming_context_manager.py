@@ -24,7 +24,7 @@ class StreamingContextManager(object):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
         :param ~spinnman.transceiver.Transceiver txrx:
-        :param list(ExtraMonitorSupportMachineVertex) monitors:
+        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex)) monitors:
         :param ~pacman.model.placements.Placements placements:
         """
         self._gatherers = list(gatherers)

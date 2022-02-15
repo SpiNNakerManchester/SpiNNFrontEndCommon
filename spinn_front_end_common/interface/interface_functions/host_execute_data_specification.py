@@ -307,7 +307,7 @@ def execute_system_data_specs(
 def execute_application_data_specs(
         transceiver, machine, app_id, dsg_targets,
         executable_targets, region_sizes,
-        placements=None, extra_monitor_cores=None,
+        placements=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
         java_caller=None, processor_to_app_data_base_address=None):
     """ Execute the data specs for all non-system targets.
@@ -327,8 +327,6 @@ def execute_application_data_specs(
         what core will running what binary
     :param ~pacman.model.placements.Placements placements:
         where vertices are located
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-        the deployed extra monitors, if any
     :param extra_monitor_cores_to_ethernet_connection_map:
         how to talk to extra monitor cores
     :type extra_monitor_cores_to_ethernet_connection_map:
@@ -345,7 +343,7 @@ def execute_application_data_specs(
         processor_to_app_data_base_address)
     return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
-        extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
+        extra_monitor_cores_to_ethernet_connection_map)
 
 
 class _HostExecuteDataSpecification(object):
@@ -360,7 +358,6 @@ class _HostExecuteDataSpecification(object):
         "_java",
         # The python representation of the SpiNNaker machine.
         "_machine",
-        "_monitors",
         "_placements",
         # The spinnman instance.
         "_txrx",
@@ -386,7 +383,6 @@ class _HostExecuteDataSpecification(object):
         self._core_to_conn_map = None
         self._java = java_caller
         self._machine = machine
-        self._monitors = None
         self._placements = None
         self._txrx = transceiver
         if processor_to_app_data_base_address:
@@ -477,7 +473,7 @@ class _HostExecuteDataSpecification(object):
     def execute_application_data_specs(
             self, dsg_targets,
             executable_targets, region_sizes,
-            placements=None, extra_monitor_cores=None,
+            placements=None,
             extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None):
         """ Execute the data specs for all non-system targets.
@@ -492,8 +488,6 @@ class _HostExecuteDataSpecification(object):
             what core will running what binary
         :param ~pacman.model.placements.Placements placements:
             where vertices are located
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the deployed extra monitors, if any
         :param extra_monitor_cores_to_ethernet_connection_map:
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
@@ -504,7 +498,6 @@ class _HostExecuteDataSpecification(object):
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
-        self._monitors = extra_monitor_cores
         self._placements = placements
         self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
@@ -529,18 +522,18 @@ class _HostExecuteDataSpecification(object):
     def __set_router_timeouts(self):
         for receiver in self._core_to_conn_map.values():
             receiver.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
+                self._txrx, self._core_to_conn_map, self._placements)
             receiver.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._txrx, self._core_to_conn_map, self._placements)
 
     def __reset_router_timeouts(self):
         # reset router timeouts
         for receiver in self._core_to_conn_map.values():
             receiver.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+                self._txrx, self._core_to_conn_map, self._placements)
             # reset router tables
             receiver.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
+                self._txrx, self._core_to_conn_map, self._placements)
 
     def __select_writer(self, x, y):
         chip = self._machine.get_chip_at(x, y)

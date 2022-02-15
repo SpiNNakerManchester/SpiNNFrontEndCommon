@@ -927,12 +927,14 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
-        lead_monitor = extra_monitor_cores[0]
+        lead_monitor = extra_monitor_cores[(0, 0)]
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
         self._last_status = lead_monitor.get_reinjection_status(
@@ -960,12 +962,14 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
-        extra_monitor_cores[0].load_application_mc_routes(
+        extra_monitor_cores[(0, 0)].load_application_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
     @staticmethod
@@ -975,12 +979,14 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
-        extra_monitor_cores[0].load_system_mc_routes(
+        extra_monitor_cores[(0, 0)].load_system_mc_routes(
             placements, extra_monitor_cores, transceiver)
 
     def set_router_wait1_timeout(self, timeout, transceiver, placements):
@@ -1046,8 +1052,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             placements object
         """
@@ -1069,7 +1077,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self._last_status.router_wait2_timeout_parameters,
                 transceiver, placements)
 
-            lead_monitor = extra_monitor_cores[0]
+            lead_monitor = extra_monitor_cores[(0, 0)]
             lead_monitor.set_reinjection_packets(
                 placements, extra_monitor_cores, transceiver,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
