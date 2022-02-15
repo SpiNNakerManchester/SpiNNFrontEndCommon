@@ -224,9 +224,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # version of the board to requested or discovered
-        "_board_version",
-
         # vertices added to support Buffer Extractor
         "_extra_monitor_vertices",
 
@@ -345,7 +342,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
-        self._board_version = None
 
     def _machine_clear(self):
         pass
@@ -870,11 +866,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine", "boot_connection_port_num")
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
-            self._board_version = get_config_int(
+            board_version = get_config_int(
                 "Machine", "version")
 
         elif allocator_data:
-            (ipaddress, self._board_version, bmp_details,
+            (ipaddress, board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
              boot_port_num, self._machine_allocation_controller
              ) = allocator_data
@@ -884,7 +880,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with FecTimer(category, "Machine generator"):
             machine, transceiver = machine_generator(
-                bmp_details, self._board_version,
+                bmp_details, board_version,
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
             self._data_writer.set_transceiver(transceiver)
@@ -2363,7 +2359,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # TODO runtime is None
             power_used = compute_energy_used(
-                self._board_version, self._machine_allocation_controller)
+                self._machine_allocation_controller)
 
             energy_provenance_reporter(power_used)
 
