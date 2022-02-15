@@ -2542,6 +2542,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._executable_targets, self._region_sizes, self._placements,
+                self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._java_caller, processor_to_app_data_base_address)
 
