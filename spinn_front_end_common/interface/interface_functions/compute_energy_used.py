@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,13 +60,10 @@ MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
 N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
-def compute_energy_used(
-        version,  machine_allocation_controller=None):
+def compute_energy_used(machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
 
-    :param int version:
-        The version of the SpiNNaker boards in use.
     :param MachineAllocationController machine_allocation_controller:
         (optional)
     :rtype: PowerUsed
@@ -97,8 +94,7 @@ def compute_energy_used(
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
     _compute_energy_consumption(
-         placements, machine, version,
-         dsg_time, load_time,
+         placements, machine, dsg_time, load_time,
          mapping_time, execute_time + load_time + extraction_time,
          machine_allocation_controller,
          runtime_total_ms, power_used)
@@ -107,13 +103,12 @@ def compute_energy_used(
 
 
 def _compute_energy_consumption(
-        placements, machine, version, dsg_time,
+        placements, machine, dsg_time,
         load_time, mapping_time, total_booted_time, job, runtime_total_ms,
         power_used):
     """
     :param ~.Placements placements:
     :param ~.Machine machine:
-    :param int version:
     :param float dsg_time:
     :param float load_time:
     :param float mapping_time:
@@ -130,8 +125,7 @@ def _compute_energy_consumption(
 
     # figure FPGA cost over all booted and during runtime cost
     _calculate_fpga_energy(
-        machine, version, total_booted_time,
-        runtime_total_ms, power_used)
+        machine, total_booted_time, runtime_total_ms, power_used)
 
     # figure how many frames are using, as this is a constant cost of
     # routers, cooling etc
@@ -143,11 +137,11 @@ def _compute_energy_consumption(
 
     # figure the down time idle cost for mapping
     power_used.mapping_joules = _calculate_power_down_energy(
-        mapping_time, machine, job, version, power_used.num_frames)
+        mapping_time, machine, job, power_used.num_frames)
 
     # figure the down time idle cost for DSG
     power_used.data_gen_joules = _calculate_power_down_energy(
-        dsg_time, machine, job, version, power_used.num_frames)
+        dsg_time, machine, job, power_used.num_frames)
 
     # figure extraction time cost
     power_used.saving_joules = _calculate_data_extraction_energy(
@@ -275,11 +269,9 @@ def __get_chip_power_monitor(chip, placements):
 
 
 def _calculate_fpga_energy(
-        machine, version, total_runtime, runtime_total_ms,
-        power_used):
+        machine, total_runtime, runtime_total_ms, power_used):
     """
     :param ~.Machine machine:
-    :param int version:
     :param float total_runtime:
     :param float runtime_total_ms:
     :param PowerUsed power_used:
@@ -291,13 +283,8 @@ def _calculate_fpga_energy(
     if (not get_config_str("Machine", "spalloc_server") and
             not get_config_str("Machine", "remote_spinnaker_url")):
         # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-        if int(version) in (2, 3):
+        if machine.n_chips <= 4:
             return 0, 0
-        elif int(version) not in (4, 5):
-            # No idea what we've got here!
-            raise ConfigurationException(
-                "Do not know what the FPGA setup is for this version of "
-                "SpiNNaker machine.")
 
         # if the spinn4 or spinn5 board, need to verify if wrap-arounds
         # are there, if not then assume fpgas are turned off.
@@ -481,14 +468,13 @@ def _calculate_idle_cost(time, machine):
             machine.DEFAULT_MAX_CORES_PER_CHIP)
 
 
-def _calculate_power_down_energy(time, machine, job, version, n_frames):
+def _calculate_power_down_energy(time, machine, job, n_frames):
     """ Calculate power down costs
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:
     :param AbstractMachineAllocationController job:
         the spalloc job object
-    :param int version:
     :param int n_frames: number of frames used by this machine
     :return: energy in joules
     :rtype: float
@@ -498,15 +484,12 @@ def _calculate_power_down_energy(time, machine, job, version, n_frames):
     # if spalloc or hbp
     if job is not None:
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
-    # if 48 chip
-    elif version == 5 or version == 4:
-        return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
     # if 4 chip
-    elif version == 3 or version == 2:
+    elif machine.n_chips <= 4:
         return machine.n_chips * time * MILLIWATTS_PER_IDLE_CHIP
-    # boom
+    # if 48 chip
     else:
-        raise ConfigurationException("don't know what to do here")
+        return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
 
 
 def _calculate_n_frames(machine, job):
