@@ -98,7 +98,7 @@ class ConfigHandler(object):
                         logger.info(
                             "As reportsEnabled == \"False\", [Reports] {} "
                             "has been set to False", option)
-        if  get_config_bool("Machine", "virtual_board"):
+        if get_config_bool("Machine", "virtual_board"):
             # TODO handle in the execute methods
             if get_config_bool("Reports", "write_energy_report"):
                 set_config("Reports", "write_energy_report", "False")

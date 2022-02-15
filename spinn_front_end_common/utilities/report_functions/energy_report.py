@@ -46,7 +46,6 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-
     def write_energy_report(self, power_used):
         """ Writes the report.
 
