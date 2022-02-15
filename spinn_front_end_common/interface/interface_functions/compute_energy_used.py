@@ -283,11 +283,12 @@ def __get_chip_power_monitor(chip, placements):
     # it is its responsibility, but needs the self-partitioning
 
     # start at top, as more likely it was placed on the top
-    for processor_id in range(chip.n_processors):
-        if placements.is_processor_occupied(chip.x, chip.y, processor_id):
+    for processor in chip.processors:
+        if placements.is_processor_occupied(
+                chip.x, chip.y, processor.processor_id):
             # check if vertex is a chip power monitor
             vertex = placements.get_vertex_on_processor(
-                chip.x, chip.y, processor_id)
+                chip.x, chip.y, processor.processor_id)
             if isinstance(vertex, ChipPowerMonitorMachineVertex):
                 return vertex
 
