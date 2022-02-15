@@ -14,23 +14,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import requests
-from spinn_utilities.config_holder import get_config_int
+from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_machine import Machine
 from spinn_machine.virtual_machine import virtual_machine
 
 
-def hbp_max_machine_generator(hbp_server_url, total_run_time):
+def hbp_max_machine_generator(total_run_time):
     """ Generates a virtual machine of the width and height of the maximum\
         machine a given HBP server can generate.
 
-    :param str hbp_server_url:
-        The URL of the HBP server from which to get the machine
     :param int total_run_time: The total run time to request
     :rtype: ~spinn_machine.Machine
     """
     max_machine_core_reduction = get_config_int(
         "Machine", "max_machine_core_reduction")
-    max_machine = _max_machine_request(hbp_server_url, total_run_time)
+    max_machine = _max_machine_request(
+        get_config_str("Machine", "remote_spinnaker_url"), total_run_time)
 
     n_cpus_per_chip = (Machine.max_cores_per_chip() -
                        max_machine_core_reduction)
