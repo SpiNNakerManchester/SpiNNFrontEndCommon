@@ -839,7 +839,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return spalloc_allocator()
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
-                return hbp_allocator()
+                return hbp_allocator(total_run_time)
 
     def _execute_machine_generator(self, category, allocator_data):
         """
