@@ -920,25 +920,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_tell_flag()
         log.debug("sent end flag")
 
-    @staticmethod
-    def streaming(gatherers, transceiver, extra_monitor_cores, placements):
-        """ Helper method for setting the router timeouts to a state usable\
-            for data streaming via a Python context manager (i.e., using\
-            the `with` statement).
-
-        :param list(DataSpeedUpPacketGatherMachineVertex) gatherers:
-            All the gatherers that are to be set
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
-        :param ~pacman.model.placements.Placements placements:
-            placements object
-        :return: a context manager
-        """
-        return _StreamingContextManager(
-            gatherers, transceiver, extra_monitor_cores, placements)
-
     def set_cores_for_data_streaming(
             self, transceiver, extra_monitor_cores, placements):
         """ Helper method for setting the router timeouts to a state usable\
@@ -1633,39 +1614,3 @@ class DataSpeedUpPacketGatherMachineVertex(
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Speed_Up_Output_Streams", n_out_streams)
-
-
-class _StreamingContextManager(object):
-    """ The implementation of the context manager object for streaming \
-        configuration control.
-    """
-    __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
-
-    def __init__(self, gatherers, txrx, monitors, placements):
-        """
-        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param ~spinnman.transceiver.Transceiver txrx:
-        :param list(ExtraMonitorSupportMachineVertex) monitors:
-        :param ~pacman.model.placements.Placements placements:
-        """
-        self._gatherers = list(gatherers)
-        self._txrx = txrx
-        self._monitors = monitors
-        self._placements = placements
-
-    def __enter__(self):
-        for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
-        for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
-
-    def __exit__(self, _type, _value, _tb):
-        for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
-        for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
-        return False

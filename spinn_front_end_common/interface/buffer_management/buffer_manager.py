@@ -42,6 +42,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance import (
     BUFFER, ProvenanceWriter)
+from spinn_front_end_common.utility_models.streaming_context_manager import (
+    StreamingContextManager)
 from .recording_utilities import get_recording_header_size
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -633,8 +635,7 @@ class BufferManager(object):
         for extra_mon in self._extra_monitor_cores:
             extra_mon.update_transaction_id_from_machine(self._transceiver)
 
-        # Ugly, to avoid an import loop...
-        with receivers[0].streaming(
+        with StreamingContextManager(
                 receivers, self._transceiver, self._extra_monitor_cores,
                 self._placements):
             # get data
