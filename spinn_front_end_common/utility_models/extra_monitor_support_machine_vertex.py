@@ -667,7 +667,7 @@ class ExtraMonitorSupportMachineVertex(
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data, placements)
+            extra_monitor_cores_for_data.values(), placements)
         process = LoadSystemMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
@@ -693,7 +693,7 @@ class ExtraMonitorSupportMachineVertex(
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data, placements)
+            extra_monitor_cores_for_data.values(), placements)
         process = LoadApplicationMCRoutesProcess(
             transceiver.scamp_connection_selector)
         try:
