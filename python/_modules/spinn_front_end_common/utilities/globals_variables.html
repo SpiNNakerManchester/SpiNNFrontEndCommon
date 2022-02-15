@@ -384,6 +384,24 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
         <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_report_default_directory</span></div>
+
+
+<div class="viewcode-block" id="where_is_chip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.where_is_chip">[docs]</a><span class="k">def</span> <span class="nf">where_is_chip</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">where_is_chip</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="where_is_xy"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.where_is_xy">[docs]</a><span class="k">def</span> <span class="nf">where_is_xy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
+            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
+            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">where_is_xy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
