@@ -443,9 +443,11 @@ class _HostExecuteDataSpecification(object):
 
         with _ExecutionContext(self._txrx, self._machine) as context:
             for core, reader in progress.over(dsg_targets.items()):
-                results[core] = context.execute(
+                x, y, p = core
+                info = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
+                dsg_targets.set_info(x, y, p, info)
 
         return results
 
@@ -532,7 +534,7 @@ class _HostExecuteDataSpecification(object):
         :return: dict of cores to descriptions of what was written
         :rtype: dict(tuple(int,int,int),DataWritten)
         """
-        dsg_targets = filter_out_system_executables(
+        app_targets = filter_out_system_executables(
             dsg_targets, executable_targets)
 
         if use_monitors:
@@ -546,23 +548,24 @@ class _HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
         base_addresses = dict()
-        for core, _ in progress.over(dsg_targets.items(), finish_at_end=False):
+        for core, _ in progress.over(app_targets.items(), finish_at_end=False):
             base_addresses[core] = self.__malloc_region_storage(
                 core, region_sizes[core])
 
         with _ExecutionContext(self._txrx, self._machine) as context:
-            for core, reader in progress.over(dsg_targets.items()):
-                x, y, _p = core
+            for core, reader in progress.over(app_targets.items()):
+                x, y, p = core
                 # write information for the memory map report
-                self._write_info_map[core] = context.execute(
+                info = context.execute(
                     core, reader,
                     self.__select_writer(x, y)
                     if use_monitors else self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
+                dsg_targets.set_info(x, y, p, info)
 
         if use_monitors:
             self.__reset_router_timeouts()
-        return self._write_info_map
+        return None
 
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
@@ -672,11 +675,13 @@ class _HostExecuteDataSpecification(object):
 
         with _ExecutionContext(self._txrx, self._machine) as context:
             for core, reader in progress.over(sys_targets.items()):
-                self._write_info_map[core] = context.execute(
+                x, y, p = core
+                info = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
+                dsg_targets.set_info(x, y, p, info)
 
-        return self._write_info_map
+        return None
 
     def __malloc_region_storage(self, core, size):
         """ Allocates the storage for all DSG regions on the core and tells \

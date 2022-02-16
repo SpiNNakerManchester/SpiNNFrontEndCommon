@@ -140,3 +140,13 @@ class DataSpecificationTargets(MutableMapping):
             for p in subset.processor_ids:
                 cores_to_mark.append((x, y, p))
         self._db.ds_mark_as_system(cores_to_mark)
+
+    def set_info(self, x, y, p, info):
+        """ Sets the info for the core x, y, p
+
+        :param int x: core x
+        :param int y: core y
+        :param int p: core p
+        ::param DataWritten info:
+        """
+        self._db.set_write_info(x, y, p, info)
