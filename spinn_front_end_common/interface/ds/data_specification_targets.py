@@ -150,3 +150,14 @@ class DataSpecificationTargets(MutableMapping):
         ::param DataWritten info:
         """
         self._db.set_write_info(x, y, p, info)
+
+    def set_size_info(self, x, y, p, memory_used):
+        """ Sets the size info for the core x, y p.
+
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :param memory_used: memory allocated
+        :rtype None:
+        """
+        self._db.set_size_info(x, y, p, memory_used)
