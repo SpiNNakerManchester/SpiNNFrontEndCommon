@@ -275,8 +275,7 @@ class _ExecutionContext(object):
 
 def execute_system_data_specs(
         transceiver, machine, app_id, dsg_targets, region_sizes,
-        executable_targets,  java_caller=None,
-        processor_to_app_data_base_address=None):
+        executable_targets,  java_caller=None):
     """ Execute the data specs for all system targets.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
@@ -291,15 +290,11 @@ def execute_system_data_specs(
     :param ~spinnman.model.ExecutableTargets executable_targets:
         the map between binaries and locations and executable types
     :param JavaCaller java_caller:
-    :param processor_to_app_data_base_address:
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int),DataWritten)
     :return: map of placement and DSG data, and loaded data flag.
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        transceiver, machine, app_id, java_caller,
-        processor_to_app_data_base_address)
+        transceiver, machine, app_id, java_caller)
     return specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
@@ -309,7 +304,7 @@ def execute_application_data_specs(
         executable_targets, region_sizes,
         placements=None, extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None,
-        java_caller=None, processor_to_app_data_base_address=None):
+        java_caller=None):
     """ Execute the data specs for all non-system targets.
 
     :param ~spinn_machine.Machine machine:
@@ -333,16 +328,11 @@ def execute_application_data_specs(
         how to talk to extra monitor cores
     :type extra_monitor_cores_to_ethernet_connection_map:
         dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :param processor_to_app_data_base_address:
-        map of placement and DSG data
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int), DsWriteInfo)
     :return: map of placement and DSG data
     :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
-        transceiver, machine, app_id, java_caller,
-        processor_to_app_data_base_address)
+        transceiver, machine, app_id, java_caller)
     return specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
@@ -363,15 +353,11 @@ class _HostExecuteDataSpecification(object):
         "_monitors",
         "_placements",
         # The spinnman instance.
-        "_txrx",
-        # The write info; a dict of cores to a dict of
-        # 'start_address', 'memory_used', 'memory_written'
-        "_write_info_map"]
+        "_txrx"]
 
     first = True
 
-    def __init__(self, transceiver, machine, app_id, java_caller,
-                 processor_to_app_data_base_address):
+    def __init__(self, transceiver, machine, app_id, java_caller):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnman instance
@@ -379,8 +365,6 @@ class _HostExecuteDataSpecification(object):
             the python representation of the spinnaker machine
         :param int app_id: the application ID of the simulation
         :param JavaCaller java_caller:
-        :param processor_to_app_data_base_address:
-            map of placement and DSG data
         """
         self._app_id = app_id
         self._core_to_conn_map = None
@@ -389,10 +373,6 @@ class _HostExecuteDataSpecification(object):
         self._monitors = None
         self._placements = None
         self._txrx = transceiver
-        if processor_to_app_data_base_address:
-            self._write_info_map = processor_to_app_data_base_address
-        else:
-            self._write_info_map = dict()
 
     def __java_database(self, dsg_targets, progress, region_sizes):
         """
@@ -404,11 +384,6 @@ class _HostExecuteDataSpecification(object):
         # Copy data from WriteMemoryIOData to database
         dw_write_info = DsWriteInfo(dsg_targets.get_database())
         dw_write_info.clear_write_info()
-        if self._write_info_map is not None:
-            for core, info in self._write_info_map.items():
-                (x, y, p) = core
-                dw_write_info.set_info(x, y, p, info)
-                del region_sizes[core]
         for core in region_sizes:
             (x, y, p) = core
             dw_write_info.set_size_info(x, y, p, region_sizes[core])
@@ -478,8 +453,7 @@ class _HostExecuteDataSpecification(object):
             self, dsg_targets,
             executable_targets, region_sizes,
             placements=None, extra_monitor_cores=None,
-            extra_monitor_cores_to_ethernet_connection_map=None,
-            processor_to_app_data_base_address=None):
+            extra_monitor_cores_to_ethernet_connection_map=None):
         """ Execute the data specs for all non-system targets.
 
         :param dict(tuple(int,int,int),int) region_sizes:
@@ -498,8 +472,6 @@ class _HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int), DsWriteInfo)
         :return: map of placement and DSG data
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
@@ -623,9 +595,7 @@ class _HostExecuteDataSpecification(object):
         return dw_write_info
 
     def execute_system_data_specs(
-            self, dsg_targets, region_sizes,
-            executable_targets,
-            processor_to_app_data_base_address=None):
+            self, dsg_targets, region_sizes, executable_targets):
         """ Execute the data specs for all system targets.
 
         :param dict(tuple(int,int,int),str) dsg_targets:
@@ -634,9 +604,6 @@ class _HostExecuteDataSpecification(object):
             the coordinates for region sizes for each core
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),DataWritten)
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """

@@ -2550,7 +2550,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._executable_targets, self._region_sizes, self._placements,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,
-                self._java_caller, processor_to_app_data_base_address)
+                self._java_caller)
 
     def _execute_tags_from_machine_report(self):
         """
