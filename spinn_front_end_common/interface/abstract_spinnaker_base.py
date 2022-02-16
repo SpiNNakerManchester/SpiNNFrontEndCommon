@@ -2136,7 +2136,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._dsg_targets, self._region_sizes = \
                 graph_data_specification_writer(
                     self._placements, self._ipaddress, self._machine,
-                    self._max_run_time_steps)
+                    self._app_id, self._max_run_time_steps)
 
     def _do_data_generation(self):
         """

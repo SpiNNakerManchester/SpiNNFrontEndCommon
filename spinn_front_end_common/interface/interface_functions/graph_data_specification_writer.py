@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 def graph_data_specification_writer(
-        placements, hostname, machine, data_n_timesteps, placement_order=None):
+        placements, hostname, machine, app_id, data_n_timesteps, placement_order=None):
     """
     :param ~pacman.model.placements.Placements placements:
         placements of machine graph to cores
@@ -48,7 +48,7 @@ def graph_data_specification_writer(
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    writer = _GraphDataSpecificationWriter(hostname, machine)
+    writer = _GraphDataSpecificationWriter(hostname, machine, app_id)
     return writer._run(placements, data_n_timesteps, placement_order)
 
 
@@ -57,6 +57,8 @@ class _GraphDataSpecificationWriter(object):
     """
 
     __slots__ = (
+        # the app_id
+        "_app_id",
         # Dict of SDRAM usage by chip coordinates
         "_sdram_usage",
         # Dict of list of region sizes by core coordinates
@@ -68,7 +70,8 @@ class _GraphDataSpecificationWriter(object):
         # hostname
         "_hostname")
 
-    def __init__(self, hostname, machine, ):
+    def __init__(self, hostname, machine, app_id):
+        self._app_id = app_id
         self._sdram_usage = defaultdict(lambda: 0)
         self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
@@ -98,7 +101,7 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(self._machine)
+        targets = DataSpecificationTargets(self._machine, self._app_id)
 
         if placement_order is None:
             placement_order = placements.placements

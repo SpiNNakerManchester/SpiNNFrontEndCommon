@@ -379,7 +379,6 @@ class _HostExecuteDataSpecification(object):
             (x, y, p) = core
             dsg_targets.set_size_info(x, y, p, region_sizes[core])
         progress.update()
-        dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
         progress.update()
 

@@ -29,19 +29,21 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class DsSqlliteDatabase(SQLiteDB):
     __slots__ = [
+        "_app_id",
         # The machine cached for getting the "ethernet"s
         "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, init=None):
+    def __init__(self, machine, app_id, init=None):
         """
         :param ~spinn_machine.Machine machine:
         :param init:
         :type init: bool or None
         """
         self._machine = machine
+        self._app_id = app_id
         database_file = os.path.join(report_default_directory(), DB_NAME)
 
         if init is None:
@@ -106,16 +108,16 @@ class DsSqlliteDatabase(SQLiteDB):
             cursor.execute(
                 """
                 INSERT INTO core(
-                    x, y, processor, content, ethernet_id)
+                    x, y, processor, content, ethernet_id, app_id)
                 VALUES(?, ?, ?, ?, (
                     SELECT COALESCE((
                         SELECT ethernet_id FROM ethernet
                         WHERE ethernet_x = ? AND ethernet_y = ?
-                    ), ?)))
+                    ), ?)), ?)
                 """, (
                     core_x, core_y, core_p, sqlite3.Binary(ds),
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-                    self._root_ethernet_id))
+                    self._root_ethernet_id, self._app_id))
 
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.

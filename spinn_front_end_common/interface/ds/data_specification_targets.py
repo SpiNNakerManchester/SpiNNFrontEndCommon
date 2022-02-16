@@ -23,7 +23,7 @@ class DataSpecificationTargets(MutableMapping):
 
     __slots__ = ["_db"]
 
-    def __init__(self, machine, init=None, clear=True):
+    def __init__(self, machine, app_id=-1, init=None, clear=True):
         """
         :param ~spinn_machine.Machine machine:
         :param init:
@@ -32,7 +32,7 @@ class DataSpecificationTargets(MutableMapping):
         """
         # pylint: disable=super-init-not-called
         # real DB would write to report_folder
-        self._db = DsSqlliteDatabase(machine, init)
+        self._db = DsSqlliteDatabase(machine, app_id, init)
         # Clear any current data specs
         if clear:
             self._db.clear_ds()
