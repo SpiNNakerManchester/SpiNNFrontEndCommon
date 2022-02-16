@@ -2582,7 +2582,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         pass
 
-    def _report_memory_on_host(self, processor_to_app_data_base_address):
+    def _report_memory_on_host(self):
         """
         Runs, times and logs MemoryMapOnHostReport is requested
 
@@ -2593,7 +2593,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            memory_map_on_host_report(processor_to_app_data_base_address)
+            memory_map_on_host_report(self._dsg_targets)
 
     def _report_memory_on_chip(self):
         """
@@ -2701,7 +2701,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
         if graph_changed:
-            #self._report_memory_on_host(processor_to_app_data_base_address)
+            self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
             self._report_fixed_routes()

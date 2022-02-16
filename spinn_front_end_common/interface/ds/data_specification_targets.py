@@ -174,3 +174,6 @@ class DataSpecificationTargets(MutableMapping):
         :rtype None:
         """
         self._db.set_size_info(x, y, p, memory_used)
+
+    def info_iteritems(self):
+        return self._db.info_iteritems()
