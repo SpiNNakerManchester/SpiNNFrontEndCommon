@@ -102,7 +102,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        infos = execute_application_data_specs(
+        execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
             region_sizes=region_sizes)
 
@@ -138,7 +138,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Size of user 0
         self.assertEqual(len(regions[0][1]), 4)
 
-        info = infos[(0, 0, 0)]
+        info = dsg_targets.get_write_info(0, 0, 0)
         self.assertEqual(info.memory_used, 436)
         self.assertEqual(info.memory_written, 152)
 
@@ -180,7 +180,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
-        infos = execute_application_data_specs(
+        execute_application_data_specs(
             transceiver, machine, 30, dsg_targets, targets,
             region_sizes=region_sizes)
 
@@ -190,14 +190,18 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions), 7)
 
         header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
-        self.assertEqual(infos[0, 0, 0].memory_used, header_and_table_size)
-        self.assertEqual(infos[0, 0, 0].memory_written, header_and_table_size)
-        self.assertEqual(infos[0, 0, 1].memory_used,
-                         header_and_table_size + 12)
-        self.assertEqual(infos[0, 0, 1].memory_written,
-                         header_and_table_size + 4)
-        self.assertEqual(infos[0, 0, 2].memory_used, header_and_table_size)
-        self.assertEqual(infos[0, 0, 2].memory_written, header_and_table_size)
+
+        info = dsg_targets.get_write_info(0, 0, 0)
+        self.assertEqual(info.memory_used, header_and_table_size)
+        self.assertEqual(info.memory_written, header_and_table_size)
+
+        info = dsg_targets.get_write_info(0, 0, 1)
+        self.assertEqual(info.memory_used, header_and_table_size + 12)
+        self.assertEqual(info.memory_written, header_and_table_size + 4)
+
+        info = dsg_targets.get_write_info(0, 0, 2)
+        self.assertEqual(info.memory_used, header_and_table_size)
+        self.assertEqual(info.memory_written, header_and_table_size)
 
         # Find the base addresses
         base_addresses = dict()
