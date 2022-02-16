@@ -2512,14 +2512,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the execute_system_data_specs if required
 
-        :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer(LOADING, "Execute system data specification") \
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            return execute_system_data_specs(
+            execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._region_sizes, self._executable_targets,
                 self._java_caller)
@@ -2534,8 +2532,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             load_sys_images(
                 self._executable_targets, self._app_id, self._txrx)
 
-    def _execute_application_data_specification(
-            self, processor_to_app_data_base_address):
+    def _execute_application_data_specification(self):
         """
         Runs, times and logs the execute_application_data_specs if required
 
@@ -2544,7 +2541,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
-                return processor_to_app_data_base_address
+                return
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._executable_targets, self._region_sizes, self._placements,
@@ -2685,13 +2682,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressed = self._do_early_compression(compressor)
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
-        processor_to_app_data_base_address = \
-            self._execute_system_data_specification()
+        self._execute_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        processor_to_app_data_base_address = \
-            self._execute_application_data_specification(
-                processor_to_app_data_base_address)
+        self._execute_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)

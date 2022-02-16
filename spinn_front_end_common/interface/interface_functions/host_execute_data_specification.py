@@ -289,12 +289,10 @@ def execute_system_data_specs(
     :param ~spinnman.model.ExecutableTargets executable_targets:
         the map between binaries and locations and executable types
     :param JavaCaller java_caller:
-    :return: map of placement and DSG data, and loaded data flag.
-    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
         transceiver, machine, app_id, java_caller)
-    return specifier.execute_system_data_specs(
+    specifier.execute_system_data_specs(
         dsg_targets, region_sizes, executable_targets)
 
 
@@ -327,12 +325,10 @@ def execute_application_data_specs(
         how to talk to extra monitor cores
     :type extra_monitor_cores_to_ethernet_connection_map:
         dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :return: map of placement and DSG data
-    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
     specifier = _HostExecuteDataSpecification(
         transceiver, machine, app_id, java_caller)
-    return specifier.execute_application_data_specs(
+    specifier.execute_application_data_specs(
         dsg_targets, executable_targets, region_sizes, placements,
         extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
 
@@ -378,9 +374,7 @@ class _HostExecuteDataSpecification(object):
         :param DataSpecificationTargets dsg_tagets:
         :param ~spinn_utilities.progress_bar.ProgressBar progress:
         :param dict(tuple(int,int,int)int) region_sizes:
-        :rtype: DsWriteInfo
         """
-        #dw_write_info = DsWriteInfo(dsg_targets.get_database())
         for core in region_sizes:
             (x, y, p) = core
             dsg_targets.set_size_info(x, y, p, region_sizes[core])
@@ -388,28 +382,23 @@ class _HostExecuteDataSpecification(object):
         dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
         progress.update()
-        return None
 
     def __java_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
 
         :param DataSpecificationTargets dsg_targets:
             map of placement to file path
-        :return: map of of cores to descriptions of what was written
-        :rtype: DsWriteInfo
         """
         # create a progress bar for end users
         progress = ProgressBar(
             3, "Executing data specifications and loading data using Java")
 
         # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
+        self.__java_database(dsg_targets, progress, region_sizes)
 
         self._java.execute_data_specification()
 
         progress.end()
-        return dw_write_info
 
     def __python_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
@@ -418,14 +407,9 @@ class _HostExecuteDataSpecification(object):
             map of placement to file path
         :param dict(tuple(int,int,int),int) region_sizes:
             map between vertex and list of region sizes
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int), DataWritten)
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
-        results = self._write_info_map
-        if results is None:
-            results = dict()
 
         # create a progress bar for end users
         progress = ProgressBar(
@@ -445,8 +429,6 @@ class _HostExecuteDataSpecification(object):
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
                 dsg_targets.write_set_info(x, y, p, info)
-
-        return results
 
     def execute_application_data_specs(
             self, dsg_targets,
@@ -471,8 +453,6 @@ class _HostExecuteDataSpecification(object):
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
             dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :return: map of placement and DSG data
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
         self._monitors = extra_monitor_cores
@@ -488,7 +468,7 @@ class _HostExecuteDataSpecification(object):
 
         impl_method = self.__java_app if self._java else self.__python_app
         try:
-            return impl_method(
+            impl_method(
                 dsg_targets, executable_targets, uses_advanced_monitors,
                 region_sizes)
         except:  # noqa: E722
@@ -528,8 +508,6 @@ class _HostExecuteDataSpecification(object):
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         app_targets = filter_out_system_executables(
             dsg_targets, executable_targets)
@@ -562,7 +540,6 @@ class _HostExecuteDataSpecification(object):
 
         if use_monitors:
             self.__reset_router_timeouts()
-        return None
 
     def __java_app(
             self, dsg_targets, executable_targets, use_monitors,
@@ -572,8 +549,6 @@ class _HostExecuteDataSpecification(object):
         :param ~spinnman.model.ExecutableTargets executable_targets:
         :param bool use_monitors:
         :param dict(tuple(int,int,int),int) region_sizes:
-        :return: map of cores to descriptions of what was written
-        :rtype: DsWriteInfo
         """
         # create a progress bar for end users
         progress = ProgressBar(
@@ -584,15 +559,13 @@ class _HostExecuteDataSpecification(object):
         progress.update()
 
         # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
+        self.__java_database(dsg_targets, progress, region_sizes)
         if use_monitors:
             self._java.set_placements(self._placements, self._txrx)
 
         self._java.execute_app_data_specification(use_monitors)
 
         progress.end()
-        return dw_write_info
 
     def execute_system_data_specs(
             self, dsg_targets, region_sizes, executable_targets):
@@ -604,13 +577,11 @@ class _HostExecuteDataSpecification(object):
             the coordinates for region sizes for each core
         :param ~spinnman.model.ExecutableTargets executable_targets:
             the map between binaries and locations and executable types
-        :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         # pylint: disable=too-many-arguments
 
         impl_method = self.__java_sys if self._java else self.__python_sys
-        return impl_method(dsg_targets, executable_targets, region_sizes)
+        impl_method(dsg_targets, executable_targets, region_sizes)
 
     def __java_sys(self, dsg_targets, executable_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
@@ -621,8 +592,6 @@ class _HostExecuteDataSpecification(object):
             the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
-        :return: map of cores to descriptions of what was written
-        :rtype: DsWriteInfo
         """
         # create a progress bar for end users
         progress = ProgressBar(
@@ -633,13 +602,11 @@ class _HostExecuteDataSpecification(object):
         progress.update()
 
         # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
+        self.__java_database(dsg_targets, progress, region_sizes)
 
         self._java.execute_system_data_specification()
 
         progress.end()
-        return dw_write_info
 
     def __python_sys(self, dsg_targets, executable_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Python
@@ -650,8 +617,6 @@ class _HostExecuteDataSpecification(object):
             the map between binaries and locations and executable types
         :param dict(tuple(int,int,int),int) region_sizes:
             the coord for region sizes for each core
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
@@ -677,8 +642,6 @@ class _HostExecuteDataSpecification(object):
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
                 dsg_targets.write_set_info(x, y, p, info)
-
-        return None
 
     def __malloc_region_storage(self, core, size):
         """ Allocates the storage for all DSG regions on the core and tells \
