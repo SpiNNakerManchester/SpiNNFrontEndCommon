@@ -217,10 +217,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # status flag
         "_vertices_or_edges_added",
 
-        # Version provenance
-        # TODO provenance cleanup
-        "_version_provenance",
-
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
