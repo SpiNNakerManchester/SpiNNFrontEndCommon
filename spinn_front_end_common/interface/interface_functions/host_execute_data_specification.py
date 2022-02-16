@@ -24,7 +24,6 @@ from data_specification import DataSpecificationExecutor, MemoryRegionReal
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.exceptions import DataSpecificationException
-from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -381,17 +380,15 @@ class _HostExecuteDataSpecification(object):
         :param dict(tuple(int,int,int)int) region_sizes:
         :rtype: DsWriteInfo
         """
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = DsWriteInfo(dsg_targets.get_database())
-        dw_write_info.clear_write_info()
+        #dw_write_info = DsWriteInfo(dsg_targets.get_database())
         for core in region_sizes:
             (x, y, p) = core
-            dw_write_info.set_size_info(x, y, p, region_sizes[core])
+            dsg_targets.set_size_info(x, y, p, region_sizes[core])
         progress.update()
         dsg_targets.set_app_id(self._app_id)
         self._java.set_machine(self._machine)
         progress.update()
-        return dw_write_info
+        return None
 
     def __java_all(self, dsg_targets, region_sizes):
         """ Does the Data Specification Execution and loading using Java
@@ -447,7 +444,7 @@ class _HostExecuteDataSpecification(object):
                 info = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
-                dsg_targets.set_info(x, y, p, info)
+                dsg_targets.write_set_info(x, y, p, info)
 
         return results
 
@@ -561,7 +558,7 @@ class _HostExecuteDataSpecification(object):
                     self.__select_writer(x, y)
                     if use_monitors else self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
-                dsg_targets.set_info(x, y, p, info)
+                dsg_targets.write_set_info(x, y, p, info)
 
         if use_monitors:
             self.__reset_router_timeouts()
@@ -679,7 +676,7 @@ class _HostExecuteDataSpecification(object):
                 info = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_sizes[core])
-                dsg_targets.set_info(x, y, p, info)
+                dsg_targets.write_set_info(x, y, p, info)
 
         return None
 

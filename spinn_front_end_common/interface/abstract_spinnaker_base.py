@@ -2701,7 +2701,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
         if graph_changed:
-            self._report_memory_on_host(processor_to_app_data_base_address)
+            #self._report_memory_on_host(processor_to_app_data_base_address)
             self._report_memory_on_chip()
             self._report_compressed(compressed)
             self._report_fixed_routes()
