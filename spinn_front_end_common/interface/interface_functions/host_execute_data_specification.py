@@ -436,7 +436,8 @@ class _HostExecuteDataSpecification(object):
         base_addresses = dict()
 
         with _ExecutionContext(self._txrx, self._machine) as context:
-            for core, reader, region_size in progress.over(dsg_targets.app_items()):
+            for core, reader, region_size in progress.over(
+                    dsg_targets.app_items()):
                 x, y, p = core
                 base_addresses[core] = self.__malloc_region_storage(
                     core, region_size)
