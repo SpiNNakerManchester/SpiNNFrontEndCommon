@@ -94,17 +94,14 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
-        region_sizes = dict()
-        region_sizes[0, 0, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
-
+        dsg_targets.set_size_info(
+            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
         # Execute the spec
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, targets,
-            region_sizes=region_sizes)
+            transceiver, machine, 30, dsg_targets, targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -146,7 +143,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         machine = virtual_machine(2, 2)
-        region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets(machine)
 
@@ -154,8 +150,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-            region_sizes[0, 0, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -163,15 +159,15 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-            region_sizes[0, 0, 1] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         with dsg_targets.create_data_spec(0, 0, 2) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-            region_sizes[0, 0, 2] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 2, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
         targets.add_processor(
@@ -181,8 +177,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, targets,
-            region_sizes=region_sizes)
+            transceiver, machine, 30, dsg_targets, targets)
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -226,7 +221,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
-        region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets(machine)
 
@@ -234,8 +228,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 2)
             spec.end_specification()
-            region_sizes[0, 0, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -243,8 +237,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-            region_sizes[0, 0, 1] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
         targets.add_processor(
@@ -255,14 +249,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets,
-                region_sizes=region_sizes)
+                transceiver, machine, 30, dsg_targets, targets)
 
     def test_multispec_with_double_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
-        region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets(machine)
 
@@ -273,8 +265,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-            region_sizes[0, 0, 1] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
         targets.add_processor(
@@ -283,14 +275,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets,
-                region_sizes=region_sizes)
+                transceiver, machine, 30, dsg_targets, targets)
 
     def test_multispec_with_wrong_chip_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets(machine)
 
@@ -300,15 +290,15 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-            region_sizes[0, 0, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-            region_sizes[1, 1, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
         targets.add_processor(
@@ -319,14 +309,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets,
-                region_sizes=region_sizes)
+                transceiver, machine, 30, dsg_targets, targets)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
-        region_sizes = dict()
 
         dsg_targets = DataSpecificationTargets(machine)
 
@@ -334,8 +322,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-            region_sizes[1, 1, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -343,8 +331,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-            region_sizes[0, 0, 0] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+        dsg_targets.set_size_info(
+            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
         targets.add_processor(
@@ -355,8 +343,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets,
-                region_sizes=region_sizes)
+                transceiver, machine, 30, dsg_targets, targets)
 
 
 if __name__ == "__main__":
