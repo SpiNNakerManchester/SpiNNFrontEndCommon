@@ -26,8 +26,7 @@ from data_specification.constants import (
 from data_specification.exceptions import DataSpecificationException
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, DataWritten)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG
@@ -98,7 +97,8 @@ class _ExecutionContext(object):
         :param callable(tuple(int,int,int,bytearray),None) writer_func:
         :param int base_address:
         :param int size_allocated:
-        :rtype: DataWritten
+        :return: base_address, size_allocated, bytes_written
+        :rtype: tuple(int, int, int)
         """
         x, y, p = core
 
@@ -152,7 +152,7 @@ class _ExecutionContext(object):
             writer_func(x, y, pointer_table[region_id], data)
             bytes_written += len(data)
 
-        return DataWritten(base_address, size_allocated, bytes_written)
+        return base_address, size_allocated, bytes_written
 
     def close(self):
         """ Called when finished executing all regions.  Fills in the
@@ -442,12 +442,13 @@ class _HostExecuteDataSpecification(object):
                 base_addresses[core] = self.__malloc_region_storage(
                     core, region_size)
                 # write information for the memory map report
-                info = context.execute(
+                base_address, size_allocated, bytes_written = context.execute(
                     core, reader,
                     self.__select_writer(x, y)
                     if use_monitors else self._txrx.write_memory,
                     base_addresses[core], region_size)
-                dsg_targets.set_write_info(x, y, p, info)
+                dsg_targets.set_write_info(
+                    x, y, p, base_address, size_allocated, bytes_written)
 
         if use_monitors:
             self.__reset_router_timeouts()
@@ -527,10 +528,11 @@ class _HostExecuteDataSpecification(object):
                 x, y, p = core
                 base_addresses[core] = self.__malloc_region_storage(
                     core, region_size)
-                info = context.execute(
+                base_address, size_allocated, bytes_written = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_size)
-                dsg_targets.set_write_info(x, y, p, info)
+                dsg_targets.set_write_info(
+                    x, y, p, base_address, size_allocated, bytes_written)
 
     def __malloc_region_storage(self, core, size):
         """ Allocates the storage for all DSG regions on the core and tells \

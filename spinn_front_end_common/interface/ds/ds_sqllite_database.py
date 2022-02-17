@@ -21,7 +21,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinn_front_end_common.utilities.utility_objs import DataWritten
 from .data_row_writer import DataRowWriter
 
 DB_NAME = "ds.sqlite3"
@@ -328,6 +327,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: core x
         :param int y: core y
         :param int p: core p
+        :return: start_address, memory_used, memory_written
         :rtype: DataWritten
         """
         with self.transaction() as cursor:
@@ -338,25 +338,21 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE x = ? AND y = ? AND processor = ?
                     LIMIT 1
                     """, (x, y, p)):
-                return self._row_to_info(row)
+                return (row["start_address"], row["memory_used"],
+                        row["memory_written"])
         raise ValueError(f"No info for {x}:{y}:{p}")
 
-    def set_write_info(self, x, y, p, info):
+    def set_write_info(
+            self, x, y, p, start, used, written):
         """ Sets the provenance returned by the Data Spec executor.
 
         :param int x: core x
         :param int y: core y
         :param int p: core p
-        :param DataWritten info:
+        :param int start: base_address:
+        :param int used: size_allocated:
+        :param int written: bytes_written:
         """
-        if isinstance(info, DataWritten):
-            start = info.start_address
-            used = info.memory_used
-            written = info.memory_written
-        else:
-            start = info["start_address"]
-            used = info["memory_used"]
-            written = info["memory_written"]
         with self.transaction() as cursor:
             cursor.execute(
                 """
