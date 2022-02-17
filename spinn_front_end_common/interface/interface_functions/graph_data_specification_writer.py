@@ -22,8 +22,7 @@ from data_specification import DataSpecificationGenerator
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.interface.ds.data_specification_targets import (
-    DataSpecificationTargets)
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
@@ -99,7 +98,7 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DataSpecificationTargets(self._machine, self._app_id)
+        targets = DsSqlliteDatabase(self._machine, self._app_id)
 
         if placement_order is None:
             placement_order = placements.placements

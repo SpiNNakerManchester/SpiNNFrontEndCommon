@@ -17,7 +17,7 @@ import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import DataWritten
-from spinn_front_end_common.interface.ds import DataSpecificationTargets
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 
 class TestDsWriteInfo(unittest.TestCase):
@@ -28,23 +28,23 @@ class TestDsWriteInfo(unittest.TestCase):
     def test_dict(self):
         check = dict()
         machine = virtual_machine(2, 2)
-        dst = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
         c1 = (0, 0, 0)
         foo = DataWritten(123, 12, 23)
-        dst.write_set_info(*c1, info=foo)
+        db.set_write_info(*c1, info=foo)
         check[c1] = foo
-        self.assertEqual(foo, dst.get_write_info(*c1))
+        self.assertEqual(foo, db.get_write_info(*c1))
 
         c2 = (1, 1, 3)
         bar = DataWritten(456, 45, 56)
-        dst.write_set_info(*c2, info=bar)
+        db.set_write_info(*c2, info=bar)
         check[c2] = bar
-        self.assertEqual(bar, dst.get_write_info(*c2))
+        self.assertEqual(bar, db.get_write_info(*c2))
 
         for key in check:
-            self.assertEqual(check[key], dst.get_write_info(*key))
+            self.assertEqual(check[key], db.get_write_info(*key))
 
-        for key, value in dst.items():
+        for key, value in db.items():
             self.assertEqual(check[key], value)
 
 

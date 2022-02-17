@@ -447,7 +447,7 @@ class _HostExecuteDataSpecification(object):
                     self.__select_writer(x, y)
                     if use_monitors else self._txrx.write_memory,
                     base_addresses[core], region_size)
-                dsg_targets.write_set_info(x, y, p, info)
+                dsg_targets.set_write_info(x, y, p, info)
 
         if use_monitors:
             self.__reset_router_timeouts()
@@ -530,7 +530,7 @@ class _HostExecuteDataSpecification(object):
                 info = context.execute(
                     core, reader, self._txrx.write_memory,
                     base_addresses[core], region_size)
-                dsg_targets.write_set_info(x, y, p, info)
+                dsg_targets.set_write_info(x, y, p, info)
 
     def __malloc_region_storage(self, core, size):
         """ Allocates the storage for all DSG regions on the core and tells \

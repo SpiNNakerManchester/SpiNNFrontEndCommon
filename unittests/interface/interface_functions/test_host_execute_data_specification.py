@@ -28,7 +28,7 @@ from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
-from spinn_front_end_common.interface.ds import DataSpecificationTargets
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
@@ -80,8 +80,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
-        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+        db = DsSqlliteDatabase(machine)
+        with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
             spec.reserve_memory_region(1, 100, empty=True)
@@ -94,14 +94,14 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
         # Execute the spec
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, targets)
+            transceiver, machine, 30, db, targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -135,7 +135,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Size of user 0
         self.assertEqual(len(regions[0][1]), 4)
 
-        info = dsg_targets.get_write_info(0, 0, 0)
+        info = db.get_write_info(0, 0, 0)
         self.assertEqual(info.memory_used, 436)
         self.assertEqual(info.memory_written, 152)
 
@@ -144,29 +144,29 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
 
-        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+        with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
+        with db.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with dsg_targets.create_data_spec(0, 0, 2) as spec_writer:
+        with db.create_data_spec(0, 0, 2) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 2, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
@@ -177,7 +177,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         execute_application_data_specs(
-            transceiver, machine, 30, dsg_targets, targets)
+            transceiver, machine, 30, db, targets)
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -186,15 +186,15 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
 
-        info = dsg_targets.get_write_info(0, 0, 0)
+        info = db.get_write_info(0, 0, 0)
         self.assertEqual(info.memory_used, header_and_table_size)
         self.assertEqual(info.memory_written, header_and_table_size)
 
-        info = dsg_targets.get_write_info(0, 0, 1)
+        info = db.get_write_info(0, 0, 1)
         self.assertEqual(info.memory_used, header_and_table_size + 12)
         self.assertEqual(info.memory_written, header_and_table_size + 4)
 
-        info = dsg_targets.get_write_info(0, 0, 2)
+        info = db.get_write_info(0, 0, 2)
         self.assertEqual(info.memory_used, header_and_table_size)
         self.assertEqual(info.memory_written, header_and_table_size)
 
@@ -222,22 +222,22 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
 
-        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+        with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 2)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
+        with db.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
@@ -249,23 +249,23 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets)
+                transceiver, machine, 30, db, targets)
 
     def test_multispec_with_double_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
 
-        with dsg_targets.create_data_spec(0, 0, 1) as spec_writer:
+        with db.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.reserve_memory_region(1, 12, reference=1)
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
@@ -275,29 +275,29 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets)
+                transceiver, machine, 30, db, targets)
 
     def test_multispec_with_wrong_chip_reference(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
 
-        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+        with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
+        with db.create_data_spec(1, 1, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
@@ -309,29 +309,29 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets)
+                transceiver, machine, 30, db, targets)
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
         machine = virtual_machine(2, 2)
 
-        dsg_targets = DataSpecificationTargets(machine)
+        db = DsSqlliteDatabase(machine)
 
-        with dsg_targets.create_data_spec(1, 1, 0) as spec_writer:
+        with db.create_data_spec(1, 1, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reference_memory_region(0, 1)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+        with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 12, reference=1)
             spec.switch_write_focus(0)
             spec.write_value(0)
             spec.end_specification()
-        dsg_targets.set_size_info(
+        db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
         targets = ExecutableTargets()
@@ -343,7 +343,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
             execute_application_data_specs(
-                transceiver, machine, 30, dsg_targets, targets)
+                transceiver, machine, 30, db, targets)
 
 
 if __name__ == "__main__":
