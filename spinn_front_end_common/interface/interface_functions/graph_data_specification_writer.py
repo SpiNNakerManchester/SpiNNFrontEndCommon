@@ -32,7 +32,8 @@ logger = logging.getLogger(__name__)
 
 
 def graph_data_specification_writer(
-        placements, hostname, machine, app_id, data_n_timesteps, placement_order=None):
+        placements, hostname, machine, app_id, data_n_timesteps,
+        placement_order=None):
     """
     :param ~pacman.model.placements.Placements placements:
         placements of machine graph to cores
