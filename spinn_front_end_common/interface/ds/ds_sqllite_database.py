@@ -161,16 +161,17 @@ class DsSqlliteDatabase(SQLiteDB):
         .. note:
             Do not use the database for anything else while iterating.
 
-        :return: Yields the (x, y, p) and saved ds pairs
-        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
+        :return: Yields the (x, y, p), saved ds and region_size triples
+        :rtype: iterable(tuple(tuple(int, int, int), bytearray, int))
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, processor, content FROM core
+                    SELECT x, y, processor, content, memory_used FROM core
                     WHERE content IS NOT NULL AND is_system = 1
                     """):
-                yield (row["x"], row["y"], row["processor"]), row["content"]
+                yield ((row["x"], row["y"], row["processor"]),
+                       row["content"], row["memory_used"])
 
     def ds_iter_app_items(self):
         """ Yields the keys and values for the DS data for application cores
@@ -184,10 +185,11 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, processor, content FROM core
+                    SELECT x, y, processor, content, memory_used  FROM core
                     WHERE content IS NOT NULL AND is_system = 0
                     """):
-                yield (row["x"], row["y"], row["processor"]), row["content"]
+                yield ((row["x"], row["y"], row["processor"]),
+                       row["content"], row["memory_used"])
 
     def ds_n_cores(self):
         """ Returns the number for cores there is a ds saved for

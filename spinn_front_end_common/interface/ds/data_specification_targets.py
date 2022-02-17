@@ -121,25 +121,25 @@ class DataSpecificationTargets(MutableMapping):
 
     def system_items(self):
         """
-        Iterates over they system cores
+        Iterates over the system cores
 
         :return: iterator over the core locations and how to read the data
-            spec for them
-        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
+            spec for them and the memory_used
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
         """
-        for key, value in self._db.ds_iter_system_items():
-            yield key, io.BytesIO(value)
+        for key, content, memory_used in self._db.ds_iter_system_items():
+            yield key, io.BytesIO(content), memory_used
 
     def app_items(self):
         """
         Iterates over the application items
 
         :return: iterator over the core locations and how to read the data
-            spec for them
+            spec for them and the memory_used
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
         """
-        for key, value in self._db.ds_iteritems():
-            yield key, io.BytesIO(value)
+        for key, content, memory_used in self._db.ds_iter_app_items():
+            yield key, io.BytesIO(content), memory_used
 
     def get_database(self):
         """ Expose the database so it can be shared

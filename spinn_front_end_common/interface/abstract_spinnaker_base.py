@@ -358,9 +358,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # DSG to be written to the machine
         "_dsg_targets",
 
-        # Sizes of dsg regions
-        "_region_sizes",
-
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
 
@@ -523,7 +520,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_chips_needed = None
         self._placements = None
         self._plan_n_timesteps = None
-        self._region_sizes = None
         self._router_tables = None
         self._precompressed = None
         self._routing_table_by_partition = None
@@ -2133,10 +2129,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
-            self._dsg_targets, self._region_sizes = \
-                graph_data_specification_writer(
-                    self._placements, self._ipaddress, self._machine,
-                    self._app_id, self._max_run_time_steps)
+            self._dsg_targets = graph_data_specification_writer(
+                self._placements, self._ipaddress, self._machine,
+                self._app_id, self._max_run_time_steps)
 
     def _do_data_generation(self):
         """
@@ -2519,8 +2514,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None
             execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._region_sizes, self._executable_targets,
-                self._java_caller)
+                self._executable_targets, self._java_caller)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2544,7 +2538,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._executable_targets, self._region_sizes, self._placements,
+                self._executable_targets, self._placements,
                 self._extra_monitor_vertices,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._java_caller)
