@@ -78,6 +78,20 @@ class DataSpecificationTargets(MutableMapping):
 
     n_targets = __len__
 
+    def ds_n_system_cores(self):
+        """ Returns the number for system cores there is a ds saved for
+
+        :rtype: int
+        """
+        return self._db.ds_n_system_cores()
+
+    def ds_n_app_cores(self):
+        """ Returns the number for application cores there is a ds saved for
+
+        :rtype: int
+        """
+        return self._db.ds_n_app_cores()
+
     def create_data_spec(self, x, y, p):
         """
         :param int x:
@@ -98,6 +112,28 @@ class DataSpecificationTargets(MutableMapping):
 
     def items(self):
         """
+        :return: iterator over the core locations and how to read the data
+            spec for them
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
+        """
+        for key, value in self._db.ds_iteritems():
+            yield key, io.BytesIO(value)
+
+    def system_items(self):
+        """
+        Iterates over they system cores
+
+        :return: iterator over the core locations and how to read the data
+            spec for them
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
+        """
+        for key, value in self._db.ds_iter_system_items():
+            yield key, io.BytesIO(value)
+
+    def app_items(self):
+        """
+        Iterates over the application items
+
         :return: iterator over the core locations and how to read the data
             spec for them
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))

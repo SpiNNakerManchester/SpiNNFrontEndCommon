@@ -155,6 +155,40 @@ class DsSqlliteDatabase(SQLiteDB):
                     """):
                 yield (row["x"], row["y"], row["processor"]), row["content"]
 
+    def ds_iter_system_items(self):
+        """ Yields the keys and values for the DS data for system cores
+
+        .. note:
+            Do not use the database for anything else while iterating.
+
+        :return: Yields the (x, y, p) and saved ds pairs
+        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, content FROM core
+                    WHERE content IS NOT NULL AND is_system = 1
+                    """):
+                yield (row["x"], row["y"], row["processor"]), row["content"]
+
+    def ds_iter_app_items(self):
+        """ Yields the keys and values for the DS data for application cores
+
+        .. note:
+            Do not use the database for anything else while iterating.
+
+        :return: Yields the (x, y, p) and saved ds pairs
+        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, content FROM core
+                    WHERE content IS NOT NULL AND is_system = 0
+                    """):
+                yield (row["x"], row["y"], row["processor"]), row["content"]
+
     def ds_n_cores(self):
         """ Returns the number for cores there is a ds saved for
 
@@ -165,6 +199,36 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT COUNT(*) as count FROM core
                     WHERE content IS NOT NULL
+                    LIMIT 1
+                    """):
+                return row["count"]
+        raise Exception("Count query failed")
+
+    def ds_n_app_cores(self):
+        """ Returns the number for application cores there is a ds saved for
+
+        :rtype: int
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT COUNT(*) as count FROM core
+                    WHERE content IS NOT NULL AND is_system = 0
+                    LIMIT 1
+                    """):
+                return row["count"]
+        raise Exception("Count query failed")
+
+    def ds_n_system_cores(self):
+        """ Returns the number for system cores there is a ds saved for
+
+        :rtype: int
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT COUNT(*) as count FROM core
+                    WHERE content IS NOT NULL  AND is_system = 1
                     LIMIT 1
                     """):
                 return row["count"]
