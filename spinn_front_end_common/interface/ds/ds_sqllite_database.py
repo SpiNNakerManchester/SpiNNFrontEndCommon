@@ -427,7 +427,8 @@ class DsSqlliteDatabase(SQLiteDB):
             A DB transaction may be held while this iterator is processing.
             Reentrant use of this class is not supported.
 
-        :return: Yields the (x, y, p), start_address, memory_used and memory_written
+        :return: Yields the (x, y, p), start_address, memory_used
+            and memory_written
         :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
         with self.transaction() as cursor:
@@ -440,7 +441,8 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE start_address IS NOT NULL
                     """):
                 yield ((row["x"], row["y"], row["processor"]),
-                       row["start_address"], row["memory_used"], row["memory_written"])
+                       row["start_address"], row["memory_used"],
+                       row["memory_written"])
 
     def create_data_spec(self, x, y, p):
         """
