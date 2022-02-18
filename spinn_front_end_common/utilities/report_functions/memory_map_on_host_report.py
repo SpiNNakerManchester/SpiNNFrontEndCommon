@@ -34,12 +34,12 @@ def memory_map_on_host_report(dsg_targets):
     try:
         with open(file_name, "w") as f:
             f.write("On host data specification executor\n")
-            for key, data in dsg_targets.info_iteritems():
+            for key, start_address, memory_used, memory_written in dsg_targets.info_iteritems():
                 f.write(
-                    f"{key}: ('start_address': {data.start_address}, "
-                    f"hex:{hex(data.start_address)}), "
-                    f"'memory_used': {data.memory_used}, "
-                    f"'memory_written': {data.memory_written} \n")
+                    f"{key}: ('start_address': {start_address}, "
+                    f"hex:{hex(start_address)}), "
+                    f"'memory_used': {memory_used}, "
+                    f"'memory_written': {memory_written} \n")
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_name)
