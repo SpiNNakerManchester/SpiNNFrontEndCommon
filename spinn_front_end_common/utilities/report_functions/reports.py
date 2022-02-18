@@ -502,11 +502,9 @@ def _write_one_chip_machine_placement(f, c, placements):
             f.write("\n")
 
 
-def sdram_usage_report_per_chip(plan_n_timesteps):
+def sdram_usage_report_per_chip():
     """ Reports the SDRAM used per chip
 
-    :param int plan_n_timesteps:
-        The number of timesteps for which placer reserved space.
     :rtype: None
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
@@ -524,7 +522,7 @@ def sdram_usage_report_per_chip(plan_n_timesteps):
             f.write("Planned by partitioner\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, plan_n_timesteps, progress, False, False)
+                f, progress, False, False)
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
@@ -535,13 +533,14 @@ def sdram_usage_report_per_chip(plan_n_timesteps):
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, timesteps, progress, end_progress, details):
+        f, progress, end_progress, details):
     """
     :param ~io.FileIO f:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
+    timesteps = FecDataView.get_plan_n_timestep()
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
     placements = sorted(

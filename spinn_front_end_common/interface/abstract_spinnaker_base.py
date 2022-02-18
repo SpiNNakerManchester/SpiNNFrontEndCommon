@@ -232,8 +232,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
 
-        # Number of timesteps to consider when doing partitioning and placement
-        "_plan_n_timesteps",
 
         # Routing tables
         "_routing_table_by_partition",
@@ -328,7 +326,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._extra_monitor_vertices = None
         self._max_machine = False
         self._multicast_routes_loaded = False
-        self._plan_n_timesteps = None
         self._region_sizes = None
         self._routing_table_by_partition = None
         self._vertex_to_ethernet_connected_chip_mapping = None
@@ -586,10 +583,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._add_commands_to_command_sender()
 
             if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-                self._plan_n_timesteps = get_config_int(
-                    "Buffers", "minimum_auto_time_steps")
+                self._data_writer.set_plan_n_timesteps(get_config_int(
+                    "Buffers", "minimum_auto_time_steps"))
             else:
-                self._plan_n_timesteps = n_machine_time_steps
+                self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
             self._get_known_machine(total_run_time)
             if not self._data_writer.has_machine():
@@ -1098,7 +1095,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             machine_graph, n_chips_in_graph = splitter_partitioner(
-                self._plan_n_timesteps, pre_allocated_resources)
+                pre_allocated_resources)
             self._data_writer.set_runtime_machine_graph(machine_graph)
             self._data_writer.set_n_chips_in_graph(n_chips_in_graph)
 
@@ -1118,7 +1115,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
         with FecTimer(MAPPING, "Graph measurer"):
             self._data_writer.set_n_chips_in_graph(
-                graph_measurer(self._plan_n_timesteps))
+                graph_measurer())
 
     def _execute_insert_chip_power_monitors(self):
         """
@@ -1197,7 +1194,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Connective based placer"):
             self._data_writer.set_placements(
-                connective_based_placer(self._plan_n_timesteps))
+                connective_based_placer())
 
     def _execute_one_to_one_placer(self):
         """
@@ -1211,7 +1208,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "One to one placer"):
             self._data_writer.set_placements(
-                one_to_one_placer(self._plan_n_timesteps))
+                one_to_one_placer())
 
     def _execute_radial_placer(self):
         """
@@ -1225,7 +1222,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Radial placer"):
             self._data_writer.set_placements(
-                radial_placer(self._plan_n_timesteps))
+                radial_placer())
 
     def _execute_speader_placer(self):
         """
@@ -1239,7 +1236,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Spreader placer"):
             self._data_writer.set_placements(
-                spreader_placer(self._plan_n_timesteps))
+                spreader_placer())
 
     def _do_placer(self):
         """
@@ -1429,7 +1426,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
             self._data_writer.set_tags(
-                basic_tag_allocator(self._plan_n_timesteps))
+                basic_tag_allocator())
 
     def _report_tag_allocations(self):
         """
@@ -2264,7 +2261,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_sdram_usage_report_per_chip"):
                 return
-            sdram_usage_report_per_chip(self._plan_n_timesteps)
+            sdram_usage_report_per_chip()
 
     def _execute_dsg_region_reloader(self):
         """
