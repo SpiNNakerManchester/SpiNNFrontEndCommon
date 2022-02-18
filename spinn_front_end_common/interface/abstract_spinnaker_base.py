@@ -235,9 +235,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Number of timesteps to consider when doing partitioning and placement
         "_plan_n_timesteps",
 
-        # TODO provenance cleanup
-        "_compressor_provenance",
-
         # Routing tables
         "_routing_table_by_partition",
 
@@ -310,7 +307,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._last_except_hook = sys.excepthook
         self._vertices_or_edges_added = False
-        self._compressor_provenance = None
 
         FecTimer.setup(self)
 
