@@ -135,9 +135,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Size of user 0
         self.assertEqual(len(regions[0][1]), 4)
 
-        info = db.get_write_info(0, 0, 0)
-        self.assertEqual(info.memory_used, 436)
-        self.assertEqual(info.memory_written, 152)
+        _, memory_used, memory_written = db.get_write_info(0, 0, 0)
+        self.assertEqual(memory_used, 436)
+        self.assertEqual(memory_written, 152)
 
     def test_multi_spec_with_references(self):
         transceiver = _MockTransceiver(
@@ -186,17 +186,17 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
 
-        info = db.get_write_info(0, 0, 0)
-        self.assertEqual(info.memory_used, header_and_table_size)
-        self.assertEqual(info.memory_written, header_and_table_size)
+        _, memory_used, memory_written = db.get_write_info(0, 0, 0)
+        self.assertEqual(memory_used, header_and_table_size)
+        self.assertEqual(memory_written, header_and_table_size)
 
-        info = db.get_write_info(0, 0, 1)
-        self.assertEqual(info.memory_used, header_and_table_size + 12)
-        self.assertEqual(info.memory_written, header_and_table_size + 4)
+        _, memory_used, memory_written = db.get_write_info(0, 0, 1)
+        self.assertEqual(memory_used, header_and_table_size + 12)
+        self.assertEqual(memory_written, header_and_table_size + 4)
 
-        info = db.get_write_info(0, 0, 2)
-        self.assertEqual(info.memory_used, header_and_table_size)
-        self.assertEqual(info.memory_written, header_and_table_size)
+        _, memory_used, memory_written = db.get_write_info(0, 0, 2)
+        self.assertEqual(memory_used, header_and_table_size)
+        self.assertEqual(memory_written, header_and_table_size)
 
         # Find the base addresses
         base_addresses = dict()
