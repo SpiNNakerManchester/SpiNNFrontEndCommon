@@ -312,15 +312,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, core_list)
 
-    def _row_to_info(self, row):
-        """
-        :param ~sqlite3.Row row:
-        :rtype: DataWritten
-        """
-        return DataWritten(start_address=row["start_address"],
-                           memory_used=row["memory_used"],
-                           memory_written=row["memory_written"])
-
     def get_write_info(self, x, y, p):
         """ Gets the provenance returned by the Data Spec executor.
 
@@ -459,4 +450,3 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: DataRowWriter
         """
         return DataRowWriter(x, y, p, self)
-
