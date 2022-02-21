@@ -492,8 +492,10 @@ class _HostExecuteDataSpecification(object):
             what core will running what binary
         :param ~pacman.model.placements.Placements placements:
             where vertices are located
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the deployed extra monitors, if any
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param extra_monitor_cores_to_ethernet_connection_map:
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:
