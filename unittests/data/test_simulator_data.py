@@ -98,7 +98,6 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
         bm = BufferManager(
-            extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None)
         writer.set_buffer_manager(bm)

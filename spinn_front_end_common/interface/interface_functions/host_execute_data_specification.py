@@ -443,8 +443,9 @@ class _HostExecuteDataSpecification(object):
             map of placement to file path
         :param bool uses_advanced_monitors:
             whether to use fast data in protocol
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the deployed extra monitors, if any
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param extra_monitor_cores_to_ethernet_connection_map:
             how to talk to extra monitor cores
         :type extra_monitor_cores_to_ethernet_connection_map:

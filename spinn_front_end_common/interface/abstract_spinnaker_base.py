@@ -220,9 +220,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # vertices added to support Buffer Extractor
-        "_extra_monitor_vertices",
-
         # DSG to be written to the machine
         "_dsg_targets",
 
@@ -323,7 +320,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._notification_interface = None
         self._dsg_targets = None
         self._extra_monitor_to_chip_mapping = None
-        self._extra_monitor_vertices = None
         self._max_machine = False
         self._multicast_routes_loaded = False
         self._region_sizes = None
@@ -1139,7 +1135,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # inserter checks for None app graph not an empty one
         (self._vertex_to_ethernet_connected_chip_mapping,
-         self._extra_monitor_vertices,
          self._extra_monitor_to_chip_mapping) = \
             insert_extra_monitor_vertices_to_graphs()
 
@@ -1604,7 +1599,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._data_writer.set_buffer_manager(
                 buffer_manager_creator(
-                    self._extra_monitor_vertices,
                     self._extra_monitor_to_chip_mapping,
                     self._vertex_to_ethernet_connected_chip_mapping))
 
@@ -2095,7 +2089,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return processor_to_app_data_base_address
             return execute_application_data_specs(
                 self._dsg_targets, self._region_sizes,
-                self._extra_monitor_vertices,
+                self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 processor_to_app_data_base_address)
 
@@ -2310,8 +2304,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            router_provenance_gatherer(
-                self._extra_monitor_vertices)
+            router_provenance_gatherer(self._extra_monitor_to_chip_mapping)
 
     def _execute_profile_data_gatherer(self):
         """
@@ -2571,7 +2564,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Extract router provenance
         try:
             router_provenance_gatherer(
-                extra_monitor_vertices=self._extra_monitor_vertices)
+                extra_monitor_vertices=self._extra_monitor_to_chip_mapping)
         except Exception:
             logger.exception("Error reading router provenance")
 

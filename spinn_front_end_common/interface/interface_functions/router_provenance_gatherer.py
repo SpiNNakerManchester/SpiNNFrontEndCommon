@@ -25,8 +25,10 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def router_provenance_gatherer(extra_monitor_vertices=None):
     """
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
+    :param extra_monitor_vertices:
         vertices which represent the extra monitor code
+    :type extra_monitor_vertices:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     gather = _RouterProvenanceGatherer(extra_monitor_vertices)
     gather._add_router_provenance_data()
@@ -43,8 +45,10 @@ class _RouterProvenanceGatherer(object):
 
     def __init__(self, extra_monitor_vertices=None):
         """
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-            vertices which represent the extra monitor code
+        :type extra_monitor_vertices:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
         """
         # pylint: disable=too-many-arguments
         # pylint: disable=attribute-defined-outside-init
@@ -61,7 +65,7 @@ class _RouterProvenanceGatherer(object):
         # get all extra monitor core data if it exists
         reinjection_data = None
         if self._extra_monitor_vertices is not None:
-            monitor = self._extra_monitor_vertices[0]
+            monitor = self._extra_monitor_vertices[(0, 0)]
             reinjection_data = monitor.get_reinjection_status_for_vertices(
                 extra_monitor_cores_for_data=self._extra_monitor_vertices)
 

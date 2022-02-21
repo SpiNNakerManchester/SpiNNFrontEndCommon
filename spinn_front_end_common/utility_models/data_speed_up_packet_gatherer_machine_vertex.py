@@ -889,28 +889,16 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_tell_flag()
         log.debug("sent end flag")
 
-    @staticmethod
-    def streaming(gatherers, extra_monitor_cores):
-        """ Helper method for setting the router timeouts to a state usable\
-            for data streaming via a Python context manager (i.e., using\
-            the `with` statement).
-
-        :param list(DataSpeedUpPacketGatherMachineVertex) gatherers:
-            All the gatherers that are to be set
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
-        :return: a context manager
-        """
-        return _StreamingContextManager(gatherers, extra_monitor_cores)
-
     def set_cores_for_data_streaming(self, extra_monitor_cores):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
-        lead_monitor = extra_monitor_cores[0]
+        lead_monitor = extra_monitor_cores[(0, 0)]
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
         self._last_status = lead_monitor.get_reinjection_status()
@@ -931,20 +919,22 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def load_application_routing_tables(extra_monitor_cores):
         """ Set all chips to have application table loaded in the router.
-
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         """
-        extra_monitor_cores[0].load_application_mc_routes(extra_monitor_cores)
+        extra_monitor_cores[(0, 0)].load_application_mc_routes(
+            extra_monitor_cores)
 
     @staticmethod
     def load_system_routing_tables(extra_monitor_cores):
         """ Set all chips to have the system table loaded in the router
-
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
-        extra_monitor_cores[0].load_system_mc_routes(extra_monitor_cores)
+        extra_monitor_cores[(0, 0)].load_system_mc_routes(
+            extra_monitor_cores)
 
     def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
@@ -999,8 +989,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
+<<<<<<< HEAD
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
+=======
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the SpiNNMan instance
+        :param extra_monitor_cores:
+            the extra monitor cores to set
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+        :param ~pacman.model.placements.Placements placements:
+            placements object
+>>>>>>> origin/master
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
@@ -1016,7 +1017,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.set_router_wait2_timeout(
                 self._last_status.router_wait2_timeout_parameters)
 
-            lead_monitor = extra_monitor_cores[0]
+            lead_monitor = extra_monitor_cores[(0, 0)]
             lead_monitor.set_reinjection_packets(
                 extra_monitor_cores,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
@@ -1556,31 +1557,3 @@ class DataSpeedUpPacketGatherMachineVertex(
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Speed_Up_Output_Streams", n_out_streams)
-
-
-class _StreamingContextManager(object):
-    """ The implementation of the context manager object for streaming \
-        configuration control.
-    """
-    __slots__ = ["_gatherers", "_monitors"]
-
-    def __init__(self, gatherers, monitors):
-        """
-        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param list(ExtraMonitorSupportMachineVertex) monitors:
-        """
-        self._gatherers = list(gatherers)
-        self._monitors = monitors
-
-    def __enter__(self):
-        for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(self._monitors)
-        for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(self._monitors)
-
-    def __exit__(self, _type, _value, _tb):
-        for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(self._monitors)
-        for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(self._monitors)
-        return False

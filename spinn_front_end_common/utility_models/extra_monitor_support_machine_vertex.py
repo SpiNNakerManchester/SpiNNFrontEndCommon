@@ -530,8 +530,8 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
-        :rtype: dict(tuple(int,int), ReInjectionStatus)
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+       :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data)
@@ -547,7 +547,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_for_data:
             the extra monitor cores to set the packets of
         :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param point_to_point:
             If point to point should be set, or None if left as before
         :type point_to_point: bool or None
@@ -572,7 +572,7 @@ class ExtraMonitorSupportMachineVertex(
             self._reinject_fixed_route = fixed_route
 
         core_subsets = convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            extra_monitor_cores_for_data.values())
         process = SetPacketTypesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -592,12 +592,12 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            extra_monitor_cores_for_data.values())
         process = LoadSystemMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -614,10 +614,10 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
         core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            extra_monitor_cores_for_data.values())
         process = LoadApplicationMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -632,8 +632,10 @@ class ExtraMonitorSupportMachineVertex(
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
-        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
+        :param extra_monitor_cores:
             the vertices to convert to core subsets
+        :type extra_monitor_cores:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :return: where the vertices have been placed
         :rtype: ~.CoreSubsets
         """
