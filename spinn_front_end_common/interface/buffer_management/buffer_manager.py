@@ -601,7 +601,7 @@ class BufferManager(object):
 
         # update transaction id from the machine for all extra monitors
         for extra_mon in self._extra_monitor_cores_by_chip.values():
-            extra_mon.update_transaction_id_from_machine(self._transceiver)
+            extra_mon.update_transaction_id_from_machine()
 
         with StreamingContextManager(
                 receivers, self._extra_monitor_cores_by_chip):
