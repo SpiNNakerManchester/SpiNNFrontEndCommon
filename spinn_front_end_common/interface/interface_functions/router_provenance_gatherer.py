@@ -32,8 +32,10 @@ def router_provenance_gatherer(transceiver, machine, router_tables,
     :param router_tables: the router tables that have been generated
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
+    :param extra_monitor_vertices:
         vertices which represent the extra monitor code
+    :type extra_monitor_vertices:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     :param ~pacman.model.placements.Placements placements:
         the placements object
     """
@@ -73,6 +75,8 @@ class _RouterProvenanceGatherer(object):
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
             vertices which represent the extra monitor code
+        :type extra_monitor_vertices:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
@@ -95,7 +99,7 @@ class _RouterProvenanceGatherer(object):
         # get all extra monitor core data if it exists
         reinjection_data = None
         if self._extra_monitor_vertices is not None:
-            monitor = self._extra_monitor_vertices[0]
+            monitor = self._extra_monitor_vertices[(0, 0)]
             reinjection_data = monitor.get_reinjection_status_for_vertices(
                 placements=self._placements,
                 extra_monitor_cores_for_data=self._extra_monitor_vertices,

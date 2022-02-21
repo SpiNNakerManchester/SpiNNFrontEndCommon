@@ -94,6 +94,7 @@ class SQLiteDB(AbstractContextManager):
             Whether we want the ``LIKE`` matching operator to be case-sensitive
             or case-insensitive (default).
         """
+        self.__db = None
         if database_file is None:
             self.__db = sqlite3.connect(":memory:")  # Magic name!
             # in-memory DB is never read-only
@@ -136,8 +137,11 @@ class SQLiteDB(AbstractContextManager):
     def close(self):
         """ Finalises and closes the database.
         """
-        if self.__db is not None:
-            self.__db.close()
+        try:
+            if self.__db is not None:
+                self.__db.close()
+                self.__db = None
+        except AttributeError:
             self.__db = None
 
     def pragma(self, pragma_name, value):
