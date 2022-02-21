@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -918,7 +918,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def load_application_routing_tables(extra_monitor_cores):
-        """ Set all chips to have application table loaded in the router.
+        """ Set all chips to have application table loaded in the router
+
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         """
@@ -928,6 +929,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def load_system_routing_tables(extra_monitor_cores):
         """ Set all chips to have the system table loaded in the router
+
         :param extra_monitor_cores:
             the extra monitor cores to set
         :type extra_monitor_cores:
@@ -989,19 +991,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-<<<<<<< HEAD
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
-=======
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
         :param extra_monitor_cores:
             the extra monitor cores to set
         :type extra_monitor_cores:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            placements object
->>>>>>> origin/master
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
