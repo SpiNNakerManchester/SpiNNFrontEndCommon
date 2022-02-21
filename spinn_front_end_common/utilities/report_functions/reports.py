@@ -522,7 +522,7 @@ def sdram_usage_report_per_chip():
             f.write("Planned by partitioner\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
-                f, progress, False, False)
+                f, FecDataView.get_plan_n_timestep(), progress, False, False)
             f.write("\nActual space reserved on the machine\n")
             f.write("----------------------\n")
             _sdram_usage_report_per_chip_with_timesteps(
@@ -533,14 +533,15 @@ def sdram_usage_report_per_chip():
 
 
 def _sdram_usage_report_per_chip_with_timesteps(
-        f, progress, end_progress, details):
+        f, timesteps, progress, end_progress, details):
     """
     :param ~io.FileIO f:
+    :param int timesteps: Either the plan or data timesteps
+        depending on which is being reported
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
-    timesteps = FecDataView.get_plan_n_timestep()
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
     placements = sorted(
