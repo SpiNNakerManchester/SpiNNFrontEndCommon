@@ -99,6 +99,7 @@ class _GraphDataSpecificationWriter(object):
         # iterate though vertices and call generate_data_spec for each
         # vertex
         targets = DsSqlliteDatabase(self._machine, self._app_id)
+        targets.clear_ds()
 
         if placement_order is None:
             placement_order = placements.placements
@@ -112,7 +113,6 @@ class _GraphDataSpecificationWriter(object):
             for placement in progress.over(placement_order):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
-                logger.info(placement)
                 generated = self.__generate_data_spec_for_vertices(
                     placement, vertex, targets, data_n_timesteps)
 
