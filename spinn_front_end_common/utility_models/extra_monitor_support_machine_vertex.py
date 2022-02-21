@@ -531,7 +531,7 @@ class ExtraMonitorSupportMachineVertex(
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
             dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-       :rtype: dict(tuple(int,int), ReInjectionStatus)
+        :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data)
