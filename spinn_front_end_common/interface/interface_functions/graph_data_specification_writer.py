@@ -112,6 +112,7 @@ class _GraphDataSpecificationWriter(object):
             for placement in progress.over(placement_order):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
+                logger.info(placement)
                 generated = self.__generate_data_spec_for_vertices(
                     placement, vertex, targets, data_n_timesteps)
 
