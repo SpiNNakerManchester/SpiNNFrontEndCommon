@@ -1401,7 +1401,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_network_specification_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
@@ -1413,7 +1413,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Chip ID allocator&quot;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="o">.</span><span class="n">n_vertices</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span>
