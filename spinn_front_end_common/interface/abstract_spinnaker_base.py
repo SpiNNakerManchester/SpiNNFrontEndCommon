@@ -973,6 +973,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
+            # return ignored as changes done inside original graph object
             malloc_based_chip_id_allocator()
 
     def _execute_insert_live_packet_gatherers_to_graphs(self):
