@@ -614,7 +614,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_for_data:
             the extra monitor cores to get status from
         :type extra_monitor_cores_for_data:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data.values())
