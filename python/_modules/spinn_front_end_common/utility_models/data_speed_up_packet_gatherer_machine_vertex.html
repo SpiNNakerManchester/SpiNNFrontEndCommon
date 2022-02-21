@@ -959,25 +959,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_tell_flag</span><span class="p">()</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sent end flag&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.streaming">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">streaming</span><span class="p">(</span><span class="n">gatherers</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Helper method for setting the router timeouts to a state usable\</span>
-<span class="sd">            for data streaming via a Python context manager (i.e., using\</span>
-<span class="sd">            the `with` statement).</span>
-
-<span class="sd">        :param list(DataSpeedUpPacketGatherMachineVertex) gatherers:</span>
-<span class="sd">            All the gatherers that are to be set</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
-<span class="sd">            the extra monitor cores to set</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            placements object</span>
-<span class="sd">        :return: a context manager</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">_StreamingContextManager</span><span class="p">(</span>
-            <span class="n">gatherers</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span></div>
-
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">set_cores_for_data_streaming</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper method for setting the router timeouts to a state usable\</span>
@@ -985,12 +966,14 @@
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
 <span class="sd">            the extra monitor cores to set</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
         <span class="c1"># Store the last reinjection status for resetting</span>
         <span class="c1"># NOTE: This assumes the status is the same on all cores</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="n">lead_monitor</span><span class="o">.</span><span class="n">get_reinjection_status</span><span class="p">(</span>
@@ -1018,12 +1001,14 @@
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
 <span class="sd">            the extra monitor cores to set</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">(</span>
+        <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">(</span>
             <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -1033,12 +1018,14 @@
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
 <span class="sd">            the extra monitor cores to set</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">(</span>
+        <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">(</span>
             <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
@@ -1104,8 +1091,10 @@
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
 <span class="sd">            the extra monitor cores to set</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1127,7 +1116,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait2_timeout_parameters</span><span class="p">,</span>
                 <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
 
-            <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
             <span class="n">lead_monitor</span><span class="o">.</span><span class="n">set_reinjection_packets</span><span class="p">(</span>
                 <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
                 <span class="n">point_to_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">is_reinjecting_point_to_point</span><span class="p">,</span>
@@ -1672,42 +1661,6 @@
             <span class="n">db</span><span class="o">.</span><span class="n">insert_core</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span>
                 <span class="s2">&quot;Speed_Up_Output_Streams&quot;</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">)</span></div>
-
-
-<span class="k">class</span> <span class="nc">_StreamingContextManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; The implementation of the context manager object for streaming \</span>
-<span class="sd">        configuration control.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_gatherers&quot;</span><span class="p">,</span> <span class="s2">&quot;_monitors&quot;</span><span class="p">,</span> <span class="s2">&quot;_placements&quot;</span><span class="p">,</span> <span class="s2">&quot;_txrx&quot;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gatherers</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">monitors</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx:</span>
-<span class="sd">        :param list(ExtraMonitorSupportMachineVertex) monitors:</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">gatherers</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="n">txrx</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span> <span class="o">=</span> <span class="n">monitors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
-
-    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">gatherer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span><span class="p">:</span>
-            <span class="n">gatherer</span><span class="o">.</span><span class="n">load_system_routing_tables</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">gatherer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span><span class="p">:</span>
-            <span class="n">gatherer</span><span class="o">.</span><span class="n">set_cores_for_data_streaming</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_type</span><span class="p">,</span> <span class="n">_value</span><span class="p">,</span> <span class="n">_tb</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">gatherer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span><span class="p">:</span>
-            <span class="n">gatherer</span><span class="o">.</span><span class="n">unset_cores_for_data_streaming</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">gatherer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherers</span><span class="p">:</span>
-            <span class="n">gatherer</span><span class="o">.</span><span class="n">load_application_routing_tables</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">False</span>
 </pre></div>
 
             <div class="clearer"></div>

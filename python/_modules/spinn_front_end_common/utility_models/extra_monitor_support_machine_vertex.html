@@ -632,13 +632,13 @@
 <span class="sd">        :param extra_monitor_cores_for_data:</span>
 <span class="sd">            the extra monitor cores to get status from</span>
 <span class="sd">        :type extra_monitor_cores_for_data:</span>
-<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnMan interface</span>
 <span class="sd">        :rtype: dict(tuple(int,int), ReInjectionStatus)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
-            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">ReadStatusProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">get_reinjection_status_for_core_subsets</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span></div>
 
@@ -652,7 +652,7 @@
 <span class="sd">        :param extra_monitor_cores_for_data:</span>
 <span class="sd">            the extra monitor cores to set the packets of</span>
 <span class="sd">        :type extra_monitor_cores_for_data:</span>
-<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance</span>
 <span class="sd">        :param point_to_point:</span>
 <span class="sd">            If point to point should be set, or None if left as before</span>
@@ -678,7 +678,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span> <span class="o">=</span> <span class="n">fixed_route</span>
 
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
-            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">SetPacketTypesProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">process</span><span class="o">.</span><span class="n">set_packet_types</span><span class="p">(</span>
@@ -701,12 +701,12 @@
 <span class="sd">        :param extra_monitor_cores_for_data:</span>
 <span class="sd">            the extra monitor cores to get status from</span>
 <span class="sd">        :type extra_monitor_cores_for_data:</span>
-<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnMan interface</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_vertices_to_core_subset</span><span class="p">(</span>
-            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">LoadSystemMCRoutesProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -727,12 +727,12 @@
 <span class="sd">        :param extra_monitor_cores_for_data:</span>
 <span class="sd">            the extra monitor cores to get status from</span>
 <span class="sd">        :type extra_monitor_cores_for_data:</span>
-<span class="sd">            iterable(ExtraMonitorSupportMachineVertex)</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnMan interface</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_vertices_to_core_subset</span><span class="p">(</span>
-            <span class="n">extra_monitor_cores_for_data</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+            <span class="n">extra_monitor_cores_for_data</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
@@ -748,8 +748,10 @@
         <span class="sd">&quot;&quot;&quot; Convert vertices into the subset of cores where they&#39;ve been\</span>
 <span class="sd">            placed.</span>
 
-<span class="sd">        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:</span>
+<span class="sd">        :param extra_monitor_cores:</span>
 <span class="sd">            the vertices to convert to core subsets</span>
+<span class="sd">        :type extra_monitor_cores:</span>
+<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
 <span class="sd">        :param ~.Placements placements: the placements object</span>
 <span class="sd">        :return: where the vertices have been placed</span>
 <span class="sd">        :rtype: ~.CoreSubsets</span>

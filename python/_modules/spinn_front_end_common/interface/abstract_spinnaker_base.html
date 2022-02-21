@@ -380,9 +380,6 @@
         <span class="c1"># version of the board to requested or discovered</span>
         <span class="s2">&quot;_board_version&quot;</span><span class="p">,</span>
 
-        <span class="c1"># vertices added to support Buffer Extractor</span>
-        <span class="s2">&quot;_extra_monitor_vertices&quot;</span><span class="p">,</span>
-
         <span class="c1"># Start timestep of a do_run cycle</span>
         <span class="c1"># Set by data generation and do_run cleared by do_run</span>
         <span class="s2">&quot;_first_machine_time_step&quot;</span><span class="p">,</span>
@@ -549,7 +546,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_executable_types</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_parameters_mapping</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1584,7 +1580,6 @@
                 <span class="k">return</span>
             <span class="c1"># inserter checks for None app graph not an empty one</span>
         <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-         <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
          <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">)</span> <span class="o">=</span> \
             <span class="n">insert_extra_monitor_vertices_to_graphs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_graph</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_application_graph</span><span class="p">)</span>
@@ -2076,7 +2071,6 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="n">buffer_manager_creator</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">)</span>
@@ -2586,7 +2580,7 @@
             <span class="k">return</span> <span class="n">execute_application_data_specs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
 
@@ -2810,7 +2804,7 @@
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="n">router_provenance_gatherer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_profile_data_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -3095,7 +3089,7 @@
             <span class="n">router_provenance_gatherer</span><span class="p">(</span>
                 <span class="n">transceiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
                 <span class="n">router_tables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span>
-                <span class="n">extra_monitor_vertices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_vertices</span><span class="p">,</span>
+                <span class="n">extra_monitor_vertices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
                 <span class="n">placements</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error reading router provenance&quot;</span><span class="p">)</span>
