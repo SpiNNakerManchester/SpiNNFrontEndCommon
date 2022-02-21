@@ -604,8 +604,7 @@ class BufferManager(object):
             extra_mon.update_transaction_id_from_machine(self._transceiver)
 
         with StreamingContextManager(
-                receivers, self._transceiver,
-                self._extra_monitor_cores_by_chip, self._placements):
+                receivers, self._extra_monitor_cores_by_chip):
             # get data
             self.__old_get_data_for_placements(recording_placements, progress)
 
