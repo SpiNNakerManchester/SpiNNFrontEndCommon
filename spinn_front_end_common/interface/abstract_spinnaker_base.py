@@ -342,9 +342,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # version of the board to requested or discovered
         "_board_version",
 
-        # vertices added to support Buffer Extractor
-        "_extra_monitor_vertices",
-
         # Start timestep of a do_run cycle
         # Set by data generation and do_run cleared by do_run
         "_first_machine_time_step",
@@ -508,7 +505,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_targets = None
         self._executable_types = None
         self._extra_monitor_to_chip_mapping = None
-        self._extra_monitor_vertices = None
         self._fixed_routes = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
@@ -1363,7 +1359,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
@@ -1375,7 +1371,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
@@ -1542,7 +1538,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # inserter checks for None app graph not an empty one
         (self._vertex_to_ethernet_connected_chip_mapping,
-         self._extra_monitor_vertices,
          self._extra_monitor_to_chip_mapping) = \
             insert_extra_monitor_vertices_to_graphs(
                 self._machine, self._machine_graph, self._application_graph)
@@ -2034,7 +2029,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._buffer_manager = buffer_manager_creator(
                 self._placements, self._tags, self._txrx,
-                self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._machine, self._fixed_routes, self._java_caller)
@@ -2539,7 +2533,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
                 self._executable_targets, self._placements,
-                self._extra_monitor_vertices,
+                self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._java_caller)
 
@@ -2760,7 +2754,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             router_provenance_gatherer(
                 self._txrx, self._machine, self._router_tables,
-                self._extra_monitor_vertices, self._placements)
+                self._extra_monitor_to_chip_mapping, self._placements)
 
     def _execute_profile_data_gatherer(self):
         """
@@ -3045,7 +3039,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_provenance_gatherer(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
-                extra_monitor_vertices=self._extra_monitor_vertices,
+                extra_monitor_vertices=self._extra_monitor_to_chip_mapping,
                 placements=self._placements)
         except Exception:
             logger.exception("Error reading router provenance")
