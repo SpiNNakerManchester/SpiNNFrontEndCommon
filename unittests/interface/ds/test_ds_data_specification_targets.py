@@ -17,7 +17,7 @@ import unittest
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.interface.ds import DataSpecificationTargets
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 
 class TestDataSpecificationTargets(unittest.TestCase):
@@ -28,31 +28,26 @@ class TestDataSpecificationTargets(unittest.TestCase):
     def test_dict(self):
         FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         check = dict()
-        asDict = DataSpecificationTargets()
-        c1 = (0, 0, 0)
+        db = DsSqlliteDatabase()
         foo = bytearray(b"foo")
-        with asDict.create_data_spec(0, 0, 0) as writer:
+        with db.create_data_spec(0, 0, 0) as writer:
             writer.write(foo)
+        c1 = (0, 0, 0)
         check[c1] = foo
-        self.assertEqual(check[c1], asDict[c1].getvalue())
+        self.assertEqual(check[c1], db.get_ds(0, 0, 0))
 
         c2 = (0, 1, 2)
         bar = bytearray(b"bar")
-        with asDict.create_data_spec(0, 1, 2) as writer:
+        with db.create_data_spec(0, 1, 2) as writer:
             writer.write(bar)
         check[c2] = bar
-        self.assertEqual(check[c2], asDict[c2].getvalue())
+        self.assertEqual(check[c2], db.get_ds(0, 1, 2))
 
-        self.assertEqual(2, len(asDict))
+        self.assertEqual(2, db.ds_n_cores())
 
-        asDict.set_app_id(12)
+        db.set_app_id(12)
 
-        for key in asDict:
-            self.assertEqual(check[key], asDict[key].getvalue())
-            (x, y, p) = key
-            self.assertEqual(12, asDict.get_app_id(x, y, p))
-
-        for key, value in asDict.items():
+        for key, value in db.items():
             self.assertEqual(check[key], value.getvalue())
 
 

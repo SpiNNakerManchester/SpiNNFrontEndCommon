@@ -42,8 +42,9 @@ def memory_map_on_host_chip_report(dsg_targets):
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    progress = ProgressBar(dsg_targets, "Writing memory map reports")
-    for (x, y, p) in progress.over(dsg_targets):
+    progress = ProgressBar(
+        dsg_targets.ds_n_cores(), "Writing memory map reports")
+    for (x, y, p) in progress.over(dsg_targets.keys()):
         file_name = os.path.join(
             directory_name, MEM_MAP_FILENAME.format(x, y, p))
         try:
