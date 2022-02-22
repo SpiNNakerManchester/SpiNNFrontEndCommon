@@ -393,9 +393,6 @@
         <span class="c1"># DSG to be written to the machine</span>
         <span class="s2">&quot;_dsg_targets&quot;</span><span class="p">,</span>
 
-        <span class="c1"># Sizes of dsg regions</span>
-        <span class="s2">&quot;_region_sizes&quot;</span><span class="p">,</span>
-
         <span class="c1"># Mapping for vertice to extra monitors</span>
         <span class="s2">&quot;_vertex_to_ethernet_connected_chip_mapping&quot;</span><span class="p">,</span>
 
@@ -557,7 +554,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_needed</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_plan_n_timesteps</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_precompressed</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_routing_table_by_partition</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2165,10 +2161,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="s2">&quot;Graph data specification writer&quot;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span> <span class="o">=</span> \
-                <span class="n">graph_data_specification_writer</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span> <span class="o">=</span> <span class="n">graph_data_specification_writer</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_run_time_steps</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_data_generation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2544,17 +2539,14 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the execute_system_data_specs if required</span>
 
-<span class="sd">        :return: map of placement and DSG data, and loaded data flag.</span>
-<span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Execute system data specification&quot;</span><span class="p">)</span> \
                 <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
-            <span class="k">return</span> <span class="n">execute_system_data_specs</span><span class="p">(</span>
+            <span class="n">execute_system_data_specs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_load_system_executable_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2566,8 +2558,7 @@
             <span class="n">load_sys_images</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_application_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_execute_application_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the execute_application_data_specs if required</span>
 
@@ -2576,13 +2567,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Host data specification&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">processor_to_app_data_base_address</span>
+                <span class="k">return</span>
             <span class="k">return</span> <span class="n">execute_application_data_specs</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_region_sizes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_executable_targets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_to_chip_mapping</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_tags_from_machine_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2614,7 +2605,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">_report_memory_on_host</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">processor_to_app_data_base_address</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_report_memory_on_host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs MemoryMapOnHostReport is requested</span>
 
@@ -2625,7 +2616,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_memory_map_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">memory_map_on_host_report</span><span class="p">(</span><span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
+            <span class="n">memory_map_on_host_report</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dsg_targets</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_memory_on_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2717,13 +2708,10 @@
         <span class="n">compressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_do_early_compression</span><span class="p">(</span><span class="n">compressor</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">graph_changed</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_ran</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_load_fixed_routes</span><span class="p">()</span>
-        <span class="n">processor_to_app_data_base_address</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_system_data_specification</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_system_data_specification</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_load_system_executable_images</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_load_tags</span><span class="p">()</span>
-        <span class="n">processor_to_app_data_base_address</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_application_data_specification</span><span class="p">(</span>
-                <span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_application_data_specification</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_extra_load_algorithms</span><span class="p">()</span>
         <span class="n">compressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_do_delayed_compression</span><span class="p">(</span><span class="n">compressor</span><span class="p">,</span> <span class="n">compressed</span><span class="p">)</span>
@@ -2733,7 +2721,7 @@
         <span class="c1"># TODO Was master correct to run the report first?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_tags_from_machine_report</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">graph_changed</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_memory_on_host</span><span class="p">(</span><span class="n">processor_to_app_data_base_address</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_report_memory_on_host</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_memory_on_chip</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_compressed</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_fixed_routes</span><span class="p">()</span>

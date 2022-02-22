@@ -1,0 +1,534 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.ds.ds_sqllite_database &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.ds.ds_sqllite_database</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.ds.ds_sqllite_database</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">report_default_directory</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
+<span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
+
+<span class="n">DB_NAME</span> <span class="o">=</span> <span class="s2">&quot;ds.sqlite3&quot;</span>
+<span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;dse.sql&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+
+<span class="k">class</span> <span class="nc">DsSqlliteDatabase</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
+        <span class="c1"># The machine cached for getting the &quot;ethernet&quot;s</span>
+        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
+        <span class="c1"># The root ethernet id if required</span>
+        <span class="s2">&quot;_root_ethernet_id&quot;</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.Machine machine:</span>
+<span class="sd">        :param init:</span>
+<span class="sd">        :type init: bool or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
+        <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">init</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span> <span class="k">if</span> <span class="n">init</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__init_db_contents</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_root_id</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init_db_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set up the database contents from the machine. &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO ethernet(</span>
+<span class="sd">                    ethernet_x, ethernet_y, ip_address)</span>
+<span class="sd">                VALUES(?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ip_address</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">ethernet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__find_root_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">first_x</span> <span class="o">=</span> <span class="n">first_y</span> <span class="o">=</span> <span class="n">root_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT ethernet_id, ethernet_x, ethernet_y FROM ethernet</span>
+<span class="sd">                    ORDER BY ethernet_x, ethernet_y</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="n">root_id</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;ethernet_id&quot;</span><span class="p">]</span>
+                <span class="n">first_x</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;ethernet_x&quot;</span><span class="p">]</span>
+                <span class="n">first_y</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;ethernet_y&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">root_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Should only be reachable for an empty machine</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No ethernet chip found&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">first_x</span> <span class="ow">or</span> <span class="n">first_y</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;No Ethernet chip found at 0,0 using </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;for all boards with no IP address.&quot;</span><span class="p">,</span> <span class="n">first_x</span><span class="p">,</span> <span class="n">first_y</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">root_id</span>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.clear_ds"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_ds">[docs]</a>    <span class="k">def</span> <span class="nf">clear_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clear all saved data specification data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                DELETE FROM core</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.write_data_spec"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec">[docs]</a>    <span class="k">def</span> <span class="nf">write_data_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">,</span> <span class="n">core_p</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int core_x: x of the core ds applies to</span>
+<span class="sd">        :param int core_y: y of the core ds applies to</span>
+<span class="sd">        :param int p: p of the core ds applies to</span>
+<span class="sd">        :param bytearray ds: the data spec as byte code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO core(</span>
+<span class="sd">                    x, y, processor, content, ethernet_id, app_id)</span>
+<span class="sd">                VALUES(?, ?, ?, ?, (</span>
+<span class="sd">                    SELECT COALESCE((</span>
+<span class="sd">                        SELECT ethernet_id FROM ethernet</span>
+<span class="sd">                        WHERE ethernet_x = ? AND ethernet_y = ?</span>
+<span class="sd">                    ), ?)), ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
+                    <span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">,</span> <span class="n">core_p</span><span class="p">,</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Binary</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span>
+                    <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.get_ds"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds">[docs]</a>    <span class="k">def</span> <span class="nf">get_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Retrieves the data spec as byte code for this core.</span>
+
+<span class="sd">        :param int x: core x</span>
+<span class="sd">        :param int y: core y</span>
+<span class="sd">        :param int p: core p</span>
+<span class="sd">        :return: data spec as byte code</span>
+<span class="sd">        :rtype: bytearray</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT content FROM core</span>
+<span class="sd">                    WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.keys"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            Do not use the database for anything else while iterating.</span>
+
+<span class="sd">        :return: Yields the (x, y, p)</span>
+<span class="sd">        :rtype: iterable(tuple(int,int,int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT x, y, processor FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            Do not use the database for anything else while iterating.</span>
+
+<span class="sd">        :return: Yields the (x, y, p) and saved ds pairs</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT x, y, processor, content FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">]),</span>
+                       <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.system_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.system_items">[docs]</a>    <span class="k">def</span> <span class="nf">system_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data for system cores</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            Do not use the database for anything else while iterating.</span>
+
+<span class="sd">        :return: Yields the (x, y, p), saved ds and region_size triples</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT x, y, processor, content, memory_used FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL AND is_system = 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">]),</span>
+                       <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]),</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.app_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items">[docs]</a>    <span class="k">def</span> <span class="nf">app_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data for application cores</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            Do not use the database for anything else while iterating.</span>
+
+<span class="sd">        :return: Yields the (x, y, p) and saved ds pairs</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT x, y, processor, content, memory_used  FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL AND is_system = 0</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">]),</span>
+                       <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]),</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.ds_n_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number for cores there is a ds saved for</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT COUNT(*) as count FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.ds_n_app_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_app_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number for application cores there is a ds saved for</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT COUNT(*) as count FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL AND is_system = 0</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.ds_n_system_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_system_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number for system cores there is a ds saved for</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT COUNT(*) as count FROM core</span>
+<span class="sd">                    WHERE content IS NOT NULL  AND is_system = 1</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.set_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the same app_id for all rows that have ds content</span>
+
+<span class="sd">        :param int app_id: value to set</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET</span>
+<span class="sd">                    app_id = ?</span>
+<span class="sd">                WHERE content IS NOT NULL</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">app_id</span><span class="p">,))</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.ds_get_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">ds_get_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the app_id set for this core</span>
+
+<span class="sd">        :param int x: core x</span>
+<span class="sd">        :param int y: core y</span>
+<span class="sd">        :param int p: core</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT app_id FROM core</span>
+<span class="sd">                    WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;app_id&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.mark_system_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.mark_system_cores">[docs]</a>    <span class="k">def</span> <span class="nf">mark_system_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~spinn_machine.CoreSubsets core_subsets:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cores_to_mark</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">subset</span> <span class="ow">in</span> <span class="n">core_subsets</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">x</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">subset</span><span class="o">.</span><span class="n">y</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">subset</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
+                <span class="n">cores_to_mark</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ds_mark_as_system</span><span class="p">(</span><span class="n">cores_to_mark</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.ds_mark_as_system"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system">[docs]</a>    <span class="k">def</span> <span class="nf">ds_mark_as_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_list</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Flags a list of processors as running system binaries.</span>
+
+<span class="sd">        :param iterable(tuple(int,int,int)) core_list:</span>
+<span class="sd">            list of (core x, core y, core p)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET</span>
+<span class="sd">                    is_system = 1</span>
+<span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">core_list</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.get_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_write_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Gets the provenance returned by the Data Spec executor.</span>
+
+<span class="sd">        :param int x: core x</span>
+<span class="sd">        :param int y: core y</span>
+<span class="sd">        :param int p: core p</span>
+<span class="sd">        :return: start_address, memory_used, memory_written</span>
+<span class="sd">        :rtype: DataWritten</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT start_address, memory_used, memory_written</span>
+<span class="sd">                    FROM core</span>
+<span class="sd">                    WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;start_address&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">],</span>
+                        <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_written&quot;</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No info for </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.set_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_write_info</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">written</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Sets the provenance returned by the Data Spec executor.</span>
+
+<span class="sd">        :param int x: core x</span>
+<span class="sd">        :param int y: core y</span>
+<span class="sd">        :param int p: core p</span>
+<span class="sd">        :param int start: base_address:</span>
+<span class="sd">        :param int used: size_allocated:</span>
+<span class="sd">        :param int written: bytes_written:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET</span>
+<span class="sd">                    start_address = ?,</span>
+<span class="sd">                    memory_used = ?,</span>
+<span class="sd">                    memory_written = ?</span>
+<span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">written</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    INSERT INTO core(</span>
+<span class="sd">                        x, y, processor, start_address,</span>
+<span class="sd">                        memory_used, memory_written, ethernet_id)</span>
+<span class="sd">                    VALUES(?, ?, ?, ?, ?, ?, (</span>
+<span class="sd">                        SELECT COALESCE((</span>
+<span class="sd">                            SELECT ethernet_id FROM ethernet</span>
+<span class="sd">                            WHERE ethernet_x = ? AND ethernet_y = ?</span>
+<span class="sd">                        ), ?)))</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">written</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span>
+                        <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.set_size_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_size_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_size_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">memory_used</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET</span>
+<span class="sd">                    memory_used = ?</span>
+<span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">memory_used</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    INSERT INTO core(</span>
+<span class="sd">                        x, y, processor, memory_used, ethernet_id)</span>
+<span class="sd">                    VALUES(?, ?, ?, ?, (</span>
+<span class="sd">                        SELECT COALESCE((</span>
+<span class="sd">                            SELECT ethernet_id FROM ethernet</span>
+<span class="sd">                            WHERE ethernet_x = ? AND ethernet_y = ?</span>
+<span class="sd">                        ), ?)))</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">memory_used</span><span class="p">),</span>
+                        <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.clear_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">clear_write_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clears the provenance for all rows.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET</span>
+<span class="sd">                    start_address = NULL,</span>
+<span class="sd">                    memory_used = NULL,</span>
+<span class="sd">                    memory_written = NULL</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.info_n_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_n_cores">[docs]</a>    <span class="k">def</span> <span class="nf">info_n_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Returns the number for cores there is a info saved for.</span>
+
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT count(*) as count FROM core</span>
+<span class="sd">                    WHERE start_address IS NOT NULL</span>
+<span class="sd">                    LIMIT 1</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.info_iteritems"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">info_iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Yields the keys and values for the Info data.</span>
+
+<span class="sd">        .. note:</span>
+<span class="sd">            A DB transaction may be held while this iterator is processing.</span>
+<span class="sd">            Reentrant use of this class is not supported.</span>
+
+<span class="sd">        :return: Yields the (x, y, p), start_address, memory_used</span>
+<span class="sd">            and memory_written</span>
+<span class="sd">        :rtype: iterable(tuple(tuple(int, int, int), int, int, int))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT</span>
+<span class="sd">                        x, y, processor,</span>
+<span class="sd">                        start_address, memory_used, memory_written</span>
+<span class="sd">                    FROM core</span>
+<span class="sd">                    WHERE start_address IS NOT NULL</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="p">((</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">]),</span>
+                       <span class="n">row</span><span class="p">[</span><span class="s2">&quot;start_address&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">],</span>
+                       <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_written&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.create_data_spec"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec">[docs]</a>    <span class="k">def</span> <span class="nf">create_data_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :rtype: DataRowWriter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataRowWriter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.ds.ds_sqllite_database</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
+    </div>
+  </body>
+</html>
