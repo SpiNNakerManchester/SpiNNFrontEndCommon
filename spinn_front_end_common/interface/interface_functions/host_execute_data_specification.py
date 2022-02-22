@@ -337,7 +337,7 @@ class _HostExecuteDataSpecification(object):
             "Executing data specifications and loading data for "
             "application vertices")
 
-         with _ExecutionContext() as context:
+        with _ExecutionContext() as context:
             transceiver = FecDataView.get_transceiver()
             for core, reader, region_size in progress.over(
                     dsg_targets.app_items()):
