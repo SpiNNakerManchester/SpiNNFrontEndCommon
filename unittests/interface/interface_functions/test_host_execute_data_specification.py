@@ -188,7 +188,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
 
-        infos = execute_application_data_specs(db)
+        execute_application_data_specs(db)
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)

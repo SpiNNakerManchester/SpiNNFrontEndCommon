@@ -337,13 +337,10 @@ class _HostExecuteDataSpecification(object):
             "Executing data specifications and loading data for "
             "application vertices")
 
-        # allocate and set user 0 before loading data
-        base_addresses = dict()
-
-        with _ExecutionContext() as context:
+         with _ExecutionContext() as context:
             transceiver = FecDataView.get_transceiver()
             for core, reader, region_size in progress.over(
-                dsg_targets.app_items()):
+                    dsg_targets.app_items()):
                 x, y, p = core
                 base_address = self.__malloc_region_storage(
                     core, region_size)
@@ -402,7 +399,6 @@ class _HostExecuteDataSpecification(object):
             "vertices using Java")
         FecDataView.get_java_caller().execute_system_data_specification()
         progress.end()
-
 
     def __python_sys(self, dsg_targets):
         """ Does the Data Specification Execution and loading using Python
