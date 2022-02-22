@@ -2058,7 +2058,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            execute_system_data_specs(self._dsg_targets, self._region_sizes)
+            execute_system_data_specs(self._dsg_targets)
 
     def _execute_load_system_executable_images(self):
         """

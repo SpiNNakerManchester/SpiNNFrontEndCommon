@@ -252,11 +252,15 @@ def execute_system_data_specs(dsg_targets):
     return specifier.execute_system_data_specs(dsg_targets)
 
 
-def execute_application_data_specs(dsg_targets):
+def execute_application_data_specs(
+        dsg_targets, extra_monitor_cores=None,
+        extra_monitor_cores_to_ethernet_connection_map=None):
     """ Execute the data specs for all non-system targets.
     """
     specifier = _HostExecuteDataSpecification()
-    specifier.execute_application_data_specs(dsg_targets)
+    specifier.execute_application_data_specs(
+        dsg_targets, extra_monitor_cores,
+        extra_monitor_cores_to_ethernet_connection_map)
 
 
 class _HostExecuteDataSpecification(object):
@@ -277,8 +281,8 @@ class _HostExecuteDataSpecification(object):
         self._monitors = None
 
     def execute_application_data_specs(
-            self, dsg_targets, extra_monitor_cores=None,
-            extra_monitor_cores_to_ethernet_connection_map=None):
+            self, dsg_targets, extra_monitor_cores,
+            extra_monitor_cores_to_ethernet_connection_map):
         """ Execute the data specs for all non-system targets.
         """
 
