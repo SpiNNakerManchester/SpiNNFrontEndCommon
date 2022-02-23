@@ -108,8 +108,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
-        execute_application_data_specs(db)
+        execute_application_data_specs()
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -187,8 +188,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
-        execute_application_data_specs(db)
+        execute_application_data_specs()
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
@@ -259,10 +261,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
-            execute_application_data_specs(db)
+            execute_application_data_specs()
 
     def test_multispec_with_double_reference(self):
         writer = FecDataWriter.mock()
@@ -287,10 +290,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
-            execute_application_data_specs(db)
+            execute_application_data_specs()
 
     def test_multispec_with_wrong_chip_reference(self):
         writer = FecDataWriter.mock()
@@ -323,10 +327,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            execute_application_data_specs(db)
+            execute_application_data_specs()
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
         writer = FecDataWriter.mock()
@@ -359,10 +364,11 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets.add_processor(
             "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            execute_application_data_specs(db)
+            execute_application_data_specs()
 
 
 if __name__ == "__main__":

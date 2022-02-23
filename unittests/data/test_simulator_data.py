@@ -30,6 +30,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
@@ -566,3 +567,16 @@ class TestSimulatorData(unittest.TestCase):
         targets = ExecutableTargets()
         writer.set_executable_targets(targets)
         self.assertEqual(targets, FecDataView.get_executable_targets())
+        with self.assertRaises(TypeError):
+            writer.set_executable_targets([])
+
+    def test_dsg_target(self):
+        writer = FecDataWriter.mock()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_dsg_targets()
+        targets = DsSqlliteDatabase()
+        writer.set_dsg_targets(targets)
+        self.assertEqual(targets, FecDataView.get_dsg_targets())
+        with self.assertRaises(TypeError):
+            writer.set_dsg_targets(dict())
+

@@ -22,19 +22,16 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
-def memory_map_on_host_report(dsg_targets):
+def memory_map_on_host_report():
     """ Report on memory usage.
 
-    :param dsg_targets:
-    :type dsg_targets:
-        dict(tuple(int,int,int),DataWritten)
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FOLDER_NAME)
     try:
         with open(file_name, "w") as f:
             f.write("On host data specification executor\n")
             for key, start_address, memory_used, memory_written in \
-                    dsg_targets.info_iteritems():
+                    FecDataView.get_dsg_targets().info_iteritems():
                 f.write(
                     f"{key}: ('start_address': {start_address}, "
                     f"hex:{hex(start_address)}), "

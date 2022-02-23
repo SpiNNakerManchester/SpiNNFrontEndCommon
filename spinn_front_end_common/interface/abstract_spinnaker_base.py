@@ -220,9 +220,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # DSG to be written to the machine
-        "_dsg_targets",
-
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
 
@@ -315,7 +312,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.get_app_id())
         self._data_writer.hard_reset()
         self._notification_interface = None
-        self._dsg_targets = None
         self._extra_monitor_to_chip_mapping = None
         self._max_machine = False
         self._multicast_routes_loaded = False
@@ -1685,7 +1681,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
-            self._dsg_targets = graph_data_specification_writer()
+            self._data_writer.set_dsg_targets(
+                graph_data_specification_writer())
 
     def _do_data_generation(self):
         """
@@ -2058,7 +2055,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            execute_system_data_specs(self._dsg_targets)
+            execute_system_data_specs()
 
     def _execute_load_system_executable_images(self):
         """
@@ -2080,7 +2077,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             return execute_application_data_specs(
-                self._dsg_targets,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping)
 
@@ -2125,7 +2121,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            memory_map_on_host_report(self._dsg_targets)
+            memory_map_on_host_report()
 
     def _report_memory_on_chip(self):
         """
@@ -2139,7 +2135,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_memory_map_report"):
                 return
 
-            memory_map_on_host_chip_report(self._dsg_targets)
+            memory_map_on_host_chip_report()
 
     # TODO consider different cfg flags
     def _report_compressed(self, compressed):

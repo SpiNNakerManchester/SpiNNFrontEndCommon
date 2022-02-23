@@ -245,21 +245,21 @@ class _ExecutionContext(object):
         return ref_to_use.pointer
 
 
-def execute_system_data_specs(dsg_targets):
+def execute_system_data_specs():
     """ Execute the data specs for all system targets.
     """
     specifier = _HostExecuteDataSpecification()
-    return specifier.execute_system_data_specs(dsg_targets)
+    return specifier.execute_system_data_specs()
 
 
 def execute_application_data_specs(
-        dsg_targets, extra_monitor_cores=None,
+        extra_monitor_cores=None,
         extra_monitor_cores_to_ethernet_connection_map=None):
     """ Execute the data specs for all non-system targets.
     """
     specifier = _HostExecuteDataSpecification()
     specifier.execute_application_data_specs(
-        dsg_targets, extra_monitor_cores,
+        extra_monitor_cores,
         extra_monitor_cores_to_ethernet_connection_map)
 
 
@@ -281,7 +281,7 @@ class _HostExecuteDataSpecification(object):
         self._monitors = None
 
     def execute_application_data_specs(
-            self, dsg_targets, extra_monitor_cores,
+            self, extra_monitor_cores,
             extra_monitor_cores_to_ethernet_connection_map):
         """ Execute the data specs for all non-system targets.
         """
@@ -298,9 +298,9 @@ class _HostExecuteDataSpecification(object):
 
         try:
             if FecDataView.has_java_caller():
-                return self.__java_app(dsg_targets, uses_advanced_monitors)
+                return self.__java_app(uses_advanced_monitors)
             else:
-                return self.__python_app(dsg_targets, uses_advanced_monitors)
+                return self.__python_app(uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
@@ -327,14 +327,14 @@ class _HostExecuteDataSpecification(object):
         gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
         return gatherer.send_data_into_spinnaker
 
-    def __python_app(self, dsg_targets, use_monitors):
+    def __python_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
         """
         if use_monitors:
             self.__set_router_timeouts()
 
+        dsg_targets = FecDataView.get_dsg_targets()
         # create a progress bar for end users
         progress = ProgressBar(
             dsg_targets.ds_n_app_cores(),
@@ -359,9 +359,8 @@ class _HostExecuteDataSpecification(object):
         if use_monitors:
             self.__reset_router_timeouts()
 
-    def __java_app(self, dsg_targets, use_monitors):
+    def __java_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
         """
         # create a progress bar for end users
@@ -378,24 +377,20 @@ class _HostExecuteDataSpecification(object):
         java_caller.execute_app_data_specification(use_monitors)
         progress.end()
 
-    def execute_system_data_specs(self, dsg_targets):
+    def execute_system_data_specs(self):
         """ Execute the data specs for all system targets.
 
-        :param dict(tuple(int,int,int),str) dsg_targets:
-            map of placement to file path
         """
         # pylint: disable=too-many-arguments
-        dsg_targets.mark_system_cores(system_cores())
+        FecDataView.get_dsg_targets().mark_system_cores(system_cores())
         if FecDataView.has_java_caller():
-            self.__java_sys(dsg_targets)
+            self.__java_sys()
         else:
-            self.__python_sys(dsg_targets)
+            self.__python_sys()
 
-    def __java_sys(self, dsg_targets):
+    def __java_sys(self):
         """ Does the Data Specification Execution and loading using Java
 
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
         """
         # create a progress bar for end users
         progress = ProgressBar(
@@ -404,14 +399,13 @@ class _HostExecuteDataSpecification(object):
         FecDataView.get_java_caller().execute_system_data_specification()
         progress.end()
 
-    def __python_sys(self, dsg_targets):
+    def __python_sys(self):
         """ Does the Data Specification Execution and loading using Python
 
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
         """
 
         # create a progress bar for end users
+        dsg_targets = FecDataView.get_dsg_targets()
         progress = ProgressBar(
             dsg_targets.ds_n_system_cores(),
             "Executing data specifications and loading data for "

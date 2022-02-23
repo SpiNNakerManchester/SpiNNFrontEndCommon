@@ -51,6 +51,7 @@ class _FecDataModel(object):
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_database_file_path",
+        "_dsg_targets",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
@@ -120,6 +121,7 @@ class _FecDataModel(object):
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
+        self._dsg_targets = None
         self._executable_targets = None
         self._fixed_routes = None
         self._ipaddress = None
@@ -852,3 +854,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._executable_targets is None:
             raise cls._exception("executable_targets")
         return cls.__fec_data._executable_targets
+
+    @classmethod
+    def get_dsg_targets(cls):
+        """ data Spec targets database
+
+        :rtype: DsSqlliteDatabase
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the dsg_targets is currently unavailable
+        """
+        if cls.__fec_data._dsg_targets is None:
+            raise cls._exception("dsg_targets")
+        return cls.__fec_data._dsg_targets

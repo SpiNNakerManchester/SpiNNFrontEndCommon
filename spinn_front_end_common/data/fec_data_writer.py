@@ -29,6 +29,7 @@ from spinnman.model import ExecutableTargets
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
@@ -471,3 +472,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(executable_targets, ExecutableTargets):
             raise TypeError("executable_targets must be a str or None")
         self.__fec_data._executable_targets = executable_targets
+
+    def set_dsg_targets(self, dsg_targets):
+        """
+        Sets the data Spec targets database
+
+        :type dsg_targets: ExecutableTargets
+        """
+        if not isinstance(dsg_targets, DsSqlliteDatabase):
+            raise TypeError("dsg_targets must be a DsSqlliteDatabase")
+        self.__fec_data._dsg_targets = dsg_targets
