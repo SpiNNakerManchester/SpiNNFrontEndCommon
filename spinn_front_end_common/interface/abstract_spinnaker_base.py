@@ -2621,7 +2621,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             generate_comparison_router_report(self._router_tables, compressed)
 
             router_compressed_summary_report(
-                self._router_tables, self._ipaddress, self._machine)
+                compressed, self._ipaddress, self._machine)
 
             routing_table_from_machine_report(compressed)
 
