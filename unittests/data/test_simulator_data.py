@@ -34,6 +34,8 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 
 
 class TestSimulatorData(unittest.TestCase):
@@ -579,3 +581,94 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(targets, FecDataView.get_dsg_targets())
         with self.assertRaises(TypeError):
             writer.set_dsg_targets(dict())
+
+    def test_gatherer_map(self):
+        writer = FecDataWriter.mock()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_gatherer_by_xy(0, 0)
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_gather_items()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_gathers()
+        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None, None)
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None, None)
+        map = dict()
+        # Setting empty ok
+        writer.set_gatherer_map(map)
+        map[(0, 0)] = vertex1
+        map[(8, 8)] = vertex2
+        writer.set_gatherer_map(map)
+        self.assertEqual(vertex1, FecDataView.get_gatherer_by_xy(0, 0))
+        for core, vertex in FecDataView.iterate_gather_items():
+            if core == (0, 0):
+                self.assertEqual(vertex1, vertex)
+            elif core == (8, 8):
+                self.assertEqual(vertex2, vertex)
+            else:
+                raise Exception(f"Unexpected item {core} {vertex}")
+        self.assertCountEqual([vertex1, vertex2], FecDataView.iterate_gathers())
+        with self.assertRaises(TypeError):
+            writer.set_gatherer_map([])
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1,2,3)] = vertex
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1)] = vertex
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, 0)] = "Bacon"
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, "bacon")] = vertex
+            writer.set_gatherer_map(map)
+
+    def test_monitor_map(self):
+        writer = FecDataWriter.mock()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_monitor_by_xy(0, 0)
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_monitor_items()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_monitors()
+        vertex1 = ExtraMonitorSupportMachineVertex(None, None)
+        vertex2 = ExtraMonitorSupportMachineVertex(None, None)
+        map = dict()
+        # Setting empty ok
+        writer.set_monitor_map(map)
+        map[(0, 0)] = vertex1
+        map[(8, 8)] = vertex2
+        writer.set_monitor_map(map)
+        self.assertEqual(vertex1, FecDataView.get_monitor_by_xy(0, 0))
+        for core, vertex in FecDataView.iterate_monitor_items():
+            if core == (0, 0):
+                self.assertEqual(vertex1, vertex)
+            elif core == (8, 8):
+                self.assertEqual(vertex2, vertex)
+            else:
+                raise Exception(f"Unexpected item {core} {vertex}")
+        self.assertCountEqual([vertex1, vertex2],
+                              FecDataView.iterate_monitors())
+        with self.assertRaises(KeyError):
+            FecDataView.get_monitor_by_xy(1, 1)
+        with self.assertRaises(TypeError):
+            writer.set_monitor_map([])
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1,2,3)] = vertex
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1)] = vertex
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, 0)] = "Bacon"
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, "bacon")] = vertex
+            writer.set_monitor_map(map)

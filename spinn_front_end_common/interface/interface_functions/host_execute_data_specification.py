@@ -252,15 +252,11 @@ def execute_system_data_specs():
     return specifier.execute_system_data_specs()
 
 
-def execute_application_data_specs(
-        extra_monitor_cores=None,
-        extra_monitor_cores_to_ethernet_connection_map=None):
+def execute_application_data_specs():
     """ Execute the data specs for all non-system targets.
     """
     specifier = _HostExecuteDataSpecification()
-    specifier.execute_application_data_specs(
-        extra_monitor_cores,
-        extra_monitor_cores_to_ethernet_connection_map)
+    specifier.execute_application_data_specs()
 
 
 class _HostExecuteDataSpecification(object):
@@ -269,25 +265,16 @@ class _HostExecuteDataSpecification(object):
 
     __slots__ = [
         # the application ID of the simulation
-        "_app_id",
-        "_core_to_conn_map",
-        "_monitors"]
+        "_app_id"]
 
     first = True
 
     def __init__(self):
         self._app_id = FecDataView.get_app_id()
-        self._core_to_conn_map = None
-        self._monitors = None
 
-    def execute_application_data_specs(
-            self, extra_monitor_cores,
-            extra_monitor_cores_to_ethernet_connection_map):
+    def execute_application_data_specs(self):
         """ Execute the data specs for all non-system targets.
         """
-
-        self._monitors = extra_monitor_cores
-        self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
         uses_advanced_monitors = get_config_bool(
             "Machine", "enable_advanced_monitor_support")
@@ -307,24 +294,23 @@ class _HostExecuteDataSpecification(object):
             raise
 
     def __set_router_timeouts(self):
-        for receiver in self._core_to_conn_map.values():
-            receiver.load_system_routing_tables(self._monitors)
-            receiver.set_cores_for_data_streaming(self._monitors)
+        for receiver in FecDataView.iterate_gathers():
+            receiver.load_system_routing_tables()
+            receiver.set_cores_for_data_streaming()
 
     def __reset_router_timeouts(self):
         # reset router timeouts
-        for receiver in self._core_to_conn_map.values():
-            receiver.unset_cores_for_data_streaming(
-                self._monitors)
+        for receiver in FecDataView.iterate_gathers():
+            receiver.unset_cores_for_data_streaming()
             # reset router tables
-            receiver.load_application_routing_tables(self._monitors)
+            receiver.load_application_routing_tables()
 
     def __select_writer(self, x, y):
         view = FecDataView()
         chip = view.get_chip_at(x, y)
         ethernet_chip = view.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
+        gatherer = view.get_gatherer_by_xy(ethernet_chip.x, ethernet_chip.y)
         return gatherer.send_data_into_spinnaker
 
     def __python_app(self, use_monitors):

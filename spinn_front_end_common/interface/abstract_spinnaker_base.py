@@ -220,19 +220,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # Mapping for vertice to extra monitors
-        "_vertex_to_ethernet_connected_chip_mapping",
-
-
         # Routing tables
         "_routing_table_by_partition",
 
         # Flag to say is compressed routing tables are on machine
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded",
-
-        # Extra monitors per chip
-        "_extra_monitor_to_chip_mapping",
 
         # Flag to say if current machine is a temporary max machine
         # the temp /max machine is held in the "machine" slot
@@ -312,11 +305,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.get_app_id())
         self._data_writer.hard_reset()
         self._notification_interface = None
-        self._extra_monitor_to_chip_mapping = None
         self._max_machine = False
         self._multicast_routes_loaded = False
         self._routing_table_by_partition = None
-        self._vertex_to_ethernet_connected_chip_mapping = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
 
@@ -1127,9 +1118,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             # inserter checks for None app graph not an empty one
-        (self._vertex_to_ethernet_connected_chip_mapping,
-         self._extra_monitor_to_chip_mapping) = \
-            insert_extra_monitor_vertices_to_graphs()
+        gather_map, monitor_map = insert_extra_monitor_vertices_to_graphs()
+        self._data_writer.set_gatherer_map(gather_map)
+        self._data_writer.set_monitor_map(monitor_map)
 
     def _execute_partitioner_report(self):
         """
@@ -1275,8 +1266,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            insert_edges_to_extra_monitor_functionality(
-                self._vertex_to_ethernet_connected_chip_mapping)
+            insert_edges_to_extra_monitor_functionality()
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -1291,8 +1281,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
                 return
-            data = system_multicast_routing_generator(
-                self._extra_monitor_to_chip_mapping)
+            data = system_multicast_routing_generator()
             self._data_writer.set_system_multicast_routing_data(data)
 
     def _execute_fixed_route_router(self):
@@ -1591,9 +1580,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
 
             self._data_writer.set_buffer_manager(
-                buffer_manager_creator(
-                    self._extra_monitor_to_chip_mapping,
-                    self._vertex_to_ethernet_connected_chip_mapping))
+                buffer_manager_creator())
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """
@@ -2076,9 +2063,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
                 return
-            return execute_application_data_specs(
-                self._extra_monitor_to_chip_mapping,
-                self._vertex_to_ethernet_connected_chip_mapping)
+            return execute_application_data_specs()
 
     def _execute_tags_from_machine_report(self):
         """

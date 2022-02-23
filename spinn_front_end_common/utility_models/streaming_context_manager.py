@@ -20,7 +20,7 @@ class StreamingContextManager(object):
     """
     __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
 
-    def __init__(self, gatherers, monitors):
+    def __init__(self):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
         :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex)) monitors:
@@ -30,13 +30,13 @@ class StreamingContextManager(object):
 
     def __enter__(self):
         for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(self._monitors)
+            gatherer.load_system_routing_tables()
         for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(self._monitors)
+            gatherer.set_cores_for_data_streaming()
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(self._monitors)
+            gatherer.unset_cores_for_data_streaming()
         for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(self._monitors)
+            gatherer.load_application_routing_tables()
         return False

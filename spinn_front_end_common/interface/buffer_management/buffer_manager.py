@@ -110,9 +110,6 @@ class BufferManager(object):
         # the extra_monitor to Ethernet connection map
         "_packet_gather_cores_to_ethernet_connection_map",
 
-        # monitor cores via chip ID
-        "_extra_monitor_cores_by_chip",
-
         # machine object
         "_machine",
 
@@ -134,7 +131,6 @@ class BufferManager(object):
         # pylint: disable=too-many-arguments
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
-        self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -158,9 +154,7 @@ class BufferManager(object):
         if FecDataView.has_java_caller():
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
-                self._java_caller.set_advanced_monitors(
-                    self._extra_monitor_cores_by_chip,
-                    self._packet_gather_cores_to_ethernet_connection_map)
+                self._java_caller.set_advanced_monitors()
         else:
             self._java_caller = None
 
@@ -188,7 +182,7 @@ class BufferManager(object):
         final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
         length += final
 
-        sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
+        sender = FecDataView.get_monitor_by_xy(placement_x, placement_y)
         receiver = locate_extra_monitor_mc_receiver(
             placement_x, placement_y,
             self._packet_gather_cores_to_ethernet_connection_map)
@@ -600,7 +594,7 @@ class BufferManager(object):
             for placement in recording_placements))
 
         # update transaction id from the machine for all extra monitors
-        for extra_mon in self._extra_monitor_cores_by_chip.values():
+        for extra_mon in FecDataView.iterate_monitors():
             extra_mon.update_transaction_id_from_machine()
 
         with StreamingContextManager(

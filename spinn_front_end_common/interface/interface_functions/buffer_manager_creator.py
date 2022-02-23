@@ -21,18 +21,9 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
         AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost)
 
 
-def buffer_manager_creator(
-        extra_monitor_to_chip_mapping=None,
-        packet_gather_cores_to_ethernet_connection_map=None):
+def buffer_manager_creator():
     """ Creates a buffer manager.
 
-    :param bool uses_advanced_monitors:
-    :param extra_monitor_to_chip_mapping:
-    :type extra_monitor_to_chip_mapping:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-    :param packet_gather_cores_to_ethernet_connection_map:
-    :type packet_gather_cores_to_ethernet_connection_map:
-        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex)
     :rtype: BufferManager
     """
     placements = FecDataView.get_placements()
@@ -40,10 +31,7 @@ def buffer_manager_creator(
     progress = ProgressBar(placements.n_placements, "Initialising buffers")
 
     # Create the buffer manager
-    buffer_manager = BufferManager(
-        packet_gather_cores_to_ethernet_connection_map=(
-            packet_gather_cores_to_ethernet_connection_map),
-        extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping)
+    buffer_manager = BufferManager()
 
     for placement in progress.over(placements):
         vertex = placement.vertex

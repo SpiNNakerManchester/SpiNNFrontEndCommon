@@ -30,7 +30,6 @@ def insert_extra_monitor_vertices_to_graphs():
         vertex_to_chip_map
     :rtype: tuple(
         dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-        list(ExtraMonitorSupportMachineVertex),
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     # pylint: disable=too-many-arguments, attribute-defined-outside-init

@@ -6,7 +6,7 @@
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# but WITHOUT ANY WARRANTY; without even the impl`ied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
@@ -56,6 +56,7 @@ class _FecDataModel(object):
         "_executable_types",
         "_first_machine_time_step",
         "_fixed_routes",
+        "_gatherer_map",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_ipaddress",
@@ -68,6 +69,7 @@ class _FecDataModel(object):
         "_next_sync_signal",
         "_none_labelled_edge_count",
         "_max_run_time_steps",
+        "_monitor_map",
         "_report_dir_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -124,10 +126,12 @@ class _FecDataModel(object):
         self._dsg_targets = None
         self._executable_targets = None
         self._fixed_routes = None
+        self._gatherer_map = None
         self._ipaddress = None
         self._n_chips_in_graph = None
         self._next_sync_signal = Signal.SYNC0
         self._max_run_time_steps = None
+        self._monitor_map = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
 
@@ -866,3 +870,83 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._dsg_targets is None:
             raise cls._exception("dsg_targets")
         return cls.__fec_data._dsg_targets
+
+    @classmethod
+    def get_monitor_by_xy(cls, x, y):
+        """ ExtraMonitorSupportMachineVertex for core x, y
+
+        :rtype: ExtraMonitorSupportMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        :raises KeyError: If core x,y does not have a monitor
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map[(x, y)]
+
+    @classmethod
+    def iterate_monitor_items(cls):
+        """
+        Iterates over the (X,y) and ExtraMonitorSupportMachineVertex
+
+        :rtype: iterable(tuple(tuple(int,int),
+            ExtraMonitorSupportMachineVertex))
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map.items()
+
+    @classmethod
+    def iterate_monitors(cls):
+        """
+        Iterates over the ExtraMonitorSupportMachineVertex(s)
+
+        :rtype: iterable(ExtraMonitorSupportMachineVertex)
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map.values()
+
+    @classmethod
+    def get_gatherer_by_xy(cls, x, y):
+        """ DataSpeedUpPacketGatherMachineVertex for core x, y
+
+        :rtype: EDataSpeedUpPacketGatherMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gatherers are currently unavailable
+        :raises KeyError: If core x,y does not have a monitor
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map[(x, y)]
+
+    @classmethod
+    def iterate_gather_items(cls):
+        """
+        Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex
+
+        :rtype: iterable(tuple(tuple(int,int),
+             DataSpeedUpPacketGatherMachineVertex))
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gathers are currently unavailable
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map.items()
+
+    @classmethod
+    def iterate_gathers(cls):
+        """
+        Iterates over the DataSpeedUpPacketGatherMachineVertex(s)
+
+        :rtype: iterable(DataSpeedUpPacketGatherMachineVertex)
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gathers are currently unavailable
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map.values()

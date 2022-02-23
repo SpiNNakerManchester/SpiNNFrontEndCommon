@@ -32,19 +32,16 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator(extra_monitor_cores):
+def system_multicast_routing_generator():
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
 
-    :param extra_monitor_cores:
-    :type extra_monitor_cores:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
     :return: routing tables, destination-to-key map,
         board-locn-to-timeout-key map
     :rtype: tuple(MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
-    generator = _SystemMulticastRoutingGenerator(extra_monitor_cores)
+    generator = _SystemMulticastRoutingGenerator()
     return generator._run()
 
 
@@ -52,19 +49,15 @@ class _SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
     """
-    __slots__ = ["_key_to_destination_map", "_monitors", "_machine",
+    __slots__ = ["_key_to_destination_map", "_machine",
                  "_routing_tables", "_time_out_keys_by_board"]
 
-    def __init__(self, extra_monitor_cores):
+    def __init__(self):
         """
 
-        :param extra_monitor_cores:
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
         """
         self._machine = FecDataView.get_machine()
-        self._monitors = extra_monitor_cores
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map = dict()
         self._time_out_keys_by_board = dict()
@@ -216,7 +209,7 @@ class _SystemMulticastRoutingGenerator(object):
                 eth_x, eth_y):
             self._key_to_destination_map[x, y] = key
             placement = FecDataView.get_placement_of_vertex(
-                self._monitors[x, y])
+                FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
                 x, y, link = tree[(x, y)]
@@ -234,7 +227,7 @@ class _SystemMulticastRoutingGenerator(object):
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
             placement = FecDataView.get_placement_of_vertex(
-                self._monitors[x, y])
+                FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(
                 x, y, time_out_key, processor_id=placement.p,
                 link_ids=links_per_chip[x, y])

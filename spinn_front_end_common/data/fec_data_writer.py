@@ -34,7 +34,8 @@ from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, MICRO_TO_SECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 from .fec_data_view import FecDataView, _FecDataModel
 
 
@@ -482,3 +483,57 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if not isinstance(dsg_targets, DsSqlliteDatabase):
             raise TypeError("dsg_targets must be a DsSqlliteDatabase")
         self.__fec_data._dsg_targets = dsg_targets
+
+    def __gatherer_map_error(self):
+        return TypeError(
+            "gatherer_map must be a dict((int, int), "
+            "DataSpeedUpPacketGatherMachineVertex)")
+
+    def set_gatherer_map(self, gatherer_map):
+        """
+        Sets the map of x,y to Gatherer Vertices
+
+        :type gatherer_map:
+            dict((int, int), DataSpeedUpPacketGatherMachineVertex)
+        """
+        if not isinstance(gatherer_map, dict):
+            raise self.__gatherer_map_error()
+        try:
+            for (x, y), vertex in gatherer_map.items():
+                if not isinstance(x, int):
+                    raise self.__gatherer_map_error()
+                if not isinstance(y, int):
+                    raise self.__gatherer_map_error()
+                if not isinstance(vertex, DataSpeedUpPacketGatherMachineVertex):
+                    raise self.__gatherer_map_error()
+                break  # assume if first is ok all are
+        except Exception as ex:  # pylint: disable=broad-except
+            raise self.__gatherer_map_error() from ex
+        self.__fec_data._gatherer_map = gatherer_map
+
+    def __monitor_map_error(self):
+        return TypeError(
+            "monitor_map must be a dict((int, int), "
+            "ExtraMonitorSupportMachineVertex)")
+
+    def set_monitor_map(self, monitor_map):
+        """
+        Sets the map of x,y to Monitor Vertices
+
+        :type monitor_map:
+            dict((int, int), ExtraMonitorSupportMachineVertex)
+        """
+        if not isinstance(monitor_map, dict):
+            raise self.__monitor_map_error()
+        try:
+            for (x, y), vertex in monitor_map.items():
+                if not isinstance(x, int):
+                    raise self.__monitor_map_error()
+                if not isinstance(y, int):
+                    raise self.__monitor_map_error()
+                if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
+                    raise self.__monitor_map_error()
+                break  # assume if first is ok all are
+        except Exception as ex:  # pylint: disable=broad-except
+            raise self.__monitor_map_error() from ex
+        self.__fec_data._monitor_map = monitor_map

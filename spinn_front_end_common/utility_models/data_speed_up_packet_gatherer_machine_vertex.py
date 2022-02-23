@@ -889,23 +889,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_tell_flag()
         log.debug("sent end flag")
 
-    def set_cores_for_data_streaming(self, extra_monitor_cores):
+    def set_cores_for_data_streaming(self):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
-        lead_monitor = extra_monitor_cores[(0, 0)]
+        lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
         self._last_status = lead_monitor.get_reinjection_status()
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
-            extra_monitor_cores,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
@@ -917,26 +912,20 @@ class DataSpeedUpPacketGatherMachineVertex(
         self.set_router_wait1_timeout(self._LONG_TIMEOUT)
 
     @staticmethod
-    def load_application_routing_tables(extra_monitor_cores):
+    def load_application_routing_tables():
         """ Set all chips to have application table loaded in the router
 
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
             the extra monitor cores to set
         """
-        extra_monitor_cores[(0, 0)].load_application_mc_routes(
-            extra_monitor_cores)
+        extra_monitor_cores[(0, 0)].load_application_mc_routes()
 
     @staticmethod
-    def load_system_routing_tables(extra_monitor_cores):
+    def load_system_routing_tables():
         """ Set all chips to have the system table loaded in the router
 
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
-        extra_monitor_cores[(0, 0)].load_system_mc_routes(
-            extra_monitor_cores)
+        FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
     def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
@@ -987,14 +976,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def unset_cores_for_data_streaming(self, extra_monitor_cores):
+    def unset_cores_for_data_streaming(self):
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
@@ -1010,9 +995,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.set_router_wait2_timeout(
                 self._last_status.router_wait2_timeout_parameters)
 
-            lead_monitor = extra_monitor_cores[(0, 0)]
+            lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
             lead_monitor.set_reinjection_packets(
-                extra_monitor_cores,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
                 nearest_neighbour=(

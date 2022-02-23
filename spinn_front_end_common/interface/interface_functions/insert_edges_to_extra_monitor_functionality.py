@@ -23,19 +23,13 @@ from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 
 
-def insert_edges_to_extra_monitor_functionality(
-        vertex_to_ethernet_connected_chip_mapping):
+def insert_edges_to_extra_monitor_functionality():
     """
         Inserts edges between vertices who use MC speed up and its local\
             MC data gatherer.
 
-        :param vertex_to_ethernet_connected_chip_mapping:
-            mapping between ethernet connected chips and packet gatherers
-        :type vertex_to_ethernet_connected_chip_mapping:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     """
-    inserter = _InsertEdgesToExtraMonitorFunctionality(
-        vertex_to_ethernet_connected_chip_mapping)
+    inserter = _InsertEdgesToExtraMonitorFunctionality()
     inserter._run()
 
 
@@ -44,20 +38,9 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         MC data gatherer.
     """
 
-    __slots__ = [
-        # Map of Chip(x,y) to the (Gather) vertex
-        "_chip_to_gatherer_map",
-    ]
+    __slots__ = []
 
     EDGE_LABEL = "edge between {} and {}"
-
-    def __init__(self, vertex_to_ethernet_connected_chip_mapping):
-        """
-
-        :param vertex_to_ethernet_connected_chip_mapping:
-            mapping between ethernet connected chips and packet gatherers
-        """
-        self._chip_to_gatherer_map = vertex_to_ethernet_connected_chip_mapping
 
     def _run(self):
         """
@@ -134,10 +117,10 @@ class _InsertEdgesToExtraMonitorFunctionality(object):
         :rtype: DataSpeedUpPacketGatherMachineVertex
         """
         placement = FecDataView.get_placement_of_vertex(vertex)
-        chip = FecDataView().get_chip_at(placement.x, placement.y)
-        ethernet_chip = FecDataView().get_chip_at(
+        chip = FecDataView.get_chip_at(placement.x, placement.y)
+        ethernet_chip = FecDataView.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        return self._chip_to_gatherer_map[ethernet_chip.x, ethernet_chip.y]
+        return FecDataView.get_gatherer_by_xy(ethernet_chip.x, ethernet_chip.y)
 
     @staticmethod
     def __get_app_edge(graph, source, destination):
