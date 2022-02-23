@@ -100,9 +100,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
-        bm = BufferManager(
-            packet_gather_cores_to_ethernet_connection_map=None,
-            extra_monitor_to_chip_mapping=None)
+        bm = BufferManager()
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
         self.assertTrue(FecDataView.has_buffer_manager())

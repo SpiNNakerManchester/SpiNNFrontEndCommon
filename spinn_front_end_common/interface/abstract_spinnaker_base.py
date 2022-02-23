@@ -2273,7 +2273,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             if timer.skip_if_virtual_board():
                 return []
-            router_provenance_gatherer(self._extra_monitor_to_chip_mapping)
+            router_provenance_gatherer()
 
     def _execute_profile_data_gatherer(self):
         """
@@ -2532,8 +2532,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Extract router provenance
         try:
-            router_provenance_gatherer(
-                extra_monitor_vertices=self._extra_monitor_to_chip_mapping)
+            router_provenance_gatherer()
         except Exception:
             logger.exception("Error reading router provenance")
 

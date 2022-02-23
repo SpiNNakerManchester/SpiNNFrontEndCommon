@@ -915,10 +915,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def load_application_routing_tables():
         """ Set all chips to have application table loaded in the router
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
         """
-        extra_monitor_cores[(0, 0)].load_application_mc_routes()
+        FecDataView.get_monitor_by_xy(0, 0).load_application_mc_routes()
 
     @staticmethod
     def load_system_routing_tables():
@@ -1005,7 +1003,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         except Exception:  # pylint: disable=broad-except
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
-            core_subsets = convert_vertices_to_core_subset(extra_monitor_cores)
+            core_subsets = convert_vertices_to_core_subset(
+                FecDataView.iterate_monitors())
             try:
                 transceiver = FecDataView.get_transceiver()
                 error_cores = transceiver.get_cores_not_in_state(

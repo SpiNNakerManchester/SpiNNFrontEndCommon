@@ -18,15 +18,13 @@ class StreamingContextManager(object):
     """ The implementation of the context manager object for streaming \
         configuration control.
     """
-    __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
+    __slots__ = ["_gatherers"]
 
-    def __init__(self):
+    def __init__(self, gatherers):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex)) monitors:
         """
         self._gatherers = list(gatherers)
-        self._monitors = monitors
 
     def __enter__(self):
         for gatherer in self._gatherers:

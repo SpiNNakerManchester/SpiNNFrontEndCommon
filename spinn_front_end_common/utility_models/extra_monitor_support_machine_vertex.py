@@ -523,18 +523,13 @@ class ExtraMonitorSupportMachineVertex(
             emergency_recover_state_from_failure(self, placement)
             raise
 
-    def get_reinjection_status_for_vertices(
-            self, extra_monitor_cores_for_data):
+    def get_reinjection_status_for_vertices(self):
         """ Get the reinjection status from a set of extra monitor cores
 
-        :param extra_monitor_cores_for_data:
-            the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            FecDataView.iterate_monitors())
         process = ReadStatusProcess(
             FecDataView.get_scamp_connection_selector())
         return process.get_reinjection_status_for_core_subsets(core_subsets)

@@ -107,31 +107,12 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # the extra_monitor to Ethernet connection map
-        "_packet_gather_cores_to_ethernet_connection_map",
-
-        # machine object
-        "_machine",
-
         # Support class to help call Java
         "_java_caller"
     ]
 
-    def __init__(self, packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping):
-        """
-        :param packet_gather_cores_to_ethernet_connection_map:
-            mapping of cores to the gatherer vertex placed on them
-        :type packet_gather_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param extra_monitor_to_chip_mapping:
-        :type extra_monitor_to_chip_mapping:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        """
+    def __init__(self):
         # pylint: disable=too-many-arguments
-        self._packet_gather_cores_to_ethernet_connection_map = \
-            packet_gather_cores_to_ethernet_connection_map
-
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
 
@@ -183,9 +164,7 @@ class BufferManager(object):
         length += final
 
         sender = FecDataView.get_monitor_by_xy(placement_x, placement_y)
-        receiver = locate_extra_monitor_mc_receiver(
-            placement_x, placement_y,
-            self._packet_gather_cores_to_ethernet_connection_map)
+        receiver = locate_extra_monitor_mc_receiver(placement_x, placement_y)
         extra_mon_data = receiver.get_data(
             sender, FecDataView.get_placement_of_vertex(sender),
             address, length)
@@ -588,17 +567,14 @@ class BufferManager(object):
         """
         # locate receivers
         receivers = list(OrderedSet(
-            locate_extra_monitor_mc_receiver(
-                placement.x, placement.y,
-                self._packet_gather_cores_to_ethernet_connection_map)
+            locate_extra_monitor_mc_receiver(placement.x, placement.y)
             for placement in recording_placements))
 
         # update transaction id from the machine for all extra monitors
         for extra_mon in FecDataView.iterate_monitors():
             extra_mon.update_transaction_id_from_machine()
 
-        with StreamingContextManager(
-                receivers, self._extra_monitor_cores_by_chip):
+        with StreamingContextManager(receivers):
             # get data
             self.__old_get_data_for_placements(recording_placements, progress)
 
