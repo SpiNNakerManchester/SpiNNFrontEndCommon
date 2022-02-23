@@ -604,12 +604,13 @@ class TestSimulatorData(unittest.TestCase):
                 self.assertEqual(vertex2, vertex)
             else:
                 raise Exception(f"Unexpected item {core} {vertex}")
-        self.assertCountEqual([vertex1, vertex2], FecDataView.iterate_gathers())
+        self.assertCountEqual(
+            [vertex1, vertex2], FecDataView.iterate_gathers())
         with self.assertRaises(TypeError):
             writer.set_gatherer_map([])
         with self.assertRaises(TypeError):
             map = dict()
-            map[(1,2,3)] = vertex
+            map[(1, 2, 3)] = vertex
             writer.set_gatherer_map(map)
         with self.assertRaises(TypeError):
             map = dict()
@@ -656,7 +657,7 @@ class TestSimulatorData(unittest.TestCase):
             writer.set_monitor_map([])
         with self.assertRaises(TypeError):
             map = dict()
-            map[(1,2,3)] = vertex
+            map[(1, 2, 3)] = vertex
             writer.set_monitor_map(map)
         with self.assertRaises(TypeError):
             map = dict()
