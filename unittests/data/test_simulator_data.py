@@ -579,4 +579,3 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(targets, FecDataView.get_dsg_targets())
         with self.assertRaises(TypeError):
             writer.set_dsg_targets(dict())
-
