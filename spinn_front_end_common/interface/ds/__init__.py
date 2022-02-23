@@ -13,11 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .data_specification_targets import DataSpecificationTargets
+from .ds_sqllite_database import DsSqlliteDatabase
 from .data_row_writer import DataRowWriter
-from .ds_write_info import DsWriteInfo
 
 __all__ = [
     "DataRowWriter",
-    "DataSpecificationTargets",
-    "DsWriteInfo"]
+    "DsSqlliteDatabase"]
