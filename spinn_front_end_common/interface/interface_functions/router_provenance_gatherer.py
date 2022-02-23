@@ -44,8 +44,9 @@ class _RouterProvenanceGatherer(object):
 
         # get all extra monitor core data if it exists
         reinjection_data = None
-        monitor = FecDataView.get_monitor_by_xy(0, 0)
-        reinjection_data = monitor.get_reinjection_status_for_vertices()
+        if FecDataView.has_monitors():
+            monitor = FecDataView.get_monitor_by_xy(0, 0)
+            reinjection_data = monitor.get_reinjection_status_for_vertices()
 
         for router_table in progress.over(
                 FecDataView.get_uncompressed().routing_tables, False):

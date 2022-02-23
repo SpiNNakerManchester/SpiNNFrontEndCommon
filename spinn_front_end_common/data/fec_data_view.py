@@ -872,6 +872,15 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._dsg_targets
 
     @classmethod
+    def has_monitors(cls):
+        """
+        Detect is ExtraMonitorSupportMachineVertex(s) have been created
+
+        :rtype: bool
+        """
+        return cls.__fec_data._monitor_map is not None
+
+    @classmethod
     def get_monitor_by_xy(cls, x, y):
         """ ExtraMonitorSupportMachineVertex for core x, y
 

@@ -627,6 +627,7 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_monitor_map(self):
         writer = FecDataWriter.mock()
+        self.assertFalse(FecDataView.has_monitors())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_monitor_by_xy(0, 0)
         with self.assertRaises(DataNotYetAvialable):
@@ -641,6 +642,7 @@ class TestSimulatorData(unittest.TestCase):
         map[(0, 0)] = vertex1
         map[(8, 8)] = vertex2
         writer.set_monitor_map(map)
+        self.assertTrue(FecDataView.has_monitors())
         self.assertEqual(vertex1, FecDataView.get_monitor_by_xy(0, 0))
         for core, vertex in FecDataView.iterate_monitor_items():
             if core == (0, 0):
