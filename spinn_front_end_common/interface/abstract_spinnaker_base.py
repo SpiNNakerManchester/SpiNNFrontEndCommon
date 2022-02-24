@@ -220,9 +220,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
-        # Routing tables
-        "_routing_table_by_partition",
-
         # Flag to say is compressed routing tables are on machine
         # TODO remove this when the data change only algorithms are done
         "_multicast_routes_loaded",
@@ -307,7 +304,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
-        self._routing_table_by_partition = None
         self._data_writer.clear_app_id()
         self.__close_allocation_controller()
 
@@ -1344,7 +1340,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
-            self._routing_table_by_partition = ner_route_traffic_aware()
+            self._data_writer.set_routing_table_by_partition(
+                ner_route_traffic_aware())
 
     def _execute_ner_route(self):
         """
@@ -1356,7 +1353,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Ner route"):
-            self._routing_table_by_partition = ner_route()
+            self._data_writer.set_routing_table_by_partition(ner_route())
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1368,7 +1365,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg router value
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
-            self._routing_table_by_partition = basic_dijkstra_routing()
+            self._data_writer.set_routing_table_by_partition(
+                basic_dijkstra_routing())
 
     def _do_routing(self):
         """
@@ -1510,8 +1508,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             To add an additional Generator copy the pattern of do_placer
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
-            self._data_writer.set_uncompressed(basic_routing_table_generator(
-                self._routing_table_by_partition))
+            self._data_writer.set_uncompressed(basic_routing_table_generator())
         # TODO Nuke ZonedRoutingTableGenerator
 
     def _report_routers(self):
@@ -1551,8 +1548,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Router collision potential report"):
             # TODO cfg flag!
-            router_collision_potential_report(
-                self._routing_table_by_partition)
+            router_collision_potential_report()
 
     def _execute_locate_executable_start_type(self):
         """
