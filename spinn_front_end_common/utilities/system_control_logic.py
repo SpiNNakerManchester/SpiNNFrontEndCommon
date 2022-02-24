@@ -51,7 +51,7 @@ def run_system_application(
     :param ~logging.Logger logger:
         If provided and IOBUF is extracted, will be used to log errors and
         warnings
-    :param timeout: 
+    :param timeout:
         Number of seconds to wait before force stopping, or None to wait
         forever
     :type timeout: float or None
