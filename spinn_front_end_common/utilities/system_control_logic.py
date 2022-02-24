@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinnman.exceptions import SpinnmanException
+from spinnman.exceptions import (
+    SpinnmanException, SpiNNManCoresNotInStateException)
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -24,7 +25,7 @@ def run_system_application(
         executable_cores, app_id, transceiver,
         executable_finder, read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
-        binaries_to_track=None, progress_bar=None, logger=None):
+        binaries_to_track=None, progress_bar=None, logger=None, timeout=None):
     """ Executes the given _system_ application. \
         Used for on-chip expanders, compressors, etc.
 
@@ -46,10 +47,14 @@ def run_system_application(
         Or `None` for all binaries
     :param progress_bar: Possible progress bar to update.
            end() will be called after state checked
+    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
     :param ~logging.Logger logger:
         If provided and IOBUF is extracted, will be used to log errors and
         warnings
-    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None
+    :param timeout: 
+        Number of seconds to wait before force stopping, or None to wait
+        forever
+    :type timeout: float or None
     :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
@@ -77,13 +82,18 @@ def run_system_application(
 
     # Wait for the executable to finish
     succeeded = False
+    core_state_string = None
     try:
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
-            progress_bar=progress_bar)
+            progress_bar=progress_bar, timeout=timeout)
         if progress_bar is not None:
             progress_bar.end()
         succeeded = True
+    except SpiNNManCoresNotInStateException as ex:
+        error = ex
+        core_state_string = transceiver.get_core_status_string(
+            ex.failed_core_states)
     except SpinnmanException as ex:
         # Delay the exception until iobuf is ready
         error = ex
@@ -106,6 +116,8 @@ def run_system_application(
     transceiver.app_id_tracker.free_id(app_id)
 
     if error is not None:
+        if core_state_string is not None:
+            print(core_state_string)
         raise error  # pylint: disable=raising-bad-type
 
 
