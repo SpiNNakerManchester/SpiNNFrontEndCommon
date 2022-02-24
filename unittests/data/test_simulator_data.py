@@ -22,6 +22,7 @@ from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from spinnman.messages.scp.enums.signal import Signal
+from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -673,3 +674,26 @@ class TestSimulatorData(unittest.TestCase):
             map = dict()
             map[(0, "bacon")] = vertex
             writer.set_monitor_map(map)
+
+    def test_database_socket_addresses(self):
+        FecDataWriter.mock()
+        self.assertCountEqual(
+            [], FecDataView.iterate_database_socket_addresses())
+        sa1 = SocketAddress("a", 2, 3)
+        sa2 = SocketAddress("b", 2, 3)
+        sa3 = SocketAddress("c", 2, 3)
+        sa4 = SocketAddress("d", 2, 3)
+        FecDataView.add_database_socket_address(sa1)
+        self.assertCountEqual(
+            [sa1], FecDataView.iterate_database_socket_addresses())
+        FecDataView.add_database_socket_addresses([sa2, sa3])
+        self.assertCountEqual(
+            [sa1, sa2, sa3], FecDataView.iterate_database_socket_addresses())
+        FecDataView.add_database_socket_addresses([sa1, sa4, sa3])
+        self.assertCountEqual(
+            [sa1, sa2, sa3, sa4],
+            FecDataView.iterate_database_socket_addresses())
+        with self.assertRaises(TypeError):
+            FecDataView.add_database_socket_address("bacon")
+        with self.assertRaises(TypeError):
+            FecDataView.add_database_socket_addresses(12)

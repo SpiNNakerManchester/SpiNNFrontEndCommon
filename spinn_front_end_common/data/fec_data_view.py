@@ -16,6 +16,7 @@
 import errno
 import os
 from spinn_utilities.data.data_status import Data_Status
+from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
@@ -51,6 +52,7 @@ class _FecDataModel(object):
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_database_file_path",
+        "_database_socket_addresses",
         "_dsg_targets",
         "_executable_targets",
         "_executable_types",
@@ -95,6 +97,7 @@ class _FecDataModel(object):
         Clears out all data
         """
         # Can not be cleared during hard reset as previous runs data checked
+        self._database_socket_addresses = set()
         self._executable_types = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
@@ -924,7 +927,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_gatherer_by_xy(cls, x, y):
         """ DataSpeedUpPacketGatherMachineVertex for core x, y
 
-        :rtype: EDataSpeedUpPacketGatherMachineVertex
+        :rtype: DataSpeedUpPacketGatherMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the gatherers are currently unavailable
         :raises KeyError: If core x,y does not have a monitor
@@ -959,3 +962,38 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
         return cls.__fec_data._gatherer_map.values()
+
+    @classmethod
+    def iterate_database_socket_addresses(cls):
+        """
+        Iterates over the registered database_socket_addresses
+
+        :rtype: iterable(~spinn_utilities.socket_address.SocketAddress)
+        """
+        return iter(cls.__fec_data._database_socket_addresses)
+
+    @classmethod
+    def add_database_socket_address(cls, database_socket_address):
+        """
+        Adds a socket address to the list of known addresses
+
+        :param SocketAddress database_socket_address:
+        :raises TypeError: if database_socket_address is not a SocketAddress
+        """
+        if not isinstance(database_socket_address, SocketAddress):
+            raise TypeError("database_socket_address must be a SocketAddress")
+        cls.__fec_data._database_socket_addresses.add(database_socket_address)
+
+    @classmethod
+    def add_database_socket_addresses(cls, database_socket_addresses):
+        """
+        Adds all socket addresses to the list of known addresses
+
+        :param iterable(SocketAddress) database_socket_addresses:
+        :raises TypeError:
+           if database_socket_address is not a iterable(SocketAddress)
+        """
+        if database_socket_addresses is None:
+            return
+        for socket_address in database_socket_addresses:
+            cls.add_database_socket_address(socket_address)

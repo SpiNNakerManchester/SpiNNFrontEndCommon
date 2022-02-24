@@ -37,19 +37,11 @@ class NotificationProtocol(AbstractContextManager):
     __slots__ = [
         "__database_message_connections",
         "__sent_visualisation_confirmation",
-        "__socket_addresses",
         "__wait_for_read_confirmation",
         "__wait_futures",
         "__wait_pool"]
 
-    def __init__(self, socket_addresses):
-        """
-        :param socket_addresses: Where to notify.
-        :type socket_addresses:
-            set(~spinn_utilities.socket_address.SocketAddress)
-        """
-        self.__socket_addresses = socket_addresses
-
+    def __init__(self):
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
@@ -58,7 +50,7 @@ class NotificationProtocol(AbstractContextManager):
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
         self.__database_message_connections = list()
-        for socket_address in socket_addresses:
+        for socket_address in FecDataView.iterate_database_socket_addresses():
             self.__database_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,

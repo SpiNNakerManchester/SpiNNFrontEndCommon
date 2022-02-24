@@ -169,10 +169,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # Set of addresses.
-        # Set created at init. Added to but never new object
-        "_database_socket_addresses",
-
         # status flag
         "_has_ran",
 
@@ -233,13 +229,9 @@ class AbstractSpinnakerBase(ConfigHandler):
     ]
 
     def __init__(
-            self, graph_label=None, database_socket_addresses=None,
-            data_writer_cls=None):
+            self, graph_label=None, data_writer_cls=None):
         """
         :param str graph_label: A label for the overall application graph
-        :param database_socket_addresses: How to talk to notification databases
-        :type database_socket_addresses:
-            iterable(~spinn_utilities.socket_address.SocketAddress) or None
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
@@ -259,11 +251,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._machine_allocation_controller = None
         self._has_ran = False
         self._new_run_clear()
-
-        # database objects
-        self._database_socket_addresses = set()
-        if database_socket_addresses is not None:
-            self._database_socket_addresses.update(database_socket_addresses)
 
         # holder for timing and running related values
         self._run_until_complete = False
@@ -2375,8 +2362,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the notification_interface data object
         """
         with FecTimer(RUN_LOOP, "Create notification protocol"):
-            self._notification_interface = create_notification_protocol(
-                self._database_socket_addresses)
+            self._notification_interface = create_notification_protocol()
 
     def _execute_runner(self, n_sync_steps, run_time):
         """
