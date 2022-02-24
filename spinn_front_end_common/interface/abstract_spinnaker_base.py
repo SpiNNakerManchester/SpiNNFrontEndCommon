@@ -2929,14 +2929,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_application_finisher()
         self._do_extract_from_machine()
 
-    def add_socket_address(self, socket_address):
-        """ Add the address of a socket used in the run notification protocol.
-
-        :param ~spinn_utilities.socket_address.SocketAddress socket_address:
-            The address of the database socket
-        """
-        self._database_socket_addresses.add(socket_address)
-
     @property
     def has_reset_last(self):
         return self._has_reset_last
