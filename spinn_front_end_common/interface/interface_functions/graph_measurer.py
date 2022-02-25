@@ -19,10 +19,9 @@ from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
 from spinn_front_end_common.data import FecDataView
 
 
-def graph_measurer(plan_n_timesteps):
+def graph_measurer():
     """ Works out how many chips a machine graph needs.
 
-    :param int plan_n_timesteps: Number of timesteps to plan for.
     :return: The size of the graph in number of chips.
     :rtype: int
     """
@@ -37,7 +36,7 @@ def graph_measurer(plan_n_timesteps):
     # Iterate over vertices and allocate
     progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
 
-    resource_tracker = ResourceTracker(plan_n_timesteps)
+    resource_tracker = ResourceTracker()
     for vertex in progress.over(ordered_vertices):
         resource_tracker.allocate_constrained_resources(
             vertex.resources_required, vertex.constraints)

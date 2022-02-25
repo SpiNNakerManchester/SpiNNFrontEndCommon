@@ -142,25 +142,19 @@ class JavaCaller(object):
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
 
-    def set_advanced_monitors(self, monitor_cores, packet_gathers):
+    def set_advanced_monitors(self):
         """
-        :param monitor_cores: Where the advanced monitor for each core is
-        :type monitor_cores:
-            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
-        :param packet_gathers: Where the packet gatherers are
-        :type packet_gathers:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :rtype: None
         """
         tags = FecDataView.get_tags()
         self._monitor_cores = dict()
-        for core, monitor_core in monitor_cores.items():
+        for core, monitor_core in FecDataView.iterate_monitor_items():
             placement = FecDataView.get_placement_of_vertex(monitor_core)
             self._monitor_cores[core] = placement.p
 
         self._gatherer_iptags = dict()
         self._gatherer_cores = dict()
-        for core, packet_gather in packet_gathers.items():
+        for core, packet_gather in FecDataView.iterate_gather_items():
             self._gatherer_iptags[core] = \
                 tags.get_ip_tags_for_vertex(packet_gather)[0]
             placement = FecDataView.get_placement_of_vertex(packet_gather)

@@ -23,12 +23,8 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer(extra_monitor_vertices=None):
-    """
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-        vertices which represent the extra monitor code
-    """
-    gather = _RouterProvenanceGatherer(extra_monitor_vertices)
+def router_provenance_gatherer():
+    gather = _RouterProvenanceGatherer()
     gather._add_router_provenance_data()
 
 
@@ -36,19 +32,7 @@ class _RouterProvenanceGatherer(object):
     """ Gathers diagnostics from the routers.
     """
 
-    __slots__ = [
-        # Extra monitor vertices if any
-        '_extra_monitor_vertices',
-    ]
-
-    def __init__(self, extra_monitor_vertices=None):
-        """
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-            vertices which represent the extra monitor code
-        """
-        # pylint: disable=too-many-arguments
-        # pylint: disable=attribute-defined-outside-init
-        self._extra_monitor_vertices = extra_monitor_vertices
+    __slots__ = []
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
@@ -60,10 +44,9 @@ class _RouterProvenanceGatherer(object):
 
         # get all extra monitor core data if it exists
         reinjection_data = None
-        if self._extra_monitor_vertices is not None:
-            monitor = self._extra_monitor_vertices[0]
-            reinjection_data = monitor.get_reinjection_status_for_vertices(
-                extra_monitor_cores_for_data=self._extra_monitor_vertices)
+        if FecDataView.has_monitors():
+            monitor = FecDataView.get_monitor_by_xy(0, 0)
+            reinjection_data = monitor.get_reinjection_status_for_vertices()
 
         for router_table in progress.over(
                 FecDataView.get_uncompressed().routing_tables, False):

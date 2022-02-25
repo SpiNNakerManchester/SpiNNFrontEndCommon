@@ -76,10 +76,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         #        connection_class=EIEIOConnection)
 
         # Create buffer manager
-        bm = BufferManager(
-            extra_monitor_cores=None,
-            packet_gather_cores_to_ethernet_connection_map=None,
-            extra_monitor_to_chip_mapping=None)
+        bm = BufferManager()
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one

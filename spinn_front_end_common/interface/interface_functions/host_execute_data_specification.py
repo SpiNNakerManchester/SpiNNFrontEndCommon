@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import OrderedDict, namedtuple
+from collections import namedtuple
 import logging
 import numpy
 from spinn_utilities.config_holder import get_config_bool
@@ -24,12 +24,10 @@ from data_specification import DataSpecificationExecutor, MemoryRegionReal
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.exceptions import DataSpecificationException
-from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType, DataWritten)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG
@@ -49,31 +47,6 @@ def system_cores():
             ExecutableType.SYSTEM):
         cores.add_core_subsets(exec_targets.get_cores_for_binary(binary))
     return cores
-
-
-def filter_out_system_executables(dsg_targets):
-    """ Select just the application DSG loading tasks
-
-    :param DataSpecificationTargets dsg_tagets:
-    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
-    """
-    syscores = system_cores()
-    return OrderedDict(
-        (core, spec) for (core, spec) in dsg_targets.items()
-        if core not in syscores)
-
-
-def filter_out_app_executables(dsg_targets):
-    """ Select just the system DSG loading tasks
-
-    :param DataSpecificationTargets dsg_tagets:
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-    :rtype: dict(tuple(int,int,int), ~io.RawIOBase)
-    """
-    syscores = system_cores()
-    return OrderedDict(
-        (core, spec) for (core, spec) in dsg_targets.items()
-        if core in syscores)
 
 
 #: A named tuple for a region that can be referenced
@@ -122,7 +95,8 @@ class _ExecutionContext(object):
         :param ~.AbstractDataReader reader:
         :param int base_address:
         :param int size_allocated:
-        :rtype: DataWritten
+        :return: base_address, size_allocated, bytes_written
+        :rtype: tuple(int, int, int)
         """
         x, y, p = core
 
@@ -176,7 +150,7 @@ class _ExecutionContext(object):
             writer_func(x, y, pointer_table[region_id], data)
             bytes_written += len(data)
 
-        return DataWritten(base_address, size_allocated, bytes_written)
+        return base_address, size_allocated, bytes_written
 
     def close(self):
         """ Called when finished executing all regions.  Fills in the
@@ -271,56 +245,18 @@ class _ExecutionContext(object):
         return ref_to_use.pointer
 
 
-def execute_system_data_specs(
-        dsg_targets, region_sizes,
-        processor_to_app_data_base_address=None):
+def execute_system_data_specs():
     """ Execute the data specs for all system targets.
-
-    :param dict(tuple(int,int,int),str) dsg_targets:
-        map of placement to file path
-    :param dict(tuple(int,int,int),int) region_sizes:
-        the coordinates for region sizes for each core
-    :param processor_to_app_data_base_address:
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int),DataWritten)
-    :return: map of placement and DSG data, and loaded data flag.
-    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
-    specifier = _HostExecuteDataSpecification(
-        processor_to_app_data_base_address)
-    return specifier.execute_system_data_specs(dsg_targets, region_sizes)
+    specifier = _HostExecuteDataSpecification()
+    return specifier.execute_system_data_specs()
 
 
-def execute_application_data_specs(
-        dsg_targets, region_sizes, extra_monitor_cores=None,
-        extra_monitor_cores_to_ethernet_connection_map=None,
-        processor_to_app_data_base_address=None):
+def execute_application_data_specs():
     """ Execute the data specs for all non-system targets.
-
-    :param dict(tuple(int,int,int),int) region_sizes:
-        the coord for region sizes for each core
-    :param DataSpecificationTargets dsg_targets:
-        map of placement to file path
-    :param bool uses_advanced_monitors:
-        whether to use fast data in protocol
-    :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-        the deployed extra monitors, if any
-    :param extra_monitor_cores_to_ethernet_connection_map:
-        how to talk to extra monitor cores
-    :type extra_monitor_cores_to_ethernet_connection_map:
-        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-    :param processor_to_app_data_base_address:
-        map of placement and DSG data
-    :type processor_to_app_data_base_address:
-        dict(tuple(int,int,int), DsWriteInfo)
-    :return: map of placement and DSG data
-    :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
     """
-    specifier = _HostExecuteDataSpecification(
-        processor_to_app_data_base_address)
-    return specifier.execute_application_data_specs(
-        dsg_targets, region_sizes,
-        extra_monitor_cores, extra_monitor_cores_to_ethernet_connection_map)
+    specifier = _HostExecuteDataSpecification()
+    specifier.execute_application_data_specs()
 
 
 class _HostExecuteDataSpecification(object):
@@ -329,132 +265,16 @@ class _HostExecuteDataSpecification(object):
 
     __slots__ = [
         # the application ID of the simulation
-        "_app_id",
-        "_core_to_conn_map",
-        "_monitors",
-        # The write info; a dict of cores to a dict of
-        # 'start_address', 'memory_used', 'memory_written'
-        "_write_info_map"]
+        "_app_id"]
 
     first = True
 
-    def __init__(self, processor_to_app_data_base_address):
-        """
-        :param processor_to_app_data_base_address:
-            map of placement and DSG data
-        """
+    def __init__(self):
         self._app_id = FecDataView.get_app_id()
-        self._core_to_conn_map = None
-        self._monitors = None
-        if processor_to_app_data_base_address:
-            self._write_info_map = processor_to_app_data_base_address
-        else:
-            self._write_info_map = dict()
 
-    def __java_database(self, dsg_targets, progress, region_sizes):
-        """
-        :param DataSpecificationTargets dsg_tagets:
-        :param ~spinn_utilities.progress_bar.ProgressBar progress:
-        :param dict(tuple(int,int,int)int) region_sizes:
-        :rtype: DsWriteInfo
-        """
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = DsWriteInfo(dsg_targets.get_database())
-        dw_write_info.clear_write_info()
-        if self._write_info_map is not None:
-            for core, info in self._write_info_map.items():
-                (x, y, p) = core
-                dw_write_info.set_info(x, y, p, info)
-                del region_sizes[core]
-        for core in region_sizes:
-            (x, y, p) = core
-            dw_write_info.set_size_info(x, y, p, region_sizes[core])
-        progress.update()
-        dsg_targets.set_app_id(self._app_id)
-        progress.update()
-        return dw_write_info
-
-    def __java_all(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Java
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :return: map of of cores to descriptions of what was written
-        :rtype: DsWriteInfo
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            3, "Executing data specifications and loading data using Java")
-
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
-
-        FecDataView.get_java_caller().execute_data_specification()
-
-        progress.end()
-        return dw_write_info
-
-    def __python_all(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Python
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :param dict(tuple(int,int,int),int) region_sizes:
-            map between vertex and list of region sizes
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int), DataWritten)
-        """
-        # While the database supports having the info in it a python bugs does
-        # not like iterating over and writing intermingled so using a dict
-        results = self._write_info_map
-        if results is None:
-            results = dict()
-
-        # create a progress bar for end users
-        progress = ProgressBar(
-            dsg_targets.n_targets(),
-            "Executing data specifications and loading data")
-
-        # allocate and set user 0 before loading data
-        base_addresses = dict()
-        for core, _ in dsg_targets.items():
-            base_addresses[core] = self.__malloc_region_storage(
-                core, region_sizes[core])
-
-        with _ExecutionContext() as context:
-            transceiver = FecDataView.get_transceiver()
-            for core, reader in progress.over(dsg_targets.items()):
-                results[core] = context.execute(
-                    core, reader, transceiver.write_memory,
-                    base_addresses[core], region_sizes[core])
-
-        return results
-
-    def execute_application_data_specs(
-            self, dsg_targets, region_sizes,
-            extra_monitor_cores=None,
-            extra_monitor_cores_to_ethernet_connection_map=None):
+    def execute_application_data_specs(self):
         """ Execute the data specs for all non-system targets.
-
-        :param dict(tuple(int,int,int),int) region_sizes:
-            the coord for region sizes for each core
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :param bool uses_advanced_monitors:
-            whether to use fast data in protocol
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the deployed extra monitors, if any
-        :param extra_monitor_cores_to_ethernet_connection_map:
-            how to talk to extra monitor cores
-        :type extra_monitor_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :return: map of placement and DSG data
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        # pylint: disable=too-many-arguments
-        self._monitors = extra_monitor_cores
-        self._core_to_conn_map = extra_monitor_cores_to_ethernet_connection_map
 
         uses_advanced_monitors = get_config_bool(
             "Machine", "enable_advanced_monitor_support")
@@ -465,184 +285,132 @@ class _HostExecuteDataSpecification(object):
 
         try:
             if FecDataView.has_java_caller():
-                return self.__java_app(dsg_targets,
-                                       uses_advanced_monitors, region_sizes)
+                return self.__java_app(uses_advanced_monitors)
             else:
-                return self.__python_app(dsg_targets,
-                                         uses_advanced_monitors, region_sizes)
+                return self.__python_app(uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
             raise
 
     def __set_router_timeouts(self):
-        for receiver in self._core_to_conn_map.values():
-            receiver.load_system_routing_tables(self._monitors)
-            receiver.set_cores_for_data_streaming(self._monitors)
+        for receiver in FecDataView.iterate_gathers():
+            receiver.load_system_routing_tables()
+            receiver.set_cores_for_data_streaming()
 
     def __reset_router_timeouts(self):
         # reset router timeouts
-        for receiver in self._core_to_conn_map.values():
-            receiver.unset_cores_for_data_streaming(
-                self._monitors)
+        for receiver in FecDataView.iterate_gathers():
+            receiver.unset_cores_for_data_streaming()
             # reset router tables
-            receiver.load_application_routing_tables(self._monitors)
+            receiver.load_application_routing_tables()
 
     def __select_writer(self, x, y):
         view = FecDataView()
         chip = view.get_chip_at(x, y)
         ethernet_chip = view.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        gatherer = self._core_to_conn_map[ethernet_chip.x, ethernet_chip.y]
+        gatherer = view.get_gatherer_by_xy(ethernet_chip.x, ethernet_chip.y)
         return gatherer.send_data_into_spinnaker
 
-    def __python_app(self, dsg_targets, use_monitors, region_sizes):
+    def __python_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
-        :param dict(tuple(int,int,int),int) region_sizes:
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int),DataWritten)
         """
-        dsg_targets = filter_out_system_executables(dsg_targets)
-
         if use_monitors:
             self.__set_router_timeouts()
 
+        dsg_targets = FecDataView.get_dsg_targets()
         # create a progress bar for end users
         progress = ProgressBar(
-            len(dsg_targets) * 2,
+            dsg_targets.ds_n_app_cores(),
             "Executing data specifications and loading data for "
             "application vertices")
 
-        # allocate and set user 0 before loading data
-        base_addresses = dict()
-        for core, _ in progress.over(dsg_targets.items(), finish_at_end=False):
-            base_addresses[core] = self.__malloc_region_storage(
-                core, region_sizes[core])
-
         with _ExecutionContext() as context:
             transceiver = FecDataView.get_transceiver()
-            for core, reader in progress.over(dsg_targets.items()):
-                x, y, _p = core
-                # write information for the memory map report
-                self._write_info_map[core] = context.execute(
-                    core, reader,
-                    self.__select_writer(x, y)
-                    if use_monitors else transceiver.write_memory,
-                    base_addresses[core], region_sizes[core])
+            for core, reader, region_size in progress.over(
+                    dsg_targets.app_items()):
+                x, y, p = core
+                base_address = self.__malloc_region_storage(
+                    core, region_size)
+                base_address, size_allocated, bytes_written = context.execute(
+                        core, reader,
+                        self.__select_writer(x, y)
+                        if use_monitors else transceiver.write_memory,
+                        base_address, region_size)
+                dsg_targets.set_write_info(
+                    x, y, p, base_address, size_allocated, bytes_written)
 
         if use_monitors:
             self.__reset_router_timeouts()
-        return self._write_info_map
 
-    def __java_app(self, dsg_targets, use_monitors,  region_sizes):
+    def __java_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
-        :param dict(tuple(int,int,int),int) region_sizes:
-        :return: map of cores to descriptions of what was written
-        :rtype: DsWriteInfo
         """
         # create a progress bar for end users
         progress = ProgressBar(
-            4, "Executing data specifications and loading data for "
+            2, "Executing data specifications and loading data for "
             "application vertices using Java")
 
-        dsg_targets.mark_system_cores(system_cores())
-        progress.update()
-
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
         java_caller = FecDataView.get_java_caller()
         if use_monitors:
             # Method also called with just recording params
             java_caller.set_placements(FecDataView.get_placements())
-
-        java_caller.execute_app_data_specification(use_monitors)
-
-        progress.end()
-        return dw_write_info
-
-    def execute_system_data_specs(self, dsg_targets, region_sizes):
-        """ Execute the data specs for all system targets.
-
-        :param dict(tuple(int,int,int),str) dsg_targets:
-            map of placement to file path
-        :param dict(tuple(int,int,int),int) region_sizes:
-            the coordinates for region sizes for each core
-        :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
-        """
-        # pylint: disable=too-many-arguments
-
-        if FecDataView.has_java_caller():
-            self.__java_sys(dsg_targets, region_sizes)
-        else:
-            self.__python_sys(dsg_targets, region_sizes)
-
-    def __java_sys(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Java
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :param dict(tuple(int,int,int),int) region_sizes:
-            the coord for region sizes for each core
-        :return: map of cores to descriptions of what was written
-        :rtype: DsWriteInfo
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            4, "Executing data specifications and loading data for system "
-            "vertices using Java")
-
-        dsg_targets.mark_system_cores(system_cores())
         progress.update()
 
-        # Copy data from WriteMemoryIOData to database
-        dw_write_info = self.__java_database(
-            dsg_targets, progress, region_sizes)
-
-        FecDataView.get_java_caller().execute_system_data_specification()
-
+        java_caller.execute_app_data_specification(use_monitors)
         progress.end()
-        return dw_write_info
 
-    def __python_sys(self, dsg_targets, region_sizes):
-        """ Does the Data Specification Execution and loading using Python
+    def execute_system_data_specs(self):
+        """ Execute the data specs for all system targets.
 
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        :param dict(tuple(int,int,int),int) region_sizes:
-            the coord for region sizes for each core
-        :return: dict of cores to descriptions of what was written
-        :rtype: dict(tuple(int,int,int),DataWritten)
         """
-        # While the database supports having the info in it a python bugs does
-        # not like iterating over and writing intermingled so using a dict
-        sys_targets = filter_out_app_executables(dsg_targets)
+        # pylint: disable=too-many-arguments
+        FecDataView.get_dsg_targets().mark_system_cores(system_cores())
+        if FecDataView.has_java_caller():
+            self.__java_sys()
+        else:
+            self.__python_sys()
 
+    def __java_sys(self):
+        """ Does the Data Specification Execution and loading using Java
+
+        """
         # create a progress bar for end users
         progress = ProgressBar(
-            len(sys_targets) * 2,
+            1, "Executing data specifications and loading data for system "
+            "vertices using Java")
+        FecDataView.get_java_caller().execute_system_data_specification()
+        progress.end()
+
+    def __python_sys(self):
+        """ Does the Data Specification Execution and loading using Python
+
+        """
+
+        # create a progress bar for end users
+        dsg_targets = FecDataView.get_dsg_targets()
+        progress = ProgressBar(
+            dsg_targets.ds_n_system_cores(),
             "Executing data specifications and loading data for "
             "system vertices")
 
         # allocate and set user 0 before loading data
-        base_addresses = dict()
-        for core, _ in progress.over(sys_targets.items(), finish_at_end=False):
-            base_addresses[core] = self.__malloc_region_storage(
-                core, region_sizes[core])
 
         with _ExecutionContext() as context:
             transceiver = FecDataView.get_transceiver()
-            for core, reader in progress.over(sys_targets.items()):
-                self._write_info_map[core] = context.execute(
+            for core, reader, region_size in progress.over(
+                    dsg_targets.system_items()):
+                x, y, p = core
+                base_address = self.__malloc_region_storage(
+                    core, region_size)
+                base_address, size_allocated, bytes_written = context.execute(
                     core, reader, transceiver.write_memory,
-                    base_addresses[core], region_sizes[core])
-
-        return self._write_info_map
+                    base_address, region_size)
+                dsg_targets.set_write_info(
+                    x, y, p, base_address, size_allocated, bytes_written)
 
     def __malloc_region_storage(self, core, size):
         """ Allocates the storage for all DSG regions on the core and tells \

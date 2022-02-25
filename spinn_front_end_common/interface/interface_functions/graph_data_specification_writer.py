@@ -23,8 +23,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.interface.ds.data_specification_targets import (
-    DataSpecificationTargets)
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
@@ -36,8 +35,7 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
-    :return: DSG targets (map of placement tuple and filename)
-    :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+    :rtype: DataSpecificationTargets
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -52,22 +50,19 @@ class _GraphDataSpecificationWriter(object):
     __slots__ = (
         # Dict of SDRAM usage by chip coordinates
         "_sdram_usage",
-        # Dict of list of region sizes by core coordinates
-        "_region_sizes",
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip")
 
     def __init__(self):
         self._sdram_usage = defaultdict(lambda: 0)
-        self._region_sizes = dict()
         self._vertices_by_chip = defaultdict(list)
 
     def _run(self, placement_order=None):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
-        :return: DSG targets (map of placement tuple and filename)
-        :rtype: tuple(DataSpecificationTargets, dict(tuple(int,int,int), int))
+        :return: DSG targets
+        :rtype: DataSpecificationTargets
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
@@ -77,7 +72,8 @@ class _GraphDataSpecificationWriter(object):
         # iterate though vertices and call generate_data_spec for each
         # vertex
         placements = FecDataView.get_placements()
-        targets = DataSpecificationTargets()
+        targets = DsSqlliteDatabase()
+        targets.clear_ds()
 
         if placement_order is None:
             placement_order = placements
@@ -112,7 +108,7 @@ class _GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.set_reload_required(False)
 
-        return targets, self._region_sizes
+        return targets
 
     def __generate_data_spec_for_vertices(self, pl, vertex, targets):
         """
@@ -135,13 +131,13 @@ class _GraphDataSpecificationWriter(object):
             vertex.generate_data_specification(spec, pl)
 
             # Check the memory usage
-            self._region_sizes[pl.x, pl.y, pl.p] = (
-                APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
+            region_size = APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes)
 
             # extracts the int from the numpy data type generated
-            if not isinstance(self._region_sizes[pl.x, pl.y, pl.p], int):
-                self._region_sizes[pl.x, pl.y, pl.p] =\
-                    self._region_sizes[pl.x, pl.y, pl.p].item()
+            if not isinstance(region_size, int):
+                region_size = region_size.item()
+
+            targets.set_size_info(pl.x, pl.y, pl.p, region_size)
 
             # Check per-region memory usage if possible
             sdram = vertex.resources_required.sdram
@@ -167,8 +163,8 @@ class _GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, self._region_sizes[pl.x, pl.y, pl.p],
-                sum(self._region_sizes[pl.x, pl.y, pl.p]),
+                vert, region_size,
+                sum(region_size),
                 vert.resources_required.sdram.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))

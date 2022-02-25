@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -889,35 +889,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_tell_flag()
         log.debug("sent end flag")
 
-    @staticmethod
-    def streaming(gatherers, extra_monitor_cores):
-        """ Helper method for setting the router timeouts to a state usable\
-            for data streaming via a Python context manager (i.e., using\
-            the `with` statement).
-
-        :param list(DataSpeedUpPacketGatherMachineVertex) gatherers:
-            All the gatherers that are to be set
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
-        :return: a context manager
-        """
-        return _StreamingContextManager(gatherers, extra_monitor_cores)
-
-    def set_cores_for_data_streaming(self, extra_monitor_cores):
+    def set_cores_for_data_streaming(self):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
         """
-        lead_monitor = extra_monitor_cores[0]
+        lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
         self._last_status = lead_monitor.get_reinjection_status()
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
-            extra_monitor_cores,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
@@ -929,22 +912,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         self.set_router_wait1_timeout(self._LONG_TIMEOUT)
 
     @staticmethod
-    def load_application_routing_tables(extra_monitor_cores):
-        """ Set all chips to have application table loaded in the router.
+    def load_application_routing_tables():
+        """ Set all chips to have application table loaded in the router
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
         """
-        extra_monitor_cores[0].load_application_mc_routes(extra_monitor_cores)
+        FecDataView.get_monitor_by_xy(0, 0).load_application_mc_routes()
 
     @staticmethod
-    def load_system_routing_tables(extra_monitor_cores):
+    def load_system_routing_tables():
         """ Set all chips to have the system table loaded in the router
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
         """
-        extra_monitor_cores[0].load_system_mc_routes(extra_monitor_cores)
+        FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
     def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
@@ -995,12 +974,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def unset_cores_for_data_streaming(self, extra_monitor_cores):
+    def unset_cores_for_data_streaming(self):
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the extra monitor cores to set
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
@@ -1016,9 +993,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.set_router_wait2_timeout(
                 self._last_status.router_wait2_timeout_parameters)
 
-            lead_monitor = extra_monitor_cores[0]
+            lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
             lead_monitor.set_reinjection_packets(
-                extra_monitor_cores,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
                 nearest_neighbour=(
@@ -1027,7 +1003,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         except Exception:  # pylint: disable=broad-except
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
-            core_subsets = convert_vertices_to_core_subset(extra_monitor_cores)
+            core_subsets = convert_vertices_to_core_subset(
+                FecDataView.iterate_monitors())
             try:
                 transceiver = FecDataView.get_transceiver()
                 error_cores = transceiver.get_cores_not_in_state(
@@ -1556,31 +1533,3 @@ class DataSpeedUpPacketGatherMachineVertex(
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Speed_Up_Output_Streams", n_out_streams)
-
-
-class _StreamingContextManager(object):
-    """ The implementation of the context manager object for streaming \
-        configuration control.
-    """
-    __slots__ = ["_gatherers", "_monitors"]
-
-    def __init__(self, gatherers, monitors):
-        """
-        :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param list(ExtraMonitorSupportMachineVertex) monitors:
-        """
-        self._gatherers = list(gatherers)
-        self._monitors = monitors
-
-    def __enter__(self):
-        for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(self._monitors)
-        for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(self._monitors)
-
-    def __exit__(self, _type, _value, _tb):
-        for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(self._monitors)
-        for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(self._monitors)
-        return False

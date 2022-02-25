@@ -22,6 +22,7 @@ from spinn_utilities.data.utils_data_writer import _UtilsDataModel
 from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from spinnman.messages.scp.enums.signal import Signal
+from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -30,9 +31,12 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 
 
 class TestSimulatorData(unittest.TestCase):
@@ -97,10 +101,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
-        bm = BufferManager(
-            extra_monitor_cores=None,
-            packet_gather_cores_to_ethernet_connection_map=None,
-            extra_monitor_to_chip_mapping=None)
+        bm = BufferManager()
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
         self.assertTrue(FecDataView.has_buffer_manager())
@@ -567,3 +568,132 @@ class TestSimulatorData(unittest.TestCase):
         targets = ExecutableTargets()
         writer.set_executable_targets(targets)
         self.assertEqual(targets, FecDataView.get_executable_targets())
+        with self.assertRaises(TypeError):
+            writer.set_executable_targets([])
+
+    def test_dsg_target(self):
+        writer = FecDataWriter.mock()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_dsg_targets()
+        targets = DsSqlliteDatabase()
+        writer.set_dsg_targets(targets)
+        self.assertEqual(targets, FecDataView.get_dsg_targets())
+        with self.assertRaises(TypeError):
+            writer.set_dsg_targets(dict())
+
+    def test_gatherer_map(self):
+        writer = FecDataWriter.mock()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_gatherer_by_xy(0, 0)
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_gather_items()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_gathers()
+        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None, None)
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None, None)
+        map = dict()
+        # Setting empty ok
+        writer.set_gatherer_map(map)
+        map[(0, 0)] = vertex1
+        map[(8, 8)] = vertex2
+        writer.set_gatherer_map(map)
+        self.assertEqual(vertex1, FecDataView.get_gatherer_by_xy(0, 0))
+        for core, vertex in FecDataView.iterate_gather_items():
+            if core == (0, 0):
+                self.assertEqual(vertex1, vertex)
+            elif core == (8, 8):
+                self.assertEqual(vertex2, vertex)
+            else:
+                raise Exception(f"Unexpected item {core} {vertex}")
+        self.assertCountEqual(
+            [vertex1, vertex2], FecDataView.iterate_gathers())
+        with self.assertRaises(TypeError):
+            writer.set_gatherer_map([])
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1, 2, 3)] = vertex
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1)] = vertex
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, 0)] = "Bacon"
+            writer.set_gatherer_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, "bacon")] = vertex
+            writer.set_gatherer_map(map)
+
+    def test_monitor_map(self):
+        writer = FecDataWriter.mock()
+        self.assertFalse(FecDataView.has_monitors())
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_monitor_by_xy(0, 0)
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_monitor_items()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.iterate_monitors()
+        vertex1 = ExtraMonitorSupportMachineVertex(None, None)
+        vertex2 = ExtraMonitorSupportMachineVertex(None, None)
+        map = dict()
+        # Setting empty ok
+        writer.set_monitor_map(map)
+        map[(0, 0)] = vertex1
+        map[(8, 8)] = vertex2
+        writer.set_monitor_map(map)
+        self.assertTrue(FecDataView.has_monitors())
+        self.assertEqual(vertex1, FecDataView.get_monitor_by_xy(0, 0))
+        for core, vertex in FecDataView.iterate_monitor_items():
+            if core == (0, 0):
+                self.assertEqual(vertex1, vertex)
+            elif core == (8, 8):
+                self.assertEqual(vertex2, vertex)
+            else:
+                raise Exception(f"Unexpected item {core} {vertex}")
+        self.assertCountEqual([vertex1, vertex2],
+                              FecDataView.iterate_monitors())
+        with self.assertRaises(KeyError):
+            FecDataView.get_monitor_by_xy(1, 1)
+        with self.assertRaises(TypeError):
+            writer.set_monitor_map([])
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1, 2, 3)] = vertex
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(1)] = vertex
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, 0)] = "Bacon"
+            writer.set_monitor_map(map)
+        with self.assertRaises(TypeError):
+            map = dict()
+            map[(0, "bacon")] = vertex
+            writer.set_monitor_map(map)
+
+    def test_database_socket_addresses(self):
+        FecDataWriter.mock()
+        self.assertCountEqual(
+            [], FecDataView.iterate_database_socket_addresses())
+        sa1 = SocketAddress("a", 2, 3)
+        sa2 = SocketAddress("b", 2, 3)
+        sa3 = SocketAddress("c", 2, 3)
+        sa4 = SocketAddress("d", 2, 3)
+        FecDataView.add_database_socket_address(sa1)
+        self.assertCountEqual(
+            [sa1], FecDataView.iterate_database_socket_addresses())
+        FecDataView.add_database_socket_addresses([sa2, sa3])
+        self.assertCountEqual(
+            [sa1, sa2, sa3], FecDataView.iterate_database_socket_addresses())
+        FecDataView.add_database_socket_addresses([sa1, sa4, sa3])
+        self.assertCountEqual(
+            [sa1, sa2, sa3, sa4],
+            FecDataView.iterate_database_socket_addresses())
+        with self.assertRaises(TypeError):
+            FecDataView.add_database_socket_address("bacon")
+        with self.assertRaises(TypeError):
+            FecDataView.add_database_socket_addresses(12)

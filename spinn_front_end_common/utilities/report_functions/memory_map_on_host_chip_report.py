@@ -29,12 +29,10 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
-def memory_map_on_host_chip_report(dsg_targets):
+def memory_map_on_host_chip_report():
     """ Report on memory usage. Creates a report that states where in SDRAM \
         each region is (read from machine)
 
-    :param dict(tuple(int,int,int),...) dsg_targets:
-        the map between placement and file writer
     """
     directory_name = os.path.join(
         FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)
@@ -42,8 +40,10 @@ def memory_map_on_host_chip_report(dsg_targets):
         os.makedirs(directory_name)
 
     transceiver = FecDataView.get_transceiver()
-    progress = ProgressBar(dsg_targets, "Writing memory map reports")
-    for (x, y, p) in progress.over(dsg_targets):
+    dsg_targets = FecDataView.get_dsg_targets()
+    progress = ProgressBar(
+        dsg_targets.ds_n_cores(), "Writing memory map reports")
+    for (x, y, p) in progress.over(dsg_targets.keys()):
         file_name = os.path.join(
             directory_name, MEM_MAP_FILENAME.format(x, y, p))
         try:

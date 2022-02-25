@@ -6,7 +6,7 @@
 # (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# but WITHOUT ANY WARRANTY; without even the impl`ied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
@@ -16,6 +16,7 @@
 import errno
 import os
 from spinn_utilities.data.data_status import Data_Status
+from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
@@ -51,10 +52,13 @@ class _FecDataModel(object):
         "_data_in_multicast_key_to_chip_map",
         "_data_in_multicast_routing_tables",
         "_database_file_path",
+        "_database_socket_addresses",
+        "_dsg_targets",
         "_executable_targets",
         "_executable_types",
         "_first_machine_time_step",
         "_fixed_routes",
+        "_gatherer_map",
         "_hardware_time_step_ms",
         "_hardware_time_step_us",
         "_ipaddress",
@@ -67,6 +71,7 @@ class _FecDataModel(object):
         "_next_sync_signal",
         "_none_labelled_edge_count",
         "_max_run_time_steps",
+        "_monitor_map",
         "_report_dir_path",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -92,6 +97,7 @@ class _FecDataModel(object):
         Clears out all data
         """
         # Can not be cleared during hard reset as previous runs data checked
+        self._database_socket_addresses = set()
         self._executable_types = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
@@ -120,12 +126,15 @@ class _FecDataModel(object):
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
+        self._dsg_targets = None
         self._executable_targets = None
         self._fixed_routes = None
+        self._gatherer_map = None
         self._ipaddress = None
         self._n_chips_in_graph = None
         self._next_sync_signal = Signal.SYNC0
         self._max_run_time_steps = None
+        self._monitor_map = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
 
@@ -852,3 +861,139 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._executable_targets is None:
             raise cls._exception("executable_targets")
         return cls.__fec_data._executable_targets
+
+    @classmethod
+    def get_dsg_targets(cls):
+        """ data Spec targets database
+
+        :rtype: DsSqlliteDatabase
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the dsg_targets is currently unavailable
+        """
+        if cls.__fec_data._dsg_targets is None:
+            raise cls._exception("dsg_targets")
+        return cls.__fec_data._dsg_targets
+
+    @classmethod
+    def has_monitors(cls):
+        """
+        Detect is ExtraMonitorSupportMachineVertex(s) have been created
+
+        :rtype: bool
+        """
+        return cls.__fec_data._monitor_map is not None
+
+    @classmethod
+    def get_monitor_by_xy(cls, x, y):
+        """ ExtraMonitorSupportMachineVertex for core x, y
+
+        :rtype: ExtraMonitorSupportMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        :raises KeyError: If core x,y does not have a monitor
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map[(x, y)]
+
+    @classmethod
+    def iterate_monitor_items(cls):
+        """
+        Iterates over the (X,y) and ExtraMonitorSupportMachineVertex
+
+        :rtype: iterable(tuple(tuple(int,int),
+            ExtraMonitorSupportMachineVertex))
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map.items()
+
+    @classmethod
+    def iterate_monitors(cls):
+        """
+        Iterates over the ExtraMonitorSupportMachineVertex(s)
+
+        :rtype: iterable(ExtraMonitorSupportMachineVertex)
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        return cls.__fec_data._monitor_map.values()
+
+    @classmethod
+    def get_gatherer_by_xy(cls, x, y):
+        """ DataSpeedUpPacketGatherMachineVertex for core x, y
+
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gatherers are currently unavailable
+        :raises KeyError: If core x,y does not have a monitor
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map[(x, y)]
+
+    @classmethod
+    def iterate_gather_items(cls):
+        """
+        Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex
+
+        :rtype: iterable(tuple(tuple(int,int),
+             DataSpeedUpPacketGatherMachineVertex))
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gathers are currently unavailable
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map.items()
+
+    @classmethod
+    def iterate_gathers(cls):
+        """
+        Iterates over the DataSpeedUpPacketGatherMachineVertex(s)
+
+        :rtype: iterable(DataSpeedUpPacketGatherMachineVertex)
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gathers are currently unavailable
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        return cls.__fec_data._gatherer_map.values()
+
+    @classmethod
+    def iterate_database_socket_addresses(cls):
+        """
+        Iterates over the registered database_socket_addresses
+
+        :rtype: iterable(~spinn_utilities.socket_address.SocketAddress)
+        """
+        return iter(cls.__fec_data._database_socket_addresses)
+
+    @classmethod
+    def add_database_socket_address(cls, database_socket_address):
+        """
+        Adds a socket address to the list of known addresses
+
+        :param SocketAddress database_socket_address:
+        :raises TypeError: if database_socket_address is not a SocketAddress
+        """
+        if not isinstance(database_socket_address, SocketAddress):
+            raise TypeError("database_socket_address must be a SocketAddress")
+        cls.__fec_data._database_socket_addresses.add(database_socket_address)
+
+    @classmethod
+    def add_database_socket_addresses(cls, database_socket_addresses):
+        """
+        Adds all socket addresses to the list of known addresses
+
+        :param iterable(SocketAddress) database_socket_addresses:
+        :raises TypeError:
+           if database_socket_address is not a iterable(SocketAddress)
+        """
+        if database_socket_addresses is None:
+            return
+        for socket_address in database_socket_addresses:
+            cls.add_database_socket_address(socket_address)

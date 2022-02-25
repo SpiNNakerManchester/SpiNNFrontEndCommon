@@ -523,31 +523,21 @@ class ExtraMonitorSupportMachineVertex(
             emergency_recover_state_from_failure(self, placement)
             raise
 
-    def get_reinjection_status_for_vertices(
-            self, extra_monitor_cores_for_data):
+    def get_reinjection_status_for_vertices(self):
         """ Get the reinjection status from a set of extra monitor cores
 
-        :param extra_monitor_cores_for_data:
-            the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            FecDataView.iterate_monitors())
         process = ReadStatusProcess(
             FecDataView.get_scamp_connection_selector())
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
-            self, extra_monitor_cores_for_data,
-            point_to_point=None, multicast=None, nearest_neighbour=None,
+            self, point_to_point=None, multicast=None, nearest_neighbour=None,
             fixed_route=None):
         """
-        :param extra_monitor_cores_for_data:
-            the extra monitor cores to set the packets of
-        :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
         :param point_to_point:
             If point to point should be set, or None if left as before
         :type point_to_point: bool or None
@@ -572,7 +562,7 @@ class ExtraMonitorSupportMachineVertex(
             self._reinject_fixed_route = fixed_route
 
         core_subsets = convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+            FecDataView.iterate_monitors())
         process = SetPacketTypesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -585,19 +575,14 @@ class ExtraMonitorSupportMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def load_system_mc_routes(self, extra_monitor_cores_for_data):
+    def load_system_mc_routes(self):
         """ Get the extra monitor cores to load up the system-based \
             multicast routes (used by data in).
 
-        :param extra_monitor_cores_for_data:
-            the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
         """
-        core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+        core_subsets = self._convert_vertices_to_core_subset()
         process = LoadSystemMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -607,17 +592,12 @@ class ExtraMonitorSupportMachineVertex(
                 self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def load_application_mc_routes(self, extra_monitor_cores_for_data):
+    def load_application_mc_routes(self):
         """ Get the extra monitor cores to load up the application-based\
             multicast routes (used by data in).
 
-        :param extra_monitor_cores_for_data:
-            the extra monitor cores to get status from
-        :type extra_monitor_cores_for_data:
-            iterable(ExtraMonitorSupportMachineVertex)
         """
-        core_subsets = self._convert_vertices_to_core_subset(
-            extra_monitor_cores_for_data)
+        core_subsets = self._convert_vertices_to_core_subset()
         process = LoadApplicationMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -628,21 +608,15 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     @staticmethod
-    def _convert_vertices_to_core_subset(extra_monitor_cores):
+    def _convert_vertices_to_core_subset():
         """ Convert vertices into the subset of cores where they've been\
             placed.
 
-        :param iterable(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            the vertices to convert to core subsets
         :return: where the vertices have been placed
         :rtype: ~.CoreSubsets
         """
         core_subsets = CoreSubsets()
-        for vertex in extra_monitor_cores:
-            if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                raise Exception(
-                    "can only use ExtraMonitorSupportMachineVertex to set "
-                    "the router time out")
+        for vertex in FecDataView.iterate_monitors():
             placement = FecDataView.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets

@@ -43,6 +43,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance import (
     BUFFER, ProvenanceWriter)
+from spinn_front_end_common.utility_models.streaming_context_manager import (
+    StreamingContextManager)
 from .recording_utilities import get_recording_header_size
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -105,43 +107,12 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # the extra monitor cores which support faster data extraction
-        "_extra_monitor_cores",
-
-        # the extra_monitor to Ethernet connection map
-        "_packet_gather_cores_to_ethernet_connection_map",
-
-        # monitor cores via chip ID
-        "_extra_monitor_cores_by_chip",
-
-        # machine object
-        "_machine",
-
         # Support class to help call Java
         "_java_caller"
     ]
 
-    def __init__(self, extra_monitor_cores,
-                 packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping):
-        """
-        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            The monitors.
-        :param packet_gather_cores_to_ethernet_connection_map:
-            mapping of cores to the gatherer vertex placed on them
-        :type packet_gather_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param extra_monitor_to_chip_mapping:
-        :type extra_monitor_to_chip_mapping:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        """
+    def __init__(self):
         # pylint: disable=too-many-arguments
-        self._extra_monitor_cores = extra_monitor_cores
-        self._packet_gather_cores_to_ethernet_connection_map = \
-            packet_gather_cores_to_ethernet_connection_map
-        self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
-
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
 
@@ -164,9 +135,7 @@ class BufferManager(object):
         if FecDataView.has_java_caller():
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
-                self._java_caller.set_advanced_monitors(
-                    self._extra_monitor_cores_by_chip,
-                    self._packet_gather_cores_to_ethernet_connection_map)
+                self._java_caller.set_advanced_monitors()
         else:
             self._java_caller = None
 
@@ -194,10 +163,8 @@ class BufferManager(object):
         final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
         length += final
 
-        sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
-        receiver = locate_extra_monitor_mc_receiver(
-            placement_x, placement_y,
-            self._packet_gather_cores_to_ethernet_connection_map)
+        sender = FecDataView.get_monitor_by_xy(placement_x, placement_y)
+        receiver = locate_extra_monitor_mc_receiver(placement_x, placement_y)
         extra_mon_data = receiver.get_data(
             sender, FecDataView.get_placement_of_vertex(sender),
             address, length)
@@ -600,17 +567,14 @@ class BufferManager(object):
         """
         # locate receivers
         receivers = list(OrderedSet(
-            locate_extra_monitor_mc_receiver(
-                placement.x, placement.y,
-                self._packet_gather_cores_to_ethernet_connection_map)
+            locate_extra_monitor_mc_receiver(placement.x, placement.y)
             for placement in recording_placements))
 
         # update transaction id from the machine for all extra monitors
-        for extra_mon in self._extra_monitor_cores:
+        for extra_mon in FecDataView.iterate_monitors():
             extra_mon.update_transaction_id_from_machine()
 
-        # Ugly, to avoid an import loop...
-        with receivers[0].streaming(receivers, self._extra_monitor_cores):
+        with StreamingContextManager(receivers):
             # get data
             self.__old_get_data_for_placements(recording_placements, progress)
 
