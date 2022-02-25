@@ -355,9 +355,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # DSG to be written to the machine
         "_dsg_targets",
 
-        # Sizes of dsg regions
-        "_region_sizes",
-
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
 
@@ -517,7 +514,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_chips_needed = None
         self._placements = None
         self._plan_n_timesteps = None
-        self._region_sizes = None
         self._router_tables = None
         self._precompressed = None
         self._routing_table_by_partition = None
@@ -1364,7 +1360,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
@@ -1376,7 +1372,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         with FecTimer(MAPPING, "Chip ID allocator"):
-            if self._application_graph is None:
+            if self._application_graph.n_vertices == 0:
                 graph = self._machine_graph
             else:
                 graph = self._application_graph
@@ -2127,10 +2123,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
-            self._dsg_targets, self._region_sizes = \
-                graph_data_specification_writer(
-                    self._placements, self._ipaddress, self._machine,
-                    self._max_run_time_steps)
+            self._dsg_targets = graph_data_specification_writer(
+                self._placements, self._ipaddress, self._machine,
+                self._app_id, self._max_run_time_steps)
 
     def _do_data_generation(self):
         """
@@ -2505,17 +2500,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the execute_system_data_specs if required
 
-        :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer(LOADING, "Execute system data specification") \
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            return execute_system_data_specs(
+            execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._region_sizes, self._executable_targets,
-                self._java_caller)
+                self._executable_targets, self._java_caller)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2527,8 +2519,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             load_sys_images(
                 self._executable_targets, self._app_id, self._txrx)
 
-    def _execute_application_data_specification(
-            self, processor_to_app_data_base_address):
+    def _execute_application_data_specification(self):
         """
         Runs, times and logs the execute_application_data_specs if required
 
@@ -2537,13 +2528,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
-                return processor_to_app_data_base_address
+                return
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._executable_targets, self._region_sizes, self._placements,
+                self._executable_targets, self._placements,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
-                self._java_caller, processor_to_app_data_base_address)
+                self._java_caller)
 
     def _execute_tags_from_machine_report(self):
         """
@@ -2574,7 +2565,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
 
-    def _report_memory_on_host(self, processor_to_app_data_base_address):
+    def _report_memory_on_host(self):
         """
         Runs, times and logs MemoryMapOnHostReport is requested
 
@@ -2585,7 +2576,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            memory_map_on_host_report(processor_to_app_data_base_address)
+            memory_map_on_host_report(self._dsg_targets)
 
     def _report_memory_on_chip(self):
         """
@@ -2628,7 +2619,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             generate_comparison_router_report(self._router_tables, compressed)
 
             router_compressed_summary_report(
-                self._router_tables, self._ipaddress, self._machine)
+                compressed, self._ipaddress, self._machine)
 
             routing_table_from_machine_report(compressed)
 
@@ -2677,13 +2668,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressed = self._do_early_compression(compressor)
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
-        processor_to_app_data_base_address = \
-            self._execute_system_data_specification()
+        self._execute_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        processor_to_app_data_base_address = \
-            self._execute_application_data_specification(
-                processor_to_app_data_base_address)
+        self._execute_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)
@@ -2693,7 +2681,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
         if graph_changed:
-            self._report_memory_on_host(processor_to_app_data_base_address)
+            self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
             self._report_fixed_routes()
