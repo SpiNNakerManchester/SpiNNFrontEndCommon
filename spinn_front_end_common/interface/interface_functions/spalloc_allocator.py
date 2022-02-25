@@ -185,6 +185,7 @@ def _launch_job(n_boards, spalloc_kw_args):
     :param dict(str, str or int) spalloc_kw_args:
     :rtype: tuple(~.Job, str)
     """
+    job = None
     try:
         job = Job(n_boards, **spalloc_kw_args)
         job.wait_until_ready()
@@ -192,5 +193,6 @@ def _launch_job(n_boards, spalloc_kw_args):
         # occur
         return job, job.hostname
     except Exception as ex:
-        job.destroy(str(ex))
+        if job:
+            job.destroy(str(ex))
         raise
