@@ -13,8 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import defaultdict
 import logging
 import os
+from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, LOADING, ProvenanceReader)
@@ -38,7 +40,7 @@ class EnergyReport(object):
         consumed by a SpiNNaker job execution.
     """
 
-    __slots__ = ("__version", "__uses_spalloc")
+    __slots__ = ()
 
     #: converter between joules to kilowatt hours
     JOULES_TO_KILOWATT_HOURS = 3600000
@@ -46,15 +48,6 @@ class EnergyReport(object):
     # energy report file name
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
-
-    def __init__(self, version, spalloc_server, remote_spinnaker_url):
-        """
-        :param int version: version of machine
-        :param str spalloc_server: spalloc server IP
-        :param str remote_spinnaker_url: remote SpiNNaker URL
-        """
-        self.__version = version
-        self.__uses_spalloc = bool(spalloc_server or remote_spinnaker_url)
 
     def write_energy_report(
             self, placements, machine, runtime, buffer_manager, power_used):
@@ -193,14 +186,16 @@ class EnergyReport(object):
         # figure extraction time cost
         self._write_data_extraction_time_cost(power_used, f)
 
-        # figure out active chips idle time
-        active_chips = set()
+        # sort what to report by chip
+        active_chips = defaultdict(dict)
         for placement in placements:
-            if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
-                active_chips.add(machine.get_chip_at(placement.x, placement.y))
-        for chip in active_chips:
+            vertex = placement.vertex
+            if not isinstance(vertex, ChipPowerMonitorMachineVertex):
+                labels = active_chips[placement.x, placement.y]
+                labels[placement.p] = vertex.label
+        for xy in active_chips:
             self._write_chips_active_cost(
-                chip, placements, runtime_total_ms, power_used, f)
+                xy, active_chips[xy], runtime_total_ms, power_used, f)
 
     def _write_warning(self, f):
         """ Writes the warning about this being only an estimate
@@ -238,15 +233,17 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: the file writer
         """
 
+        version = get_config_int("Machine", "version")
         # if not spalloc, then could be any type of board
-        if not self.__uses_spalloc:
+        if (not get_config_str("Machine", "spalloc_server") and
+                not get_config_str("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if int(self.__version) in (2, 3):
+            if int(version) in (2, 3):
                 f.write(
-                    "A SpiNN-{} board does not contain any FPGA's, and so "
-                    "its energy cost is 0 \n".format(self.__version))
+                    f"A SpiNN-{version} board does not contain any FPGA's,"
+                    f" and so its energy cost is 0 \n")
                 return
-            elif int(self.__version) not in (4, 5):
+            elif int(version) not in (4, 5):
                 # no idea where we are; version unrecognised
                 raise ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
@@ -257,14 +254,13 @@ class EnergyReport(object):
             if power_used.num_fpgas == 0:
                 # no active fpgas
                 f.write(
-                    "The FPGA's on the SpiNN-{} board are turned off and "
-                    "therefore the energy used by the FPGA is 0\n".format(
-                        self.__version))
+                    f"The FPGA's on the SpiNN-{version} board are turned off "
+                    f"and therefore the energy used by the FPGA is 0\n")
                 return
             # active fpgas; fall through to shared main part report
 
         # print out as needed for spalloc and non-spalloc versions
-        if self.__version is None:
+        if version is None:
             f.write(
                 "{} FPGAs on the Spalloc-ed boards are turned on and "
                 "therefore the energy used by the FPGA during the entire time "
@@ -279,40 +275,38 @@ class EnergyReport(object):
                 "therefore the energy used by the FPGA during the entire time "
                 "the machine was booted (which was {} ms) is {}. "
                 "The usage during execution was {}".format(
-                    power_used.num_fpgas, self.__version,
+                    power_used.num_fpgas, version,
                     power_used.total_time_secs * 1000,
                     power_used.fpga_total_energy_joules,
                     power_used.fpga_exec_energy_joules))
 
     @staticmethod
     def _write_chips_active_cost(
-            chip, placements, runtime_total_ms, power_used, f):
+            xy, labels, runtime_total_ms, power_used, f):
         """ Figure out the chip active cost during simulation
 
-        :param ~.Chip chip: the chip to consider
-        :param ~.Placements placements: placements
+        :param (int, int) xy: the x,y of the chip to consider
+        :param dict(int, str) labels: vertex labels for the acte cores
         :param float runtime_total_ms:
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         :return: energy cost
         """
-
+        (x, y) = xy
         f.write("\n")
 
         # detailed report print out
         for core in range(Machine.DEFAULT_MAX_CORES_PER_CHIP):
-            if placements.is_processor_occupied(chip.x, chip.y, core):
-                vertex = placements.get_vertex_on_processor(
-                    chip.x, chip.y, core)
-                label = " (running {})".format(vertex.label)
+            if core in labels:
+                label = f" (running {labels[core]})"
             else:
                 label = ""
             energy = power_used.get_core_active_energy_joules(
-                chip.x, chip.y, core)
+                x, y, core)
             f.write(
                 "processor {}:{}:{}{} used {} Joules of energy by "
                 "being active during the execution of the simulation\n".format(
-                    chip.x, chip.y, core, label, energy))
+                    x, y, core, label, energy))
 
         # TAKE INTO ACCOUNT IDLE COST
         idle_cost = (
@@ -321,7 +315,7 @@ class EnergyReport(object):
         f.write(
             "The chip at {},{} used {} Joules of energy for by being idle "
             "during the execution of the simulation\n".format(
-                chip.x, chip.y, idle_cost))
+                x, y, idle_cost))
 
     @staticmethod
     def _write_load_time_cost(power_used, f):
