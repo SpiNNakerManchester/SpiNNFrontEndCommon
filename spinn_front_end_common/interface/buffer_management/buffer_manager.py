@@ -36,11 +36,14 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.provenance import (
+    BUFFER, ProvenanceWriter)
+from spinn_front_end_common.utility_models.streaming_context_manager import (
+    StreamingContextManager)
 from .recording_utilities import get_recording_header_size
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -112,9 +115,6 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # the extra monitor cores which support faster data extraction
-        "_extra_monitor_cores",
-
         # the extra_monitor to Ethernet connection map
         "_packet_gather_cores_to_ethernet_connection_map",
 
@@ -131,7 +131,7 @@ class BufferManager(object):
         "_java_caller"
     ]
 
-    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
+    def __init__(self, placements, tags, transceiver,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  java_caller=None):
@@ -141,8 +141,6 @@ class BufferManager(object):
         :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
         :param ~spinnman.transceiver.Transceiver transceiver:
             The transceiver to use for sending and receiving information
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_cores:
-            The monitors.
         :param packet_gather_cores_to_ethernet_connection_map:
             mapping of cores to the gatherer vertex placed on them
         :type packet_gather_cores_to_ethernet_connection_map:
@@ -160,7 +158,6 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
-        self._extra_monitor_cores = extra_monitor_cores
         self._packet_gather_cores_to_ethernet_connection_map = \
             packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
@@ -609,7 +606,9 @@ class BufferManager(object):
                         placements, progress)
                 else:
                     self.__old_get_data_for_placements(placements, progress)
-        get_simulator().add_extraction_timing(timer.measured_interval)
+        with ProvenanceWriter() as db:
+            db.insert_category_timing(
+                BUFFER, timer.measured_interval, None, None)
 
     def __old_get_data_for_placements_with_monitors(
             self, placements, progress):
@@ -627,13 +626,12 @@ class BufferManager(object):
             for placement in placements))
 
         # update transaction id from the machine for all extra monitors
-        for extra_mon in self._extra_monitor_cores:
+        for extra_mon in self._extra_monitor_cores_by_chip.values():
             extra_mon.update_transaction_id_from_machine(self._transceiver)
 
-        # Ugly, to avoid an import loop...
-        with receivers[0].streaming(
-                receivers, self._transceiver, self._extra_monitor_cores,
-                self._placements):
+        with StreamingContextManager(
+                receivers, self._transceiver,
+                self._extra_monitor_cores_by_chip, self._placements):
             # get data
             self.__old_get_data_for_placements(placements, progress)
 
