@@ -800,12 +800,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :param iterable(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
-        if cls.get_graph().n_vertices > 0:
+        if cls.has_application_vertices():
             if not isinstance(vertex_to_record_from, ApplicationVertex):
                 raise ConfigurationException(
                     "vertex_to_record_from must be an ApplicationVertex when "
                     "Application level used")
-        elif cls.get_machine_graph().n_vertices > 0:
+        elif cls.has_machine_vertices():
             if not isinstance(vertex_to_record_from, MachineVertex):
                 raise ConfigurationException(
                     "vertex_to_record_from must be an MachineVertex when"

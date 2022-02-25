@@ -536,7 +536,7 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         writer.create_graphs("test")
         # Critically app vertex in graph!
-        FecDataView.get_graph().add_vertex(vertex4)
+        FecDataView.add_vertex(vertex4)
         # Does not matter if there are also machine vertices
         FecDataView.get_machine_graph().add_vertices(
             [vertex1, vertex2, vertex3])

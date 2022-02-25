@@ -2985,13 +2985,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def __reset_graph_elements(self):
         # Reset any object that can reset
-        if self._data_writer.get_graph().n_vertices:
-            for vertex in self._data_writer.get_graph().vertices:
+        if self._data_writer.has_application_vertices():
+            for vertex in self._data_writer.iterate_vertices():
                 self.__reset_object(vertex)
             for p in self._data_writer.get_graph().outgoing_edge_partitions:
                 for edge in p.edges:
                     self.__reset_object(edge)
-        elif self._data_writer.get_machine_graph().n_vertices:
+        elif self._data_writer.has_machine_vertices():
             for machine_vertex in \
                     self._data_writer.get_machine_graph().vertices:
                 self.__reset_object(machine_vertex)
