@@ -52,11 +52,11 @@ def insert_extra_monitor_vertices_to_graphs(
 
     # handle reinjector and chip based data extractor functionality.
     if application_graph.n_vertices > 0:
-        extra_monitors = __add_second_monitors_application_graph(
+        __add_second_monitors_application_graph(
             progress, machine, application_graph, machine_graph,
             vertex_to_chip_map)
     else:
-        extra_monitors = __add_second_monitors_machine_graph(
+        __add_second_monitors_machine_graph(
             progress, machine, machine_graph, vertex_to_chip_map)
 
     # progress data receiver for data extraction functionality
@@ -69,7 +69,7 @@ def insert_extra_monitor_vertices_to_graphs(
             progress, machine, machine_graph, chip_to_gatherer_map,
             vertex_to_chip_map)
 
-    return chip_to_gatherer_map, extra_monitors, vertex_to_chip_map
+    return chip_to_gatherer_map, vertex_to_chip_map
 
 
 def __add_second_monitors_application_graph(
@@ -88,8 +88,6 @@ def __add_second_monitors_application_graph(
     """
     # pylint: disable=too-many-arguments
 
-    extra_monitor_vertices = list()
-
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -99,9 +97,6 @@ def __add_second_monitors_application_graph(
         machine_vertex = app_vertex.machine_vertex
         machine_graph.add_vertex(machine_vertex)
         vertex_to_chip_map[chip.x, chip.y] = machine_vertex
-        extra_monitor_vertices.append(machine_vertex)
-
-    return extra_monitor_vertices
 
 
 def __add_second_monitors_machine_graph(
@@ -118,8 +113,6 @@ def __add_second_monitors_machine_graph(
     """
     # pylint: disable=too-many-arguments
 
-    extra_monitor_vertices = list()
-
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:
             continue
@@ -127,9 +120,6 @@ def __add_second_monitors_machine_graph(
         vertex = __new_mach_monitor(chip)
         machine_graph.add_vertex(vertex)
         vertex_to_chip_map[chip.x, chip.y] = vertex
-        extra_monitor_vertices.append(vertex)
-
-    return extra_monitor_vertices
 
 
 def __add_data_extraction_vertices_app_graph(
