@@ -109,7 +109,7 @@ typedef struct ripmcs_provenance_t {
 #define MIN_BUFFER_SPACE 10
 
 //! the amount of ticks to wait between requests
-#define TICKS_BETWEEN_REQUESTS 0
+#define TICKS_BETWEEN_REQUESTS 25
 
 //! the maximum size of a packet excluding header
 #define MAX_PACKET_SIZE 272
@@ -1310,7 +1310,7 @@ void c_main(void) {
     }
 
     // Set timer_callback
-    spin1_set_timer_tick_and_phase(timer_period, 0);
+    spin1_set_timer_tick_and_phase(timer_period, tx_offset);
 
     // Register callbacks
     simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);
