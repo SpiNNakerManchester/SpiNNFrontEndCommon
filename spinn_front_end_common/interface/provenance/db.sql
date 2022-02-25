@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS power_provenance(
     the_value FLOAT NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for versions
+-- A table holding the values for algorithm timings
 CREATE TABLE IF NOT EXISTS timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
@@ -47,6 +47,15 @@ CREATE VIEW IF NOT EXISTS timer_view AS
     FROM timer_provenance
     WHERE skip_reason is NULL
     ORDER BY timer_id;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table holding the values for category timings
+CREATE TABLE IF NOT EXISTS category_timer_provenance(
+    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category STRING NOT NULL,
+    the_value INTEGER NOT NULL,
+    n_run INTEGER,
+    n_loop INTEGER);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for uncategorised general provenance
@@ -202,6 +211,14 @@ CREATE TABLE IF NOT EXISTS connector_provenance(
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
+---------------------------------------------------------------------
+-- A table to store job.info
+CREATE TABLE IF NOT EXISTS boards_provenance(
+    board_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ip_addres STRING NOT NULL,
+    ethernet_x INTEGER NOT NULL,
+    ethernet_y INTEGER NOT NULL);
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table app vertex provenance
 CREATE TABLE IF NOT EXISTS app_vertex_provenance(
@@ -210,5 +227,3 @@ CREATE TABLE IF NOT EXISTS app_vertex_provenance(
     the_type  STRING NOT NULL,
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
-
-
