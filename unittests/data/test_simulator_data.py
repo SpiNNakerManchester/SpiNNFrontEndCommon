@@ -669,7 +669,7 @@ class TestSimulatorData(unittest.TestCase):
         sa2 = SocketAddress("b", 2, 3)
         sa3 = SocketAddress("c", 2, 3)
         sa4 = SocketAddress("d", 2, 3)
-        FecDataView.add_database_socket(sa1)
+        FecDataView.add_socket_address(sa1)
         self.assertCountEqual(
             [sa1], FecDataView.iterate_database_socket_addresses())
         FecDataView.add_database_socket_addresses([sa2, sa3])
@@ -680,6 +680,6 @@ class TestSimulatorData(unittest.TestCase):
             [sa1, sa2, sa3, sa4],
             FecDataView.iterate_database_socket_addresses())
         with self.assertRaises(TypeError):
-            FecDataView.add_database_socket("bacon")
+            FecDataView.add_socket_address("bacon")
         with self.assertRaises(TypeError):
             FecDataView.add_database_socket_addresses(12)

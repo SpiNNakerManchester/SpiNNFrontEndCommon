@@ -34,7 +34,7 @@ class TestStartResumeNotificationProtocol(unittest.TestCase):
             protocol
         """
         listener = EIEIOConnection()
-        FecDataWriter.mock().add_database_socket(SocketAddress(
+        FecDataWriter.mock().add_socket_address(SocketAddress(
             "127.0.0.1", listener.local_port, None))
         protocol = NotificationProtocol()
         protocol.send_start_resume_notification()
