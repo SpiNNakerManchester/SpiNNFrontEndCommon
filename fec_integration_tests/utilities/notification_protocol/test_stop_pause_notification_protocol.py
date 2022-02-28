@@ -34,7 +34,7 @@ class TestStopPauseNotificationProtocol(unittest.TestCase):
             protocol
         """
         listener = EIEIOConnection()
-        FecDataWriter.mock().add_database_socket_address(SocketAddress(
+        FecDataWriter.mock().add_database_socket(SocketAddress(
             "127.0.0.1", listener.local_port, None))
         protocol = NotificationProtocol()
         protocol.send_stop_pause_notification()
