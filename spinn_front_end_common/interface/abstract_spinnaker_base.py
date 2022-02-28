@@ -376,9 +376,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises ConfigurationException: If the current state does not
             support a new run call
         """
-        if self._data_writer.get_graph().n_vertices:
+        if self._data_writer.has_application_vertices():
             return True
-        if self._data_writer.get_machine_graph().n_vertices:
+        if self._data_writer.has_machine_vertices():
             return True
         logger.warning(
             "Your graph has no vertices in it. "
@@ -650,13 +650,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _add_commands_to_command_sender(self):
         command_sender = None
-        graph = self._data_writer.get_runtime_graph()
-        vertices = graph.vertices
-        command_sender_vertex = CommandSender
-        if len(vertices) > 0:
+        if self._data_writer.has_machine_vertices():
             graph = self._data_writer.get_runtime_machine_graph()
             vertices = graph.vertices
             command_sender_vertex = CommandSenderMachineVertex
+        else:
+            graph = self._data_writer.get_runtime_graph()
+            vertices = graph.vertices
+            command_sender_vertex = CommandSender
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
@@ -2657,8 +2658,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             changed = True
 
         # if application graph is filled, check their changes
-        if self._data_writer.get_graph().n_vertices:
-            for vertex in self._data_writer.get_graph().vertices:
+        if self._data_writer.has_application_vertices():
+            for vertex in self._data_writer.iterate_vertices():
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
@@ -2666,7 +2667,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         data_changed = True
                     vertex.mark_no_changes()
             for partition in \
-                    self._data_writer.get_graph().outgoing_edge_partitions:
+                    self._data_writer.iterate_partitions():
                 for edge in partition.edges:
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
@@ -2676,16 +2677,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                         edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif self._data_writer.get_machine_graph().n_vertices:
-            machine_graph = self._data_writer.get_machine_graph()
-            for machine_vertex in machine_graph.vertices:
+        elif self._data_writer.has_machine_vertices():
+            for machine_vertex in self._data_writer.iterate_machine_vertices():
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if machine_vertex.requires_data_generation:
                         data_changed = True
                     machine_vertex.mark_no_changes()
-            for partition in machine_graph.outgoing_edge_partitions:
+            for partition in self._data_writer.iterate_machine_partitions():
                 for machine_edge in partition.edges:
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
@@ -2736,58 +2736,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                    f"{self._data_writer.get_ipaddress()}"
         else:
             return "general front end instance no machine set"
-
-    def add_application_vertex(self, vertex):
-        """
-        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
-            the vertex to add to the graph
-        :raises ConfigurationException: when both graphs contain vertices
-        :raises PacmanConfigurationException:
-            If there is an attempt to add the same vertex more than once
-        """
-        if self._data_writer.get_machine_graph().n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
-        self._data_writer.get_graph().add_vertex(vertex)
-        self._vertices_or_edges_added = True
-
-    def add_machine_vertex(self, vertex):
-        """
-        :param ~pacman.model.graphs.machine.MachineVertex vertex:
-            the vertex to add to the graph
-        :raises ConfigurationException: when both graphs contain vertices
-        :raises PacmanConfigurationException:
-            If there is an attempt to add the same vertex more than once
-        """
-        # check that there's no application vertices added so far
-        if self._data_writer.get_graph().n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
-        self._data_writer.get_machine_graph().add_vertex(vertex)
-        self._vertices_or_edges_added = True
-
-    def add_application_edge(self, edge_to_add, partition_identifier):
-        """
-        :param ~pacman.model.graphs.application.ApplicationEdge edge_to_add:
-            the edge to add to the graph
-        :param str partition_identifier:
-            the partition identifier for the outgoing edge partition
-        """
-        self._data_writer.get_graph().add_edge(
-            edge_to_add, partition_identifier)
-        self._vertices_or_edges_added = True
-
-    def add_machine_edge(self, edge, partition_id):
-        """
-        :param ~pacman.model.graphs.machine.MachineEdge edge:
-            the edge to add to the graph
-        :param str partition_id:
-            the partition identifier for the outgoing edge partition
-        """
-        self._data_writer.get_machine_graph().add_edge(edge, partition_id)
-        self._vertices_or_edges_added = True
 
     def _shutdown(
             self, clear_routing_tables=None, clear_tags=None):
@@ -2988,14 +2936,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_application_vertices():
             for vertex in self._data_writer.iterate_vertices():
                 self.__reset_object(vertex)
-            for p in self._data_writer.get_graph().outgoing_edge_partitions:
+            for p in self._data_writer.iterate_partitions():
                 for edge in p.edges:
                     self.__reset_object(edge)
         elif self._data_writer.has_machine_vertices():
             for machine_vertex in \
-                    self._data_writer.get_machine_graph().vertices:
+                    self._data_writer.iterate_machine_vertices():
                 self.__reset_object(machine_vertex)
-            for p in self._data_writer.get_machine_graph()\
-                    .outgoing_edge_partitions:
+            for p in self._data_writer.iterate_machine_partitions():
                 for machine_edge in p.edges:
                     self.__reset_object(machine_edge)

@@ -509,8 +509,9 @@ class TestSimulatorData(unittest.TestCase):
         vertex3 = SimpleMachineVertex(None)
         vertex4 = SimpleTestVertex(12, "app1")
         writer.create_graphs("test")
-        FecDataView.get_machine_graph().add_vertices(
-            [vertex1, vertex2, vertex3])
+        FecDataView.add_machine_vertex(vertex1)
+        FecDataView.add_machine_vertex(vertex2)
+        FecDataView.add_machine_vertex(vertex3)
         # Critically NO app vertex in graph!
         partition_ids1 = ["a"]
         partition_ids2 = ["a", "b"]
@@ -532,21 +533,6 @@ class TestSimulatorData(unittest.TestCase):
                 lpg3, vertex4, partition_ids2)
         params = FecDataView.get_live_packet_recorder_params()
         self.assertEqual(2, len(params))
-
-        writer = FecDataWriter.setup()
-        writer.create_graphs("test")
-        # Critically app vertex in graph!
-        FecDataView.add_vertex(vertex4)
-        # Does not matter if there are also machine vertices
-        FecDataView.get_machine_graph().add_vertices(
-            [vertex1, vertex2, vertex3])
-        FecDataView.add_live_packet_gatherer_parameters(
-            lpg3, vertex4, partition_ids2)
-        with self.assertRaises(ConfigurationException):
-            FecDataView.add_live_packet_gatherer_parameters(
-                lpg2, vertex2, partition_ids2)
-        params = FecDataView.get_live_packet_recorder_params()
-        self.assertEqual(1, len(params))
 
     def test_database_file_path(self):
         writer = FecDataWriter.setup()
