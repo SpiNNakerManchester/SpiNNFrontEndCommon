@@ -973,7 +973,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return iter(cls.__fec_data._database_socket_addresses)
 
     @classmethod
-    def add_socket_address(cls, database_socket_address):
+    def add_database_socket_address(cls, database_socket_address):
         """
         Adds a socket address to the list of known addresses
 
@@ -996,4 +996,4 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if database_socket_addresses is None:
             return
         for socket_address in database_socket_addresses:
-            cls.add_socket_address(socket_address)
+            cls.add_database_socket_address(socket_address)
