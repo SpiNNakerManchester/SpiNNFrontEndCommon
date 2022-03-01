@@ -275,6 +275,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.get_executable_finder().add_path(
             os.path.dirname(common_model_binaries.__file__))
 
+        self._data_writer.set_machine_generator(self._get_machine)
+
     def _new_run_clear(self):
         """
         This clears all data that if no longer valid after a hard reset
