@@ -210,9 +210,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Used in exception handling and control c
         "_last_except_hook",
 
-        # status flag
-        "_vertices_or_edges_added",
-
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
 
@@ -272,7 +269,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._create_version_provenance()
 
         self._last_except_hook = sys.excepthook
-        self._vertices_or_edges_added = False
 
         FecTimer.setup(self)
 
@@ -2645,14 +2641,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: mapping_changed, data_changed
         :rtype: tuple(bool, bool)
         """
-        changed = False
+        # Set changed - note that we can't return yet as we still have to
+        # mark vertices as not changed, otherwise they will keep reporting
+        # that they have changed when they haven't
+        changed = self._data_writer.get_and_reset_vertices_or_edges_added()
         data_changed = False
-        if self._vertices_or_edges_added:
-            self._vertices_or_edges_added = False
-            # Set changed - note that we can't return yet as we still have to
-            # mark vertices as not changed, otherwise they will keep reporting
-            # that they have changed when they haven't
-            changed = True
 
         if self._has_reset_last and self._user_accessed_machine:
             changed = True
