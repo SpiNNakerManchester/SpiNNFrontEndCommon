@@ -126,19 +126,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             except OSError:
                 time.sleep(0.5)
 
-    def set_app_id(self, app_id):
-        """
-        Sets the app_id value
-
-        :param int app_id: new value
-        """
-        if not isinstance(app_id, int):
-            raise TypeError("app_id should be an int")
-        self.__fec_data._app_id = app_id
-
-    def clear_app_id(self):
-        self.__fec_data._app_id = None
-
     def set_buffer_manager(self, buffer_manager):
         """
         Sets the Buffer manager variable

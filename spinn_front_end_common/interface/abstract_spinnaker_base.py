@@ -289,7 +289,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
-        self._data_writer.clear_app_id()
         self.__close_allocation_controller()
 
     def _machine_clear(self):
@@ -2798,7 +2797,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_transceiver():
             transceiver = self._data_writer.get_transceiver()
             transceiver.stop_application(self._data_writer.get_app_id())
-            self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:

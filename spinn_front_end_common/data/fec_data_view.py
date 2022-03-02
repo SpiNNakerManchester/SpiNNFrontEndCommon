@@ -46,7 +46,6 @@ class _FecDataModel(object):
 
     __slots__ = [
         # Data values cached
-        "_app_id",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -121,7 +120,6 @@ class _FecDataModel(object):
         """
         Clears out all data that should change after a reset and graaph change
         """
-        self._app_id = None
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
@@ -174,14 +172,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     __fec_data = _FecDataModel()
 
     __slots__ = []
-
-    # app_id methods
-
-    @classmethod
-    def get_app_id(cls):
-        if cls.__fec_data._app_id is None:
-            cls.__fec_data._app_id = cls.get_new_id()
-        return cls.__fec_data._app_id
 
     # current_run_timesteps and first_machine_time_step
     @classmethod

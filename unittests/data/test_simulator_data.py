@@ -76,23 +76,11 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNotNone(FecDataView.get_app_id())
         self.assertIsNotNone(FecDataView.get_simulation_time_step_us())
 
-    def test_multiple(self):
-        view = FecDataView()
-        writer = FecDataWriter.setup()
-        view2 = FecDataView()
-        writer.set_app_id(7)
-        self.assertEqual(7, view.get_app_id())
-        self.assertEqual(7, view2.get_app_id())
-        self.assertEqual(7, FecDataView.get_app_id())
-        self.assertEqual(7, writer.get_app_id())
-
     def test_app_id(self):
         writer = FecDataWriter.setup()
         app_id1 = writer.get_app_id()
         self.assertEqual(app_id1, writer.get_app_id())
         self.assertEqual(app_id1, writer.get_app_id())
-        writer.clear_app_id()
-        self.assertNotEqual(app_id1, writer.get_app_id())
         writer.hard_reset()
         self.assertEqual(app_id1, writer.get_app_id())
 
