@@ -244,7 +244,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._has_ran = False
-        self._new_run_clear()
+        self._hard_reset()
 
         # holder for timing and running related values
         self._run_until_complete = False
@@ -273,13 +273,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.set_machine_generator(self._get_machine)
 
-    def _new_run_clear(self):
+    def _hard_reset(self):
         """
         This clears all data that if no longer valid after a hard reset
 
         """
         self._data_writer.hard_reset()
-        a = self._data_writer.has_machine()
         self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
@@ -525,8 +524,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                if not self._data_writer.get_user_accessed_machine():
-                    self._new_run_clear()
+                if not self._data_writer.is_hard_reset():
+                    self._hard_reset()
             FecTimer.setup(self)
 
             self._data_writer.clone_graphs()
@@ -884,7 +883,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
                 "therefor generate a new machine")
-            self._new_run_clear()
+            self._hard_reset()
         self._get_known_machine()
         if not self._data_writer.has_machine():
             raise ConfigurationException(
@@ -2629,7 +2628,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.warning(
                 "A reset after a get machine call is always hard and "
                 "therefor the previous machine is no longer valid")
-            self._new_run_clear()
+            self._hard_reset()
         else:
             self._data_writer.soft_reset()
 
