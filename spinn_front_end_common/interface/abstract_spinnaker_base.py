@@ -578,7 +578,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
-        if not self._has_ran or graph_changed or data_changed:
+        if graph_changed or data_changed:
             self._do_data_generation()
 
             self._do_load(graph_changed)
@@ -2203,7 +2203,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             been regenerated
 
         """
-        if not self.has_ran:
+        if not self._data_writer.is_ran_ever():
+            return
+        if self._data_writer.is_hard_reset():
             return
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
@@ -2432,7 +2434,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             n_machine_time_steps)
 
         self._execute_sdram_usage_report_per_chip()
-        if not self._has_ran or graph_changed:
+        if graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if self._has_ran and not graph_changed:
