@@ -182,22 +182,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_n_chips_required",
 
         # The IP-address of the SpiNNaker machine
-        # provided during init and never changed
-        # init or cfg param and never changed
-        "_hostname",
-
-        # The IP-address of the SpiNNaker machine
         # Either hostname or the ipaddress form the allocator
         "_ipaddress",
-
-        # the ip_address of the spalloc server
-        # provided during init and never changed
-        # cfg param and never changed
-        "_spalloc_server",
-
-        # the URL for the HBP platform interface
-        # cfg param and never changed
-        "_remote_spinnaker_url",
 
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
@@ -347,9 +333,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # version of the board to requested or discovered
         "_board_version",
 
-        # vertices added to support Buffer Extractor
-        "_extra_monitor_vertices",
-
         # Start timestep of a do_run cycle
         # Set by data generation and do_run cleared by do_run
         "_first_machine_time_step",
@@ -362,9 +345,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # DSG to be written to the machine
         "_dsg_targets",
-
-        # Sizes of dsg regions
-        "_region_sizes",
 
         # Mapping for vertice to extra monitors
         "_vertex_to_ethernet_connected_chip_mapping",
@@ -436,8 +416,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException(
                 "Please use at most one of n_chips_required or "
                 "n_boards_required")
-        self._spalloc_server = None
-        self._remote_spinnaker_url = None
 
         # store for Live Packet Gatherers
         self._live_packet_recorder_params = defaultdict(list)
@@ -494,7 +472,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
-        self._hostname = None
 
         FecTimer.setup(self)
 
@@ -516,7 +493,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._executable_targets = None
         self._executable_types = None
         self._extra_monitor_to_chip_mapping = None
-        self._extra_monitor_vertices = None
         self._fixed_routes = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
@@ -527,7 +503,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_chips_needed = None
         self._placements = None
         self._plan_n_timesteps = None
-        self._region_sizes = None
         self._router_tables = None
         self._precompressed = None
         self._routing_table_by_partition = None
@@ -704,46 +679,35 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only one type of graph can be used during live output. "
                 "Please fix and try again")
 
-    def set_up_machine_specifics(self, hostname):
-        """ Adds machine specifics for the different modes of execution.
+    def check_machine_specifics(self):
+        """ Checks machine specifics for the different modes of execution.
 
-        :param str hostname: machine name
+        Not this can only be called from a class that sets the config file
+        to read this data from.
         """
-        if hostname is not None:
-            self._hostname = hostname
-            logger.warning("The machine name from setup call is overriding "
-                           "the machine name defined in the config file")
-        else:
-            self._hostname = get_config_str("Machine", "machine_name")
-            self._spalloc_server = get_config_str(
-                "Machine", "spalloc_server")
-            self._remote_spinnaker_url = get_config_str(
-                "Machine", "remote_spinnaker_url")
+        n_items_specified = 0
+        if get_config_str("Machine", "machine_name"):
+            n_items_specified += 1
+        if get_config_str("Machine", "spalloc_server"):
+            if get_config_str("Machine", "spalloc_user") is None:
+                raise Exception(
+                    "A spalloc_user must be specified with a spalloc_server")
+            n_items_specified += 1
+        if get_config_str("Machine", "remote_spinnaker_url"):
+            n_items_specified += 1
+        if get_config_bool("Machine", "virtual_board"):
+            n_items_specified += 1
 
-        if (self._hostname is None and self._spalloc_server is None and
-                self._remote_spinnaker_url is None and
-                not self._use_virtual_board):
+        if n_items_specified == 0:
             raise ConfigurationException(
                 "See http://spinnakermanchester.github.io/spynnaker/"
                 "PyNNOnSpinnakerInstall.html Configuration Section")
 
-        n_items_specified = sum(
-            item is not None
-            for item in [
-                self._hostname, self._spalloc_server,
-                self._remote_spinnaker_url])
-
-        if (n_items_specified > 1 or
-                (n_items_specified == 1 and self._use_virtual_board)):
+        if n_items_specified > 1:
             raise Exception(
                 "Only one of machineName, spalloc_server, "
                 "remote_spinnaker_url and virtual_board should be specified "
                 "in your configuration files")
-
-        if self._spalloc_server is not None:
-            if get_config_str("Machine", "spalloc_user") is None:
-                raise Exception(
-                    "A spalloc_user must be specified with a spalloc_server")
 
     def _setup_java_caller(self):
         if get_config_bool("Java", "use_java"):
@@ -1195,24 +1159,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._machine:
             return None
-        if self._hostname:
-            return None
         if self._n_chips_needed:
             n_chips_required = self._n_chips_needed
         else:
             n_chips_required = self._n_chips_required
         if n_chips_required is None and self._n_boards_required is None:
             return None
-        if self._spalloc_server is not None:
+        if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
                 return spalloc_allocator(
-                    self._spalloc_server, n_chips_required,
-                    self._n_boards_required)
-        else:
+                    n_chips_required, self._n_boards_required)
+        if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(
-                    self._remote_spinnaker_url, total_run_time,
-                    n_chips_required, self._n_boards_required)
+                    total_run_time, n_chips_required, self._n_boards_required)
 
     def _execute_machine_generator(self, category, allocator_data):
         """
@@ -1231,8 +1191,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._machine:
             return
-        if self._hostname:
-            self._ipaddress = self._hostname
+        if get_config_str("Machine", "machine_name"):
+            self._ipaddress = get_config_str("Machine", "machine_name")
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
@@ -1276,16 +1236,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._machine
 
         self._max_machine = True
-        if self._spalloc_server:
+        if get_config_str("Machine", "spalloc_server"):
             with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                self._machine = spalloc_max_machine_generator(
-                    self._spalloc_server)
+                self._machine = spalloc_max_machine_generator()
 
-        elif self._remote_spinnaker_url:
+        elif get_config_str("Machine", "remote_spinnaker_url"):
             with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
-                self._machine = hbp_max_machine_generator(
-                    self._remote_spinnaker_url, total_run_time,
-                    )
+                self._machine = hbp_max_machine_generator(total_run_time)
 
         else:
             raise NotImplementedError("No machine generataion possible")
@@ -2044,7 +2001,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._buffer_manager = buffer_manager_creator(
                 self._placements, self._tags, self._txrx,
-                self._extra_monitor_vertices,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
                 self._machine, self._fixed_routes, self._java_caller)
@@ -2145,10 +2101,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(
                 DATA_GENERATION, "Graph data specification writer"):
-            self._dsg_targets, self._region_sizes = \
-                graph_data_specification_writer(
-                    self._placements, self._ipaddress, self._machine,
-                    self._max_run_time_steps)
+            self._dsg_targets = graph_data_specification_writer(
+                self._placements, self._ipaddress, self._machine,
+                self._app_id, self._max_run_time_steps)
 
     def _do_data_generation(self):
         """
@@ -2522,17 +2477,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the execute_system_data_specs if required
 
-        :return: map of placement and DSG data, and loaded data flag.
-        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
         with FecTimer(LOADING, "Execute system data specification") \
                 as timer:
             if timer.skip_if_virtual_board():
                 return None
-            return execute_system_data_specs(
+            execute_system_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._region_sizes, self._executable_targets,
-                self._java_caller)
+                self._executable_targets, self._java_caller)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2544,8 +2496,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             load_sys_images(
                 self._executable_targets, self._app_id, self._txrx)
 
-    def _execute_application_data_specification(
-            self, processor_to_app_data_base_address):
+    def _execute_application_data_specification(self):
         """
         Runs, times and logs the execute_application_data_specs if required
 
@@ -2554,13 +2505,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(LOADING, "Host data specification") as timer:
             if timer.skip_if_virtual_board():
-                return processor_to_app_data_base_address
+                return
             return execute_application_data_specs(
                 self._txrx, self._machine, self._app_id, self._dsg_targets,
-                self._executable_targets, self._region_sizes, self._placements,
-                self._extra_monitor_vertices,
+                self._executable_targets, self._placements,
+                self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
-                self._java_caller, processor_to_app_data_base_address)
+                self._java_caller)
 
     def _execute_tags_from_machine_report(self):
         """
@@ -2592,7 +2543,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         pass
 
-    def _report_memory_on_host(self, processor_to_app_data_base_address):
+    def _report_memory_on_host(self):
         """
         Runs, times and logs MemoryMapOnHostReport is requested
 
@@ -2603,7 +2554,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_memory_map_report"):
                 return
-            memory_map_on_host_report(processor_to_app_data_base_address)
+            memory_map_on_host_report(self._dsg_targets)
 
     def _report_memory_on_chip(self):
         """
@@ -2646,7 +2597,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             generate_comparison_router_report(self._router_tables, compressed)
 
             router_compressed_summary_report(
-                self._router_tables, self._ipaddress, self._machine)
+                compressed, self._ipaddress, self._machine)
 
             routing_table_from_machine_report(compressed)
 
@@ -2697,13 +2648,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
-        processor_to_app_data_base_address = \
-            self._execute_system_data_specification()
+        self._execute_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        processor_to_app_data_base_address = \
-            self._execute_application_data_specification(
-                processor_to_app_data_base_address)
+        self._execute_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)
@@ -2713,7 +2661,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
         if graph_changed:
-            self._report_memory_on_host(processor_to_app_data_base_address)
+            self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
             self._report_fixed_routes()
@@ -2783,7 +2731,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
             router_provenance_gatherer(
                 self._txrx, self._machine, self._router_tables,
-                self._extra_monitor_vertices, self._placements)
+                self._extra_monitor_to_chip_mapping, self._placements)
 
     def _execute_profile_data_gatherer(self):
         """
@@ -2821,15 +2769,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             power_used = compute_energy_used(
                 self._placements, self._machine, self._board_version,
                 run_time, self._buffer_manager,
-                self._spalloc_server, self._remote_spinnaker_url,
                 self._machine_allocation_controller)
 
             energy_provenance_reporter(power_used, self._placements)
 
             # create energy reporter
-            energy_reporter = EnergyReport(
-                get_config_int("Machine", "version"), self._spalloc_server,
-                self._remote_spinnaker_url)
+            energy_reporter = EnergyReport()
 
             # run energy report
             energy_reporter.write_energy_report(
@@ -3071,7 +3016,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_provenance_gatherer(
                 transceiver=self._txrx, machine=self._machine,
                 router_tables=self._router_tables,
-                extra_monitor_vertices=self._extra_monitor_vertices,
+                extra_monitor_vertices=self._extra_monitor_to_chip_mapping,
                 placements=self._placements)
         except Exception:
             logger.exception("Error reading router provenance")
@@ -3390,10 +3335,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return 0.0
 
     def __repr__(self):
-        if self._ipaddress:
-            return f"general front end instance for machine {self._ipaddress}"
-        else:
-            return f"general front end instance for machine {self._hostname}"
+        return f"general front end instance for machine {self._ipaddress}"
 
     def add_application_vertex(self, vertex):
         """
