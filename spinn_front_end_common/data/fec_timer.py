@@ -104,7 +104,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -154,7 +154,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -188,6 +188,6 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, skip)
+                _simulator.n_loops, skip)
         self._report(message)
         return False

@@ -194,9 +194,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         #
         "_raise_keyboard_interrupt",
 
-        # The run number for the this/next end_user call to run
-        "_n_calls_to_run",
-
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
@@ -251,7 +248,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._has_reset_last = False
-        self._n_calls_to_run = 1
         self._n_loops = None
 
         # folders
@@ -517,11 +513,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.stop_transceiver()
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
-        if not self._has_ran or graph_changed:
+        if graph_changed:
             # Reset the machine if the graph has changed
-            if (not get_config_bool("Machine", "virtual_board") and
-                    self._n_calls_to_run > 1):
-
+            if self._has_ran:
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 if not self._data_writer.is_hard_reset():
@@ -626,8 +620,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
-        # update counter for runs (used by reports and app data)
-        self._n_calls_to_run += 1
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
@@ -1635,8 +1627,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                MAPPING, mapping_total_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                MAPPING, mapping_total_timer.take_sample(), self._n_loops)
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -1662,8 +1653,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                DATA_GENERATION, data_gen_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                DATA_GENERATION, data_gen_timer.take_sample(), self._n_loops)
 
     def _execute_routing_setup(self,):
         """
@@ -2194,8 +2184,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                LOADING, load_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                LOADING, load_timer.take_sample(), self._n_loops)
 
     def _execute_sdram_usage_report_per_chip(self):
         # TODO why in do run
@@ -2418,8 +2407,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_read_provenance()
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                RUN_LOOP, self._run_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                RUN_LOOP, self._run_timer.take_sample(), self._n_loops)
         self._report_energy()
         self._do_provenance_reports()
 
@@ -2693,15 +2681,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: bool
         """
         return self._has_ran
-
-    @property
-    def n_calls_to_run(self):
-        """
-        The number for this or the next end_user call to run
-
-        :rtype: int
-        """
-        return self._n_calls_to_run
 
     @property
     def n_loops(self):

@@ -294,45 +294,36 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_run_number(self):
         writer = FecDataWriter.setup()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(1, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(1, FecDataView.get_run_number())
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.start_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(1, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(1, FecDataView.get_run_number())
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.finish_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(2, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(2, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.start_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(2, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(2, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.finish_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(3, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.soft_reset()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(3, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.hard_reset()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(3, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path changed by hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
         writer.start_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(3, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(3, FecDataView.get_run_number())
         self.assertIn("run_3", FecDataView.get_run_dir_path())
         writer.finish_run()
-        # Hack do not copy as no external need to access this data
-        self.assertEqual(4, FecDataView._FecDataView__fec_data._run_number)
+        self.assertEqual(4, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
 

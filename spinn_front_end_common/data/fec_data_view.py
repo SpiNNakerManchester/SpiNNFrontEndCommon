@@ -394,7 +394,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._time_scale_factor is not None
 
-    # n calls_to run
+    #  run number
+
+    @classmethod
+    def get_run_number(cls):
+        """
+        Get the number of this or the next run.
+
+        Run numbers start at 1
+
+        :return:
+        """
+        if cls.__fec_data._run_number is None:
+            raise cls._exception("run_number")
+        return cls.__fec_data._run_number
 
     # Report directories
     # There are NO has or get methods for directories

@@ -94,13 +94,12 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, n_run, n_loop):
+    def insert_category_timing(self, category, timedelta, n_loop):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithms run
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param int n_run: The end user run number
         :param n_loop: The run loop within the ned user run
         :type n_loop: int or None
         """
@@ -115,17 +114,16 @@ class ProvenanceWriter(SQLiteDB):
                     category, the_value, n_run, n_loop)
                 VALUES(?, ?, ?, ?)
                 """,
-                [category, the_value, n_run, n_loop])
+                [category, the_value, FecDataView.get_run_number(), n_loop])
 
     def insert_timing(
-            self, category, algorithm, the_value, n_run, n_loop, skip_reason):
+            self, category, algorithm, the_value, n_loop, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithm
         :param str algorithm: Algorithm name
         :param int the_value: Runtime
-        :param int n_run: The end user run number
         :param n_loop: The run loop within the ned user run
         :type n_loop: int or None
         :param skip_reason: The reason the algorthm was skipped or None if
@@ -139,7 +137,8 @@ class ProvenanceWriter(SQLiteDB):
                     category, algorithm, the_value, n_run, n_loop, skip_reason)
                 VALUES(?, ?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, the_value, n_run, n_loop, skip_reason])
+                [category, algorithm, the_value, FecDataView.get_run_number(),
+                 n_loop, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """
