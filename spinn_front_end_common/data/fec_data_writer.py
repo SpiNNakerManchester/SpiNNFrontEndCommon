@@ -20,7 +20,6 @@ import os
 import time
 from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
-from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
@@ -58,7 +57,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._mock(self)
         self._spinnman_mock()
         self.__fec_data._clear()
-        self.__fec_data._n_calls_to_run = 0
+        # run numbers start at 1 and when not running this is the next one
+        self.__fec_data._run_number = 1
         self.set_up_timings(1000, 1)
 
     @overrides(PacmanDataWriter._setup)
@@ -70,17 +70,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._setup(self)
         self._spinnman_setup()
         self.__fec_data._clear()
-        self.__fec_data._n_calls_to_run = 0
+        # run numbers start at 1 and when not running this is the next one
+        self.__fec_data._run_number = 1
         self.__create_reports_directory()
         self.__create_timestamp_directory()
         self.__create_run_dir_path()
 
     def start_run(self):
         PacmanDataWriter.start_run(self)
-        self.__fec_data._n_calls_to_run += 1
 
     def finish_run(self):
         PacmanDataWriter.finish_run(self)
+        self.__fec_data._run_number += 1
 
     def hard_reset(self):
         PacmanDataWriter.hard_reset(self)
@@ -96,7 +97,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def __create_run_dir_path(self):
         self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
-            f"run_{self.get_n_calls_to_run()}"))
+            f"run_{self.__fec_data._run_number}"))
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(
