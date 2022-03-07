@@ -133,7 +133,7 @@ from spinn_front_end_common.utilities.report_functions import (
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
-    write_json_routing_tables)
+    write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
@@ -941,6 +941,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._get_known_machine(total_run_time)
             if self._machine is None:
                 self._execute_get_max_machine(total_run_time)
+            self._report_drift(start=True)
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -1974,6 +1975,22 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)
 
+    def _report_drift(self, start):
+        """ Write, time and log the drift
+
+        :param bool start: Is this the start or the end
+        """
+        with FecTimer(MAPPING, "Drift report") as timer:
+            if timer.skip_if_virtual_board():
+                return
+            if start and timer.skip_if_cfg_false(
+                    "Reports", "write_drift_report_start"):
+                return
+            if not start and timer.skip_if_cfg_false(
+                    "Reports", "write_drift_report_end"):
+                return
+            drift_report(self._txrx)
+
     def _execute_locate_executable_start_type(self):
         """
         Runs, times and logs LocateExecutableStartType if required
@@ -2956,6 +2973,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_ran = True
         # reset at the end of each do_run cycle
         self._first_machine_time_step = None
+        self._report_drift(start=False)
         clear_injectables()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
