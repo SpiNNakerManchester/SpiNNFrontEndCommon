@@ -23,40 +23,24 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
-class MemoryMapOnHostReport(object):
+def memory_map_on_host_report(dsg_targets):
     """ Report on memory usage.
+
+    :param dsg_targets:
+    :type dsg_targets:
+        dict(tuple(int,int,int),DataWritten)
     """
-
-    def __call__(
-            self, processor_to_app_data_base_address):
-        """
-        :param processor_to_app_data_base_address:
-        :type processor_to_app_data_base_address:
-            dict(tuple(int,int,int),DataWritten)
-        """
-
-        file_name = os.path.join(report_default_directory(), _FOLDER_NAME)
-        try:
-            with open(file_name, "w") as f:
-                self._describe_mem_map(f, processor_to_app_data_base_address)
-        except IOError:
-            logger.exception("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
-
-    def _describe_mem_map(self, f, memory_map):
-        f.write("On host data specification executor\n")
-        for key, data in memory_map.items():
-            self._describe_map_entry(f, key, data)
-
-    @staticmethod
-    def _describe_map_entry(f, key, data):
-        """
-        :param f:
-        :param tuple(int,int,int) key:
-        :param DataWritten data:
-        """
-        f.write(
-            "{}: ('start_address': {}, hex:{}), "
-            "'memory_used': {}, 'memory_written': {} \n".format(
-                key, data.start_address, hex(data.start_address),
-                data.memory_used, data.memory_written))
+    file_name = os.path.join(report_default_directory(), _FOLDER_NAME)
+    try:
+        with open(file_name, "w") as f:
+            f.write("On host data specification executor\n")
+            for key, start_address, memory_used, memory_written in \
+                    dsg_targets.info_iteritems():
+                f.write(
+                    f"{key}: ('start_address': {start_address}, "
+                    f"hex:{hex(start_address)}), "
+                    f"'memory_used': {memory_used}, "
+                    f"'memory_written': {memory_written} \n")
+    except IOError:
+        logger.exception("Generate_placement_reports: Can't open file"
+                         " {} for writing.", file_name)

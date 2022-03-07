@@ -21,8 +21,8 @@ import subprocess
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
-from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import WriteJsonMachine
+from spinn_front_end_common.utilities.report_functions import (
+    write_json_machine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
@@ -209,8 +209,8 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = WriteJsonMachine.write_json(
-                self._machine, self._json_folder)
+            self._machine_json_path = write_json_machine(
+                self._machine, self._json_folder, False)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):

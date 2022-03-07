@@ -19,7 +19,8 @@ import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.constants import PROVENANCE_DB
+from spinn_front_end_common.utilities.constants import (
+    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -92,6 +93,29 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
+
+    def insert_category_timing(self, category, timedelta, n_run, n_loop):
+        """
+        Inserts algorithms run times into the timer_provenance table
+
+        :param str category: Category of the Algorithms run
+        :param ~datetime.timedelta timedelta: Time to be recorded
+        :param int n_run: The end user run number
+        :param n_loop: The run loop within the ned user run
+        :type n_loop: int or None
+        """
+        the_value = (
+                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
+
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, the_value, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                """,
+                [category, the_value, n_run, n_loop])
 
     def insert_timing(
             self, category, algorithm, the_value, n_run, n_loop, skip_reason):
@@ -276,3 +300,21 @@ class ProvenanceWriter(SQLiteDB):
                 """,
                 [pre_population, post_population, the_type, description,
                  the_value])
+
+    def insert_board_provenance(self, connections):
+        """
+        Write the conection treived from spalloc job
+
+        :param connections: {(x, y): hostname, ...} or None
+        :type connections: dict((int, int): str) or None
+        """
+        if not connections:
+            return
+        with self.transaction() as cursor:
+            cursor.executemany(
+                """
+                INSERT OR IGNORE INTO boards_provenance(
+                ethernet_x, ethernet_y, ip_addres)
+                VALUES (?, ?, ?)
+                """, ((x, y, ipaddress)
+                      for ((x, y), ipaddress) in connections.items()))

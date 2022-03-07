@@ -22,7 +22,30 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class RouterProvenanceGatherer(object):
+def router_provenance_gatherer(transceiver, machine, router_tables,
+                               extra_monitor_vertices=None, placements=None):
+    """
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the SpiNNMan interface object
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine
+    :param router_tables: the router tables that have been generated
+    :type router_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
+    :param extra_monitor_vertices:
+        vertices which represent the extra monitor code
+    :type extra_monitor_vertices:
+        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+    :param ~pacman.model.placements.Placements placements:
+        the placements object
+    """
+    gather = _RouterProvenanceGatherer(
+        transceiver, machine, router_tables, extra_monitor_vertices,
+        placements)
+    gather._add_router_provenance_data()
+
+
+class _RouterProvenanceGatherer(object):
     """ Gathers diagnostics from the routers.
     """
 
@@ -39,9 +62,8 @@ class RouterProvenanceGatherer(object):
         '_txrx',
     ]
 
-    def __call__(
-            self, transceiver, machine, router_tables,
-            extra_monitor_vertices=None, placements=None):
+    def __init__(self, transceiver, machine, router_tables,
+                 extra_monitor_vertices=None, placements=None):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             the SpiNNMan interface object
@@ -52,6 +74,8 @@ class RouterProvenanceGatherer(object):
             ~pacman.model.routing_tables.MulticastRoutingTables
         :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
             vertices which represent the extra monitor code
+        :type extra_monitor_vertices:
+            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
@@ -62,8 +86,6 @@ class RouterProvenanceGatherer(object):
         self._machine = machine
         self._placements = placements
         self._router_tables = router_tables
-
-        self._add_router_provenance_data()
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
@@ -76,7 +98,7 @@ class RouterProvenanceGatherer(object):
         # get all extra monitor core data if it exists
         reinjection_data = None
         if self._extra_monitor_vertices is not None:
-            monitor = self._extra_monitor_vertices[0]
+            monitor = self._extra_monitor_vertices[(0, 0)]
             reinjection_data = monitor.get_reinjection_status_for_vertices(
                 placements=self._placements,
                 extra_monitor_cores_for_data=self._extra_monitor_vertices,
