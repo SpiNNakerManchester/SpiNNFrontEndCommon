@@ -274,6 +274,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         This clears all data that if no longer valid after a hard reset
 
         """
+        if self._has_ran:
+            self._data_writer.get_transceiver().stop_application(
+                self._data_writer.get_app_id())
         self._data_writer.hard_reset()
         self._notification_interface = None
         self._max_machine = False
@@ -510,7 +513,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # application
         if (graph_changed or data_changed) and self._has_ran:
             if not self.has_reset_last:
-                self._data_writer.stop_transceiver()
+                self._data_writer.get_transceiver().stop_application(
+                    self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
         if graph_changed:
@@ -2721,7 +2725,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self.__clear(clear_tags, clear_routing_tables)
 
         # stop the transceiver and allocation controller
-        self._data_writer.clear_transceiver()
+        if self._data_writer.has_transceiver():
+            transceiver = self._data_writer.get_transceiver()
+            transceiver.stop_application(self._data_writer.get_app_id())
+
         self.__close_allocation_controller()
 
         try:
