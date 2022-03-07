@@ -15,7 +15,6 @@
 
 import errno
 import os
-from spinn_utilities.data.data_status import Data_Status
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
@@ -46,7 +45,6 @@ class _FecDataModel(object):
 
     __slots__ = [
         # Data values cached
-        "_app_id",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -65,7 +63,6 @@ class _FecDataModel(object):
         "_java_caller",
         "_live_packet_recorder_params",
         "_n_boards_required",
-        "_n_calls_to_run",
         "_n_chips_required",
         "_n_chips_in_graph",
         "_next_sync_signal",
@@ -73,6 +70,7 @@ class _FecDataModel(object):
         "_max_run_time_steps",
         "_monitor_map",
         "_report_dir_path",
+        "_run_number",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -104,9 +102,9 @@ class _FecDataModel(object):
         self._live_packet_recorder_params = None
         self._java_caller = None
         self._n_boards_required = None
-        self._n_calls_to_run = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
+        self._run_number = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
@@ -121,7 +119,6 @@ class _FecDataModel(object):
         """
         Clears out all data that should change after a reset and graaph change
         """
-        self._app_id = None
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
@@ -174,14 +171,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     __fec_data = _FecDataModel()
 
     __slots__ = []
-
-    # app_id methods
-
-    @classmethod
-    def get_app_id(cls):
-        if cls.__fec_data._app_id is None:
-            cls.__fec_data._app_id = cls.get_new_id()
-        return cls.__fec_data._app_id
 
     # current_run_timesteps and first_machine_time_step
     @classmethod
@@ -405,27 +394,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._time_scale_factor is not None
 
-    # n calls_to run
-
-    # The data the user gets needs not be the exact data cached
-    @classmethod
-    def get_n_calls_to_run(cls):
-        """
-        The number of this or the next call to run or None if not Known
-
-        :rtpye: int
-        """
-        if cls.__fec_data._n_calls_to_run is None:
-            raise cls._exception("n_calls_to_run")
-        if cls.get_status() == Data_Status.IN_RUN:
-            return cls.__fec_data._n_calls_to_run
-        else:
-            # This is the current behaviour in ASB
-            return cls.__fec_data._n_calls_to_run + 1
+    #  run number
 
     @classmethod
-    def has_n_calls_to_run(cls):
-        return cls.__fec_data._n_calls_to_run is not None
+    def get_run_number(cls):
+        """
+        Get the number of this or the next run.
+
+        Run numbers start at 1
+
+        :return:
+        """
+        if cls.__fec_data._run_number is None:
+            raise cls._exception("run_number")
+        return cls.__fec_data._run_number
 
     # Report directories
     # There are NO has or get methods for directories
@@ -508,7 +490,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._report_dir_path:
             return cls.__fec_data._report_dir_path
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
         raise cls._exception("report_dir_path")
 
@@ -526,7 +508,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._timestamp_dir_path:
             return cls.__fec_data._timestamp_dir_path
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
         raise cls._exception("timestamp_dir_path")
 
@@ -621,7 +603,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
 
         return cls._child_folder(cls.get_run_dir_path(), "json_files")
@@ -641,7 +623,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
         return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
 
@@ -660,7 +642,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SimulatorNotSetupException:
             If the simulator has not been setup
         """
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
 
         return cls._child_folder(
@@ -681,7 +663,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if cls.get_status() == Data_Status.MOCKED:
+        if cls._is_mocked():
             return cls._temporary_dir_path()
         return cls._child_folder(
             cls.get_provenance_dir_path(), "system_provenance_data")

@@ -182,9 +182,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # status flag
         "_has_reset_last",
 
-        # flag to say user has been give machine info
-        "_user_accessed_machine",
-
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
@@ -196,9 +193,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         #
         "_raise_keyboard_interrupt",
-
-        # The run number for the this/next end_user call to run
-        "_n_calls_to_run",
 
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
@@ -247,15 +241,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._has_ran = False
-        self._new_run_clear()
+        self._hard_reset()
 
         # holder for timing and running related values
         self._run_until_complete = False
         self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._has_reset_last = False
-        self._user_accessed_machine = False
-        self._n_calls_to_run = 1
         self._n_loops = None
 
         # folders
@@ -277,7 +269,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.set_machine_generator(self._get_machine)
 
-    def _new_run_clear(self):
+    def _hard_reset(self):
         """
         This clears all data that if no longer valid after a hard reset
 
@@ -289,7 +281,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
-        self._data_writer.clear_app_id()
         self.__close_allocation_controller()
 
     def _machine_clear(self):
@@ -521,21 +512,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have reset and the graph has changed, stop any running
         # application
         if (graph_changed or data_changed) and self._has_ran:
-            if not self.has_reset_last or not self._user_accessed_machine:
+            if not self.has_reset_last:
                 self._data_writer.get_transceiver().stop_application(
                     self._data_writer.get_app_id())
-
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
-        if not self._has_ran or graph_changed:
+        if graph_changed:
             # Reset the machine if the graph has changed
-            if (not get_config_bool("Machine", "virtual_board") and
-                    self._n_calls_to_run > 1):
-
+            if self._has_ran:
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
-                if not self._user_accessed_machine:
-                    self._new_run_clear()
+                if not self._data_writer.is_hard_reset():
+                    self._hard_reset()
             FecTimer.setup(self)
 
             self._data_writer.clone_graphs()
@@ -594,7 +582,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
-        if not self._has_ran or graph_changed or data_changed:
+        if graph_changed or data_changed:
             self._do_data_generation()
 
             self._do_load(graph_changed)
@@ -636,8 +624,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
-        # update counter for runs (used by reports and app data)
-        self._n_calls_to_run += 1
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
@@ -875,19 +861,26 @@ class AbstractSpinnakerBase(ConfigHandler):
                     GET_MACHINE, total_run_time)
                 self._execute_machine_generator(GET_MACHINE, allocator_data)
 
-    def _get_machine(self, total_run_time=0.0):
-        """ The python machine description object.
-
-        :param bool max: If True will produce a max machine if required
-        :param float total_run_time: The total run time to request
-        :rtype: ~spinn_machine.Machine
-        :raise Exception: No known size machine possible
+    def _get_machine(self, user_accessed_machine):
         """
-        if self._has_reset_last and not self._user_accessed_machine:
+
+        :param user_accessed_machine:
+        :return:
+        """
+        """ The factor method to get a machine 
+
+        :param bool user_accessed_machine: 
+            Indicates if the user has accessed the machine since the 
+            last hard reset (including setup)
+        :rtype: ~spinn_machine.Machine
+        """
+        if self._has_reset_last and not user_accessed_machine:
             # Make the reset hard
-            self._new_run_clear()
-        self._get_known_machine(total_run_time)
-        self._user_accessed_machine = True
+            logger.warning(
+                "Calling Get machine after a reset force a hard reset and "
+                "therefor generate a new machine")
+            self._hard_reset()
+        self._get_known_machine()
         if not self._data_writer.has_machine():
             raise ConfigurationException(
                 "Not enough information provided to supply a machine")
@@ -1638,8 +1631,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                MAPPING, mapping_total_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                MAPPING, mapping_total_timer.take_sample(), self._n_loops)
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -1665,8 +1657,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                DATA_GENERATION, data_gen_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                DATA_GENERATION, data_gen_timer.take_sample(), self._n_loops)
 
     def _execute_routing_setup(self,):
         """
@@ -2197,8 +2188,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                LOADING, load_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                LOADING, load_timer.take_sample(), self._n_loops)
 
     def _execute_sdram_usage_report_per_chip(self):
         # TODO why in do run
@@ -2217,7 +2207,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             been regenerated
 
         """
-        if not self.has_ran:
+        if not self._data_writer.is_ran_ever():
+            return
+        if self._data_writer.is_hard_reset():
             return
         with FecTimer(RUN_LOOP, "DSG region reloader") as timer:
             if timer.skip_if_virtual_board():
@@ -2421,8 +2413,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_read_provenance()
         with ProvenanceWriter() as db:
             db.insert_category_timing(
-                RUN_LOOP, self._run_timer.take_sample(),
-                self._n_calls_to_run, self._n_loops)
+                RUN_LOOP, self._run_timer.take_sample(), self._n_loops)
         self._report_energy()
         self._do_provenance_reports()
 
@@ -2447,7 +2438,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             n_machine_time_steps)
 
         self._execute_sdram_usage_report_per_chip()
-        if not self._has_ran or graph_changed:
+        if graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if self._has_ran and not graph_changed:
@@ -2627,11 +2618,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
 
-        self._data_writer.soft_reset()
-
-        # User must assume on reset any previous machine (info) is dead
-        self._user_accessed_machine = False
-        assert (not self._user_accessed_machine)
+        if self._data_writer.get_user_accessed_machine():
+            logger.warning(
+                "A reset after a get machine call is always hard and "
+                "therefor the previous machine is no longer valid")
+            self._hard_reset()
+        else:
+            self._data_writer.soft_reset()
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
@@ -2646,11 +2639,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Set changed - note that we can't return yet as we still have to
         # mark vertices as not changed, otherwise they will keep reporting
         # that they have changed when they haven't
-        changed = self._data_writer.get_and_reset_vertices_or_edges_added()
+        changed = self._data_writer.get_and_reset_info_changed()
         data_changed = False
-
-        if self._has_reset_last and self._user_accessed_machine:
-            changed = True
 
         # if application graph is filled, check their changes
         if self._data_writer.has_application_vertices():
@@ -2699,24 +2689,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return self._has_ran
 
     @property
-    def machine(self):
-        """ The python machine description object.
-
-         :rtype: ~spinn_machine.Machine
-         """
-        self._get_machine()
-        return self._data_writer.get_machine()
-
-    @property
-    def n_calls_to_run(self):
-        """
-        The number for this or the next end_user call to run
-
-        :rtype: int
-        """
-        return self._n_calls_to_run
-
-    @property
     def n_loops(self):
         """
         The number for this or the net loop within an end_user run
@@ -2752,11 +2724,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         # if stopping on machine, clear IP tags and routing table
         self.__clear(clear_tags, clear_routing_tables)
 
-        # Fully stop the application
-        self.__stop_app()
-
         # stop the transceiver and allocation controller
-        self._data_writer.clear_transceiver()
+        if self._data_writer.has_transceiver():
+            transceiver = self._data_writer.get_transceiver()
+            transceiver.stop_application(self._data_writer.get_app_id())
+
         self.__close_allocation_controller()
 
         try:
@@ -2793,12 +2765,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                         router_table.x, router_table.y).virtual:
                     transceiver.clear_multicast_routes(
                         router_table.x, router_table.y)
-
-    def __stop_app(self):
-        if self._data_writer.has_transceiver():
-            transceiver = self._data_writer.get_transceiver()
-            transceiver.stop_application(self._data_writer.get_app_id())
-            self._data_writer.clear_app_id()
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
@@ -2884,7 +2850,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: number of available cores
         :rtype: int
         """
-        self._get_machine()
         machine = self._data_writer.get_machine()
         # get cores of machine
         cores = machine.total_available_user_cores
