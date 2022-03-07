@@ -46,7 +46,7 @@ def drift_report(txrx, ethernet_only=True):
     progress = ProgressBar(len(chips), "Writing clock drift report")
 
     # iterate over ethernet chips and then the chips on that board
-    with open(directory_name, "wa") as writer:
+    with open(directory_name, "a") as writer:
         for chip in progress.over(chips):
             drift = txrx._get_sv_data(
                 chip.x, chip.y, SystemVariableDefinition.clock_drift)
