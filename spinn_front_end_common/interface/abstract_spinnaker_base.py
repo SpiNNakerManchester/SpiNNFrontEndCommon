@@ -277,7 +277,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._has_ran:
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
-        self._data_writer.hard_reset()
+            self._data_writer.hard_reset()
         self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
@@ -456,10 +456,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         try:
             self.__run(run_time, sync_time)
-        finally:
             self._status = Simulator_Status.FINISHED
             self._data_writer.finish_run()
             self._has_ran = True
+        except Exception:
+            self._data_writer.shut_down()
+            raise
 
     def __run(self, run_time, sync_time):
         """ The main internal run function.
@@ -861,20 +863,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                     GET_MACHINE, total_run_time)
                 self._execute_machine_generator(GET_MACHINE, allocator_data)
 
-    def _get_machine(self, user_accessed_machine):
-        """
+    def _get_machine(self):
+        """ The factory method to get a machine
 
-        :param user_accessed_machine:
-        :return:
-        """
-        """ The factor method to get a machine 
-
-        :param bool user_accessed_machine: 
-            Indicates if the user has accessed the machine since the 
-            last hard reset (including setup)
         :rtype: ~spinn_machine.Machine
         """
-        if self._has_reset_last and not user_accessed_machine:
+        if self._data_writer.is_user_mode() and \
+                self._data_writer.is_soft_reset():
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
@@ -2639,7 +2634,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Set changed - note that we can't return yet as we still have to
         # mark vertices as not changed, otherwise they will keep reporting
         # that they have changed when they haven't
-        changed = self._data_writer.get_and_reset_info_changed()
+        changed = self._data_writer.get_vertices_or_edges_added()
+        if self._data_writer.is_hard_reset():
+            changed = True
         data_changed = False
 
         # if application graph is filled, check their changes
