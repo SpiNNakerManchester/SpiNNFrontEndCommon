@@ -176,9 +176,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Set during init and the used but never new object
         "_state_condition",
 
-        # status flag
-        "_has_reset_last",
-
         # Set when run_until_complete is specified by the user
         "_run_until_complete",
 
@@ -243,7 +240,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run_until_complete = False
         self._status = Simulator_Status.INIT
         self._state_condition = Condition()
-        self._has_reset_last = False
         self._n_loops = None
 
         # folders
@@ -2436,7 +2432,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
             self._do_extract_from_machine()
-        self._has_reset_last = False
         # reset at the end of each do_run cycle
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
@@ -2601,10 +2596,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # of the simulation again and clear buffered out
         if self._data_writer.has_buffer_manager():
             self._data_writer.get_buffer_manager().reset()
-
-        # sets the reset last flag to true, so that when run occurs, the tools
-        # know to update the vertices which need to know a reset has occurred
-        self._has_reset_last = True
 
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
@@ -2819,10 +2810,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._execute_application_finisher()
         self._do_extract_from_machine()
-
-    @property
-    def has_reset_last(self):
-        return self._has_reset_last
 
     @property
     def get_number_of_available_cores_on_machine(self):
