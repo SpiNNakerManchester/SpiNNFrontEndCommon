@@ -169,9 +169,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
 
-        # status flag
-        "_has_ran",
-
         # Status enum
         "_status",
 
@@ -240,7 +237,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
-        self._has_ran = False
         self._hard_reset()
 
         # holder for timing and running related values
@@ -274,7 +270,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         This clears all data that if no longer valid after a hard reset
 
         """
-        if self._has_ran:
+        if self._data_writer.has_transceiver():
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.hard_reset()
@@ -458,7 +454,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__run(run_time, sync_time)
             self._status = Simulator_Status.FINISHED
             self._data_writer.finish_run()
-            self._has_ran = True
         except Exception:
             self._data_writer.shut_down()
             raise
@@ -474,7 +469,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return
 
         # verify that we can keep doing auto pause and resume
-        if self._has_ran and not get_config_bool("Machine", "virtual_board"):
+        if self._data_writer.is_ran_ever():
             can_keep_running = all(
                 executable_type.supports_auto_pause_and_resume
                 for executable_type in
@@ -504,24 +499,23 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         graph_changed, data_changed = self._detect_if_graph_has_changed()
-        if graph_changed and self._has_ran:
-            if not self._has_reset_last:
-                self.stop()
-                raise NotImplementedError(
-                    "The network cannot be changed between runs without"
-                    " resetting")
+        if graph_changed and self._data_writer.is_ran_last():
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
 
         # If we have reset and the graph has changed, stop any running
         # application
-        if (graph_changed or data_changed) and self._has_ran:
-            if not self.has_reset_last:
-                self._data_writer.get_transceiver().stop_application(
-                    self._data_writer.get_app_id())
+        if (graph_changed or data_changed) and \
+                self._data_writer.has_transceiver():
+            self._data_writer.get_transceiver().stop_application(
+                self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
         if graph_changed:
             # Reset the machine if the graph has changed
-            if self._has_ran:
+            if self._data_writer.is_soft_reset():
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 if not self._data_writer.is_hard_reset():
@@ -2160,7 +2154,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressor, pre_compress = self._compressor_name()
         self._execute_pre_compression(pre_compress)
         compressed = self._do_early_compression(compressor)
-        if graph_changed or not self._has_ran:
+        if graph_changed:
             self._execute_load_fixed_routes()
         self._execute_system_data_specification()
         self._execute_load_system_executable_images()
@@ -2436,14 +2430,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         if graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
-        if self._has_ran and not graph_changed:
+        if self._data_writer.is_ran_ever() and not graph_changed:
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
             self._do_extract_from_machine()
         self._has_reset_last = False
-        self._has_ran = True
         # reset at the end of each do_run cycle
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
@@ -2678,14 +2671,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return changed, data_changed
 
     @property
-    def has_ran(self):
-        """ Whether the simulation has executed anything at all.
-
-        :rtype: bool
-        """
-        return self._has_ran
-
-    @property
     def n_loops(self):
         """
         The number for this or the net loop within an end_user run
@@ -2806,7 +2791,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have run forever, stop the binaries
 
-        if (self._has_ran
+        if (self._data_writer.is_ran_ever()
                 and self._data_writer.get_current_run_timesteps() is None
                 and not get_config_bool("Machine", "virtual_board")
                 and not self._run_until_complete):
