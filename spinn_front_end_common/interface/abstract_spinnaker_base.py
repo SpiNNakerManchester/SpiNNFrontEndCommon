@@ -337,16 +337,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._shutdown()
         return self._last_except_hook(exctype, value, traceback_obj)
 
-    def verify_not_running(self):
-        """ Verify that the simulator is in a state where it can start running.
-        """
-        if self._status in RUNNING_STATUS:
-            raise ConfigurationException(
-                "Illegal call while a simulation is already running")
-        if self._status in SHUTDOWN_STATUS:
-            raise ConfigurationException(
-                "Illegal call after simulation is shutdown")
-
     def _should_run(self):
         """
         Checks if the simulation should run.
@@ -441,8 +431,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
-        self.verify_not_running()
-
         self._status = Simulator_Status.IN_RUN
         self._data_writer.start_run()
 
