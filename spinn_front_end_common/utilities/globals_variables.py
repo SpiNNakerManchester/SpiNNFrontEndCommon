@@ -34,7 +34,7 @@ def get_simulator():
     :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
     :raises: SimulatorNotSetupException, SimulatorShutdownException
     """
-    FecDataView.check_user_write()
+    FecDataView.check_user_can_act()
     return _simulator
 
 
