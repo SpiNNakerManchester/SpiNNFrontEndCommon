@@ -15,11 +15,9 @@
 
 import logging
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.interface.simulator_status import (
-    RUNNING_STATUS, SHUTDOWN_STATUS)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
-    SimulatorRunningException, SimulatorNotSetupException,
-    SimulatorShutdownException)
+    SimulatorNotSetupException)
 
 # pylint: disable=global-statement
 _simulator = None
@@ -29,36 +27,6 @@ __unittest_mode = False
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-logger = FormatAdapter(logging.getLogger(__name__))
-
-
-def check_simulator():
-    """ Check if a simulator has been setup but not yet shut down
-
-    :raises: SimulatorNotSetupException, SimulatorShutdownException
-    """
-    if _simulator is None:
-        raise SimulatorNotSetupException(
-            "This call is only valid after setup has been called")
-    if _simulator._status in SHUTDOWN_STATUS:
-        raise SimulatorShutdownException(
-            "This call is only valid between setup and end/stop")
-
-
-def has_simulator():
-    """ Check if a simulator has been setup but not yet shut down
-
-    Should behave in the same way as check_simulator except that it returns
-    False where check_simulator raises and exception and True when it does not
-
-    :rtype: bool
-    """
-    if _simulator is None:
-        return False
-    if _simulator._status in SHUTDOWN_STATUS:
-        return False
-    return True
-
 
 def get_simulator():
     """ Get the current simulator object.
@@ -66,7 +34,7 @@ def get_simulator():
     :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
     :raises: SimulatorNotSetupException, SimulatorShutdownException
     """
-    check_simulator()
+    FecDataView.check_user_write()
     return _simulator
 
 
@@ -82,20 +50,6 @@ def get_last_simulator():
     if _simulator is None:
         raise SimulatorNotSetupException(
             "This call is only valid after setup has been called")
-    return _simulator
-
-
-def get_not_running_simulator():
-    """ Get the current simulator object and verify that it is not running.
-
-    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase
-    :raises: SimulatorNotSetupException, SimulatorShutdownException,
-        SimulatorRunningException
-    """
-    check_simulator()
-    if _simulator._status in RUNNING_STATUS:
-        raise SimulatorRunningException(
-            "Illegal call while a simulation is already running")
     return _simulator
 
 

@@ -118,8 +118,6 @@ from spinn_front_end_common.interface.splitter_selectors import (
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
     ProvenanceWriter, MAPPING, RUN_LOOP)
-from spinn_front_end_common.interface.simulator_status import (
-    RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
@@ -168,9 +166,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # the connection to allocted spalloc and HBP machines
         "_machine_allocation_controller",
-
-        # Status enum
-        "_status",
 
         # Condition object used for waiting for stop
         # Set during init and the used but never new object
@@ -238,7 +233,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # holder for timing and running related values
         self._run_until_complete = False
-        self._status = Simulator_Status.INIT
         self._state_condition = Condition()
         self._n_loops = None
 
@@ -431,12 +425,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
-        self._status = Simulator_Status.IN_RUN
         self._data_writer.start_run()
 
         try:
             self.__run(run_time, sync_time)
-            self._status = Simulator_Status.FINISHED
             self._data_writer.finish_run()
         except Exception:
             self._data_writer.shut_down()
@@ -546,7 +538,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     (self._data_writer.get_max_run_time_steps()
                         < n_machine_time_steps or
                         n_machine_time_steps is None)):
-                self._status = Simulator_Status.FINISHED
                 raise ConfigurationException(
                     "The SDRAM required by one or more vertices is based on "
                     "the run time, so the run time is limited to "
@@ -585,13 +576,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_run(None, graph_changed, n_sync_steps)
             logger.info("Waiting for stop request")
             with self._state_condition:
-                while self._status != Simulator_Status.STOP_REQUESTED:
+                while self._data_writer.is_no_stop_requested():
                     self._state_condition.wait()
         else:
             logger.info("Running forever in steps of {}ms".format(
                 self._data_writer.get_max_run_time_steps()))
             self._n_loops = 1
-            while self._status != Simulator_Status.STOP_REQUESTED:
+            while self._data_writer.is_no_stop_requested():
                 logger.info("Run {}".format(self._n_loops))
                 self._do_run(
                     self._data_writer.get_max_run_time_steps(), graph_changed,
@@ -2673,8 +2664,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags:
 
         """
-        self._status = Simulator_Status.SHUTDOWN
-
         if clear_routing_tables is None:
             clear_routing_tables = get_config_bool(
                 "Machine", "clear_routing_tables")
@@ -2761,10 +2750,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool clear_tags: informs the tool chain if it should clear the
             tags off the machine at stop
         """
-        if self._status in [Simulator_Status.SHUTDOWN]:
-            raise ConfigurationException("Simulator has already been shutdown")
-        self._status = Simulator_Status.SHUTDOWN
-
         # Keep track of any exception to be re-raised
         exn = None
 
@@ -2829,10 +2814,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             This will need to be called from another thread as the infinite \
             run call is blocking.
         """
-        if self._status is not Simulator_Status.IN_RUN:
+        if not self._data_writer.is_running():
+            logger.warning(
+                "Request to stop_run ignored at currently not running "
+                "or already stopping")
             return
         with self._state_condition:
-            self._status = Simulator_Status.STOP_REQUESTED
+            self._data_writer.request_stop()
             self._state_condition.notify_all()
 
     def continue_simulation(self):
