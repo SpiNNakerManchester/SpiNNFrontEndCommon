@@ -2813,11 +2813,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         .. note::
             This will need to be called from another thread as the infinite \
             run call is blocking.
+
+        raises SpiNNUtilsException:
+            If the stop_run was not expected in the current state.
         """
-        if not self._data_writer.is_running():
+        if self._data_writer.is_stop_already_requested():
             logger.warning(
-                "Request to stop_run ignored at currently not running "
-                "or already stopping")
+                "Second Request to stop_run ignored")
             return
         with self._state_condition:
             self._data_writer.request_stop()
