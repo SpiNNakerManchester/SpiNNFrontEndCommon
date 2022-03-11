@@ -779,8 +779,8 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
     uint key = router_control->dump.key;
 
     // clear dump status and interrupt in router,
-    router_dump_status_t rtr_dstat = router_control->dump.status;
     router_dump_outputs_t rtr_dump_outputs = router_control->dump.outputs;
+    router_dump_status_t rtr_dstat = router_control->dump.status;
 
     // only reinject if configured
 
