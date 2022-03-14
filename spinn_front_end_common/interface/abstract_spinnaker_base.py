@@ -1499,7 +1499,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the executable_types data.
         """
-        with FecTimer(MAPPING, "Locate executable start type") as timer:
+        with FecTimer(MAPPING, "Locate executable start type"):
             self._data_writer.set_executable_types(
                 locate_executable_start_type())
 
