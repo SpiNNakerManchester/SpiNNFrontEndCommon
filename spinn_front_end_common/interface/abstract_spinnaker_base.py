@@ -2568,6 +2568,12 @@ class AbstractSpinnakerBase(ConfigHandler):
     def reset(self):
         """ Code that puts the simulation back at time zero
         """
+        if not self._data_writer.is_ran_last():
+            if not self._data_writer.is_ran_ever():
+                logger.error("Ignoring the reset before the run")
+            else:
+                logger.error("Ignoring the repeated reset call")
+            return
 
         logger.info("Resetting")
 
