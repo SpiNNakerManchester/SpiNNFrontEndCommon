@@ -34,6 +34,8 @@ from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
@@ -698,3 +700,27 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.add_database_socket_address("bacon")
         with self.assertRaises(TypeError):
             FecDataView.add_database_socket_addresses(12)
+
+    def test_notification_protocol(self):
+
+        class NotificationProtocol2(NotificationProtocol):
+
+            is_closed = False
+            def close(self):
+                # record that the method was closed
+                self.is_closed = True
+                # Now raise an exception
+                print(1/0)
+
+        writer = FecDataWriter.setup()
+        with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_notification_protocol()
+        protocol2 = NotificationProtocol2()
+        writer.set_notification_protocol(protocol2)
+        self.assertFalse(protocol2.is_closed)
+        self.assertEqual(protocol2, FecDataView.get_notification_protocol())
+        # closes previous notification_protocol
+        writer.set_notification_protocol(NotificationProtocol())
+        self.assertTrue(protocol2.is_closed)
+        with self.assertRaises(TypeError):
+            writer.set_notification_protocol([])
