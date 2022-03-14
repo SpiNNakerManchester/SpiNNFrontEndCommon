@@ -19,7 +19,6 @@ from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
 from .iobuf_extractor import IOBufExtractor
-from .globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -88,7 +87,7 @@ def emergency_recover_state_from_failure(vertex, placement):
     # pylint: disable=protected-access
     _emergency_state_check()
     target = ExecutableTargets()
-    path = get_simulator()._executable_finder.get_executable_path(
+    path = FecDataView.get_executable_finder().get_executable_path(
         vertex.get_binary_file_name())
     target.add_processor(
         path, placement.x, placement.y, placement.p,
