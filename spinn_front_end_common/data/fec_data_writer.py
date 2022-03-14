@@ -22,6 +22,8 @@ from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol)
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
@@ -461,7 +463,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :type executable_targets: ExecutableTargets
         """
         if not isinstance(executable_targets, ExecutableTargets):
-            raise TypeError("executable_targets must be a str or None")
+            raise TypeError("executable_targets must be a ExecutableTargets")
         self.__fec_data._executable_targets = executable_targets
 
     def set_dsg_targets(self, dsg_targets):
@@ -528,3 +530,15 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         except Exception as ex:  # pylint: disable=broad-except
             raise self.__monitor_map_error() from ex
         self.__fec_data._monitor_map = monitor_map
+
+    def set_notification_protocol(self, notification_protocol):
+        """
+        Sets the notification_protocol
+
+        :type notification_protocol: NotificationProtocol
+        """
+        self.__fec_data._clear_notification_protocol()
+        if not isinstance(notification_protocol, NotificationProtocol):
+            raise TypeError(
+                "notification_protocol must be a NotificationProtocol")
+        self.__fec_data._notification_protocol = notification_protocol

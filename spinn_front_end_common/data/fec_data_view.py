@@ -14,7 +14,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import errno
+import logging
 import os
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
@@ -24,6 +26,8 @@ from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class _FecDataModel(object):
@@ -67,6 +71,7 @@ class _FecDataModel(object):
         "_n_chips_in_graph",
         "_next_sync_signal",
         "_none_labelled_edge_count",
+        "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
         "_report_dir_path",
@@ -87,6 +92,7 @@ class _FecDataModel(object):
         # pylint: disable=protected-access
         obj = object.__new__(cls)
         cls.__singleton = obj
+        obj._notification_protocol = None
         obj._clear()
         return obj
 
@@ -130,10 +136,12 @@ class _FecDataModel(object):
         self._ipaddress = None
         self._n_chips_in_graph = None
         self._next_sync_signal = Signal.SYNC0
+        self._notification_protocol = None
         self._max_run_time_steps = None
         self._monitor_map = None
         self._system_multicast_router_timeout_keys = None
         self._soft_reset()
+        self._clear_notification_protocol()
 
     def _soft_reset(self):
         """
@@ -141,6 +149,16 @@ class _FecDataModel(object):
         """
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
+
+    def _clear_notification_protocol(self):
+        if self._notification_protocol:
+            try:
+                self._notification_protocol.close()
+            except Exception as ex:  # pylint: disable=broad-except
+                logger.exception(
+                    f"Error {ex} when closing the notification_protocol "
+                    f"ignored")
+        self._notification_protocol = None
 
 
 class FecDataView(PacmanDataView, SpiNNManDataView):
@@ -979,3 +997,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return
         for socket_address in database_socket_addresses:
             cls.add_database_socket_address(socket_address)
+
+    @classmethod
+    def get_notification_protocol(cls):
+        """
+        binaries to be executed.
+
+        :rtype:
+        ~spinn_front_end_common.utilities.notification_protocol.NotificationProtocol
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the notification_protocol is currently unavailable
+        """
+        if cls.__fec_data._notification_protocol is None:
+            raise cls._exception("notification_protocol")
+        return cls.__fec_data._notification_protocol

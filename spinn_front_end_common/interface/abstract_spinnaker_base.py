@@ -175,12 +175,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_run_until_complete",
 
         #
-        "_do_timings",
-
-        #
-        "_print_timings",
-
-        #
         "_raise_keyboard_interrupt",
 
         # The loop number for the this/next loop in the end_user run
@@ -202,10 +196,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Flag to say if current machine is a temporary max machine
         # the temp /max machine is held in the "machine" slot
-        "_max_machine",
-
-        # Notification interface if needed
-        "_notification_interface",
+        "_max_machine"
     ]
 
     def __init__(
@@ -264,7 +255,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.hard_reset()
-        self._notification_interface = None
         self._max_machine = False
         self._multicast_routes_loaded = False
         self.__close_allocation_controller()
@@ -2314,7 +2304,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the notification_interface data object
         """
         with FecTimer(RUN_LOOP, "Create notification protocol"):
-            self._notification_interface = create_notification_protocol()
+            self._data_writer.set_notification_protocol(
+                create_notification_protocol())
 
     def _execute_runner(self, n_sync_steps, run_time):
         """
@@ -2334,8 +2325,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
-            application_runner(
-                self._notification_interface, run_time, time_threshold)
+            application_runner(run_time, time_threshold)
 
     def _execute_extract_iobuff(self):
         """

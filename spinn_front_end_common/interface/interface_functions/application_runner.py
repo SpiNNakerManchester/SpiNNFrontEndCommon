@@ -28,21 +28,17 @@ SAFETY_FINISH_TIME = 0.1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def application_runner(
-        notification_interface,
-        runtime, time_threshold, run_until_complete=False):
+def application_runner(runtime, time_threshold, run_until_complete=False):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
-        :param NotificationProtocol notification_interface:
         :param int runtime:
         :param int time_threshold:
         :param bool run_until_complete:
         :raises ConfigurationException:
     """
     runner = _ApplicationRunner()
-    runner._run(
-        notification_interface, runtime, time_threshold, run_until_complete)
+    runner._run(runtime, time_threshold, run_until_complete)
 
 
 class _ApplicationRunner(object):
@@ -58,14 +54,9 @@ class _ApplicationRunner(object):
 
     # Wraps up as a PACMAN algorithm
     def _run(
-            self, notification_interface, runtime,
-            time_threshold, run_until_complete=False):
+            self, runtime, time_threshold, run_until_complete=False):
         """
-        :param NotificationProtocol notification_interface:
-        :param int app_id:
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
-        :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
         :param bool run_until_complete:
         :return: Number of synchronisation changes
@@ -79,6 +70,7 @@ class _ApplicationRunner(object):
         self._wait_for_start()
 
         buffer_manager = FecDataView.get_buffer_manager()
+        notification_interface = FecDataView.get_notification_protocol()
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
         buffer_manager.resume()
