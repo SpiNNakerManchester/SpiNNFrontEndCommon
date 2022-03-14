@@ -64,6 +64,8 @@ class TestSimulatorData(unittest.TestCase):
         app_id1 = writer.get_app_id()
         self.assertEqual(app_id1, writer.get_app_id())
         self.assertEqual(app_id1, writer.get_app_id())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertEqual(app_id1, writer.get_app_id())
 
@@ -76,6 +78,8 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
         self.assertTrue(FecDataView.has_buffer_manager())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
@@ -96,6 +100,8 @@ class TestSimulatorData(unittest.TestCase):
         writer.increment_current_run_timesteps(0)
         self.assertEqual(200, FecDataView.get_first_machine_time_step())
         self.assertEqual(200, FecDataView.get_current_run_timesteps())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertEqual(0, FecDataView.get_first_machine_time_step())
         self.assertEqual(0,  FecDataView.get_current_run_timesteps())
@@ -350,6 +356,8 @@ class TestSimulatorData(unittest.TestCase):
             system_multicast_router_timeout_keys,
             FecDataWriter.get_system_multicast_router_timeout_keys())
 
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_data_in_multicast_key_to_chip_map()
@@ -381,6 +389,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEquals(20, FecDataView.get_n_chips_needed())
 
         # reset does not remove required
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
@@ -394,6 +404,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEquals(25, FecDataView.get_n_chips_needed())
 
         # reset clears in graph
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertFalse(FecDataView.has_n_chips_needed())
 
@@ -409,6 +421,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEquals(40, FecDataView.get_n_chips_needed())
 
         # reset does not clear required
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertEquals(5, FecDataView.get_n_boards_required())
         self.assertFalse(FecDataView.has_n_chips_needed())
@@ -439,6 +453,8 @@ class TestSimulatorData(unittest.TestCase):
         writer.set_ipaddress("127.0.0.0")
         self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
         self.assertTrue(FecDataView.has_ipaddress())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertFalse(FecDataView.has_ipaddress())
         with self.assertRaises(DataNotYetAvialable):
@@ -476,6 +492,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
         self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertEqual(Signal.SYNC0, FecDataView.get_next_sync_signal())
         self.assertEqual(Signal.SYNC1, FecDataView.get_next_sync_signal())
@@ -534,6 +552,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIsNone(FecDataView.get_database_file_path())
         writer.set_database_file_path(os.getcwd())
         self.assertEqual(os.getcwd(), FecDataView.get_database_file_path())
+        writer.start_run()
+        writer.finish_run()
         writer.hard_reset()
         self.assertIsNone(FecDataView.get_database_file_path())
         writer.set_database_file_path(os.getcwd())
