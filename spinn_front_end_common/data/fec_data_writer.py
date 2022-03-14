@@ -542,3 +542,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError(
                 "notification_protocol must be a NotificationProtocol")
         self.__fec_data._notification_protocol = notification_protocol
+
+    def clear_notification_protocol(self):
+        """
+        Closes an existing notification_protocol and sets the value to None
+
+        If no notification_protocol exist this method silently returns.
+
+        If the close causes an Exception it is logged and ignored
+        """
+        self.__fec_data._clear_notification_protocol()

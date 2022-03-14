@@ -2674,13 +2674,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self.__close_allocation_controller()
 
-        try:
-            if self._notification_interface:
-                self._notification_interface.close()
-                self._notification_interface = None
-        except Exception:
-            logger.exception(
-                "Error when closing Notifications")
+        self._data_writer.clear_notification_protocol()
 
     def __clear(self, clear_tags, clear_routing_tables):
         """
