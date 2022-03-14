@@ -440,7 +440,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         testing method will not work outisde of mock
         """
-        if self.get_status() != Data_Status.MOCKED:
+        if not self._is_mocked():
             raise NotImplementedError("This call is only for testing")
         self.__fec_data._live_packet_recorder_params = params
 
