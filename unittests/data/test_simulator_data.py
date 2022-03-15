@@ -705,6 +705,7 @@ class TestSimulatorData(unittest.TestCase):
 
         class NotificationProtocol2(NotificationProtocol):
 
+
             is_closed = False
             def close(self):
                 # record that the method was closed
