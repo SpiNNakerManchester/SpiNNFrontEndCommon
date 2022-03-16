@@ -17,6 +17,7 @@ import errno
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
@@ -26,6 +27,8 @@ from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+# in code to avoid circular import
+# from spinn_front_end_common.utility_models import CommandSender
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -190,7 +193,30 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     __slots__ = []
 
+    @classmethod
+    @overrides(PacmanDataView.add_vertex)
+    def add_vertex(cls, vertex):
+        # UGLY but needed to avoid circular imports
+        from spinn_front_end_common.utility_models import CommandSender
+        if isinstance(vertex, CommandSender):
+            raise NotImplementedError(
+                "Please contact spinnker team as adding a CommandSender "
+                "currently disabled")
+        PacmanDataView.add_vertex(vertex)
+
+    @classmethod
+    @overrides(PacmanDataView.add_machine_vertex)
+    def add_machine_vertex(cls, vertex):
+        # UGLY but needed to avoid circular imports
+        from spinn_front_end_common.utility_models import CommandSender
+        if isinstance(vertex, CommandSender):
+            raise NotImplementedError(
+                "Please contact spinnker team as adding a CommandSender "
+                "currently disabled")
+        PacmanDataView.add_vertex(vertex)
+
     # current_run_timesteps and first_machine_time_step
+
     @classmethod
     def get_current_run_timesteps(cls):
         """
