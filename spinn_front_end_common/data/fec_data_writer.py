@@ -50,7 +50,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
     See UtilsDataWriter
 
-    This class is designed to only be used directly by AbstractSpinnakeBase
+    This class is designed to only be used directly by AbstractSpinnakerBase
     and within the None PyNN repositories unittests as all methods are
     available to subclasses
     """
