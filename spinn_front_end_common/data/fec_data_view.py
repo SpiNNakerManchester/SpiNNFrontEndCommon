@@ -598,7 +598,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtype: dict
         :raises SpiNNUtilsException:
-            If the system_multicast_router_timeout_keys is currently unavailable
+            If the system_multicast_router_timeout_keys is currently
+            unavailable
         """
         if cls.__fec_data._system_multicast_router_timeout_keys is None:
             raise cls._exception("system_multicast_router_timeout_keys")
