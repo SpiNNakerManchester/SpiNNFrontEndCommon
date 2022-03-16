@@ -592,6 +592,8 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gather_items()
         with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_n_gathers()
+        with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gathers()
         vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None, None)
         vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None, None)
@@ -611,6 +613,7 @@ class TestSimulatorData(unittest.TestCase):
                 raise Exception(f"Unexpected item {core} {vertex}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
+        self.assertEqual(2, FecDataView.get_n_gathers())
         with self.assertRaises(TypeError):
             writer.set_gatherer_map([])
         with self.assertRaises(TypeError):
@@ -638,6 +641,8 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_monitor_items()
         with self.assertRaises(DataNotYetAvialable):
+            FecDataView.get_n_monitors()
+        with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_monitors()
         vertex1 = ExtraMonitorSupportMachineVertex(None, None)
         vertex2 = ExtraMonitorSupportMachineVertex(None, None)
@@ -658,6 +663,7 @@ class TestSimulatorData(unittest.TestCase):
                 raise Exception(f"Unexpected item {core} {vertex}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
+        self.assertEqual(2, FecDataView.get_n_monitors())
         with self.assertRaises(KeyError):
             FecDataView.get_monitor_by_xy(1, 1)
         with self.assertRaises(TypeError):
@@ -735,4 +741,4 @@ class TestSimulatorData(unittest.TestCase):
         writer.add_vertex(app1)
         with self.assertRaises(NotImplementedError):
             writer.add_vertex((cs))
-        self.assertEqual(1, len(FecDataView.iterate_vertices()))
+        self.assertEqual(1, FecDataView.get_n_vertices())

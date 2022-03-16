@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2021-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,8 +48,11 @@ REPORTS_DIRNAME = "reports"
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
-    Writer class for the Fec Data
+    See UtilsDataWriter
 
+    This class is designed to only be used directly by AbstractSpinnakeBase
+    and within the None PyNN repositories unittests as all methods are
+    available to subclasses
     """
     __fec_data = _FecDataModel()
     __slots__ = []
@@ -65,10 +68,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter._setup)
     def _setup(self):
-        """
-        Puts all data back into the state expected at sim.setup time
-
-        """
         PacmanDataWriter._setup(self)
         self._spinnman_setup()
         self.__fec_data._clear()
@@ -78,9 +77,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__create_timestamp_directory()
         self.__create_run_dir_path()
 
-    def start_run(self):
-        PacmanDataWriter.start_run(self)
-
+    @overrides(PacmanDataWriter.finish_run)
     def finish_run(self):
         PacmanDataWriter.finish_run(self)
         self.__fec_data._run_number += 1
@@ -178,7 +175,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("max_run_time_steps should be an int")
         if max_run_time_steps <= 0:
             raise ConfigurationException(
-                f"max_run_time_steps {max_run_time_steps} must be possitive")
+                f"max_run_time_steps {max_run_time_steps} must be positive")
         self.__fec_data._max_run_time_steps = max_run_time_steps
 
     def set_up_timings(
@@ -376,6 +373,12 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._n_chips_required = n_chips_required
 
     def set_n_chips_in_graph(self, n_chips_in_graph):
+        """
+        Sets the number of chips needed by the graph
+
+        :param n_chips_in_graph:
+        :return:
+        """
         if not isinstance(n_chips_in_graph, int):
             raise TypeError("n_chips_in_graph must be an int (or None)")
         if n_chips_in_graph <= 0:
@@ -413,6 +416,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._java_caller = java_caller
 
     def reset_sync_signal(self):
+        """
+        Retruns the snyc signal to the default value
+
+        """
         self.__fec_data._next_sync_signal = Signal.SYNC0
 
     def set_executable_types(self, executable_types):
@@ -426,21 +433,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("executable_types must be a Dict")
         self.__fec_data._executable_types = executable_types
 
-    def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
-        """
-        Helper method to convert the call back into a class method
-
-        Use the same method on view is preferred
-        """
-        FecDataView.add_live_packet_gatherer_parameters(
-            live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids)
-
     def set_live_packet_gatherer_parameters(self, params):
         """
-        testing method will not work outisde of mock
+        testing method will not work outside of mock
         """
         if not self._is_mocked():
             raise NotImplementedError("This call is only for testing")
