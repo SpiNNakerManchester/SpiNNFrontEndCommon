@@ -1108,7 +1108,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         binaries to be executed.
 
-        :rtype: ~spinn_front_end_common.utilities.notification_protocol.NotificationProtocol
+        :rtype: ~spinn_front_end_common.utilities.notification_protocol\
+        .NotificationProtocol
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
         If the notification_protocol is currently unavailable
         """
