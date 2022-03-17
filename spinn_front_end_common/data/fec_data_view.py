@@ -1110,7 +1110,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtype: NotificationProtocol
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-        If the notification_protocol is currently unavailable
+            If the notification_protocol is currently unavailable
         """
         if cls.__fec_data._notification_protocol is None:
             raise cls._exception("notification_protocol")
