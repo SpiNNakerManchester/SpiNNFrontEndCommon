@@ -941,7 +941,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._get_known_machine(total_run_time)
             if self._machine is None:
                 self._execute_get_max_machine(total_run_time)
-            self._report_drift(start=True)
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -2960,6 +2959,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         provide_injectables(self)
 
         self._execute_sdram_usage_report_per_chip()
+        self._report_drift(start=True)
         if not self._has_ran or graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
