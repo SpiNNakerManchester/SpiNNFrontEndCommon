@@ -18,14 +18,17 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
+from spinn_utilities.config_holder import get_config_str
 
 # The fixed point position for drift readings
 DRIFT_FP = 1 << 17
 
 
-def drift_report(txrx, ethernet_only=True):
+def drift_report(txrx):
     """ A report on the clock drift as reported by each chip
     """
+    ethernet_only = get_config_str(
+            "Reports", "drift_report_ethernet_only")
     machine = txrx.get_machine_details()
     chips = machine.chips
     if ethernet_only:
