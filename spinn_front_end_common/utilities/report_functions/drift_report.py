@@ -14,14 +14,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import struct
+import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.log import FormatAdapter
 
 # The fixed point position for drift readings
 DRIFT_FP = 1 << 17
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def drift_report(txrx):
@@ -61,9 +65,17 @@ def drift_report(txrx):
                 __write_drift(txrx, eth_chip, writer)
                 progress.update()
             else:
+                last_drift = None
                 for chip in machine.get_chips_by_ethernet(
                         eth_chip.x, eth_chip.y):
-                    __write_drift(txrx, chip, writer)
+                    drift = __write_drift(txrx, chip, writer)
+                    if last_drift is None:
+                        last_drift = drift
+                    elif last_drift != drift:
+                        logger.warn("On board {}, chip {}, {} is not in sync"
+                                    " ({} vs {})".format(
+                                        eth_chip.ip_address, chip.x, chip.y,
+                                        drift, last_drift))
                     progress.update()
         writer.write("\n")
 
@@ -74,3 +86,4 @@ def __write_drift(txrx, chip, writer):
     drift = struct.unpack("<i", struct.pack("<I", drift))[0]
     drift = drift / (1 << 17)
     writer.write(f'"{drift}",')
+    return drift
