@@ -31,8 +31,10 @@ def drift_report(txrx):
             "Reports", "drift_report_ethernet_only")
     machine = txrx.get_machine_details()
     chips = machine.chips
+    n_chips = machine.n_chips
     if ethernet_only:
         chips = machine.ethernet_connected_chips
+        n_chips = len(chips)
 
     # create file path
     directory_name = os.path.join(
@@ -46,7 +48,7 @@ def drift_report(txrx):
             writer.write("\n")
 
     # create the progress bar for end users
-    progress = ProgressBar(len(chips), "Writing clock drift report")
+    progress = ProgressBar(n_chips, "Writing clock drift report")
 
     # iterate over ethernet chips and then the chips on that board
     with open(directory_name, "a") as writer:
