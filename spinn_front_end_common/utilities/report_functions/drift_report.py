@@ -48,7 +48,7 @@ def drift_report(txrx):
                 else:
                     for chip in machine.get_chips_by_ethernet(
                             eth_chip.x, eth_chip.y):
-                        writer.write(f'"{chip.x} {chip.y}"')
+                        writer.write(f'"{chip.x} {chip.y}",')
             writer.write("\n")
 
     # create the progress bar for end users
