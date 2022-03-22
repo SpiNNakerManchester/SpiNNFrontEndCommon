@@ -40,8 +40,8 @@ class ProvenanceReader(object):
 
     __slots__ = ["_provenance_data_path"]
 
-    @staticmethod
-    def get_last_run_database_path():
+    @classmethod
+    def get_last_run_database_path(cls):
         """ Get the path of the current provenance database of the last run
 
        .. warning::
@@ -369,6 +369,16 @@ class ProvenanceReader(object):
              FROM reports
              """
         return self.run_query(query, [])
+
+    def retreive_log_messages(self, min_level=0):
+        query = """
+            SELECT message
+            FROM log_provenance
+            WHERE level >= ?
+            """
+        messages = self.run_query(query, [min_level])
+        return list(map(lambda x: x[0], messages))
+
 
     @staticmethod
     def _demo():

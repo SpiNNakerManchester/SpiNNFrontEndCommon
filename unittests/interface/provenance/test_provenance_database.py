@@ -19,7 +19,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceWriter, ProvenanceReader)
+    LogStoreDB, ProvenanceWriter, ProvenanceReader)
 
 
 class TestProvenanceDatabase(unittest.TestCase):
@@ -177,16 +177,15 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_board_provenance(data)
 
     def test_log(self):
-        with ProvenanceWriter() as db:
-            db.store_log(30, "this is a warning")
-            db.store_log(10, "this is a debug")
-            db.store_log(20, "this is an info")
-        with ProvenanceWriter() as db:
-            self.assertListEqual(
-                ["this is a warning", "this is a debug", "this is an info"],
-                db.retreive_log_messages())
-            self.assertListEqual(
-                ["this is a warning", "this is an info"],
-                db.retreive_log_messages(20))
-            db.get_location()
-
+        db1 = LogStoreDB()
+        db2 = LogStoreDB()
+        db1.store_log(30, "this is a warning")
+        db2.store_log(10, "this is a debug")
+        db1.store_log(20, "this is an info")
+        self.assertListEqual(
+            ["this is a warning", "this is a debug", "this is an info"],
+            db2.retreive_log_messages())
+        self.assertListEqual(
+            ["this is a warning", "this is an info"],
+            db1.retreive_log_messages(20))
+        db2.get_location()

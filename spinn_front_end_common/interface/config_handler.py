@@ -25,7 +25,7 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -346,7 +346,7 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
-        logger.set_log_store(ProvenanceWriter())
+        logger.set_log_store(LogStoreDB())
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
