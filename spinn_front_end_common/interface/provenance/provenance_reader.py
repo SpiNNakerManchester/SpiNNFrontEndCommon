@@ -379,7 +379,6 @@ class ProvenanceReader(object):
         messages = self.run_query(query, [min_level])
         return list(map(lambda x: x[0], messages))
 
-
     @staticmethod
     def _demo():
         """ A demonstration of how to use this class.
