@@ -13,22 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-from spinn_utilities.log import FormatAdapter
+import sqlite3
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .provenance_writer import ProvenanceWriter
 from .provenance_reader import ProvenanceReader
-
-logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class LogStoreDB(LogStore):
 
     @overrides(LogStore.store_log)
     def store_log(self, level, message):
-        with ProvenanceWriter() as db:
-            db.store_log(level, message)
+        try:
+            with ProvenanceWriter() as db:
+                db.store_log(level, message)
+        except sqlite3.OperationalError as ex:
+            if "database is locked" in ex.args:
+                # Ok ignore this one
+                # DO NOT log this error here or you will loop forever!
+                return
+            # all others are bad
+            raise
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(self, min_level=0):

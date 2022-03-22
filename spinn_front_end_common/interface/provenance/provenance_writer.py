@@ -320,6 +320,12 @@ class ProvenanceWriter(SQLiteDB):
                       for ((x, y), ipaddress) in connections.items()))
 
     def store_log(self, level, message):
+        """
+        Stores log messages into the database
+
+        :param int level:
+        :param str message:
+        """
         with self.transaction() as cur:
             cur.execute(
                 """
@@ -328,3 +334,21 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """,
                 [level, message])
+
+    def _test_log_locked(self, text):
+        """
+        THIS IS A TESTING METHOD.
+
+        This will lock the database and then try to do a log
+        """
+        with self.transaction() as cur:
+            # lock the database
+            cur.execute(
+                """
+                INSERT INTO reports(message)
+                VALUES(?)
+                """, [text])
+            recorded = cur.lastrowid
+            # try logging and storing while locked.
+            logger.warning(text)
+

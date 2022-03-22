@@ -371,6 +371,12 @@ class ProvenanceReader(object):
         return self.run_query(query, [])
 
     def retreive_log_messages(self, min_level=0):
+        """
+        Retrieves all log messages at or above the min_level
+
+        :param int min_level:
+        :rtype: list(tuple(int, str))
+        """
         query = """
             SELECT message
             FROM log_provenance
