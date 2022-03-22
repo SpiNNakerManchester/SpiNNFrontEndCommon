@@ -1,4 +1,4 @@
--- Copyright (c) 2018-2019 The University of Manchester
+-- Copyright (c) 2018-2022 The University of Manchester
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -218,3 +218,31 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
     ip_addres STRING NOT NULL,
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL);
+
+---------------------------------------------------------------------
+-- A table to store log.info
+CREATE TABLE IF NOT EXISTS log_provenance(
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    level INTEGER NOT NULL,
+    message STRING NOT NULL);
+
+CREATE TABLE IF NOT EXISTS log_level_names(
+    level INTEGER PRIMARY KEY NOT NULL,
+    name STRING NOT NULL);
+
+INSERT OR IGNORE INTO log_level_names
+    (level, name)
+VALUES
+    (50, "CRITICAL"),
+    (40, "ERROR"),
+    (30, "WARNING"),
+    (20, "INFO"),
+    (10, "DEBUG");
+
+CREATE VIEW IF NOT EXISTS log_view AS
+    SELECT
+		name,
+        message
+    FROM log_provenance left join log_level_names
+    ON log_provenance.level = log_level_names.level
+    ORDER BY log_provenance.log_id;

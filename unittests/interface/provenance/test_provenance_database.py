@@ -175,3 +175,18 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
         with ProvenanceWriter() as db:
             db.insert_board_provenance(data)
+
+    def test_log(self):
+        with ProvenanceWriter() as db:
+            db.store_log(30, "this is a warning")
+            db.store_log(10, "this is a debug")
+            db.store_log(20, "this is an info")
+        with ProvenanceWriter() as db:
+            self.assertListEqual(
+                ["this is a warning", "this is a debug", "this is an info"],
+                db.retreive_log_messages())
+            self.assertListEqual(
+                ["this is a warning", "this is an info"],
+                db.retreive_log_messages(20))
+            db.get_location()
+

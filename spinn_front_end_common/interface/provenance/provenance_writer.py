@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@ import os
 import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.log_store import LogStore
+from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
@@ -29,7 +31,7 @@ _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
-class ProvenanceWriter(SQLiteDB):
+class ProvenanceWriter(SQLiteDB, LogStore):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -62,7 +64,7 @@ class ProvenanceWriter(SQLiteDB):
             database_file = os.path.join(
                 globals_variables.provenance_file_path(), PROVENANCE_DB)
         self._database_file = database_file
-        super().__init__(database_file, ddl_file=_DDL_FILE)
+        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
 
     def insert_version(self, description, the_value):
         """
@@ -318,3 +320,31 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
+
+    @overrides(LogStore.store_log)
+    def store_log(self, level, message):
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO log_provenance(
+                    level, message)
+                VALUES(?, ?)
+                """,
+                [level, message])
+
+    @overrides(LogStore.retreive_log_messages)
+    def retreive_log_messages(self, min_level=0):
+        results = []
+        query = """
+            SELECT message
+            FROM log_provenance
+            WHERE level >= ?
+            """
+        with self.transaction() as cur:
+            for row in cur.execute(query, [min_level]):
+                results.append(row[0].obj.decode("utf-8"))
+        return results
+
+    @overrides(LogStore.get_location)
+    def get_location(self):
+        return self._database_file

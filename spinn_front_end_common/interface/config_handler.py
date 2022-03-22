@@ -25,6 +25,7 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -303,11 +304,6 @@ class ConfigHandler(object):
         with open(time_of_run_file_name, "w") as f:
             f.writelines(self._this_run_time_string)
 
-        if get_config_bool("Logging", "warnings_at_end_to_file"):
-            log_report_file = os.path.join(
-                self._report_default_directory, WARNING_LOGS_FILENAME)
-            logger.set_report_File(log_report_file)
-
     @staticmethod
     def __make_timestamp():
         now = datetime.datetime.now()
@@ -349,6 +345,8 @@ class ConfigHandler(object):
             self._provenance_file_path, "system_provenance_data")
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
+
+        logger.set_log_store(ProvenanceWriter())
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(

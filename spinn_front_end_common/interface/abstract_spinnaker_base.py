@@ -470,13 +470,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._app_id = None
 
+        globals_variables.set_simulator(self)
+
         # folders
         self._set_up_output_folders(self._n_calls_to_run)
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
-        globals_variables.set_simulator(self)
 
         self._create_version_provenance()
 
