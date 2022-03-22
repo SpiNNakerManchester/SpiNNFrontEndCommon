@@ -478,7 +478,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
-
         self._create_version_provenance()
 
         self._last_except_hook = sys.excepthook

@@ -37,4 +37,3 @@ class LogStoreDB(LogStore):
     @overrides(LogStore.get_location)
     def get_location(self):
         return ProvenanceReader.get_last_run_database_path()
-

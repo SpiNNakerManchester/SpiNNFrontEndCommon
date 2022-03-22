@@ -320,6 +320,10 @@ class ConfigHandler(object):
         :rtype: None
         """
 
+        # TODO This is needed until FecDataView/Writer
+        # Stop accessing before self._provenance_file_path set
+        logger.set_log_store(None)
+
         # set up reports default folder
         self._set_up_report_specifics(n_calls_to_run)
 
@@ -346,6 +350,7 @@ class ConfigHandler(object):
         if not os.path.exists(self._system_provenance_file_path):
             self._make_dirs(self._system_provenance_file_path)
 
+        # TODO reorder create dirs, set_log, _remove_excess_folders
         logger.set_log_store(LogStoreDB())
 
     def __write_named_file(self, file_name):
