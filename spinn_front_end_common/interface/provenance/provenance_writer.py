@@ -271,12 +271,12 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?)
                 """, [message])
             recorded = cur.lastrowid
-            cutoff = get_config_int("Reports", "provenance_report_cutoff")
-            if cutoff is None or recorded < cutoff:
-                logger.warning(message)
-            elif recorded == cutoff:
-                logger.warning(f"Additional interesting provenace items in "
-                               f"{self._database_file}")
+        cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        if cutoff is None or recorded < cutoff:
+            logger.warning(message)
+        elif recorded == cutoff:
+            logger.warning(f"Additional interesting provenace items in "
+                           f"{self._database_file}")
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
