@@ -40,9 +40,8 @@ def insert_extra_monitor_vertices_to_graphs(
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     # pylint: disable=too-many-arguments, attribute-defined-outside-init
-    gatherers_by_chip = dict()
-    extra_monitors = list()
-    extra_monitors_by_chip = dict()
+    chip_to_gatherer_map = dict()
+    vertex_to_chip_map = dict()
     ethernet_chips = list(machine.ethernet_connected_chips)
     progress = ProgressBar(
         len(ethernet_chips), "Inserting extra monitors into graphs")
@@ -50,18 +49,17 @@ def insert_extra_monitor_vertices_to_graphs(
     for eth in progress.over(machine.ethernet_connected_chips):
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
-        gatherers_by_chip[eth.x, eth.y] = gatherer
+        chip_to_gatherer_map[eth.x, eth.y] = gatherer
         cores = __cores(machine, eth.x, eth.y)
         p = cores[placements.n_placements_on_chip(eth.x, eth.y) + 1]
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
-            extra_monitors.append(monitor)
-            extra_monitors_by_chip[x, y] = monitor
+            vertex_to_chip_map[x, y] = monitor
             cores = __cores(machine, x, y)
             p = cores[placements.n_placements_on_chip(x, y) + 1]
             placements.add_placement(Placement(monitor, x, y, p))
-    return gatherers_by_chip, extra_monitors, extra_monitors_by_chip
+    return chip_to_gatherer_map, vertex_to_chip_map
 
 
 def __cores(machine, x, y):

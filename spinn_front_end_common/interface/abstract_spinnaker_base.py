@@ -1470,7 +1470,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             # inserter checks for None app graph not an empty one
             (self._vertex_to_ethernet_connected_chip_mapping,
-             self._extra_monitor_vertices,
              self._extra_monitor_to_chip_mapping) = \
                 insert_extra_monitor_vertices_to_graphs(
                     self._machine, self._application_graph,
