@@ -56,6 +56,9 @@ endif
 # Note that the rules for c / h / dict are all the same - the whole set of 
 # sources is copied only once after which all the targets are now available
 define add_source_dir#(src_dir, modified_dir)
+$(2): $(1)
+	python -m spinn_utilities.make_tools.converter $(1) $(2)
+
 $(2)%.c: $(1)%.c
 	python -m spinn_utilities.make_tools.converter $(1) $(2)
 
@@ -100,6 +103,13 @@ CFLAGS += $(foreach d, $(sort $(SOURCE_DIRS)), -I $(call modified_dir,$(d)))
 
 # default rule based on list ALL_TARGETS so more main targets can be added later
 ALL_TARGETS += $(APP_OUTPUT_DIR)$(APP).aplx
+
+$(foreach d, $(sort $(SOURCE_DIRS)), \
+    $(eval ALL_MODIFIES_DIRS += $(call modified_dir, $(d))))
+
+ALL_TARGETS += $(APP_OUTPUT_DIR)$(APP).aplx
+all: $(ALL_MODIFIES_DIRS) $(ALL_TARGETS)
+
 all: $(ALL_TARGETS)
 
 # Convert the objs into the correct format and set up the build rules
