@@ -13,9 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from enum import Enum
-
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from enum import IntEnum
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
@@ -27,12 +25,14 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
-    ProvidesProvenanceDataFromMachineImpl)
+    ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType)
 
 
 class CommandSenderMachineVertex(
@@ -43,7 +43,7 @@ class CommandSenderMachineVertex(
         response to particular events into a SpiNNaker application.
     """
     # Regions for populations
-    class DATA_REGIONS(Enum):
+    class DATA_REGIONS(IntEnum):
         SYSTEM_REGION = 0
         COMMANDS_WITH_ARBITRARY_TIMES = 1
         COMMANDS_AT_START_RESUME = 2
@@ -138,12 +138,12 @@ class CommandSenderMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self.DATA_REGIONS.PROVENANCE_REGION.value
+        return self.DATA_REGIONS.PROVENANCE_REGION
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
     def _n_additional_data_items(self):
-        return 0
+        return 1
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -153,29 +153,22 @@ class CommandSenderMachineVertex(
             self.get_n_command_bytes(self._commands_at_start_resume) +
             self.get_n_command_bytes(self._commands_at_pause_stop) +
             SYSTEM_BYTES_REQUIREMENT +
-            self.get_provenance_data_size(0))
+            self.get_provenance_data_size(self._n_additional_data_items))
 
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
-    @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
-        "routing_infos": "MemoryRoutingInfos"})
+    @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_time_step", "time_scale_factor", "routing_infos"})
+        additional_arguments={"routing_infos"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            routing_infos):
+            self, spec, placement, routing_infos):
         """
-        :param int machine_time_step:
-        :param int time_scale_factor:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing infos
         """
-        # pylint: disable=arguments-differ
+        # pylint: disable=too-many-arguments, arguments-differ
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 self, self._keys_to_partition_id[mc_key])
@@ -185,7 +178,6 @@ class CommandSenderMachineVertex(
                         self._label, mc_key,
                         self._keys_to_partition_id[mc_key]))
 
-        # pylint: disable=too-many-arguments, arguments-differ
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
             self.get_n_command_bytes(self._commands_at_start_resume)
@@ -199,29 +191,21 @@ class CommandSenderMachineVertex(
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
-        spec.switch_write_focus(
-            self.DATA_REGIONS.SYSTEM_REGION.value)
+        spec.switch_write_focus(self.DATA_REGIONS.SYSTEM_REGION)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
-            time_scale_factor))
-
-        # write commands
-        spec.switch_write_focus(
-            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value)
+            self.get_binary_file_name()))
 
         # write commands to spec for timed commands
+        spec.switch_write_focus(
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES)
         self._write_timed_commands(self._timed_commands, spec)
 
         # write commands fired off during a start or resume
-        spec.switch_write_focus(
-            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value)
-
+        spec.switch_write_focus(self.DATA_REGIONS.COMMANDS_AT_START_RESUME)
         self._write_basic_commands(self._commands_at_start_resume, spec)
 
         # write commands fired off during a pause or end
-        spec.switch_write_focus(
-            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value)
-
+        spec.switch_write_focus(self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE)
         self._write_basic_commands(self._commands_at_pause_stop, spec)
 
         # End-of-Spec:
@@ -237,7 +221,7 @@ class CommandSenderMachineVertex(
 
         # write commands to region
         for command in commands:
-            self._write_command(command, spec)
+            self.__write_command(command, spec)
 
     def _write_timed_commands(self, timed_commands, spec):
         """
@@ -249,10 +233,10 @@ class CommandSenderMachineVertex(
         # write commands
         for command in timed_commands:
             spec.write_value(command.time)
-            self._write_command(command, spec)
+            self.__write_command(command, spec)
 
     @classmethod
-    def _write_command(cls, command, spec):
+    def __write_command(cls, command, spec):
         """
         :param MultiCastCommand command:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -286,19 +270,19 @@ class CommandSenderMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.SYSTEM_REGION.value,
+            region=self.DATA_REGIONS.SYSTEM_REGION,
             size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES.value,
+            region=self.DATA_REGIONS.COMMANDS_WITH_ARBITRARY_TIMES,
             size=time_command_size, label='commands with arbitrary times')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_START_RESUME,
             size=start_command_size, label='commands with start resume times')
 
         spec.reserve_memory_region(
-            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE.value,
+            region=self.DATA_REGIONS.COMMANDS_AT_STOP_PAUSE,
             size=end_command_size, label='commands with stop pause times')
 
         self.reserve_provenance_data_region(spec)
@@ -377,3 +361,11 @@ class CommandSenderMachineVertex(
             tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
         """
         return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
+
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
+        # pylint: disable=unused-argument
+        n_commands_sent, = provenance_data
+        with ProvenanceWriter() as db:
+            db.insert_core(x, y, p, "Sent_Commands", n_commands_sent)

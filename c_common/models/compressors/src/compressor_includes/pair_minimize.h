@@ -146,6 +146,7 @@ static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
 
 //! \brief Implementation of insertion sort for routes based on route
 //!     information
+//! \param[in] table_size: The size of the routing table
 static void sort_table(uint32_t table_size) {
     uint32_t i, j;
 
@@ -183,6 +184,7 @@ static void sort_routes(void) {
 
 //! \brief Computes route histogram
 //! \param[in] index: The index of the cell to update
+//! \return Whether the update succeeded
 static inline bool update_frequency(int index) {
     uint32_t route = routing_table_get_entry(index)->route;
     for (uint i = 0; i < routes_count; i++) {
@@ -210,6 +212,7 @@ static inline bool update_frequency(int index) {
 //! \param[out] failed_by_malloc: Never changed but required by api
 //! \param[in] stop_compressing: Variable saying if the compressor should stop
 //!    and return false; _set by interrupt_ DURING the run of this method!
+//! \return Whether minimisation succeeded
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);

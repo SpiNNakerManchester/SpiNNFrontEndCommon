@@ -22,8 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.executor.injection_decorator import (
-    inject_items, supports_injection, inject)
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
@@ -40,14 +39,16 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import (
         get_n_bytes)
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.globals_variables import (
+    machine_time_step, time_scale_factor)
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -59,8 +60,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
-from spinn_front_end_common.utilities.utility_objs import (
-    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -72,7 +72,6 @@ _TWO_SHORTS = struct.Struct("<HH")
 _MAX_OFFSET_DENOMINATOR = 10
 
 
-@supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
@@ -210,6 +209,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Work out if buffers are being sent
         self._send_buffer = None
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
         self._send_buffer_partition_id = send_buffer_partition_id
         self._send_buffer_size = 0
         n_buffer_times = 0
@@ -300,10 +301,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @classmethod
     def _recording_sdram_per_timestep(
-            cls, machine_time_step, is_recording, receive_rate,
-            send_buffer_times, n_keys):
+            cls, is_recording, receive_rate, send_buffer_times, n_keys):
         """
-        :param int machine_time_step:
         :param bool is_recording:
         :param float receive_rate:
         :param send_buffer_times:
@@ -325,7 +324,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Recording live data, use the user provided receive rate
         keys_per_timestep = math.ceil(
             receive_rate / (
-                machine_time_step * MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
+                machine_time_step() * MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
         header_size = EIEIODataHeader.get_header_size(
             EIEIOType.KEY_32_BIT, is_payload_base=True)
         # Maximum size is one packet per key
@@ -388,10 +387,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        sim = globals_variables.get_simulator()
         sdram = self.get_sdram_usage(
             self._send_buffer_times, self._is_recording,
-            sim.machine_time_step, self._receive_rate, self._n_keys)
+            self._receive_rate, self._n_keys)
 
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -402,15 +400,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @classmethod
     def get_sdram_usage(
-            cls, send_buffer_times, recording_enabled, machine_time_step,
-            receive_rate, n_keys):
+            cls, send_buffer_times, recording_enabled, receive_rate, n_keys):
         """
         :param send_buffer_times: When events will be sent
         :type send_buffer_times:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(numpy.int32)) or None
         :param bool recording_enabled: Whether recording is done
-        :param int machine_time_step: What the machine timestep is
         :param float receive_rate: What the expected message receive rate is
         :param int n_keys: How many keys are being sent
         :rtype: ~pacman.model.resources.VariableSDRAM
@@ -424,8 +420,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         per_timestep = (
             cls._send_buffer_sdram_per_timestep(send_buffer_times, n_keys) +
             cls._recording_sdram_per_timestep(
-                machine_time_step, recording_enabled, receive_rate,
-                send_buffer_times, n_keys))
+                recording_enabled, receive_rate, send_buffer_times, n_keys))
         static_usage += per_timestep
         return VariableSDRAM(static_usage, per_timestep)
 
@@ -491,6 +486,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_machine_time_step:
         :param int run_until_timesteps:
         """
+        if (self._first_machine_time_step == first_machine_time_step and
+                self._run_until_timesteps == run_until_timesteps):
+            return
+        self._first_machine_time_step = first_machine_time_step
+        self._run_until_timesteps = run_until_timesteps
         key_to_send = self._virtual_key
         if self._virtual_key is None:
             key_to_send = 0
@@ -623,12 +623,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(
-            self, spec, machine_time_step, time_scale_factor):
+    def _write_configuration(self, spec):
         """
         :param ~.DataSpecificationGenerator spec:
-        :param int machine_time_step:
-        :param int time_scale_factor:
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION)
 
@@ -678,7 +675,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # write timer offset in microseconds
         max_offset = ((
-            machine_time_step * time_scale_factor) // (
+            machine_time_step() * time_scale_factor()) // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *
@@ -687,37 +684,25 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @inject_items({
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor",
-        "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfos",
-        "first_machine_time_step": "FirstMachineTimeStep",
-        "data_n_time_steps": "DataNTimeSteps",
-        "run_until_timesteps": "RunUntilTimeSteps"
+        "machine_graph": "MachineGraph",
+        "routing_info": "RoutingInfos",
+        "data_n_time_steps": "DataNTimeSteps"
     })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "machine_graph",
-            "routing_info", "first_machine_time_step",
-            "data_n_time_steps", "run_until_timesteps"
+            "machine_graph", "routing_info", "data_n_time_steps"
         })
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, machine_graph, routing_info,
-            first_machine_time_step, data_n_time_steps, run_until_timesteps):
+            machine_graph, routing_info, data_n_time_steps):
         """
-        :param int machine_time_step:
-        :param int time_scale_factor:
         :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        :param int first_machine_time_step:
         :param int data_n_time_steps:
-        :param int run_until_timesteps:
         """
         # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
-        self._fill_send_buffer(first_machine_time_step, run_until_timesteps)
 
         # Reserve regions
         self._reserve_regions(spec, data_n_time_steps)
@@ -725,22 +710,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
-            self.get_binary_file_name(), machine_time_step,
-            time_scale_factor))
+            self.get_binary_file_name()))
 
         # Write the additional recording information
         spec.switch_write_focus(self._REGIONS.RECORDING)
         recording_size = 0
         if self._is_recording:
             per_timestep = self._recording_sdram_per_timestep(
-                machine_time_step, self._is_recording, self._receive_rate,
+                self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
             recording_size = per_timestep * data_n_time_steps
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
-        self._write_configuration(
-            spec, machine_time_step, time_scale_factor)
+        self._write_configuration(spec)
 
         # End spec
         spec.end_specification()
@@ -780,12 +763,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
-    @inject("FirstMachineTimeStep")
     @inject_items({
+        "first_machine_time_step": "FirstMachineTimeStep",
         "run_until_timesteps": "RunUntilTimeSteps"
     })
     def update_buffer(
-            self, first_machine_time_step, run_until_timesteps):
+            self, run_until_timesteps, first_machine_time_step):
         """ Updates the buffers on specification of the first machine timestep.
             Note: This is called by injection.
 
@@ -794,9 +777,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int run_until_timesteps:
             The last machine time step in the simulation
         """
-        if self._virtual_key is not None:
-            self._fill_send_buffer(
-                first_machine_time_step, run_until_timesteps)
+        self._fill_send_buffer(
+            first_machine_time_step, run_until_timesteps)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -814,7 +796,25 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         :rtype: dict(int,BufferedSendingRegion)
         """
+        self.update_buffer()  # pylint: disable=E1120
         return self._send_buffers
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
+    def get_regions(self):
+        # Avoid update_buffer as not needed and called during reset
+        return self._send_buffers.keys()
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
+    def rewind(self, region):
+        # reset theses so fill send buffer will run when send_buffers called
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
+        # Avoid update_buffer as not needed and called during reset
+        self._send_buffers[region].rewind()
+
+    @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
+    def buffering_input(self):
+        return self._send_buffers is not None
 
     @send_buffers.setter
     def send_buffers(self, value):
@@ -830,60 +830,44 @@ class ReverseIPTagMulticastSourceMachineVertex(
             return self._send_buffer_size
         return 0
 
-    @overrides(ProvidesProvenanceDataFromMachineImpl.
-               get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
-        provenance_data = self._read_provenance_data(transceiver, placement)
-        provenance_items = self._read_basic_provenance_items(
-            provenance_data, placement)
-        provenance_data = self._get_remaining_provenance_data_items(
-            provenance_data)
-        _, _, _, _, names = self._get_placement_details(placement)
+    @overrides(
+        ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
+    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
+        n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
 
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "received_sdp_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS],
-            report=(
-                provenance_data[
-                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS] == 0 and
-                self._send_buffer_times is None),
-            message=(
-                "No SDP packets were received by {}.  If you expected packets"
-                " to be injected, this could indicate an error".format(
-                    self._label))))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "send_multicast_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS],
-            report=provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS] == 0,
-            message=(
-                "No multicast packets were sent by {}.  If you expected"
-                " packets to be sent this could indicate an error".format(
-                    self._label))))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "incorrect_keys"),
-            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS],
-            report=provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS] > 0,
-            message=(
-                "Keys were received by {} that did not match the key {} and"
-                " mask {}".format(
-                    self._label, self._virtual_key, self._mask))))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "incorrect_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS],
-            report=provenance_data[
-                self._PROVENANCE_ITEMS.INCORRECT_PACKETS] > 0,
-            message=(
-                "SDP Packets were received by {} that were not correct".format(
-                    self._label))))
-        provenance_items.append(ProvenanceDataItem(
-            self._add_name(names, "late_packets"),
-            provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS],
-            report=provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS] > 0,
-            message=(
-                "SDP Packets were received by {} that were too late to be"
-                " transmitted in the simulation".format(self._label))))
+        with ProvenanceWriter() as db:
+            db.insert_core(x, y, p, "Received_sdp_packets", n_rcv)
+            if n_rcv == 0 and self._send_buffer_times is None:
+                db.insert_report(
+                    f"No SDP packets were received by {label}. "
+                    f"If you expected packets to be injected, "
+                    f"this could indicate an error")
 
-        return provenance_items
+            db.insert_core(
+                x, y, p, "Send_multicast_packets", n_snt)
+            if n_snt == 0:
+                db.insert_report(
+                    f"No multicast packets were sent by {label}. "
+                    f"If you expected packets to be sent "
+                    f"this could indicate an error")
+            db.insert_core(
+                x, y, p, "Incorrect_keys", bad_key)
+            if bad_key > 0:
+                db.insert_report(
+                    f"Keys were received by {label} that did not match the "
+                    f"key {self._virtual_key} and mask {self._mask}")
+
+            db.insert_core(x, y, p, "Incorrect_packets", bad_pkt)
+            if bad_pkt > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} "
+                    f"that were not correct")
+
+            db.insert_core(x, y, p, "Late_packets", late)
+            if late > 0:
+                db.insert_report(
+                    f"SDP Packets were received by {label} that were too "
+                    f"late to be transmitted in the simulation")
 
     def __repr__(self):
         return self._label

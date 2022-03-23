@@ -17,8 +17,10 @@ import unittest
 import socket
 from threading import Thread
 import json
+from spinn_utilities.config_holder import set_config
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    SpallocMaxMachineGenerator)
+    spalloc_max_machine_generator)
 
 
 class _MockSpallocServer(Thread):
@@ -55,12 +57,16 @@ class _MockSpallocServer(Thread):
 
 class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
 
+    def setUp(self):
+        unittest_setup()
+
     def test_single_board(self):
         server = _MockSpallocServer(
             "test", 1, 1, [(0, 0, 1), (0, 0, 2)], [], ["default"])
         server.start()
-        generator = SpallocMaxMachineGenerator()
-        machine = generator("localhost", server.port)
+        set_config("Machine", "spalloc_port", server.port)
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, 7)
         self.assertEqual(machine.max_chip_y, 7)
 
@@ -68,8 +74,9 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server = _MockSpallocServer(
             "test", 1, 1, [], [], ["default"])
         server.start()
-        generator = SpallocMaxMachineGenerator()
-        machine = generator("localhost", server.port)
+        set_config("Machine", "spalloc_port", server.port)
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, 11)
         self.assertEqual(machine.max_chip_y, 11)
 
@@ -77,8 +84,10 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server = _MockSpallocServer(
             "test", 3, 2, [], [], ["test"])
         server.start()
-        generator = SpallocMaxMachineGenerator()
-        machine = generator("localhost", server.port, "test")
+        set_config("Machine", "spalloc_port", server.port)
+        set_config("Machine", "spalloc_machine", "test")
+        set_config("Machine", "spalloc_server", "localhost")
+        machine = spalloc_max_machine_generator()
         self.assertEqual(machine.max_chip_x, (12 * 3) - 1)
         self.assertEqual(machine.max_chip_y, (12 * 2) - 1)
 

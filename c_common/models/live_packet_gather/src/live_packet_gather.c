@@ -33,12 +33,25 @@
 #include <eieio.h>
 
 //! Provenance data store
-struct provenance_data_struct {
+typedef struct lpg_provenance_data_t {
     //! Count of overflows when no payload was sent
     uint32_t number_of_overflows_no_payload;
     //! Count of overflows when a payload was sent
     uint32_t number_of_overflows_with_payload;
-};
+    //! Number of events gathered and recorded
+    uint32_t number_of_gathered_events;
+    //! Number of messages sent to host
+    uint32_t number_of_sent_messages;
+} lpg_provenance_data_t;
+
+typedef struct key_translation_entry {
+    // The key to check against after masking
+    uint32_t key;
+    // The mask to apply to the key
+    uint32_t mask;
+    // The atom identifier to add to the computed index
+    uint32_t lo_atom;
+} key_translation_entry;
 
 //! \brief Definitions of each element in the configuration.
 //!
@@ -68,6 +81,10 @@ struct lpg_config {
     uint32_t sdp_dest;
     //! Maximum number of packets to send per timestep, or 0 for "send them all"
     uint32_t packets_per_timestamp;
+    //! The number of entries in the translation table
+    uint32_t n_translation_entries;
+    //! Translation table
+    key_translation_entry translation_table[];
 };
 
 //! values for the priority for each callback
@@ -142,10 +159,10 @@ static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! The provenance information that we are collecting.
-static struct provenance_data_struct provenance_data;
+static lpg_provenance_data_t provenance_data;
 
 //! The configuration data of the application.
-static struct lpg_config config;
+static struct lpg_config *config;
 
 //! How to test if a bit flag is set
 #define FLAG_IS_SET(flags, bit)		(((flags) & (bit)) != 0)
@@ -164,6 +181,45 @@ static struct lpg_config config;
 
 //! The size of the circular buffers.
 #define BUFFER_CAPACITY 256
+
+//! \brief find a key translation entry
+static inline bool find_translation_entry(uint32_t key, uint32_t *index) {
+    if (!config->n_translation_entries) {
+        return false;
+    }
+
+    uint32_t imin = 0;
+    uint32_t imax = config->n_translation_entries;
+
+    while (imin < imax) {
+        uint32_t imid = (imax + imin) >> 1;
+        key_translation_entry entry = config->translation_table[imid];
+        if ((key & entry.mask) == entry.key) {
+            *index = imid;
+            return true;
+        } else if (entry.key < key) {
+
+            // Entry must be in upper part of the table
+            imin = imid + 1;
+        } else {
+            // Entry must be in lower part of the table
+            imax = imid;
+        }
+    }
+    return false;
+}
+
+static inline uint32_t translated_key(uint32_t key) {
+    uint32_t index = 0;
+
+    // If there isn't an entry, don't translated
+    if (!find_translation_entry(key, &index)) {
+        return key;
+    }
+
+    key_translation_entry entry = config->translation_table[index];
+    return (key & ~entry.mask) + entry.lo_atom;
+}
 
 //! \brief Because _WHY OH WHY_ would you use aligned memory? At least with this
 //! we don't get data aborts.
@@ -192,7 +248,7 @@ static inline void write_short(void *base, uint32_t index, uint32_t value) {
 static inline uint8_t get_event_count(void) {
     uint8_t event_count = buffer_index;
     // If there are payloads, it takes two buffer values to encode them
-    if (HAVE_PAYLOAD(config.packet_type)) {
+    if (HAVE_PAYLOAD(config->packet_type)) {
         event_count >>= 1;
     }
     return event_count;
@@ -203,8 +259,8 @@ static inline uint8_t get_event_count(void) {
 static void flush_events(void) {
     // Send the event message only if there is data
     if ((buffer_index > 0) && (
-            (config.packets_per_timestamp == 0) ||
-            (packets_sent < config.packets_per_timestamp))) {
+            (config->packets_per_timestamp == 0) ||
+            (packets_sent < config->packets_per_timestamp))) {
         // Get the event count depending on if there is a payload or not
         uint8_t event_count = get_event_count();
 
@@ -216,8 +272,8 @@ static void flush_events(void) {
                 event_count * event_size;
 
         // Add the timestamp if required
-        if (sdp_msg_aer_payload_prefix && config.payload_timestamp) {
-            if (!HAVE_WIDE_LOAD(config.packet_type)) {
+        if (sdp_msg_aer_payload_prefix && config->payload_timestamp) {
+            if (!HAVE_WIDE_LOAD(config->packet_type)) {
                 write_short(sdp_msg_aer_payload_prefix, 0, time);
             } else {
                 write_word(sdp_msg_aer_payload_prefix, 0, time);
@@ -226,6 +282,7 @@ static void flush_events(void) {
 
         spin1_send_sdp_msg(&g_event_message, 1);
         packets_sent++;
+        provenance_data.number_of_sent_messages++;
     }
 
     // reset counter
@@ -236,7 +293,7 @@ static void flush_events(void) {
 //! \param[out] provenance_region_address:
 //!     Where the provenance data will be written
 static void record_provenance_data(address_t provenance_region_address) {
-    struct provenance_data_struct *sdram = (void *) provenance_region_address;
+    lpg_provenance_data_t *sdram = (void *) provenance_region_address;
     // Copy provenance data into SDRAM region
     *sdram = provenance_data;
 }
@@ -288,15 +345,15 @@ static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
     // process the received spike
-    if (!HAVE_WIDE_LOAD(config.packet_type)) {
+    if (!HAVE_WIDE_LOAD(config->packet_type)) {
         // 16 bit packet
         write_short(sdp_msg_aer_data, buffer_index++,
-                key >> config.key_right_shift);
+                key >> config->key_right_shift);
 
         // if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        if (HAVE_PAYLOAD(config->packet_type) && !config->payload_timestamp) {
             write_short(sdp_msg_aer_data, buffer_index++, 0);
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config->packet_type) && config->payload_timestamp) {
             write_short(sdp_msg_aer_data, buffer_index++, time);
         }
     } else {
@@ -304,12 +361,13 @@ static void process_incoming_event(uint key) {
         write_word(sdp_msg_aer_data, buffer_index++, key);
 
         // if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        if (HAVE_PAYLOAD(config->packet_type) && !config->payload_timestamp) {
             write_word(sdp_msg_aer_data, buffer_index++, 0);
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config->packet_type) && config->payload_timestamp) {
             write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
+    provenance_data.number_of_gathered_events++;
 }
 
 //! \brief Processes an incoming multicast packet with payload.
@@ -319,16 +377,16 @@ static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
-    if (!HAVE_WIDE_LOAD(config.packet_type)) {
+    if (!HAVE_WIDE_LOAD(config->packet_type)) {
         //16 bit packet
         write_short(sdp_msg_aer_data, buffer_index++,
-                key >> config.key_right_shift);
+                key >> config->key_right_shift);
 
         //if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        if (HAVE_PAYLOAD(config->packet_type) && !config->payload_timestamp) {
             write_short(sdp_msg_aer_data, buffer_index++,
-                    payload >> config.payload_right_shift);
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+                    payload >> config->payload_right_shift);
+        } else if (HAVE_PAYLOAD(config->packet_type) && config->payload_timestamp) {
             write_short(sdp_msg_aer_data, buffer_index++, time);
         }
     } else {
@@ -336,12 +394,13 @@ static void process_incoming_event_payload(uint key, uint payload) {
         write_word(sdp_msg_aer_data, buffer_index++, key);
 
         //if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        if (HAVE_PAYLOAD(config->packet_type) && !config->payload_timestamp) {
             write_word(sdp_msg_aer_data, buffer_index++, payload);
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config->packet_type) && config->payload_timestamp) {
             write_word(sdp_msg_aer_data, buffer_index++, time);
         }
     }
+    provenance_data.number_of_gathered_events++;
 }
 
 //! \brief Handler for processing incoming packets that have been locally queued
@@ -365,9 +424,11 @@ static void incoming_event_process_callback(
         uint32_t key, payload;
 
         if (circular_buffer_get_next(without_payload_buffer, &key)) {
+            key = translated_key(key);
             process_incoming_event(key);
         } else if (circular_buffer_get_next(with_payload_buffer, &key)
                 && circular_buffer_get_next(with_payload_buffer, &payload)) {
+            key = translated_key(key);
             process_incoming_event_payload(key, payload);
         } else {
             processing_events = false;
@@ -425,41 +486,37 @@ static void incoming_event_payload_callback(uint key, uint payload) {
 //! Note that it's faster to copy by field than to use spin1_memcpy()!
 //!
 //! \param[in] sdram_config: Where to copy from
-static void read_parameters(struct lpg_config *sdram_config) {
-    // P bit
-    config.apply_prefix = sdram_config->apply_prefix;
-    // Prefix data
-    config.prefix = sdram_config->prefix;
-    // F bit (for the receiver)
-    config.prefix_type = sdram_config->prefix_type;
-    // Type bits
-    config.packet_type = sdram_config->packet_type;
-    // Right packet shift (for the sender)
-    config.key_right_shift = sdram_config->key_right_shift;
-    // T bit
-    config.payload_timestamp = sdram_config->payload_timestamp;
-    // D bit
-    config.payload_apply_prefix = sdram_config->payload_apply_prefix;
-    // Payload prefix data (for the receiver)
-    config.payload_prefix = sdram_config->payload_prefix;
-    // Right payload shift (for the sender)
-    config.payload_right_shift = sdram_config->payload_right_shift;
-    config.sdp_tag = sdram_config->sdp_tag;
-    config.sdp_dest = sdram_config->sdp_dest;
-    config.packets_per_timestamp = sdram_config->packets_per_timestamp;
+static bool read_parameters(struct lpg_config *sdram_config) {
+    uint32_t n_bytes = sizeof(struct lpg_config) +
+            (sdram_config->n_translation_entries * sizeof(key_translation_entry));
+    config = spin1_malloc(n_bytes);
+    if (config == NULL) {
+        log_error("Could not allocate space for config!");
+        return false;
 
-    log_info("apply_prefix: %d", config.apply_prefix);
-    log_info("prefix: %08x", config.prefix);
-    log_info("prefix_type: %d", config.prefix_type);
-    log_info("packet_type: %d", config.packet_type);
-    log_info("key_right_shift: %d", config.key_right_shift);
-    log_info("payload_timestamp: %d", config.payload_timestamp);
-    log_info("payload_apply_prefix: %d", config.payload_apply_prefix);
-    log_info("payload_prefix: %08x", config.payload_prefix);
-    log_info("payload_right_shift: %d", config.payload_right_shift);
-    log_info("sdp_tag: %d", config.sdp_tag);
-    log_info("sdp_dest: 0x%04x", config.sdp_dest);
-    log_info("packets_per_timestamp: %d", config.packets_per_timestamp);
+    }
+    spin1_memcpy(config, sdram_config, n_bytes);
+
+    log_info("apply_prefix: %d", config->apply_prefix);
+    log_info("prefix: %08x", config->prefix);
+    log_info("prefix_type: %d", config->prefix_type);
+    log_info("packet_type: %d", config->packet_type);
+    log_info("key_right_shift: %d", config->key_right_shift);
+    log_info("payload_timestamp: %d", config->payload_timestamp);
+    log_info("payload_apply_prefix: %d", config->payload_apply_prefix);
+    log_info("payload_prefix: %08x", config->payload_prefix);
+    log_info("payload_right_shift: %d", config->payload_right_shift);
+    log_info("sdp_tag: %d", config->sdp_tag);
+    log_info("sdp_dest: 0x%04x", config->sdp_dest);
+    log_info("packets_per_timestamp: %d", config->packets_per_timestamp);
+    log_info("n_translation_entries: %d", config->n_translation_entries);
+    for (uint32_t i = 0; i < config->n_translation_entries; i++) {
+        key_translation_entry *entry = &config->translation_table[i];
+        log_info("key = 0x%08x, mask = 0x%08x, lo_atom = 0x%08x",
+                entry->key, entry->mask, entry->lo_atom);
+    }
+
+    return true;
 }
 
 //! \brief Initialise the application.
@@ -493,9 +550,8 @@ static bool initialize(uint32_t *timer_period) {
     }
 
     // Read the parameters
-    read_parameters(
+    return read_parameters(
             data_specification_get_region(CONFIGURATION_REGION, ds_regions));
-    return true;
 }
 
 //! \brief Sets up the AER EIEIO data message.
@@ -503,7 +559,7 @@ static bool initialize(uint32_t *timer_period) {
 static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg");
 
-    switch (config.packet_type) {
+    switch (config->packet_type) {
     case NO_PAYLOAD_16:
         event_size = 2;
         break;
@@ -517,16 +573,16 @@ static bool configure_sdp_msg(void) {
         event_size = 8;
         break;
     default:
-        log_error("unknown packet type: %d", config.packet_type);
+        log_error("unknown packet type: %d", config->packet_type);
         return false;
     }
 
     // initialise SDP header
-    g_event_message.tag = config.sdp_tag;
+    g_event_message.tag = config->sdp_tag;
     // No reply required
     g_event_message.flags = 0x07;
     // Chip 0,0
-    g_event_message.dest_addr = config.sdp_dest;
+    g_event_message.dest_addr = config->sdp_dest;
     // Dump through Ethernet
     g_event_message.dest_port = PORT_ETH;
     // Set up monitoring address and port
@@ -534,14 +590,14 @@ static bool configure_sdp_msg(void) {
     g_event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
 
     // check incompatible options
-    if (config.payload_timestamp && config.payload_apply_prefix
-            && HAVE_PAYLOAD(config.packet_type)) {
+    if (config->payload_timestamp && config->payload_apply_prefix
+            && HAVE_PAYLOAD(config->packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                 "payload to each key, not both");
         return false;
     }
-    if (config.payload_timestamp && !config.payload_apply_prefix
-            && !HAVE_PAYLOAD(config.packet_type)) {
+    if (config->payload_timestamp && !config->payload_apply_prefix
+            && !HAVE_PAYLOAD(config->packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                 "payload to each key, but current configuration does not"
                 "specify either of these");
@@ -553,38 +609,38 @@ static bool configure_sdp_msg(void) {
     sdp_msg_aer_header = &g_event_message.cmd_rc;
 
     eieio_constant_header = 0;
-    eieio_constant_header |= config.apply_prefix << APPLY_PREFIX;
-    eieio_constant_header |= config.prefix_type << PREFIX_UPPER;
-    eieio_constant_header |= config.payload_apply_prefix << APPLY_PAYLOAD_PREFIX;
-    eieio_constant_header |= config.payload_timestamp << PAYLOAD_IS_TIMESTAMP;
-    eieio_constant_header |= config.packet_type << PACKET_TYPE;
+    eieio_constant_header |= config->apply_prefix << APPLY_PREFIX;
+    eieio_constant_header |= config->prefix_type << PREFIX_UPPER;
+    eieio_constant_header |= config->payload_apply_prefix << APPLY_PAYLOAD_PREFIX;
+    eieio_constant_header |= config->payload_timestamp << PAYLOAD_IS_TIMESTAMP;
+    eieio_constant_header |= config->packet_type << PACKET_TYPE;
 
     // pointers for AER packet header, prefix and data
     // Point to the half-word after main header half-word
     sdp_msg_aer_data = sdp_msg_aer_header + 1;
-    if (config.apply_prefix) {
+    if (config->apply_prefix) {
         // pointer to key prefix, so data is one half-word further ahead
-        write_short(sdp_msg_aer_header, 1, config.prefix);
+        write_short(sdp_msg_aer_header, 1, config->prefix);
         sdp_msg_aer_data++;
     }
 
-    if (config.payload_apply_prefix) {
+    if (config->payload_apply_prefix) {
         // pointer to payload prefix
         sdp_msg_aer_payload_prefix = sdp_msg_aer_data;
 
-        if (!HAVE_WIDE_LOAD(config.packet_type)) {
+        if (!HAVE_WIDE_LOAD(config->packet_type)) {
             //16 bit payload prefix; advance data position by one half word
             sdp_msg_aer_data++;
-            if (!config.payload_timestamp) {
+            if (!config->payload_timestamp) {
                 // add payload prefix as required - not a timestamp
-                write_short(sdp_msg_aer_payload_prefix, 0, config.payload_prefix);
+                write_short(sdp_msg_aer_payload_prefix, 0, config->payload_prefix);
             }
         } else {
             //32 bit payload prefix; advance data position by two half words
             sdp_msg_aer_data += 2;
-            if (!config.payload_timestamp) {
+            if (!config->payload_timestamp) {
                 // add payload prefix as required - not a timestamp
-                write_word(sdp_msg_aer_payload_prefix, 0, config.payload_prefix);
+                write_word(sdp_msg_aer_payload_prefix, 0, config->payload_prefix);
             }
         }
     }

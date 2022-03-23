@@ -16,11 +16,40 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from pacman.model.graphs.application import ApplicationEdge
 from spinn_front_end_common.utility_models import (
     LivePacketGather, LivePacketGatherMachineVertex)
 
 
-class InsertLivePacketGatherersToGraphs(object):
+def insert_live_packet_gatherers_to_graphs(
+        live_packet_gatherer_parameters, machine, machine_graph,
+        application_graph=None):
+    """ Add LPG vertices on Ethernet connected chips as required.
+
+    :param live_packet_gatherer_parameters:
+        the Live Packet Gatherer parameters requested by the script
+    :type live_packet_gatherer_parameters:
+        dict(LivePacketGatherParameters,
+        list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        the machine graph
+    :param application_graph: the application graph
+    :type application_graph:
+        ~pacman.model.graphs.application.ApplicationGraph
+    :return: mapping between LPG parameters and LPG application and
+        machine vertices
+    :rtype: dict(LivePacketGatherParameters,
+        tuple(LivePacketGather or None,
+        dict(tuple(int,int),LivePacketGatherMachineVertex)))
+    """
+    inserter = _InsertLivePacketGatherersToGraphs(
+        machine_graph, application_graph)
+    return inserter._run(live_packet_gatherer_parameters, machine)
+
+
+class _InsertLivePacketGatherersToGraphs(object):
     """ Adds LPGs as required into a given graph.
     """
 
@@ -28,9 +57,18 @@ class InsertLivePacketGatherersToGraphs(object):
         "_machine_graph",
         "_application_graph"]
 
-    def __call__(
-            self, live_packet_gatherer_parameters, machine, machine_graph,
-            application_graph=None):
+    def __init__(self,  machine_graph, application_graph):
+        """
+        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+            the machine graph
+        :param application_graph: the application graph
+        :type application_graph:
+            ~pacman.model.graphs.application.ApplicationGraph
+        """
+        self._machine_graph = machine_graph
+        self._application_graph = application_graph
+
+    def _run(self, live_packet_gatherer_parameters, machine,):
         """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:
@@ -40,19 +78,12 @@ class InsertLivePacketGatherersToGraphs(object):
             list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
         :param ~spinn_machine.Machine machine:
             the SpiNNaker machine as discovered
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph
-        :param application_graph: the application graph
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :return: mapping between LPG parameters and LPG vertex
+        :return: mapping between LPG parameters and LPG application and
+            machine vertices
         :rtype: dict(LivePacketGatherParameters,
-            dict(tuple(int,int),LivePacketGatherMachineVertex))
+            tuple(LivePacketGather or None,
+            dict(tuple(int,int),LivePacketGatherMachineVertex)))
         """
-
-        self._machine_graph = machine_graph
-        self._application_graph = application_graph
-
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,
@@ -63,35 +94,42 @@ class InsertLivePacketGatherersToGraphs(object):
         lpg_params_to_vertices = defaultdict(dict)
 
         # for every Ethernet connected chip, add the gatherers required
-        if application_graph is not None:
-            for chip in progress.over(machine.ethernet_connected_chips):
-                for params in live_packet_gatherer_parameters:
-                    if (params.board_address is None or
-                            params.board_address == chip.ip_address):
-                        lpg_params_to_vertices[params][chip.x, chip.y] = \
-                            self._add_app_lpg_vertex(chip, params)
+        if self._application_graph.n_vertices > 0:
+            for params in live_packet_gatherer_parameters:
+                lpg_app_vtx = LivePacketGather(params)
+                self._application_graph.add_vertex(lpg_app_vtx)
+                mac_vtxs = dict()
+                for chip in progress.over(machine.ethernet_connected_chips):
+                    mac_vtxs[chip.x, chip.y] = self._add_app_lpg_vertex(
+                        lpg_app_vtx, chip)
+                lpg_params_to_vertices[params] = (lpg_app_vtx, mac_vtxs)
+                for app_vertex, p_ids in live_packet_gatherer_parameters[
+                        params]:
+                    for p_id in p_ids:
+                        app_edge = ApplicationEdge(app_vertex, lpg_app_vtx)
+                        self._application_graph.add_edge(app_edge, p_id)
+                        lpg_app_vtx.add_incoming_edge(app_edge)
         else:
-            for chip in progress.over(machine.ethernet_connected_chips):
-                for params in live_packet_gatherer_parameters:
-                    if (params.board_address is None or
-                            params.board_address == chip.ip_address):
-                        lpg_params_to_vertices[params][chip.x, chip.y] = \
-                            self._add_mach_lpg_vertex(chip, params)
+            for params in live_packet_gatherer_parameters:
+                mac_vtxs = dict()
+                for chip in progress.over(machine.ethernet_connected_chips):
+                    mac_vtxs[chip.x, chip.y] = self._add_mach_lpg_vertex(
+                        chip, params)
+                lpg_params_to_vertices[params] = (None, mac_vtxs)
 
         return lpg_params_to_vertices
 
-    def _add_app_lpg_vertex(self, chip, params):
+    def _add_app_lpg_vertex(self, lpg_app_vtx, chip):
         """ Adds a LPG vertex to a machine graph that has an associated\
             application graph.
 
         :param ~.Chip chip:
-        :param LivePacketGatherParameters params:
+        :param LivePacketGather lpg_app_vtx:
         :rtype: LivePacketGatherMachineVertex
         """
-        app_vtx = LivePacketGather(params)
-        self._application_graph.add_vertex(app_vtx)
+
         # No need to handle resources when allocating; LPG has core to itself
-        vtx = app_vtx.create_machine_vertex(
+        vtx = lpg_app_vtx.create_machine_vertex(
             vertex_slice=None, resources_required=None,
             label="LivePacketGatherer",
             constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])

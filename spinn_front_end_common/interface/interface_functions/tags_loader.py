@@ -17,66 +17,31 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import MAX_TAG_ID
 
 
-class TagsLoader(object):
+def tags_loader(transceiver, tags):
     """ Loads tags onto the machine.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the transceiver object
+    :param ~pacman.model.tags.Tags tags:
+        the tags object which contains IP and reverse IP tags;
+        could be ``None`` if these are being given in separate lists
     """
+    # clear all the tags from the Ethernet connection, as nothing should
+    # be allowed to use it (no two apps should use the same Ethernet
+    # connection at the same time)
+    progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
+    for tag_id in progress.over(range(MAX_TAG_ID)):
+        transceiver.clear_ip_tag(tag_id)
 
-    __slots__ = []
+    # Use tags object to supply tag info if it is supplied
+    iptags = list(tags.ip_tags)
+    reverse_iptags = list(tags.reverse_ip_tags)
 
-    def __call__(
-            self, transceiver, tags=None, iptags=None, reverse_iptags=None):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the transceiver object
-        :param ~pacman.model.tags.Tags tags:
-            the tags object which contains IP and reverse IP tags;
-            could be ``None`` if these are being given in separate lists
-        :param list(~spinn_machine.tags.IPTag) iptags:
-            a list of IP tags, given when tags is ``None``
-        :param list(~spinn_machine.tags.ReverseIPTag) reverse_iptags:
-            a list of reverse IP tags when tags is ``None``
-        """
-        # clear all the tags from the Ethernet connection, as nothing should
-        # be allowed to use it (no two apps should use the same Ethernet
-        # connection at the same time)
-        progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
-        for tag_id in progress.over(range(MAX_TAG_ID)):
-            transceiver.clear_ip_tag(tag_id)
-
-        # Use tags object to supply tag info if it is supplied
-        if tags is not None:
-            iptags = list(tags.ip_tags)
-            reverse_iptags = list(tags.reverse_ip_tags)
-
-        # Load the IP tags and the Reverse IP tags
-        progress = ProgressBar(
-            len(iptags) + len(reverse_iptags), "Loading Tags")
-        self.load_iptags(iptags, transceiver, progress)
-        self.load_reverse_iptags(reverse_iptags, transceiver, progress)
-        progress.end()
-
-    @staticmethod
-    def load_iptags(iptags, transceiver, progress_bar):
-        """ Loads all the IP tags individually.
-
-        :param list(~spinn_machine.tags.IPTag) iptags:
-            the IP tags to be loaded.
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the transceiver object
-        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-        """
-        for ip_tag in progress_bar.over(iptags, False):
-            transceiver.set_ip_tag(ip_tag)
-
-    @staticmethod
-    def load_reverse_iptags(reverse_ip_tags, transceiver, progress_bar):
-        """ Loads all the reverse IP tags individually.
-
-        :param list(~spinn_machine.tags.ReverseIPTag) reverse_ip_tags:
-            the reverse IP tags to be loaded
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the transceiver object
-        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
-        """
-        for reverse_ip_tag in progress_bar.over(reverse_ip_tags, False):
-            transceiver.set_reverse_ip_tag(reverse_ip_tag)
+    # Load the IP tags and the Reverse IP tags
+    progress = ProgressBar(
+        len(iptags) + len(reverse_iptags), "Loading Tags")
+    for ip_tag in progress.over(iptags, False):
+        transceiver.set_ip_tag(ip_tag)
+    for reverse_ip_tag in progress.over(reverse_iptags, False):
+        transceiver.set_reverse_ip_tag(reverse_ip_tag)
+    progress.end()

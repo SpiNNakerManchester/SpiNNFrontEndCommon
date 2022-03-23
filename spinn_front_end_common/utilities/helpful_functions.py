@@ -18,15 +18,10 @@ import logging
 import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
-from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
-from spinnman.model.cpu_infos import CPUInfos
-from data_specification import utility_calls
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from . import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from .globals_variables import get_simulator
-from .constants import MICRO_TO_MILLISECOND_CONVERSION
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _n_word_structs = []
@@ -80,6 +75,19 @@ def write_address_to_user0(txrx, x, y, p, address):
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
+
+
+def write_address_to_user1(txrx, x, y, p, address):
+    """ Writes the given address into the user_1 register of the given core.
+
+    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
+    :param int x: Chip coordinate.
+    :param int y: Chip coordinate.
+    :param int p: Core ID on chip.
+    :param int address: Value to write (32-bit integer)
+    """
+    user_1_address = txrx.get_user_1_register_address_from_core(p)
+    txrx.write_memory(x, y, user_1_address, address)
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -138,78 +146,6 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     return len(core_subset)
 
 
-def read_config(config, section, item):
-    """ Get the string value of a config item, returning None if the value\
-        is "None"
-
-    :param ~configparser.ConfigParser config:
-        The configuration to look things up in.
-    :param str section: The section name
-    :param str item: The item name.
-    :rtype: str or None
-    """
-    value = config.get(section, item)
-    if value == "None":
-        return None
-    return value
-
-
-def read_config_int(config, section, item):
-    """ Get the integer value of a config item, returning None if the value\
-        is "None"
-
-    :param ~configparser.ConfigParser config:
-        The configuration to look things up in.
-    :param str section: The section name
-    :param str item: The item name.
-    :rtype: int or None
-    """
-    value = read_config(config, section, item)
-    if value is None:
-        return value
-    return int(value)
-
-
-def read_config_float(config, section, item):
-    """ Get the float value of a config item, returning None if the value\
-        is "None"
-
-    :param ~configparser.ConfigParser config:
-        The configuration to look things up in.
-    :param str section: The section name
-    :param str item: The item name.
-    :rtype: float or None
-    """
-    value = read_config(config, section, item)
-    if value is None:
-        return value
-    return float(value)
-
-
-_BOOLEAN_STATES = {
-    'true': True, '1': True, 'on': True, 'yes': True,
-    'false': False, '0': False, 'off': False, 'no': False}
-
-
-def read_config_boolean(config, section, item):
-    """ Get the boolean value of a config item, returning None if the value\
-        is "None"
-
-    :param ~configparser.ConfigParser config:
-        The configuration to look things up in.
-    :param str section: The section name
-    :param str item: The item name.
-    :rtype: bool or None
-    """
-    value = read_config(config, section, item)
-    if value is None:
-        return value
-    if value.lower() in _BOOLEAN_STATES:
-        return _BOOLEAN_STATES[value.lower()]
-    raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
-        value, section, item))
-
-
 def generate_unique_folder_name(folder, filename, extension):
     """ Generate a unique file name with a given extension in a given folder
 
@@ -245,17 +181,6 @@ def get_ethernet_chip(machine, board_address):
     raise ConfigurationException(
         "cannot find the Ethernet connected chip with the board address {}"
         .format(board_address))
-
-
-def convert_time_diff_to_total_milliseconds(sample):
-    """ Convert between a time diff and total milliseconds.
-
-    :param ~datetime.timedelta sample:
-    :return: total milliseconds
-    :rtype: float
-    """
-    return ((sample.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
-            (sample.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
 
 def determine_flow_states(executable_types, no_sync_changes):
@@ -314,106 +239,6 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
-
-
-def find_executable_start_type(machine_vertex):
-    """
-    :param ~pacman.model.graphs.machine.MachineVertex machine_vertex:
-    :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType
-    """
-    if isinstance(machine_vertex, AbstractHasAssociatedBinary):
-        return machine_vertex.get_binary_start_type()
-    else:
-        return None
-
-
-def _emergency_state_check(txrx, app_id):
-    """
-    :param ~.Transceiver txrx:
-    :param int app_id:
-    """
-    # pylint: disable=broad-except
-    try:
-        rte_count = txrx.get_core_state_count(
-            app_id, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-        if rte_count or watchdog_count:
-            logger.warning(
-                "unexpected core states (rte={}, wdog={})",
-                txrx.get_cores_in_state(None, CPUState.RUN_TIME_EXCEPTION),
-                txrx.get_cores_in_state(None, CPUState.WATCHDOG))
-    except Exception:
-        logger.exception(
-            "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
-        infos = CPUInfos()
-        errors = list()
-        for chip in machine.chips:
-            for p in chip.processors:
-                try:
-                    info = txrx.get_cpu_information_from_core(
-                        chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
-                        infos.add_processor(chip.x, chip.y, p, info)
-                except Exception:
-                    errors.append((chip.x, chip.y, p))
-        logger.warning(txrx.get_core_status_string(infos))
-        logger.warning("Could not read information from cores {}".format(
-            errors))
-
-
-# TRICKY POINT: Have to delay the import to here because of import circularity
-def _emergency_iobuf_extract(txrx, executable_targets):
-    """
-    :param ~.Transceiver txrx:
-    :param ExecutableTargets executable_targets:
-    """
-    # pylint: disable=protected-access
-    from spinn_front_end_common.interface.interface_functions import (
-        ChipIOBufExtractor)
-    sim = get_simulator()
-    extractor = ChipIOBufExtractor(
-        recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
-    extractor(txrx, executable_targets, sim._executable_finder,
-              sim._app_provenance_file_path, sim._system_provenance_file_path)
-
-
-def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
-
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
-    :param AbstractHasAssociatedBinary vertex:
-        The vertex to retrieve the IOBUF from if it is suspected as being dead
-    :param ~pacman.model.placements.Placement placement:
-        Where the vertex is located.
-    """
-    # pylint: disable=protected-access
-    _emergency_state_check(txrx, app_id)
-    target = ExecutableTargets()
-    path = get_simulator()._executable_finder.get_executable_path(
-        vertex.get_binary_file_name())
-    target.add_processor(
-        path, placement.x, placement.y, placement.p,
-        vertex.get_binary_start_type())
-    _emergency_iobuf_extract(txrx, target)
-
-
-def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
-
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        The what/where mapping
-    """
-    _emergency_state_check(txrx, app_id)
-    _emergency_iobuf_extract(txrx, executable_targets)
 
 
 def n_word_struct(n_words):

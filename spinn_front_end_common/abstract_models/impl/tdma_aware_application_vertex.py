@@ -13,14 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-from spinn_front_end_common.interface.provenance.\
-    provides_provenance_data_from_machine_impl import (
-        add_name)
-
-# The number of clock cycles per nanosecond
-_CLOCKS_PER_NS = 200
+from spinn_utilities.abstract_base import abstractmethod
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
@@ -32,17 +27,14 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         "__initial_offset",
         "__n_phases",
         "__n_slots",
-        "__ns_per_cycle",
-        "__time_between_cores",
-        "__time_between_spikes")
+        "__clocks_per_cycle",
+        "__clocks_between_cores",
+        "__clocks_between_spikes")
 
     # 1. initial expected time, 2. min expected time, 3. time between cores
     _TDMA_N_ELEMENTS = 3
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
-    _TDMA_MISSED_SLOTS_MESSAGE = (
-        "The TDMA fell behind by {} times on core {}, {}, {}. "
-        "try increasing the time_between_cores in the corresponding .cfg")
 
     def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
         """
@@ -61,12 +53,12 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         super().__init__(
             label, constraints, max_atoms_per_core, splitter=splitter)
-        self.__time_between_cores = None
+        self.__clocks_between_cores = None
         self.__n_slots = None
-        self.__time_between_spikes = None
+        self.__clocks_between_spikes = None
         self.__initial_offset = None
         self.__n_phases = None
-        self.__ns_per_cycle = None
+        self.__clocks_per_cycle = None
 
     def set_initial_offset(self, new_value):
         """ Sets the initial offset
@@ -103,16 +95,12 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         core_slot = vertex_index & self.__n_slots
         offset_clocks = (
-            self.__initial_offset +
-            (self.__time_between_cores * core_slot * _CLOCKS_PER_NS))
-        tdma_clocks = (
-            self.__n_phases * self.__time_between_spikes * _CLOCKS_PER_NS)
-        total_clocks = _CLOCKS_PER_NS * self.__ns_per_cycle
-        initial_expected_time = total_clocks - offset_clocks
+            self.__initial_offset + (self.__clocks_between_cores * core_slot))
+        tdma_clocks = self.__n_phases * self.__clocks_between_spikes
+        initial_expected_time = self.__clocks_per_cycle - offset_clocks
         min_expected_time = initial_expected_time - tdma_clocks
-        clocks_between_sends = self.__time_between_spikes * _CLOCKS_PER_NS
         return [initial_expected_time, min_expected_time,
-                clocks_between_sends]
+                self.__clocks_between_spikes]
 
     @property
     def tdma_sdram_size_in_bytes(self):
@@ -123,22 +111,24 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return self._TDMA_N_ELEMENTS * BYTES_PER_WORD
 
     def set_other_timings(
-            self, time_between_cores, n_slots, time_between_spikes, n_phases,
-            ns_per_cycle):
+            self, clocks_between_cores, n_slots, clocks_between_spikes,
+            n_phases, clocks_per_cycle):
         """ Sets the other timings needed for the TDMA.
 
-        :param int time_between_cores: time between cores
+        :param int clocks_between_cores: clock cycles between cores
         :param int n_slots: the number of slots
-        :param int time_between_spikes: the time to wait between spikes
+        :param int clocks_between_spikes:
+            the clock cycles to wait between spikes
         :param int n_phases: the number of phases
-        :param int ns_per_cycle: the number of nano-seconds per TDMA cycle
+        :param int clocks_per_cycle: the number of clock cycles per TDMA cycle
         """
-        self.__time_between_cores = time_between_cores
+        self.__clocks_between_cores = clocks_between_cores
         self.__n_slots = n_slots
-        self.__time_between_spikes = time_between_spikes
+        self.__clocks_between_spikes = clocks_between_spikes
         self.__n_phases = n_phases
-        self.__ns_per_cycle = ns_per_cycle
+        self.__clocks_per_cycle = clocks_per_cycle
 
+    @abstractmethod
     def get_n_cores(self):
         """ Get the number of cores this application vertex is using in \
             the TDMA.
@@ -146,21 +136,22 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :return: the number of cores to use in the TDMA
         :rtype: int
         """
-        return len(self.vertex_slices)
 
-    def get_tdma_provenance_item(self, names, x, y, p, tdma_slots_missed):
+    def get_tdma_provenance_item(
+            self,  x, y, p, desc_label, tdma_slots_missed):
         """ Get the provenance item used for the TDMA provenance
 
-        :param list(str) names: the names for the provenance data item
-        :param int x: chip x
-        :param int y: chip y
-        :param int p: processor id
+        :param int x: x coordinate of the chip where this core
+        :param int y: y coordinate of the core where this core
+        :param int p: virtual id of the core
+        :param str desc_label: a descriptive label for the vertex
         :param int tdma_slots_missed: the number of TDMA slots missed
-        :return: the provenance data item
-        :rtype: ProvenanceDataItem
         """
-        return ProvenanceDataItem(
-            add_name(names, self._TDMA_MISSED_SLOTS_NAME),
-            tdma_slots_missed, report=(tdma_slots_missed > 0),
-            message=self._TDMA_MISSED_SLOTS_MESSAGE.format(
-                tdma_slots_missed, x, y, p))
+        with ProvenanceWriter() as db:
+            db.insert_core(
+                x, y, p, self._TDMA_MISSED_SLOTS_NAME, tdma_slots_missed)
+            if tdma_slots_missed > 0:
+                db.insert_report(
+                    f"The {desc_label} had the TDMA fall behind by "
+                    f"{tdma_slots_missed} times.  Try increasing the "
+                    "time_between_cores in the corresponding .cfg")

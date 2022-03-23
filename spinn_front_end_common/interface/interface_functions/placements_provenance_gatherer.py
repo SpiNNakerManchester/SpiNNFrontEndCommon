@@ -18,44 +18,49 @@ import traceback
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class PlacementsProvenanceGatherer(object):
+def placements_provenance_gatherer(transceiver, placements):
     """ Gets provenance information from vertices on the machine.
+
+    :param ~spinnman.transceiver.Transceiver transceiver:
+        the SpiNNMan interface object
+    :param ~pacman.model.placements.Placements placements:
+        The placements of the vertices
     """
-    __slots__ = []
+    errors = list()
 
-    def __call__(self, transceiver, placements):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan interface object
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
-        :rtype: list(ProvenanceDataItem)
-        """
-        prov_items = list()
+    progress = ProgressBar(
+        placements.n_placements, "Getting provenance data")
 
-        progress = ProgressBar(
-            placements.n_placements, "Getting provenance data")
+    # retrieve provenance data from any cores that provide data
+    for placement in progress.over(placements.placements):
+        _add_placement_provenance(placement, transceiver, errors)
+    if errors:
+        logger.warning("Errors found during provenance gathering:")
+        for error in errors:
+            logger.warning("{}", error)
 
-        # retrieve provenance data from any cores that provide data
-        errors = list()
-        for placement in progress.over(placements.placements):
-            if isinstance(placement.vertex,
-                          AbstractProvidesProvenanceDataFromMachine):
-                # get data
-                try:
-                    prov_items.extend(
-                        placement.vertex.get_provenance_data_from_machine(
-                            transceiver, placement))
-                except Exception:  # pylint: disable=broad-except
-                    errors.append(traceback.format_exc())
-        if errors:
-            logger.warning("Errors found during provenance gathering:")
-            for error in errors:
-                logger.warning("{}", error)
 
-        return prov_items
+def _add_placement_provenance(placement, txrx, errors):
+    """
+    :param ~.Placement placement:
+    :param ~.Transceiver txrx:
+    :param list(str) errors:
+    """
+    # retrieve provenance data from any cores that provide data
+    if isinstance(
+            placement.vertex, AbstractProvidesProvenanceDataFromMachine):
+        # get data
+        try:
+            placement.vertex.get_provenance_data_from_machine(
+                txrx, placement)
+            with ProvenanceWriter() as db:
+                db.add_core_name(placement.x, placement.y, placement.p,
+                                 placement.vertex.label)
+
+        except Exception:  # pylint: disable=broad-except
+            errors.append(traceback.format_exc())

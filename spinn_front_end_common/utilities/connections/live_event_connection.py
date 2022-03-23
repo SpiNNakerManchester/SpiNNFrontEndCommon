@@ -228,6 +228,9 @@ class LiveEventConnection(DatabaseConnection):
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
     def __read_database_callback(self, db_reader):
+        """
+        :param DatabaseReader db_reader:
+        """
         self.__handle_possible_rerun_state()
 
         vertex_sizes = OrderedDict()
@@ -248,6 +251,10 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def __init_sender(self, db, vertex_sizes):
+        """
+        :param DatabaseReader db:
+        :param dict(str,int) vertex_sizes:
+        """
         if self.__sender_connection is None:
             self.__sender_connection = UDPConnection()
         for label in self.__send_labels:
@@ -263,6 +270,10 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(self, db, vertex_sizes):
+        """
+        :param DatabaseReader db:
+        :param dict(str,int) vertex_sizes:
+        """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
             self.__receiver_connection = EIEIOConnection()
@@ -280,8 +291,9 @@ class LiveEventConnection(DatabaseConnection):
                     self.__receiver_connection, board_address)
 
             logger.info(
-                "Listening for traffic from {} on {}:{}",
-                label, self.__receiver_connection.local_ip_address,
+                "Listening for traffic from {} on board {} on {}:{}",
+                label, board_address,
+                self.__receiver_connection.local_ip_address,
                 self.__receiver_connection.local_port)
 
             if self.__machine_vertices:
@@ -305,6 +317,11 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_listener.start()
 
     def __get_live_input_details(self, db_reader, send_label):
+        """
+        :param DatabaseReader db_reader:
+        :param str send_label:
+        :rtype: tuple(int,int,int,str or None)
+        """
         if self.__machine_vertices:
             x, y, p = db_reader.get_placement(send_label)
         else:

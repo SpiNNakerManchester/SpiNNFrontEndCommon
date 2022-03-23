@@ -13,41 +13,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tempfile
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
-from spinn_front_end_common.utilities.utility_objs import DataWritten
-from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
-from spinn_front_end_common.interface.ds import DataSpecificationTargets
+from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 
 class TestDsWriteInfo(unittest.TestCase):
 
+    def setUp(self):
+        unittest_setup()
+
     def test_dict(self):
         check = dict()
         machine = virtual_machine(2, 2)
-        tempdir = tempfile.mkdtemp()
-        dst = DataSpecificationTargets(machine, tempdir)
-        print(tempdir)
-        asDict = DsWriteInfo(dst.get_database())
+        db = DsSqlliteDatabase(machine)
         c1 = (0, 0, 0)
-        foo = DataWritten(123, 12, 23)
-        asDict.set_info(*c1, info=foo)
-        check[c1] = foo
-        self.assertEqual(foo, asDict.get_info(*c1))
+        db.set_write_info(*c1, 123, 12, 23)
+        check[c1] = (123, 12, 23)
+        self.assertEqual((123, 12, 23), db.get_write_info(*c1))
 
         c2 = (1, 1, 3)
-        bar = DataWritten(456, 45, 56)
-        asDict.set_info(*c2, info=bar)
-        check[c2] = bar
-        self.assertEqual(bar, asDict.get_info(*c2))
+        db.set_write_info(*c2, 456, 45, 56)
+        check[c2] = (456, 45, 56)
+        self.assertEqual((456, 45, 56), db.get_write_info(*c2))
 
-        self.assertEqual(2, len(asDict))
+        for key in check:
+            self.assertEqual(check[key], db.get_write_info(*key))
 
-        for key in asDict:
-            self.assertEqual(check[key], asDict.get_info(*key))
-
-        for key, value in asDict.items():
+        for key, value in db.items():
             self.assertEqual(check[key], value)
 
 

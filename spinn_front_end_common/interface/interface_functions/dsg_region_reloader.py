@@ -14,58 +14,60 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.utility_calls import (
+from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities.helpful_functions import (
     generate_unique_folder_name, n_word_struct)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 
-class DSGRegionReloader(object):
+def dsg_region_reloader(transceiver, placements, hostname):
+    reloader = _DSGRegionReloader(transceiver, hostname)
+    reloader._run(placements)
+
+
+class _DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
-    __slots__ = [
-        "_txrx", "_host", "_write_text", "_rpt_dir", "_data_dir"]
+    __slots__ = ["_txrx", "_host", "_data_dir"]
 
-    def __call__(
-            self, transceiver, placements, hostname, report_directory,
-            write_text_specs):
+    def __init__(self, transceiver, hostname):
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
             SpiNNMan transceiver for communication
-        :param ~pacman.model.placements.Placements placements:
-            the list of placements of the machine graph to cores
         :param str hostname:
             the machine name
-        :param str report_directory:
-            the location where reports are stored
-        :param bool write_text_specs:
-            Whether the textual version of the specification is to be written
         """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
         self._txrx = transceiver
         self._host = hostname
-        self._write_text = write_text_specs
+        self._data_dir = generate_unique_folder_name(
+            report_default_directory(), "reloaded_data_regions", "")
+
+    def _run(self, placements):
+        """
+        :param ~pacman.model.placements.Placements placements:
+            the list of placements of the machine graph to cores
+        """
+        # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
-        app_data_dir = generate_unique_folder_name(
-            report_directory, "reloaded_data_regions", "")
-        if not os.path.exists(app_data_dir):
-            os.makedirs(app_data_dir)
-        self._data_dir = app_data_dir
+        if not os.path.exists(self._data_dir):
+            os.makedirs(self._data_dir)
 
         report_dir = None
-        if write_text_specs:
+        if get_config_bool("Reports", "write_text_specs"):
             report_dir = generate_unique_folder_name(
-                report_directory, "reloaded_data_regions", "")
+                report_default_directory(), "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
-        self._rpt_dir = report_dir
 
         progress = ProgressBar(placements.n_placements, "Reloading data")
         for placement in progress.over(placements.placements):
@@ -73,7 +75,7 @@ class DSGRegionReloader(object):
             self._regenerate_data_spec_for_vertices(placement)
 
         # App data directory can be removed as should be empty
-        os.rmdir(app_data_dir)
+        os.rmdir(self._data_dir)
 
     def _regenerate_data_spec_for_vertices(self, placement):
         """
@@ -91,8 +93,7 @@ class DSGRegionReloader(object):
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._host,
-            self._rpt_dir, self._write_text, self._data_dir)
+            placement.x, placement.y, placement.p, self._host, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)

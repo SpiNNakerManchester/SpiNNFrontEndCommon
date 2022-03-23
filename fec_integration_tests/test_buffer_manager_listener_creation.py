@@ -13,22 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tempfile
 import unittest
 
-from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
-from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
-from pacman.model.graphs.application import ApplicationVertex
 from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.config_setup import unittest_setup
+from pacman_test_objects import SimpleTestVertex
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
+
+    def setUp(self):
+        unittest_setup()
 
     def test_listener_creation(self):
         # Test of buffer manager listener creation problem, where multiple
@@ -37,8 +38,8 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # a single listener
 
         # Create two vertices
-        v1 = _TestVertex(10, "v1", 256)
-        v2 = _TestVertex(10, "v2", 256)
+        v1 = SimpleTestVertex(10, "v1", 256)
+        v2 = SimpleTestVertex(10, "v2", 256)
 
         # Create two tags - important thing is port=None
         t1 = IPTag(board_address='127.0.0.1', destination_x=0,
@@ -70,15 +71,12 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
-        testdir = tempfile.mkdtemp()
-        print(testdir)
         # Create buffer manager
         bm = BufferManager(
-            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            placements=pl, tags=t, transceiver=trnx,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
-            fixed_routes=None, uses_advanced_monitors=True,
-            report_folder=testdir)
+            fixed_routes=None)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
@@ -95,33 +93,6 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
                 number_of_listeners += 1
             print(i)
         self.assertEqual(number_of_listeners, 1)
-
-
-class _TestVertex(ApplicationVertex, LegacyPartitionerAPI):
-    """
-    taken skeleton test vertex definition from PACMAN.uinit_test_objects
-    """
-    _model_based_max_atoms_per_core = None
-
-    def __init__(self, n_atoms, label=None, max_atoms_per_core=256):
-        super().__init__(label=label, max_atoms_per_core=max_atoms_per_core)
-        self._model_based_max_atoms_per_core = max_atoms_per_core
-        self._n_atoms = n_atoms
-
-    @overrides
-    def get_resources_used_by_atoms(self, vertex_slice):
-        pass
-
-    @overrides(LegacyPartitionerAPI.create_machine_vertex)
-    def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
-        pass
-
-    @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
-    def n_atoms(self):
-        return self._n_atoms
 
 
 if __name__ == "__main__":

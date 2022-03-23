@@ -119,3 +119,25 @@ PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
 #: The default local port that the toolchain listens on for the notification
 #: protocol.
 NOTIFY_PORT = 19999
+
+#: The number of clock cycles per micro-second (at 200Mhz)
+CLOCKS_PER_US = 200
+
+PROVENANCE_DB = "provenance.sqlite3"
+
+#: SDRAM Tag used by the compressor to find the routing tables
+COMPRESSOR_SDRAM_TAG = 1
+
+#: SDRAM Tags used for bitfield compressor
+BIT_FIELD_COMMS_SDRAM_TAG = 2
+BIT_FIELD_USABLE_SDRAM_TAG = 3
+BIT_FIELD_ADDRESSES_SDRAM_TAG = 4
+BIT_FIELD_ROUTING_TABLE_SDRAM_TAG = 5
+
+#: Base SDRAM tag used by SDRAM edges when allocating
+#: (allows up to 100 edges per chip)
+SDRAM_EDGE_BASE_TAG = 100
+
+#: Base SDRAM tag used by cores when loading data
+#: (tags 201-217 will be used by cores 1-17)
+CORE_DATA_SDRAM_BASE_TAG = 200

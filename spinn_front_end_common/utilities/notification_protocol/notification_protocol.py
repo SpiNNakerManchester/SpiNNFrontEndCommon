@@ -16,6 +16,7 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, wait
 from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -40,19 +41,18 @@ class NotificationProtocol(AbstractContextManager):
         "__wait_futures",
         "__wait_pool"]
 
-    def __init__(self, socket_addresses, wait_for_read_confirmation):
+    def __init__(self, socket_addresses):
         """
         :param socket_addresses: Where to notify.
         :type socket_addresses:
-            list(~spinn_utilities.socket_address.SocketAddress)
-        :param bool wait_for_read_confirmation:
-            Whether to wait for the other side to acknowledge
+            set(~spinn_utilities.socket_address.SocketAddress)
         """
         self.__socket_addresses = socket_addresses
 
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
-        self.__wait_for_read_confirmation = wait_for_read_confirmation
+        self.__wait_for_read_confirmation = get_config_bool(
+            "Database", "wait_on_confirmation")
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False

@@ -13,12 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    ApplicationFinisher)
+    application_finisher)
 from spinnman.model.cpu_infos import CPUInfos
+from spinnman.transceiver import Transceiver
 
 
 class _MockTransceiver(object):
@@ -29,17 +32,19 @@ class _MockTransceiver(object):
         self._current_state = 0
         self.sdp_send_count = 0
 
-    def get_core_state_count(self, _app_id, state):
+    @overrides(Transceiver.get_core_state_count)
+    def get_core_state_count(self, app_id, state):
         count = 0
         for core_state in self._core_states[self._current_state].values():
             if core_state == state:
                 count += 1
         return count
 
-    def get_cores_in_state(self, core_subsets, states):
+    @overrides(Transceiver.get_cores_in_state)
+    def get_cores_in_state(self, all_core_subsets, states):
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
-        for core_subset in core_subsets:
+        for core_subset in all_core_subsets:
             x = core_subset.x
             y = core_subset.y
 
@@ -54,15 +59,17 @@ class _MockTransceiver(object):
         self._current_state += 1
         return cores_in_state
 
-    def send_sdp_message(self, message):
+    @overrides(Transceiver.send_sdp_message)
+    def send_sdp_message(self, message, connection=None):
         self.sdp_send_count += 1
 
+    @overrides(Transceiver.send_signal)
     def send_signal(self, app_id, signal):
         pass
 
 
 def test_app_finisher():
-    finisher = ApplicationFinisher()
+    unittest_setup()
     core_subsets = CoreSubsets()
     core_subsets.add_processor(0, 0, 1)
     core_subsets.add_processor(1, 1, 2)
@@ -73,7 +80,7 @@ def test_app_finisher():
     executable_types = {
         ExecutableType.USES_SIMULATION_INTERFACE: core_subsets}
     txrx = _MockTransceiver(core_states, 0.5)
-    finisher.__call__(30, txrx, executable_types)
+    application_finisher(30, txrx, executable_types)
 
     # First round called twice as 2 running +
     # second round called once as 1 running

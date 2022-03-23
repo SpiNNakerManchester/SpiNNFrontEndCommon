@@ -29,11 +29,11 @@ class LivePacketGatherParameters(object):
     """
 
     __slots__ = [
-        '_port', '_hostname', "_tag", "_board_address", "_strip_sdp",
-        "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
-        "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
-        "_payload_prefix",  "_payload_right_shift",
-        "_n_packets_per_time_step", "_label"
+        '_port', '_hostname', "_tag", "_strip_sdp", "_use_prefix",
+        "_key_prefix", "_prefix_type", "_message_type", "_right_shift",
+        "_payload_as_time_stamps", "_use_payload_prefix", "_payload_prefix",
+        "_payload_right_shift", "_n_packets_per_time_step", "_label",
+        "_translate_keys"
     ]
 
     def __init__(
@@ -43,7 +43,7 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
-            board_address=None):
+            translate_keys=False):
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
@@ -71,7 +71,6 @@ class LivePacketGatherParameters(object):
         self._port = port
         self._hostname = hostname
         self._tag = tag
-        self._board_address = board_address
         self._strip_sdp = strip_sdp
         self._use_prefix = use_prefix
         self._key_prefix = key_prefix
@@ -84,6 +83,7 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._n_packets_per_time_step = number_of_packets_sent_per_time_step
         self._label = label
+        self._translate_keys = translate_keys
 
     @property
     def port(self):
@@ -96,10 +96,6 @@ class LivePacketGatherParameters(object):
     @property
     def tag(self):
         return self._tag
-
-    @property
-    def board_address(self):
-        return self._board_address
 
     @property
     def strip_sdp(self):
@@ -149,6 +145,10 @@ class LivePacketGatherParameters(object):
     def label(self):
         return self._label
 
+    @property
+    def translate_keys(self):
+        return self._translate_keys
+
     def get_iptag_resource(self):
         """ Get a description of the IPtag that the LPG for these parameters \
             will require.
@@ -164,7 +164,6 @@ class LivePacketGatherParameters(object):
         return (self._port == other.port and
                 self._hostname == other.hostname and
                 self._tag == other.tag and
-                self._board_address == other.board_address and
                 self._strip_sdp == other.strip_sdp and
                 self._use_prefix == other.use_prefix and
                 self._key_prefix == other.key_prefix and
@@ -178,17 +177,18 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._n_packets_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._label == other.label)
+                self._label == other.label and
+                self._translate_keys == other.translate_keys)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
         data = (
-            self._port, self._tag, self._board_address, self._strip_sdp,
-            self._use_prefix, self._key_prefix, self._prefix_type,
-            self._message_type, self._right_shift,
-            self._payload_as_time_stamps, self._use_payload_prefix,
-            self._payload_prefix, self._payload_right_shift,
-            self._n_packets_per_time_step, self._label)
+            self._port, self._tag, self._strip_sdp, self._use_prefix,
+            self._key_prefix, self._prefix_type, self._message_type,
+            self._right_shift, self._payload_as_time_stamps,
+            self._use_payload_prefix, self._payload_prefix,
+            self._payload_right_shift, self._n_packets_per_time_step,
+            self._label, self._translate_keys)
         return hash(data)

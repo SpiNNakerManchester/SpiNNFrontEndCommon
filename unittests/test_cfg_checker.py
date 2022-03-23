@@ -14,20 +14,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions
+import unittest
+from spinn_utilities.config_holder import run_config_checks
+from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
+class TestCfgChecker(unittest.TestCase):
 
-    :rtype: list(str)
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(report_functions.__file__),
-            "front_end_common_reports.xml")
-    ]
+    def setUp(cls):
+        unittest_setup()
+
+    def test_cfg_checker(self):
+        unittests = os.path.dirname(__file__)
+        parent = os.path.dirname(unittests)
+        fec = os.path.join(parent, "spinn_front_end_common")
+        local = os.path.join(parent, "fec_local_tests")
+        fec_it = os.path.join(parent, "fec_integration_tests")
+        run_config_checks(directories=[
+            fec, local, fec_it, unittests])
