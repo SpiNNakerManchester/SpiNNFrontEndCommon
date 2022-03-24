@@ -90,6 +90,8 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        PATH = os.path.dirname(os.path.abspath(__file__))
+        os.environ["SPINN_DIRS"] = str(os.path.join(PATH))
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
