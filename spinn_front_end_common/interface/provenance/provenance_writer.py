@@ -348,7 +348,6 @@ class ProvenanceWriter(SQLiteDB):
                 INSERT INTO reports(message)
                 VALUES(?)
                 """, [text])
-            recorded = cur.lastrowid
+            cur.lastrowid
             # try logging and storing while locked.
             logger.warning(text)
-
