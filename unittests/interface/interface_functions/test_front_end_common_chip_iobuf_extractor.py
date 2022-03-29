@@ -53,6 +53,7 @@ def mock_text(x, y, p):
     text = "Test {} {} {}\n".format(x, y, p) + warning_text + error_text
     return text, result_error, result_warning
 
+
 text001, result_error001, result_warning001 = mock_text(0, 0, 1)
 text002, result_error002, result_warning002 = mock_text(0, 0, 2)
 text111, result_error111, result_warning111 = mock_text(1, 1, 1)
