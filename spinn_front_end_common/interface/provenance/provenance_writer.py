@@ -329,7 +329,7 @@ class ProvenanceWriter(SQLiteDB):
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO log_provenance(
+                INSERT INTO p_log_provenance(
                     level, message)
                 VALUES(?, ?)
                 """,

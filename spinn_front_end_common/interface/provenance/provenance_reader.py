@@ -379,7 +379,7 @@ class ProvenanceReader(object):
         """
         query = """
             SELECT message
-            FROM log_provenance
+            FROM p_log_provenance
             WHERE level >= ?
             """
         messages = self.run_query(query, [min_level])

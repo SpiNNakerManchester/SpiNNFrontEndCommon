@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
 
 ---------------------------------------------------------------------
 -- A table to store log.info
-CREATE TABLE IF NOT EXISTS log_provenance(
+CREATE TABLE IF NOT EXISTS p_log_provenance(
     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
     level INTEGER NOT NULL,
     message STRING NOT NULL);
@@ -239,10 +239,10 @@ VALUES
     (20, "INFO"),
     (10, "DEBUG");
 
-CREATE VIEW IF NOT EXISTS log_view AS
+CREATE VIEW IF NOT EXISTS p_log_view AS
     SELECT
 		name,
         message
-    FROM log_provenance left join log_level_names
-    ON log_provenance.level = log_level_names.level
+    FROM p_log_provenance left join log_level_names
+    ON p_log_provenance.level = log_level_names.level
     ORDER BY log_provenance.log_id;
