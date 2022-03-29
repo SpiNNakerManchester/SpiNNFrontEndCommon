@@ -17,6 +17,7 @@ import os
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
@@ -51,7 +52,6 @@ def mock_text(x, y, p):
         x, y, p, warning, filename)
     text = "Test {} {} {}\n".format(x, y, p) + warning_text + error_text
     return text, result_error, result_warning
-
 
 text001, result_error001, result_warning001 = mock_text(0, 0, 1)
 text002, result_error002, result_warning002 = mock_text(0, 0, 2)
@@ -88,10 +88,22 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        path = os.path.dirname(os.path.abspath(__file__))
+        os.environ["C_LOGS_DICT"] = str(os.path.join(path, "temp.sqlite3"))
+        # There needs to be a dict but it can be empty
+        LogSqlLiteDatabase(new_dict=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        path = os.path.dirname(os.path.abspath(__file__))
+        db = os.path.join(path, "temp.sqlite3")
+        if os.path.exists(db):
+            os.remove(db)
+
     def setUp(self):
         unittest_setup()
-        PATH = os.path.dirname(os.path.abspath(__file__))
-        os.environ["SPINN_DIRS"] = str(os.path.join(PATH))
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
