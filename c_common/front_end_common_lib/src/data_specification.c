@@ -107,8 +107,9 @@ bool data_specification_read_header(
             sum += data[i];
         }
         if (sum != checksum) {
-            log_error("Region %u checksum %u does not match computed sum %u",
-                    region, checksum, sum);
+            log_error("Region %u with %u words starting at 0x%08x: "
+                    "checksum %u does not match computed sum %u",
+                    region, n_words, data, checksum, sum);
             return false;
         }
     }
