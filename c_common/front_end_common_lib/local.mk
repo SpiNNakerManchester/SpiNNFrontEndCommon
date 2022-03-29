@@ -110,8 +110,6 @@ $(foreach d, $(sort $(SOURCE_DIRS)), \
 ALL_TARGETS += $(APP_OUTPUT_DIR)$(APP).aplx
 all: $(ALL_MODIFIES_DIRS) $(ALL_TARGETS)
 
-all: $(ALL_TARGETS)
-
 # Convert the objs into the correct format and set up the build rules
 # Steps are:
 # 1. Convert ?.c -> BUILD_DIR/?.o
