@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import numpy
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
@@ -115,14 +116,14 @@ class _DSGRegionReloader(object):
         start_region = get_region_base_address_offset(regions_base_address, 0)
         table_size = get_region_base_address_offset(
             regions_base_address, MAX_MEM_REGIONS) - start_region
-        offsets = n_word_struct(MAX_MEM_REGIONS).unpack_from(
-            self._txrx.read_memory(
-                placement.x, placement.y, start_region, table_size))
+        ptr_table = numpy.frombuffer(self._txrx.read_memory(
+                placement.x, placement.y, start_region, table_size),
+            dtype=DataSpecificationExecutor.TABLE_TYPE)
 
         # Write the regions to the machine
         for i, region in enumerate(data_spec_executor.dsef.mem_regions):
             if region is not None and not region.unfilled:
                 self._txrx.write_memory(
-                    placement.x, placement.y, offsets[i],
+                    placement.x, placement.y, ptr_table[i]["pointer"],
                     region.region_data[:region.max_write_pointer])
         vertex.set_reload_required(False)
