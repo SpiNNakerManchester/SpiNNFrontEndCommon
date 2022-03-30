@@ -96,7 +96,7 @@ def machine_generator(
             "Please set a machine version number in the "
             "corresponding configuration (cfg) file")
     txrx.ensure_board_is_ready()
-    if isinstance(scamp_connection_data, dict):
+    if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)
     else:
         txrx.discover_scamp_connections()
