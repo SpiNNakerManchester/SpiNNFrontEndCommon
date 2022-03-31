@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import tempfile
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
@@ -84,22 +85,11 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        path = os.path.dirname(os.path.abspath(__file__))
-        os.environ["C_LOGS_DICT"] = str(os.path.join(path, "temp.sqlite3"))
-        # There needs to be a dict but it can be empty
-        LogSqlLiteDatabase(new_dict=True)
-
-    @classmethod
-    def tearDownClass(cls):
-        path = os.path.dirname(os.path.abspath(__file__))
-        db = os.path.join(path, "temp.sqlite3")
-        if os.path.exists(db):
-            os.remove(db)
-
     def setUp(self):
         unittest_setup()
+        os.environ["C_LOGS_DICT"] = tempfile.mktemp()
+        # There needs to be a dict but it can be empty
+        LogSqlLiteDatabase(new_dict=True)
         writer = FecDataWriter.mock()
         writer.set_transceiver(_PretendTransceiver(
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
