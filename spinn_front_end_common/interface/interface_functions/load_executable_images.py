@@ -19,6 +19,8 @@ from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinn_front_end_common.utilities.emergency_recovery import emergency_recover_states_from_failure
 
 
 def load_app_images(executable_targets, app_id, transceiver):
@@ -45,8 +47,13 @@ def load_sys_images(executable_targets, app_id, transceiver):
     __load_images(executable_targets, app_id, transceiver,
                   lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
-    transceiver.wait_for_cores_to_be_in_state(
-        executable_targets.all_core_subsets, app_id, [CPUState.RUNNING])
+    try:
+        transceiver.wait_for_cores_to_be_in_state(
+            executable_targets.all_core_subsets, app_id, [CPUState.RUNNING])
+    except SpiNNManCoresNotInStateException as e:
+        emergency_recover_states_from_failure(
+            transceiver, app_id, executable_targets)
+        raise e
 
 
 def __load_images(executable_targets, app_id, txrx, filt, label):
