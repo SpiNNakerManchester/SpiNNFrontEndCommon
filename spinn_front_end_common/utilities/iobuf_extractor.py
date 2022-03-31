@@ -207,7 +207,7 @@ class IOBufExtractor(object):
         :param list(str) error_entries:
         :param list(str) warn_entries:
         """
-        replacer = Replacer(binary)
+        replacer = Replacer()
         prov_path = self.__prov_path(binary)
 
         # extract iobuf

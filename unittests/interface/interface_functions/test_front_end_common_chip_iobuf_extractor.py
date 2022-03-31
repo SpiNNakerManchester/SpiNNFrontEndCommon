@@ -16,6 +16,7 @@
 import os
 import unittest
 from spinn_utilities.config_holder import set_config
+from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
@@ -82,6 +83,20 @@ executable_targets.add_subsets(alphaaplx, core_subsets)
 
 
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        path = os.path.dirname(os.path.abspath(__file__))
+        os.environ["C_LOGS_DICT"] = str(os.path.join(path, "temp.sqlite3"))
+        # There needs to be a dict but it can be empty
+        LogSqlLiteDatabase(new_dict=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        path = os.path.dirname(os.path.abspath(__file__))
+        db = os.path.join(path, "temp.sqlite3")
+        if os.path.exists(db):
+            os.remove(db)
 
     def setUp(self):
         unittest_setup()
