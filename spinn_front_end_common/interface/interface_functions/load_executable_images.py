@@ -45,6 +45,8 @@ def load_sys_images(executable_targets, app_id, transceiver):
     __load_images(executable_targets, app_id, transceiver,
                   lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
+    transceiver.wait_for_cores_to_be_in_state(
+        executable_targets.all_core_subsets, app_id, [CPUState.RUNNING])
 
 
 def __load_images(executable_targets, app_id, txrx, filt, label):
