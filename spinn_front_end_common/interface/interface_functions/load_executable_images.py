@@ -49,7 +49,8 @@ def load_sys_images(executable_targets, app_id, transceiver):
                   "Loading system executables onto the machine")
     try:
         transceiver.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id, [CPUState.RUNNING])
+            executable_targets.all_core_subsets, app_id, [CPUState.RUNNING],
+            timeout=10)
     except SpiNNManCoresNotInStateException as e:
         emergency_recover_states_from_failure(
             transceiver, app_id, executable_targets)
