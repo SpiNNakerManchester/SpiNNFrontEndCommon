@@ -116,7 +116,7 @@ class TestWriteJson(unittest.TestCase):
 
         folder = "spinn4"
         self._remove_old_json(folder)
-        filename = write_json_machine(machine, folder)
+        filename = write_json_machine(machine, folder, True)
 
         self.json_compare(filename, "spinn4.json")
 
@@ -140,11 +140,12 @@ class TestWriteJson(unittest.TestCase):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         set_config(
             "Machine", "spalloc_user", "Integration testing ok to kill")
+        set_config("Machine", "spalloc_server", self.spalloc)
         set_config("Machine", "spalloc_port", self.spin2Port)
 
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
-                spalloc_allocator(spalloc_server=self.spalloc, n_chips=20)
+                spalloc_allocator(n_chips=20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .data_written import DataWritten
 from .dpri_flags import DPRIFlags
 from .executable_finder import ExecutableFinder
 from .executable_type import ExecutableType
@@ -22,6 +21,6 @@ from .power_used import PowerUsed
 from .reinjection_status import ReInjectionStatus
 
 __all__ = [
-    "DataWritten", "DPRIFlags", "ExecutableFinder",
+    "DPRIFlags", "ExecutableFinder",
     "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
     "ReInjectionStatus"]

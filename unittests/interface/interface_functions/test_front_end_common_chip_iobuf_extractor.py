@@ -14,9 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import tempfile
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.executable_finder import ExecutableFinder
+from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
@@ -90,6 +92,9 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        os.environ["C_LOGS_DICT"] = tempfile.mktemp()
+        # There needs to be a dict but it can be empty
+        LogSqlLiteDatabase(new_dict=True)
 
     def testExectuableFinder(self):
         self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))

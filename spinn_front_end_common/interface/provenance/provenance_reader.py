@@ -300,6 +300,25 @@ class ProvenanceReader(object):
         except IndexError:
             return None
 
+    def get_category_timer_sum(self, category):
+        """
+        Get the total runtime for one category of algorithms
+
+        :param str category:
+        :return: total off all runtimes with this category
+        :rtype: int
+        """
+        query = """
+             SELECT sum(the_value)
+             FROM category_timer_provenance
+             WHERE category = ?
+             """
+        data = self.run_query(query, [category])
+        try:
+            return data[0][0]
+        except IndexError:
+            return None
+
     def get_timer_sum_by_category(self, category):
         """
         Get the total runtime for one category of algorithms
