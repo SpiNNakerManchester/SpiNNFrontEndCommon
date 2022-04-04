@@ -51,13 +51,13 @@ def insert_extra_monitor_vertices_to_graphs(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
         chip_to_gatherer_map[eth.x, eth.y] = gatherer
         cores = __cores(machine, eth.x, eth.y)
-        p = cores[placements.n_placements_on_chip(eth.x, eth.y) + 1]
+        p = cores[placements.n_placements_on_chip(eth.x, eth.y)]
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
             vertex_to_chip_map[x, y] = monitor
             cores = __cores(machine, x, y)
-            p = cores[placements.n_placements_on_chip(x, y) + 1]
+            p = cores[placements.n_placements_on_chip(x, y)]
             placements.add_placement(Placement(monitor, x, y, p))
     return chip_to_gatherer_map, vertex_to_chip_map
 
