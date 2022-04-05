@@ -3123,7 +3123,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
-            self._txrx, self._executable_targets, self._executable_finder)
+            self._txrx, self._executable_targets, self._executable_finder,
+            recovery_mode=True)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
