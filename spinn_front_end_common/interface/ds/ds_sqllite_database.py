@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import io
 import logging
 import os
 import sqlite3
@@ -20,7 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinn_front_end_common.utilities.utility_objs import DataWritten
+from .data_row_writer import DataRowWriter
 
 DB_NAME = "ds.sqlite3"
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -29,19 +30,21 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class DsSqlliteDatabase(SQLiteDB):
     __slots__ = [
+        "_app_id",
         # The machine cached for getting the "ethernet"s
         "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, init=None):
+    def __init__(self, machine, app_id=-1, init=None):
         """
         :param ~spinn_machine.Machine machine:
         :param init:
         :type init: bool or None
         """
         self._machine = machine
+        self._app_id = app_id
         database_file = os.path.join(report_default_directory(), DB_NAME)
 
         if init is None:
@@ -94,7 +97,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 DELETE FROM core
                 """)
 
-    def save_ds(self, core_x, core_y, core_p, ds):
+    def write_data_spec(self, core_x, core_y, core_p, ds):
         """
         :param int core_x: x of the core ds applies to
         :param int core_y: y of the core ds applies to
@@ -106,16 +109,16 @@ class DsSqlliteDatabase(SQLiteDB):
             cursor.execute(
                 """
                 INSERT INTO core(
-                    x, y, processor, content, ethernet_id)
+                    x, y, processor, content, ethernet_id, app_id)
                 VALUES(?, ?, ?, ?, (
                     SELECT COALESCE((
                         SELECT ethernet_id FROM ethernet
                         WHERE ethernet_x = ? AND ethernet_y = ?
-                    ), ?)))
+                    ), ?)), ?)
                 """, (
                     core_x, core_y, core_p, sqlite3.Binary(ds),
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-                    self._root_ethernet_id))
+                    self._root_ethernet_id, self._app_id))
 
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.
@@ -136,14 +139,31 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["content"]
         return b""
 
-    def ds_iteritems(self):
+    def keys(self):
+        """ Yields the keys
+
+        .. note:
+            Do not use the database for anything else while iterating.
+
+        :return: Yields the (x, y, p)
+        :rtype: iterable(tuple(int,int,int))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor FROM core
+                    WHERE content IS NOT NULL
+                    """):
+                yield (row["x"], row["y"], row["processor"])
+
+    def items(self):
         """ Yields the keys and values for the DS data
 
         .. note:
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p) and saved ds pairs
-        :rtype: iterable(tuple(tuple(int, int, int), bytearray))
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -151,7 +171,44 @@ class DsSqlliteDatabase(SQLiteDB):
                     SELECT x, y, processor, content FROM core
                     WHERE content IS NOT NULL
                     """):
-                yield (row["x"], row["y"], row["processor"]), row["content"]
+                yield ((row["x"], row["y"], row["processor"]),
+                       io.BytesIO(row["content"]))
+
+    def system_items(self):
+        """ Yields the keys and values for the DS data for system cores
+
+        .. note:
+            Do not use the database for anything else while iterating.
+
+        :return: Yields the (x, y, p), saved ds and region_size triples
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, content, memory_used FROM core
+                    WHERE content IS NOT NULL AND is_system = 1
+                    """):
+                yield ((row["x"], row["y"], row["processor"]),
+                       io.BytesIO(row["content"]), row["memory_used"])
+
+    def app_items(self):
+        """ Yields the keys and values for the DS data for application cores
+
+        .. note:
+            Do not use the database for anything else while iterating.
+
+        :return: Yields the (x, y, p) and saved ds pairs
+        :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, content, memory_used  FROM core
+                    WHERE content IS NOT NULL AND is_system = 0
+                    """):
+                yield ((row["x"], row["y"], row["processor"]),
+                       io.BytesIO(row["content"]), row["memory_used"])
 
     def ds_n_cores(self):
         """ Returns the number for cores there is a ds saved for
@@ -168,7 +225,37 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["count"]
         raise Exception("Count query failed")
 
-    def ds_set_app_id(self, app_id):
+    def ds_n_app_cores(self):
+        """ Returns the number for application cores there is a ds saved for
+
+        :rtype: int
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT COUNT(*) as count FROM core
+                    WHERE content IS NOT NULL AND is_system = 0
+                    LIMIT 1
+                    """):
+                return row["count"]
+        raise Exception("Count query failed")
+
+    def ds_n_system_cores(self):
+        """ Returns the number for system cores there is a ds saved for
+
+        :rtype: int
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT COUNT(*) as count FROM core
+                    WHERE content IS NOT NULL  AND is_system = 1
+                    LIMIT 1
+                    """):
+                return row["count"]
+        raise Exception("Count query failed")
+
+    def set_app_id(self, app_id):
         """ Sets the same app_id for all rows that have ds content
 
         :param int app_id: value to set
@@ -199,6 +286,18 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["app_id"]
         return None
 
+    def mark_system_cores(self, core_subsets):
+        """
+        :param ~spinn_machine.CoreSubsets core_subsets:
+        """
+        cores_to_mark = []
+        for subset in core_subsets:
+            x = subset.x
+            y = subset.y
+            for p in subset.processor_ids:
+                cores_to_mark.append((x, y, p))
+        self.ds_mark_as_system(cores_to_mark)
+
     def ds_mark_as_system(self, core_list):
         """ Flags a list of processors as running system binaries.
 
@@ -213,21 +312,13 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, core_list)
 
-    def _row_to_info(self, row):
-        """
-        :param ~sqlite3.Row row:
-        :rtype: DataWritten
-        """
-        return DataWritten(start_address=row["start_address"],
-                           memory_used=row["memory_used"],
-                           memory_written=row["memory_written"])
-
     def get_write_info(self, x, y, p):
         """ Gets the provenance returned by the Data Spec executor.
 
         :param int x: core x
         :param int y: core y
         :param int p: core p
+        :return: start_address, memory_used, memory_written
         :rtype: DataWritten
         """
         with self.transaction() as cursor:
@@ -238,25 +329,21 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE x = ? AND y = ? AND processor = ?
                     LIMIT 1
                     """, (x, y, p)):
-                return self._row_to_info(row)
+                return (row["start_address"], row["memory_used"],
+                        row["memory_written"])
         raise ValueError(f"No info for {x}:{y}:{p}")
 
-    def set_write_info(self, x, y, p, info):
+    def set_write_info(
+            self, x, y, p, start, used, written):
         """ Sets the provenance returned by the Data Spec executor.
 
         :param int x: core x
         :param int y: core y
         :param int p: core p
-        :param DataWritten info:
+        :param int start: base_address:
+        :param int used: size_allocated:
+        :param int written: bytes_written:
         """
-        if isinstance(info, DataWritten):
-            start = info.start_address
-            used = info.memory_used
-            written = info.memory_written
-        else:
-            start = info["start_address"]
-            used = info["memory_used"]
-            written = info["memory_written"]
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -340,8 +427,9 @@ class DsSqlliteDatabase(SQLiteDB):
             A DB transaction may be held while this iterator is processing.
             Reentrant use of this class is not supported.
 
-        :return: Yields the (x, y, p) and DataWritten
-        :rtype: iterable(tuple(tuple(int, int, int), DataWritten))
+        :return: Yields the (x, y, p), start_address, memory_used
+            and memory_written
+        :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -352,5 +440,15 @@ class DsSqlliteDatabase(SQLiteDB):
                     FROM core
                     WHERE start_address IS NOT NULL
                     """):
-                yield (row["x"], row["y"], row["processor"]), \
-                      self._row_to_info(row)
+                yield ((row["x"], row["y"], row["processor"]),
+                       row["start_address"], row["memory_used"],
+                       row["memory_written"])
+
+    def create_data_spec(self, x, y, p):
+        """
+        :param int x:
+        :param int y:
+        :param int p:
+        :rtype: DataRowWriter
+        """
+        return DataRowWriter(x, y, p, self)

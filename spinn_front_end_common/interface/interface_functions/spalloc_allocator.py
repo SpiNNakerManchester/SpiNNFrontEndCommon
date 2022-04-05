@@ -224,12 +224,22 @@ def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
     try:
         job = client.create_job(n_boards, spalloc_machine)
         task = job.launch_keepalive_task()
-        job.wait_until_ready()
-        connections = job.get_connections()
+        try:
+            job.wait_until_ready()
+            connections = job.get_connections()
+        except Exception as ex:
+            try:
+                job.destroy(str(ex))
+            except Exception:  # pylint: disable=broad-except
+                # Ignore faults in destruction; job will die anyway or even
+                # already be dead. Either way, no problem
+                pass
+            raise
         ProvenanceWriter().insert_board_provenance(connections)
         root = connections.get((0, 0), None)
-        logger.debug("boards: {}",
-                     str(connections).replace("{", "[").replace("}", "]"))
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("boards: {}",
+                         str(connections).replace("{", "[").replace("}", "]"))
         allocation_controller = _NewSpallocJobController(client, job, task)
         # Success! We don't want to close the client or task now;
         # the allocation controller now owns them.
@@ -298,8 +308,10 @@ def _launch_checked_job_old(n_boards, spalloc_kwargs):
                 job.destroy(str(ex))
                 raise
             connections = job.connections
-            logger.info("boards: {}",
-                        str(connections).replace("{", "[").replace("}", "]"))
+            if logger.isEnabledFor(logging.DEBUG):
+                logger.debug("boards: {}",
+                             str(connections).replace("{", "[").replace(
+                                 "}", "]"))
             ProvenanceWriter().insert_board_provenance(connections)
             if hostname not in avoid_boards:
                 break
