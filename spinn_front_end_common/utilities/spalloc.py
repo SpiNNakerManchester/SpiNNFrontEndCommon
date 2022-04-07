@@ -17,16 +17,26 @@ from functools import wraps
 from logging import getLogger
 from multiprocessing import Process, Queue
 from packaging.version import Version
-from queue import Empty
+import queue
 import re
 import requests
+import struct
+import threading
 from urllib.parse import urlparse, urlunparse
+import websocket
 from spinn_utilities.log import FormatAdapter
+from spalloc.protocol_client import ProtocolError
 
 logger = FormatAdapter(getLogger(__name__))
 _S = "JSESSIONID"
 #: Enable detailed debugging by setting to True
 _debug_pretty_print = False
+
+_open_req = struct.Struct("<IIIII")
+_close_req = struct.Struct("<III")
+# Open and close share the response structure
+_open_close_res = struct.Struct("<III")
+_msg = struct.Struct("<II")
 
 
 def _clean_url(url):
@@ -474,7 +484,7 @@ def _SpallocKeepalive(url, interval, term_queue, cookies, headers):
         try:
             term_queue.get(True, interval)
             break
-        except Empty:
+        except queue.Empty:
             continue
 
 
@@ -552,6 +562,56 @@ class SpallocMachine(_SpallocSessionAware):
             self.dead_links))
 
 
+class _ProxyProtocol(IntEnum):
+    #: Message relating to opening a channel
+    OPEN = 0
+    #: Message relating to closing a channel
+    CLOSE = 1
+    #: Message sent on a channel
+    MSG = 2
+
+
+class _ProxyReceiver(threading.Thread):
+    def __init__(self, ws):
+        super().__init__(daemon=True)
+        self.__ws = ws
+        self.__returns = {}
+        self.__handlers = {}
+        self.__correlation_id = 0
+        self.start()
+
+    def run(self):
+        while self.__ws.connected:
+            try:
+                msg = self.__ws.recv_data()
+            except Exception:  # pylint: disable=broad-except
+                break
+            code, num = _msg.unpack_from(msg, 0)
+            if code in (_ProxyProtocol.OPEN, _ProxyProtocol.CLOSE):
+                self.dispatch_return(num, msg)
+            else:
+                self.dispatch_message(num, msg)
+
+    def expect_return(self, handler):
+        c = self.__correlation_id
+        self.__correlation_id += 1
+        self.__returns[c] = handler
+        return c
+
+    def listen(self, channel_id, handler):
+        self.__handlers[channel_id] = handler
+
+    def dispatch_return(self, correlation_id, msg):
+        handler = self.__returns.pop(correlation_id, None)
+        if handler:
+            handler(msg)
+
+    def dispatch_message(self, channel_id, msg):
+        handler = self.__handlers.get(channel_id, None)
+        if handler:
+            handler(msg)
+
+
 class SpallocJob(_SpallocSessionAware):
     """
     Represents a job in spalloc.
@@ -559,7 +619,8 @@ class SpallocJob(_SpallocSessionAware):
     Don't make this yourself. Use :py:class:`SpallocClient` instead.
     """
     __slots__ = ("__machine_url", "__chip_url",
-                 "_keepalive_url", "__keepalive_handle")
+                 "_keepalive_url", "__keepalive_handle", "__proxy_handle",
+                 "__proxy_thread")
 
     def __init__(self, session, job_handle):
         """
@@ -572,6 +633,8 @@ class SpallocJob(_SpallocSessionAware):
         self.__chip_url = self._url + "chip"
         self._keepalive_url = self._url + "keepalive"
         self.__keepalive_handle = None
+        self.__proxy_handle = None
+        self.__proxy_thread = None
 
     def get_state(self):
         """
@@ -613,6 +676,43 @@ class SpallocJob(_SpallocSessionAware):
             (int(x), int(y)): str(host)
             for ((x, y), host) in r.json()["connections"]
         }
+
+    @property
+    def __proxy_url(self):
+        """
+        Get the URL for talking to the proxy connection system.
+        """
+        r = self._get(self._url)
+        if r.status_code == 204:
+            return None
+        try:
+            return r.json().proxy_ref
+        except KeyError:
+            return None
+
+    def __init_proxy(self):
+        if self.__proxy_handle is None or not self.__proxy_handle.connected:
+            url = self.__proxy_url
+            # Only fetch these after getting the URL
+            cookies, headers = self._session_credentials
+            ck = ";".join(name + "=" + cookies[name] for name in cookies)
+            self.__proxy_handle = websocket.create_connection(
+                url, headers=headers, cookie=ck)
+            self.__proxy_thread = _ProxyReceiver(self.__proxy_handle)
+
+    def connect_to_board(self, x, y, port):
+        """
+        Open a connection to a particular board in the job.
+
+        :param int x: X coordinate of the board's ethernet chip
+        :param int y: Y coordinate of the board's ethernet chip
+        :param int port: UDP port to talk to
+        :return: A channel that talks to the board. Will have send(), recv(),
+            and close() methods.
+        """
+        self.__init_proxy()
+        return _SpallocSocket(
+            self.__proxy_handle, self.__proxy_thread, x, y, port)
 
     def wait_for_state_change(self, old_state):
         """
@@ -731,6 +831,54 @@ class SpallocState(IntEnum):
     READY = 3
     #: The job has been destroyed.
     DESTROYED = 4
+
+
+class _SpallocSocket:
+    __slots__ = ("__ws", "__receiver", "__handle", "__msgs")
+
+    def __init__(
+            self, ws: websocket.WebSocket, receiver: _ProxyReceiver,
+            x: int, y: int, port: int):
+        self.__ws = ws
+        self.__receiver = receiver
+        self.__handle = self.__open(x, y, port)
+        self.__msgs = queue.Queue()
+        self.__receiver.listen(self.__handle, self.__msgs.put)
+
+    def __open(self, x, y, port):
+        r = queue.Queue(1)
+        c = self.__receiver.expect_return(r.put)
+        self.__ws.send_binary(_open_req.pack(
+            _ProxyProtocol.OPEN, c, x, y, port))
+        _code, _correlation_id, channel_id = _open_close_res.unpack(r.get())
+        return channel_id
+
+    def close(self):
+        r = queue.Queue(1)
+        c = self.__receiver.expect_return(r.put)
+        self.__ws.send_binary(_close_req.pack(
+            _ProxyProtocol.CLOSE, c, self.__handle))
+        _code, _correlation_id, channel_id = _open_close_res.unpack(r.get())
+        if channel_id != self.__handle:
+            raise ProtocolError("failed to close proxy socket")
+
+    def send(self, message: bytes):
+        # Put the header on the front and send it
+        self.__ws.send_binary(_msg.pack(
+            _ProxyProtocol.MSG, self.__handle) + message)
+
+    def recv(self):
+        """
+        :rtype: bytes
+        """
+        while True:
+            try:
+                # Trim the header; we're in the right place now
+                return self.__msgs.get(timeout=0.5)[_msg.size:]
+            except queue.Empty:
+                pass
+            if not self.__ws.connected:
+                raise IOError("socket closed")
 
 
 def parse_old_spalloc(
