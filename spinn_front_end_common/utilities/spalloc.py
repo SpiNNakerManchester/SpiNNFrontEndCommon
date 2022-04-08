@@ -867,8 +867,7 @@ class SpallocJob(_SpallocSessionAware):
 
 
 class SpallocProxiedConnection(
-        Connection, SDPReceiver, SDPSender, SCPSender, SCPReceiver,
-        Listenable):
+        SDPReceiver, SDPSender, SCPSender, SCPReceiver, Listenable):
     """
     The socket interface supported by proxied sockets. The socket will always
     be talking to a specific board. This emulates a SCAMPConnection.
@@ -884,11 +883,15 @@ class SpallocProxiedConnection(
         """
 
     @abstractmethod
-    def recv(self) -> bytes:
+    def receive(self, timeout=None) -> bytes:
         """
         Receive a message on an open socket. Will block until a message is
         received.
 
+        :param timeout:
+            How long to wait for a message to be received before timing out.
+            If None, will wait indefinitely (or until the connection is
+            closed).
         :return: The received message.
         """
 
@@ -898,7 +901,7 @@ class SpallocProxiedConnection(
 
     @overrides(SDPReceiver.receive_sdp_message)
     def receive_sdp_message(self, timeout=None):
-        data = self.recv(timeout)
+        data = self.receive(timeout)
         return SDPMessage.from_bytestring(data, 2)
 
     @overrides(SDPSender.send_sdp_message)
@@ -979,8 +982,8 @@ class _SpallocSocket(SpallocProxiedConnection):
         self.__ws.send_binary(_msg.pack(
             _ProxyProtocol.MSG, self.__handle) + message)
 
-    @overrides(SpallocProxiedConnection.recv)
-    def recv(self, timeout=None) -> bytes:
+    @overrides(SpallocProxiedConnection.receive)
+    def receive(self, timeout=None) -> bytes:
         if timeout is None:
             while True:
                 try:
@@ -995,11 +998,13 @@ class _SpallocSocket(SpallocProxiedConnection):
                 return self.__msgs.get(timeout=timeout)[_msg.size:]
             except queue.Empty as e:
                 if not self.is_connected:
+                    # pylint: disable=raise-missing-from
                     raise IOError("socket closed")
                 raise SpinnmanTimeoutException from e
 
     @overrides(Listenable.is_ready_to_receive)
     def is_ready_to_receive(self, timeout=0):
+        # TODO handle timeout
         return self.__msgs.not_empty
 
     @property
