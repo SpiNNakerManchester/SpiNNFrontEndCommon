@@ -24,7 +24,18 @@ import struct
 import threading
 from urllib.parse import urlparse, urlunparse
 import websocket
+from spinn_utilities.abstract_base import abstractmethod
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
+from spinnman.connections.abstract_classes import (
+    Connection, Listenable, SDPReceiver, SDPSender, SCPReceiver, SCPSender)
+from spinnman.connections.udp_packet_connections import (
+    update_sdp_header_for_udp_send)
+from spinnman.constants import SCP_SCAMP_PORT
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPMessage, SDPFlag
+from spinnman.messages.scp.enums import SCPResult
 from spalloc.protocol_client import ProtocolError
 
 logger = FormatAdapter(getLogger(__name__))
@@ -37,6 +48,29 @@ _close_req = struct.Struct("<III")
 # Open and close share the response structure
 _open_close_res = struct.Struct("<III")
 _msg = struct.Struct("<II")
+_TWO_SHORTS = struct.Struct("<2H")
+
+
+class SpallocState(IntEnum):
+    #: The job is in an unknown state.
+    UNKNOWN = 0
+    #: The job is queued waiting for allocation.
+    QUEUED = 1
+    #: The job is queued waiting for boards to power on or off.
+    POWER = 2
+    #: The job is ready for user code to run on it.
+    READY = 3
+    #: The job has been destroyed.
+    DESTROYED = 4
+
+
+class _ProxyProtocol(IntEnum):
+    #: Message relating to opening a channel
+    OPEN = 0
+    #: Message relating to closing a channel
+    CLOSE = 1
+    #: Message sent on a channel
+    MSG = 2
 
 
 def _clean_url(url):
@@ -242,6 +276,28 @@ class _Session:
             headers["Authorization"] = f"Bearer {self.__token}"
         return cookies, headers
 
+    def websocket(self, url, header=None, cookie=None, **kwargs):
+        """
+        Create a websocket that uses the session credentials to establish
+        itself.
+
+        :param str url: Actual location to open websocket at
+        :param dict(str,str) header: Optional HTTP headers
+        :param str cookie:
+            Optional cookies (composed as semicolon-separated string)
+        :param kwargs: Other options to :py:func:`~websocket.create_connection`
+        :rtype: ~websocket.WebSocket
+        """
+        # Note: *NOT* a renewable action!
+        if header is None:
+            header = {}
+        header[self.__csrf_header] = self.__csrf
+        if cookie is not None:
+            cookie += ";"
+        cookie += _S + "=" + self._session_id
+        return websocket.create_connection(
+            url, header=header, cookie=cookie, **kwargs)
+
     def _purge(self):
         """
         Clears out all credentials from this session, rendering the session
@@ -253,7 +309,7 @@ class _Session:
         self.__csrf = None
 
 
-class SpallocClient:
+class SpallocClient(AbstractContextManager):
     """
     Basic client library for talking to new Spalloc.
     """
@@ -462,16 +518,6 @@ class SpallocClient:
             self.__session._purge()
         self.__session = None
 
-    def __enter__(self):
-        """
-        :rtype: SpallocClient
-        """
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-        return False
-
 
 def _SpallocKeepalive(url, interval, term_queue, cookies, headers):
     """
@@ -508,14 +554,27 @@ class _SpallocSessionAware:
         """
         return self.__session._credentials
 
-    def _get(self, *args, **kwargs):
-        return self.__session.get(*args, **kwargs)
+    def _get(self, url, **kwargs):
+        return self.__session.get(url, **kwargs)
 
-    def _put(self, *args, **kwargs):
-        return self.__session.put(*args, **kwargs)
+    def _post(self, url, jsonobj, **kwargs):
+        return self.__session.post(url, jsonobj, **kwargs)
 
-    def _delete(self, *args, **kwargs):
-        return self.__session.delete(*args, **kwargs)
+    def _put(self, url, data, **kwargs):
+        return self.__session.put(url, data, **kwargs)
+
+    def _delete(self, url, **kwargs):
+        return self.__session.delete(url, **kwargs)
+
+    def _websocket(self, url, **kwargs):
+        """
+        Create a websocket that uses the session credentials to establish
+        itself.
+
+        :param str url: Actual location to open websocket at
+        :rtype: ~websocket.WebSocket
+        """
+        return self.__session.websocket(url, **kwargs)
 
 
 class SpallocMachine(_SpallocSessionAware):
@@ -560,15 +619,6 @@ class SpallocMachine(_SpallocSessionAware):
         return "SpallocMachine" + str((
             self.name, self.tags, self.width, self.height, self.dead_boards,
             self.dead_links))
-
-
-class _ProxyProtocol(IntEnum):
-    #: Message relating to opening a channel
-    OPEN = 0
-    #: Message relating to closing a channel
-    CLOSE = 1
-    #: Message sent on a channel
-    MSG = 2
 
 
 class _ProxyReceiver(threading.Thread):
@@ -692,24 +742,20 @@ class SpallocJob(_SpallocSessionAware):
 
     def __init_proxy(self):
         if self.__proxy_handle is None or not self.__proxy_handle.connected:
-            url = self.__proxy_url
-            # Only fetch these after getting the URL
-            cookies, headers = self._session_credentials
-            ck = ";".join(name + "=" + cookies[name] for name in cookies)
-            self.__proxy_handle = websocket.create_connection(
-                url, headers=headers, cookie=ck)
+            self.__proxy_handle = self._websocket(self.__proxy_url)
             self.__proxy_thread = _ProxyReceiver(self.__proxy_handle)
 
-    def connect_to_board(self, x, y, port):
+    def connect_to_board(self, x, y, port=SCP_SCAMP_PORT):
         """
         Open a connection to a particular board in the job.
 
         :param int x: X coordinate of the board's ethernet chip
         :param int y: Y coordinate of the board's ethernet chip
-        :param int port: UDP port to talk to
-        :return: A channel that talks to the board. Will have send(), recv(),
-            and close() methods.
+        :param int port: UDP port to talk to; defaults to the SCP port
+        :return: A connection that talks to the board.
+        :rtype: SpallocProxiedConnection
         """
+        # TODO: return type
         self.__init_proxy()
         return _SpallocSocket(
             self.__proxy_handle, self.__proxy_thread, x, y, port)
@@ -820,65 +866,149 @@ class SpallocJob(_SpallocSessionAware):
         return f"SpallocJob({self._url})"
 
 
-class SpallocState(IntEnum):
-    #: The job is in an unknown state.
-    UNKNOWN = 0
-    #: The job is queued waiting for allocation.
-    QUEUED = 1
-    #: The job is queued waiting for boards to power on or off.
-    POWER = 2
-    #: The job is ready for user code to run on it.
-    READY = 3
-    #: The job has been destroyed.
-    DESTROYED = 4
+class SpallocProxiedConnection(
+        Connection, SDPReceiver, SDPSender, SCPSender, SCPReceiver,
+        Listenable):
+    """
+    The socket interface supported by proxied sockets. The socket will always
+    be talking to a specific board. This emulates a SCAMPConnection.
+    """
+    __slots__ = ()
+
+    @abstractmethod
+    def send(self, message: bytes):
+        """
+        Send a message on an open socket.
+
+        :param message: The message to send.
+        """
+
+    @abstractmethod
+    def recv(self) -> bytes:
+        """
+        Receive a message on an open socket. Will block until a message is
+        received.
+
+        :return: The received message.
+        """
+
+    @overrides(Listenable.get_receive_method)
+    def get_receive_method(self):
+        return self.receive_sdp_message
+
+    @overrides(SDPReceiver.receive_sdp_message)
+    def receive_sdp_message(self, timeout=None):
+        data = self.recv(timeout)
+        return SDPMessage.from_bytestring(data, 2)
+
+    @overrides(SDPSender.send_sdp_message)
+    def send_sdp_message(self, sdp_message):
+        # If a reply is expected, the connection should
+        if sdp_message.sdp_header.flags == SDPFlag.REPLY_EXPECTED:
+            update_sdp_header_for_udp_send(
+                sdp_message.sdp_header, self.chip_x, self.chip_y)
+        else:
+            update_sdp_header_for_udp_send(sdp_message.sdp_header, 0, 0)
+        self.send(b'\0\0' + sdp_message.bytestring)
+
+    @overrides(SCPReceiver.receive_scp_response)
+    def receive_scp_response(self, timeout=1.0):
+        data = self.receive(timeout)
+        result, sequence = _TWO_SHORTS.unpack_from(data, 10)
+        return SCPResult(result), sequence, data, 2
+
+    @overrides(SCPSender.send_scp_request)
+    def send_scp_request(self, scp_request):
+        self.send(self.get_scp_data(scp_request))
+
+    @overrides(SCPSender.get_scp_data)
+    def get_scp_data(self, scp_request):
+        update_sdp_header_for_udp_send(
+            scp_request.sdp_header, self.chip_x, self.chip_y)
+        return b'\0\0' + scp_request.bytestring
 
 
-class _SpallocSocket:
-    __slots__ = ("__ws", "__receiver", "__handle", "__msgs")
+class _SpallocSocket(SpallocProxiedConnection):
+    __slots__ = (
+        "__ws", "__receiver", "__handle", "__msgs", "__call_queue",
+        "__call_lock", "_chip_x", "_chip_y")
 
     def __init__(
             self, ws: websocket.WebSocket, receiver: _ProxyReceiver,
             x: int, y: int, port: int):
+        self._chip_x = x
+        self._chip_y = y
         self.__ws = ws
         self.__receiver = receiver
-        self.__handle = self.__open(x, y, port)
         self.__msgs = queue.Queue()
+        self.__call_queue = queue.Queue(1)
+        self.__call_lock = threading.RLock()
+        self.__handle, = self.__call(
+            _ProxyProtocol.OPEN, _open_req, _open_close_res, x, y, port)
         self.__receiver.listen(self.__handle, self.__msgs.put)
 
-    def __open(self, x, y, port):
-        r = queue.Queue(1)
-        c = self.__receiver.expect_return(r.put)
-        self.__ws.send_binary(_open_req.pack(
-            _ProxyProtocol.OPEN, c, x, y, port))
-        _code, _correlation_id, channel_id = _open_close_res.unpack(r.get())
-        return channel_id
+    def __call(self, proto: _ProxyProtocol, packer: struct.Struct,
+               unpacker: struct.Struct, *args) -> list:
+        if not self.is_connected:
+            raise IOError("socket closed")
+        with self.__call_lock:
+            # All calls via websocket use correlation_id
+            correlation_id = self.__receiver.expect_return(
+                self.__call_queue.put)
+            self.__ws.send_binary(packer.pack(proto, correlation_id, *args))
+            return unpacker.unpack(self.__call_queue.get())[2:]
 
+    @overrides(Connection.is_connected)
+    def is_connected(self):
+        return self.__ws and self.__ws.connected
+
+    @overrides(Connection.close)
     def close(self):
-        r = queue.Queue(1)
-        c = self.__receiver.expect_return(r.put)
-        self.__ws.send_binary(_close_req.pack(
-            _ProxyProtocol.CLOSE, c, self.__handle))
-        _code, _correlation_id, channel_id = _open_close_res.unpack(r.get())
+        channel_id, = self.__call(
+            _ProxyProtocol.CLOSE, _close_req, _open_close_res, self.__handle)
         if channel_id != self.__handle:
             raise ProtocolError("failed to close proxy socket")
+        self.__ws = None
+        self.__receiver = None
 
+    @overrides(SpallocProxiedConnection.send)
     def send(self, message: bytes):
+        if not self.is_connected:
+            raise IOError("socket closed")
         # Put the header on the front and send it
         self.__ws.send_binary(_msg.pack(
             _ProxyProtocol.MSG, self.__handle) + message)
 
-    def recv(self):
-        """
-        :rtype: bytes
-        """
-        while True:
+    @overrides(SpallocProxiedConnection.recv)
+    def recv(self, timeout=None) -> bytes:
+        if timeout is None:
+            while True:
+                try:
+                    # Trim the header; we're in the right place now
+                    return self.__msgs.get(timeout=0.5)[_msg.size:]
+                except queue.Empty:
+                    pass
+                if not self.is_connected:
+                    raise IOError("socket closed")
+        else:
             try:
-                # Trim the header; we're in the right place now
-                return self.__msgs.get(timeout=0.5)[_msg.size:]
-            except queue.Empty:
-                pass
-            if not self.__ws.connected:
-                raise IOError("socket closed")
+                return self.__msgs.get(timeout=timeout)[_msg.size:]
+            except queue.Empty as e:
+                if not self.is_connected:
+                    raise IOError("socket closed")
+                raise SpinnmanTimeoutException from e
+
+    @overrides(Listenable.is_ready_to_receive)
+    def is_ready_to_receive(self, timeout=0):
+        return self.__msgs.not_empty
+
+    @property
+    def chip_x(self):
+        return self._chip_x
+
+    @property
+    def chip_y(self):
+        return self._chip_y
 
 
 def parse_old_spalloc(
