@@ -20,15 +20,15 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
-from spinn_machine import Machine
 from spinn_utilities.config_holder import get_config_int, get_config_str
+from spinn_machine import Machine
+from spinnman.spalloc import SpallocClient, SpallocJob, SpallocState
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.spalloc import (
-    SpallocClient, SpallocJob, SpallocState, parse_old_spalloc)
+from spinn_front_end_common.utilities.spalloc import parse_old_spalloc
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
