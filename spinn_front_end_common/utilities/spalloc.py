@@ -933,8 +933,8 @@ class SpallocProxiedConnection(
 
 class _SpallocSocket(SpallocProxiedConnection):
     __slots__ = (
-        "__ws", "__receiver", "__handle", "__msgs", "__call_queue",
-        "__call_lock", "_chip_x", "_chip_y")
+        "__ws", "__receiver", "__handle", "__msgs", "__current_msg",
+        "__call_queue", "__call_lock", "_chip_x", "_chip_y")
 
     def __init__(
             self, ws: websocket.WebSocket, receiver: _ProxyReceiver,
@@ -944,6 +944,7 @@ class _SpallocSocket(SpallocProxiedConnection):
         self.__ws = ws
         self.__receiver = receiver
         self.__msgs = queue.Queue()
+        self.__current_msg = None
         self.__call_queue = queue.Queue(1)
         self.__call_lock = threading.RLock()
         self.__handle, = self.__call(
@@ -982,30 +983,50 @@ class _SpallocSocket(SpallocProxiedConnection):
         self.__ws.send_binary(_msg.pack(
             _ProxyProtocol.MSG, self.__handle) + message)
 
+    def __get(self, timeout: float = 0.5) -> bytes:
+        """
+        Get a value from the queue. Handles block/non-block switching and
+        trimming of the message protocol prefix.
+        """
+        if not timeout:
+            return self.__msgs.get(block=False)[_msg.size:]
+        else:
+            return self.__msgs.get(timeout=timeout)[_msg.size:]
+
     @overrides(SpallocProxiedConnection.receive)
     def receive(self, timeout=None) -> bytes:
+        if self.__current_msg is not None:
+            try:
+                return self.__current_msg
+            finally:
+                self.__current_msg = None
         if timeout is None:
             while True:
                 try:
-                    # Trim the header; we're in the right place now
-                    return self.__msgs.get(timeout=0.5)[_msg.size:]
+                    return self.__get()
                 except queue.Empty:
                     pass
                 if not self.is_connected:
                     raise IOError("socket closed")
         else:
             try:
-                return self.__msgs.get(timeout=timeout)[_msg.size:]
+                return self.__get(timeout)
             except queue.Empty as e:
                 if not self.is_connected:
                     # pylint: disable=raise-missing-from
                     raise IOError("socket closed")
-                raise SpinnmanTimeoutException from e
+                raise SpinnmanTimeoutException("receive", timeout) from e
 
     @overrides(Listenable.is_ready_to_receive)
-    def is_ready_to_receive(self, timeout=0):
-        # TODO handle timeout
-        return self.__msgs.not_empty
+    def is_ready_to_receive(self, timeout=0) -> bool:
+        # If we already have a message or the queue peek succeeds, return now
+        if self.__current_msg is not None or self.__msgs.not_empty:
+            return True
+        try:
+            self.__current_msg = self.__get(timeout)
+            return True
+        except queue.Empty:
+            return False
 
     @property
     def chip_x(self):
