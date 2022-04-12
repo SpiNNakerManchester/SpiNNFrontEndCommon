@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Tuple, Union
 from spalloc import ProtocolClient
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine, virtual_machine
@@ -55,8 +55,8 @@ def spalloc_max_machine_generator(bearer_token: str = None) -> Machine:
 
 
 def discover_max_machine_area_new(
-        spalloc_server: str, spalloc_machine: str | None,
-        bearer_token: str = None) -> Tuple[int, int] | Tuple[None, None]:
+        spalloc_server: str, spalloc_machine: Union[str, None],
+        bearer_token: str = None) -> Union[Tuple[int, int], Tuple[None, None]]:
     """
     Generate a maximum virtual machine a given allocation server can
     generate, communicating with the spalloc server using the new protocol.
@@ -96,7 +96,8 @@ def discover_max_machine_area_new(
 
 def discover_max_machine_area_old(
         spalloc_server: str, spalloc_port: int,
-        spalloc_machine: str | None) -> Tuple[int, int] | Tuple[None, None]:
+        spalloc_machine: Union[str, None]) -> Union[
+            Tuple[int, int], Tuple[None, None]]:
     """
     Generate a maximum virtual machine a given allocation server can
     generate, communicating with the spalloc server using the old protocol.
@@ -129,7 +130,7 @@ def discover_max_machine_area_old(
 
 
 def _filter(machines: List[Dict[str, str]],
-            target_name: str | None) -> Iterable[Dict[str, str]]:
+            target_name: Union[str, None]) -> Iterable[Dict[str, str]]:
     """
     :param list(dict(str,str)) machines:
     :param str target_name:
