@@ -12,21 +12,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from typing import Dict, Iterable, List, Tuple
 from spalloc import ProtocolClient
 from spinn_utilities.config_holder import get_config_int, get_config_str
-from spinn_machine.virtual_machine import virtual_machine
-from spinn_machine.machine import Machine
-from spinnman.spalloc import SpallocClient
-from spinnman.spalloc.utils import is_server_address
+from spinn_machine import Machine, virtual_machine
+from spinnman.spalloc import is_server_address, SpallocClient
 from spinn_front_end_common.utilities.spalloc import parse_old_spalloc
 
 
-def spalloc_max_machine_generator(bearer_token=None):
+def spalloc_max_machine_generator(bearer_token: str = None) -> Machine:
     """
     Generates a maximum virtual machine a given allocation server can generate.
 
-    :param str spalloc_server:
     :param str bearer_token: The bearer token to use
     :return: A virtual machine
     :rtype: ~spinn_machine.Machine
@@ -58,7 +55,8 @@ def spalloc_max_machine_generator(bearer_token=None):
 
 
 def discover_max_machine_area_new(
-        spalloc_server, spalloc_machine, bearer_token=None):
+        spalloc_server: str, spalloc_machine: str | None,
+        bearer_token: str = None) -> Tuple[int, int] | Tuple[None, None]:
     """
     Generate a maximum virtual machine a given allocation server can
     generate, communicating with the spalloc server using the new protocol.
@@ -97,7 +95,8 @@ def discover_max_machine_area_new(
 
 
 def discover_max_machine_area_old(
-        spalloc_server, spalloc_port, spalloc_machine):
+        spalloc_server: str, spalloc_port: int,
+        spalloc_machine: str | None) -> Tuple[int, int] | Tuple[None, None]:
     """
     Generate a maximum virtual machine a given allocation server can
     generate, communicating with the spalloc server using the old protocol.
@@ -129,7 +128,8 @@ def discover_max_machine_area_old(
     return max_size
 
 
-def _filter(machines, target_name):
+def _filter(machines: List[Dict[str, str]],
+            target_name: str | None) -> Iterable[Dict[str, str]]:
     """
     :param list(dict(str,str)) machines:
     :param str target_name:
@@ -140,7 +140,7 @@ def _filter(machines, target_name):
     return (m for m in machines if m["name"] == target_name)
 
 
-def _get_size(machine):
+def _get_size(machine: Dict[str, int]) -> Tuple[int, int, int]:
     """
     :param dict(str,int) machine:
     :return: width, height, area

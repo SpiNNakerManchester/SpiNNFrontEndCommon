@@ -15,15 +15,17 @@
 
 import logging
 import math
+from typing import Dict, Tuple
 from spinn_utilities.config_holder import get_config_str_list
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
-from spinnman.spalloc import SpallocClient, SpallocJob, SpallocState
-from spinnman.spalloc.utils import is_server_address
+from spinnman.spalloc import (
+    is_server_address, SpallocClient, SpallocJob, SpallocState)
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
@@ -32,6 +34,7 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.spalloc import parse_old_spalloc
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
 class _NewSpallocJobController(MachineAllocationController):
@@ -44,17 +47,19 @@ class _NewSpallocJobController(MachineAllocationController):
         "__closer"
     ]
 
-    def __init__(self, client, job, task):
+    def __init__(
+            self, client: SpallocClient, job: SpallocJob,
+            task: AbstractContextManager):
         """
         :param SpallocClient client:
         :param SpallocJob job:
-        :param task:
+        :param AbstractContextManager task:
         """
         if job is None:
             raise Exception("must have a real job")
         self.__client = client
         self.__closer = task
-        self._job: SpallocJob = job
+        self._job = job
         self._state = job.get_state()
         super().__init__("SpallocJobController")
 
@@ -108,7 +113,7 @@ class _OldSpallocJobController(MachineAllocationController):
         "_state"
     ]
 
-    def __init__(self, job):
+    def __init__(self, job: Job):
         """
         :param ~spalloc.job.Job job:
         """
@@ -129,13 +134,13 @@ class _OldSpallocJobController(MachineAllocationController):
         self._job.destroy()
 
     @property
-    def power(self):
+    def power(self) -> bool:
         """
         :rtype: bool
         """
         return self._job.power
 
-    def set_power(self, power):
+    def set_power(self, power: bool):
         """
         :param bool power:
         """
@@ -171,10 +176,11 @@ class _OldSpallocJobController(MachineAllocationController):
         super()._teardown()
 
 
-_MACHINE_VERSION = 5
-
-
-def spalloc_allocator(n_chips=None, n_boards=None, bearer_token=None):
+def spalloc_allocator(
+        n_chips: int = None, n_boards: int = None,
+        bearer_token: str = None) -> Tuple[
+            str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
+            MachineAllocationController]:
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
@@ -200,12 +206,18 @@ def spalloc_allocator(n_chips=None, n_boards=None, bearer_token=None):
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
     if is_server_address(spalloc_server):
-        return _allocate_job_new(spalloc_server, n_boards, bearer_token)
+        host, connections, mac = _allocate_job_new(
+            spalloc_server, n_boards, bearer_token)
     else:
-        return _alloc_job_old(spalloc_server, n_boards)
+        host, connections, mac = _alloc_job_old(spalloc_server, n_boards)
+    return (host, _MACHINE_VERSION, None, False, False, connections, None,
+            mac)
 
 
-def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
+def _allocate_job_new(
+        spalloc_server: str, n_boards: int,
+        bearer_token: str = None) -> Tuple[
+            str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
     given number of boards.
@@ -215,8 +227,7 @@ def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
     :param int n_boards: The number of boards required
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
-    :rtype: tuple(str, int, None, bool, bool, dict(tuple(int,int),str), None,
-        MachineAllocationController)
+    :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     logger.info(f"Requesting job with {n_boards} boards")
     spalloc_machine = get_config_str("Machine", "spalloc_machine")
@@ -246,9 +257,7 @@ def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
         # the allocation controller now owns them.
         client = None
         task = None
-        return (
-            root, _MACHINE_VERSION, None, False, False, connections, None,
-            allocation_controller)
+        return (root, connections, allocation_controller)
     finally:
         if task:
             task.close()
@@ -256,7 +265,8 @@ def _allocate_job_new(spalloc_server, n_boards, bearer_token=None):
             client.close()
 
 
-def _alloc_job_old(spalloc_server, n_boards):
+def _alloc_job_old(spalloc_server: str, n_boards: int) -> Tuple[
+        str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
@@ -264,8 +274,7 @@ def _alloc_job_old(spalloc_server, n_boards):
     :param str spalloc_server:
         The server from which the machine should be requested
     :param int n_boards: The number of boards required
-    :rtype: tuple(str, int, None, bool, bool, dict(tuple(int,int),str), None,
-        MachineAllocationController)
+    :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     host, port, user = parse_old_spalloc(
         spalloc_server, get_config_int("Machine", "spalloc_port"),
@@ -283,14 +292,11 @@ def _alloc_job_old(spalloc_server, n_boards):
     job, hostname, scamp_connection_data = _launch_checked_job_old(
         n_boards, spalloc_kwargs)
     machine_allocation_controller = _OldSpallocJobController(job)
-
-    return (
-        hostname, _MACHINE_VERSION, None, False,
-        False, scamp_connection_data, None, machine_allocation_controller
-    )
+    return (hostname, scamp_connection_data, machine_allocation_controller)
 
 
-def _launch_checked_job_old(n_boards, spalloc_kwargs):
+def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
+        Job, str, Dict[Tuple[int, int], str]]:
     """
     :rtype: tuple(~.Job, str, dict(tuple(int,int),str))
     """
