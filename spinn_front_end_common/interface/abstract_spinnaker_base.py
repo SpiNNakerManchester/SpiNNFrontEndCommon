@@ -39,6 +39,7 @@ from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums.cpu_state import CPUState
+from spinnman.spalloc import is_server_address
 
 from data_specification import __version__ as data_spec_version
 
@@ -154,7 +155,6 @@ from spinn_front_end_common.utilities.report_functions.reports import (
     router_report_from_router_tables, router_summary_report,
     sdram_usage_report_per_chip,
     tag_allocator_report)
-from spinn_front_end_common.utilities.spalloc import SpallocClient
 
 try:
     from scipy import __version__ as scipy_version
@@ -703,7 +703,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_str("Machine", "machine_name"):
             n_items_specified += 1
         srv = get_config_str("Machine", "spalloc_server")
-        if srv and not SpallocClient.is_server_address(srv, {"spalloc"}):
+        if srv and not is_server_address(srv, {"spalloc"}):
             # New-style spalloc encodes credentials in URL; old does not
             if get_config_str("Machine", "spalloc_user") is None:
                 raise Exception(
