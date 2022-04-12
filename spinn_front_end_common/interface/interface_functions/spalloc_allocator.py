@@ -23,6 +23,7 @@ from spalloc.states import JobState
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
 from spinnman.spalloc import SpallocClient, SpallocJob, SpallocState
+from spinnman.spalloc.utils import is_server_address
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
@@ -198,7 +199,7 @@ def spalloc_allocator(n_chips=None, n_boards=None, bearer_token=None):
         if math.ceil(n_boards) - n_boards < 0.1:
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
-    if SpallocClient.is_server_address(spalloc_server):
+    if is_server_address(spalloc_server):
         return _allocate_job_new(spalloc_server, n_boards, bearer_token)
     else:
         return _alloc_job_old(spalloc_server, n_boards)

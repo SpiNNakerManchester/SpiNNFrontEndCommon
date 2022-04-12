@@ -18,6 +18,7 @@ from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.machine import Machine
 from spinnman.spalloc import SpallocClient
+from spinnman.spalloc.utils import is_server_address
 from spinn_front_end_common.utilities.spalloc import parse_old_spalloc
 
 
@@ -32,7 +33,7 @@ def spalloc_max_machine_generator(bearer_token=None):
     """
     spalloc_server = get_config_str("Machine", "spalloc_server")
     spalloc_machine = get_config_str("Machine", "spalloc_machine")
-    if SpallocClient.is_server_address(spalloc_server):
+    if is_server_address(spalloc_server):
         width, height = discover_max_machine_area_new(
             spalloc_server, spalloc_machine, bearer_token)
     else:
