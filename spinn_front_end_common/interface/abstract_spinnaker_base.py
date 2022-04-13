@@ -965,6 +965,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._machine is None:
                 self._get_known_machine(total_run_time)
             if self._machine is None:
+                # TODO pass the bearer token somehow, if available
                 self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
 
@@ -1185,13 +1186,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(GET_MACHINE, "Virtual machine generator"):
             self._machine = virtual_machine_generator()
 
-    def _execute_allocator(self, category, total_run_time):
+    def _execute_allocator(self, category, total_run_time, bearer_token=None):
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required
 
         :param str category: Algorithm category for provenance
         :param total_run_time: The total run time to request
-        type total_run_time: int or None
+        :type total_run_time: int or None
+        :param str bearer_token: The OIDC bearer token
         :return: machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
@@ -1208,9 +1210,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
-                # TODO pass the bearer token somehow, if available
                 return spalloc_allocator(
-                    n_chips_required, self._n_boards_required)
+                    n_chips_required, self._n_boards_required, bearer_token)
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(
@@ -1261,7 +1262,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 auto_detect_bmp, scamp_connection_data, boot_port_num,
                 reset_machine)
 
-    def _execute_get_max_machine(self, total_run_time):
+    def _execute_get_max_machine(self, total_run_time, bearer_token=None):
         """
         Runs, times and logs the a MaxMachineGenerator if required
 
@@ -1272,6 +1273,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param total_run_time: The total run time to request
         :type total_run_time: int or None
+        :param str bearer_token: The OIDC bearer token
         """
         if self._machine:
             # Leave _max_machine as is a may be true from an earlier call
@@ -1280,8 +1282,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._max_machine = True
         if get_config_str("Machine", "spalloc_server"):
             with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                # TODO pass the bearer token somehow, if available
-                self._machine = spalloc_max_machine_generator()
+                self._machine = spalloc_max_machine_generator(bearer_token)
 
         elif get_config_str("Machine", "remote_spinnaker_url"):
             with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
@@ -1306,6 +1307,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._use_virtual_board:
                 self._execute_get_virtual_machine()
             else:
+                # TODO pass the bearer token somehow, if available
                 allocator_data = self._execute_allocator(
                     GET_MACHINE, total_run_time)
                 self._execute_machine_generator(GET_MACHINE, allocator_data)
