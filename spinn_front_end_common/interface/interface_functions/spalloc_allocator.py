@@ -12,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from contextlib import ExitStack
 import logging
 import math
 from typing import Dict, Tuple
@@ -219,7 +219,7 @@ def _allocate_job_new(
         bearer_token: str = None) -> Tuple[
             str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
-    Request a machine from an old-style spalloc server that will fit the
+    Request a machine from an new-style spalloc server that will fit the
     given number of boards.
 
     :param str spalloc_server:
@@ -230,39 +230,27 @@ def _allocate_job_new(
     :rtype: tuple(str, dict(tuple(int,int),str), MachineAllocationController)
     """
     logger.info(f"Requesting job with {n_boards} boards")
-    spalloc_machine = get_config_str("Machine", "spalloc_machine")
-    client = SpallocClient(spalloc_server, bearer_token=bearer_token)
-    task = None
-    try:
+    with ExitStack() as stack:
+        spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        client = SpallocClient(spalloc_server, bearer_token=bearer_token)
+        stack.enter_context(client)
         job = client.create_job(n_boards, spalloc_machine)
+        stack.enter_context(job)
         task = job.launch_keepalive_task()
-        try:
-            job.wait_until_ready()
-            connections = job.get_connections()
-        except Exception as ex:
-            try:
-                job.destroy(str(ex))
-            except Exception:  # pylint: disable=broad-except
-                # Ignore faults in destruction; job will die anyway or even
-                # already be dead. Either way, no problem
-                pass
-            raise
+        stack.enter_context(task)
+        job.wait_until_ready()
+        connections = job.get_connections()
         ProvenanceWriter().insert_board_provenance(connections)
         root = connections.get((0, 0), None)
         if logger.isEnabledFor(logging.DEBUG):
-            logger.debug("boards: {}",
-                         str(connections).replace("{", "[").replace("}", "]"))
+            logger.debug(
+                "boards: {}",
+                str(connections).replace("{", "[").replace("}", "]"))
         allocation_controller = _NewSpallocJobController(client, job, task)
-        # Success! We don't want to close the client or task now;
+        # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
-        client = None
-        task = None
+        stack.pop_all()
         return (root, connections, allocation_controller)
-    finally:
-        if task:
-            task.close()
-        if client:
-            client.close()
 
 
 def _alloc_job_old(spalloc_server: str, n_boards: int) -> Tuple[
