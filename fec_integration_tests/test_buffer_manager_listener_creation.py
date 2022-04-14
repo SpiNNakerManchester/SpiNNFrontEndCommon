@@ -73,7 +73,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         # Create buffer manager
         bm = BufferManager(
-            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            placements=pl, tags=t, transceiver=trnx,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
             fixed_routes=None)
