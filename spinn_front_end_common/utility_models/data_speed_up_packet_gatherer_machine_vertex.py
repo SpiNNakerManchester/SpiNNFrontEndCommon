@@ -567,7 +567,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         start = datetime.datetime.now()
         # send data
         self._send_data_via_extra_monitors(
-            transceiver, x, y, base_address, data[offset:n_bytes + offset])
+            x, y, base_address, data[offset:n_bytes + offset])
         # end time recording
         end = datetime.datetime.now()
 
@@ -615,11 +615,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             data=payload)
 
     def _send_data_via_extra_monitors(
-            self, transceiver, destination_chip_x, destination_chip_y,
-            start_address, data_to_write):
+            self, destination_chip_x, destination_chip_y, start_address,
+            data_to_write):
         """ sends data using the extra monitor cores
 
-        :param ~.Transceiver transceiver: the SpiNNMan instance
         :param int destination_chip_x: chip x
         :param int destination_chip_y: chip y
         :param int start_address: start address in SDRAM to write data to
