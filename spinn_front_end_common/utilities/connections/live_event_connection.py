@@ -16,7 +16,6 @@
 import logging
 import struct
 from threading import Thread
-from collections import OrderedDict
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
@@ -233,7 +232,7 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__handle_possible_rerun_state()
 
-        vertex_sizes = OrderedDict()
+        vertex_sizes = dict()
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
         machine_timestep_ms = db_reader.get_configuration_parameter_value(
@@ -420,8 +419,8 @@ class LiveEventConnection(DatabaseConnection):
             logger.warning("problem handling received packet", exc_info=True)
 
     def __handle_time_packet(self, packet):
-        key_times_labels = OrderedDict()
-        atoms_times_labels = OrderedDict()
+        key_times_labels = dict()
+        atoms_times_labels = dict()
         while packet.is_next_element:
             element = packet.next_element
             time = element.payload
