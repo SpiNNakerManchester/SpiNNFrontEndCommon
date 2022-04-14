@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import defaultdict, OrderedDict
+from collections import defaultdict
 import json
 import logging
 import os
@@ -253,12 +253,12 @@ class JavaCaller(object):
         :rtype: dict
         """
         vertex = placement.vertex
-        json_placement = OrderedDict()
+        json_placement = dict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
         json_placement["p"] = placement.p
 
-        json_vertex = OrderedDict()
+        json_vertex = dict()
         json_vertex["label"] = vertex.label
         if isinstance(vertex, AbstractReceiveBuffersToHost) and \
                 vertex.get_recorded_region_ids():
@@ -279,7 +279,7 @@ class JavaCaller(object):
         :param ~pacman.model.tags.IPTag iptag:
         :rtype: dict
         """
-        json_tag = OrderedDict()
+        json_tag = dict()
         json_tag["x"] = iptag.destination_x
         json_tag["y"] = iptag.destination_y
         json_tag["boardAddress"] = iptag.board_address
@@ -316,7 +316,7 @@ class JavaCaller(object):
         json_obj = list()
         for ethernet in self._chipxy_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
-            json_gather = OrderedDict()
+            json_gather = dict()
             json_gather["x"] = ethernet[0]
             json_gather["y"] = ethernet[1]
             json_gather["p"] = self._gatherer_cores[ethernet]
@@ -324,7 +324,7 @@ class JavaCaller(object):
                 self._gatherer_iptags[ethernet])
             json_chips = list()
             for chip_xy in self._chipxy_by_ethernet[ethernet]:
-                json_chip = OrderedDict()
+                json_chip = dict()
                 json_chip["x"] = chip_xy[0]
                 json_chip["y"] = chip_xy[1]
                 json_chip["p"] = self._monitor_cores[chip_xy]
