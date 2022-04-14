@@ -54,7 +54,6 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EIEIODataMessage</span><span class="p">,</span> <span class="n">KeyPayloadDataElement</span><span class="p">)</span>
@@ -271,7 +270,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__handle_possible_rerun_state</span><span class="p">()</span>
 
-        <span class="n">vertex_sizes</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">vertex_sizes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="n">run_time_ms</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_configuration_parameter_value</span><span class="p">(</span>
             <span class="s2">&quot;runtime&quot;</span><span class="p">)</span>
         <span class="n">machine_timestep_ms</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_configuration_parameter_value</span><span class="p">(</span>
@@ -458,8 +457,8 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem handling received packet&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__handle_time_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="n">key_times_labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
-        <span class="n">atoms_times_labels</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="n">key_times_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">atoms_times_labels</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="k">while</span> <span class="n">packet</span><span class="o">.</span><span class="n">is_next_element</span><span class="p">:</span>
             <span class="n">element</span> <span class="o">=</span> <span class="n">packet</span><span class="o">.</span><span class="n">next_element</span>
             <span class="n">time</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">payload</span>
