@@ -281,8 +281,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         # locate the bitfields in a chip level scope
         base_addresses = dict()
-        n_processors_on_chip = machine.get_chip_at(chip_x, chip_y).n_processors
-        for p in range(0, n_processors_on_chip):
+        for p in range(0, Machine.max_cores_per_chip()):
             if placements.is_processor_occupied(chip_x, chip_y, p):
                 vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
 
@@ -327,9 +326,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         # read in bitfields.
         self._read_in_bit_fields(
             transceiver, router_table.x, router_table.y,
-            bit_field_chip_base_addresses, machine_graph,
-            placements, machine.get_chip_at(
-                router_table.x, router_table.y).n_processors)
+            bit_field_chip_base_addresses, machine_graph, placements)
 
         # execute binary search
         self._start_binary_search(router_table, key_atom_map)
@@ -421,7 +418,7 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,
-            machine_graph, placements, n_processors_on_chip):
+            machine_graph, placements):
         """ reads in the bitfields from the cores
 
         :param ~.Transceiver transceiver: SpiNNMan instance
@@ -429,7 +426,6 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param int chip_y: chip y coord
         :param ~.MachineGraph machine_graph: machine graph
         :param ~.Placements placements: the placements
-        :param int n_processors_on_chip: the number of processors on this chip
         :param dict(int,int) bit_field_chip_base_addresses:
             maps core id to base address
         :return: dict of lists of processor id to bitfields.
@@ -488,11 +484,11 @@ class _HostBasedBitFieldRouterCompressor(object):
         # use the ordered process to find the best ones to do first
         self._order_bit_fields(
             bit_fields_by_coverage, machine_graph, chip_x, chip_y, placements,
-            n_processors_on_chip, processor_coverage_by_bitfield)
+            processor_coverage_by_bitfield)
 
     def _order_bit_fields(
             self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
-            placements, n_processors_on_chip, processor_coverage_by_bitfield):
+            placements, processor_coverage_by_bitfield):
         """
         Orders the bit fields by redundancy setting the sorted index
 
@@ -503,14 +499,13 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param int chip_x:
         :param int chip_y:
         :param ~.Placements placements:
-        :param int n_processors_on_chip:
         :param dict(int,list(int)) processor_coverage_by_bitfield:
         """
         sort_index = 0
 
         # get incoming bandwidth for the cores
         most_costly_cores = dict()
-        for processor_id in range(0, n_processors_on_chip):
+        for processor_id in range(0, Machine.max_cores_per_chip()):
             if placements.is_processor_occupied(chip_x, chip_y, processor_id):
                 vertex = placements.get_vertex_on_processor(
                     chip_x, chip_y, processor_id)
