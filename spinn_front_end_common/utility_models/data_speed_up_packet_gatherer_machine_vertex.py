@@ -371,6 +371,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
+        # pylint: disable=unsubscriptable-object
         machine = FecDataView.get_machine()
         machine_graph = FecDataView.get_runtime_machine_graph()
         mc_data_chips_to_keys = \
@@ -1172,6 +1173,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
+        # pylint: disable=unsubscriptable-object
         routers = [(placement.x, placement.y)]
         fixed_routes = FecDataView.get_fixed_routes()
         entry = fixed_routes[placement.x, placement.y]

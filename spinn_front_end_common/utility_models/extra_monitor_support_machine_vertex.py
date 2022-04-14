@@ -318,6 +318,7 @@ class ExtraMonitorSupportMachineVertex(
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
         chip = FecDataView().get_chip_at(placement.x, placement.y)
+        # pylint: disable=unsubscriptable-object
         reinjector_base_mc_key = (
             router_timeout_keys[
                 (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
@@ -338,6 +339,7 @@ class ExtraMonitorSupportMachineVertex(
         # write address key and data key
         mc_data_chips_to_keys = \
             FecDataView.get_data_in_multicast_key_to_chip_map()
+        # pylint: disable=unsubscriptable-object
         base_key = mc_data_chips_to_keys[chip.x, chip.y]
         spec.write_value(base_key + _KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(base_key + _KEY_OFFSETS.DATA_KEY_OFFSET.value)
