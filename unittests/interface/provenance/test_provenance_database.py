@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import timedelta
 from testfixtures.logcapture import LogCapture
 import unittest
 from spinn_utilities.config_holder import set_config
@@ -76,6 +77,17 @@ class TestProvenanceDatabase(unittest.TestCase):
         self.assertEqual(4, data)
         data = reader.get_timer_sum_by_algorithm("junk")
         self.assertIsNone(data)
+
+    def test_category_timings(self):
+        with ProvenanceWriter() as db:
+            db.insert_category_timing("mapping", timedelta(seconds=12), 1, 1)
+            db.insert_category_timing("mapping", timedelta(seconds=123), 1, 2)
+            db.insert_category_timing(
+                "execute", timedelta(seconds=134), 1, None)
+            db.insert_category_timing("execute", timedelta(seconds=344), 1, 2)
+        reader = ProvenanceReader()
+        data = reader.get_category_timer_sum("mapping")
+        self.assertEqual((12 + 123) * 1000, data)
 
     def test_other(self):
         with ProvenanceWriter() as db:
@@ -158,3 +170,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.run_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
+
+    def test_board(self):
+        data = {(0, 0): '10.11.194.17', (4, 8): '10.11.194.81'}
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(data)
