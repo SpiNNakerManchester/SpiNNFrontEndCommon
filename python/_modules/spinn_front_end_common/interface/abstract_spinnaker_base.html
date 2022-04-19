@@ -3041,9 +3041,7 @@
             <span class="c1"># if in debug mode, do not shut down machine</span>
             <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
                 <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span>
-                        <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                        <span class="n">clear_tags</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">stop_e</span><span class="p">:</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">stop_e</span><span class="si">}</span><span class="s2"> when attempting to stop&quot;</span><span class="p">)</span>
 
@@ -3468,36 +3466,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_original_machine_graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertices_or_edges_added</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">_shutdown</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">clear_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param bool turn_off_machine:</span>
-<span class="sd">        :param bool clear_routing_tables:</span>
-<span class="sd">        :param bool clear_tags:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span>
-
-        <span class="k">if</span> <span class="n">turn_off_machine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">turn_off_machine</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;turn_off_machine&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">clear_routing_tables</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clear_routing_tables</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_routing_tables&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">clear_tags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">clear_tags</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_tags&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># if stopping on machine, clear IP tags and routing table</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__clear</span><span class="p">(</span><span class="n">clear_tags</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__clear</span><span class="p">()</span>
 
         <span class="c1"># Fully stop the application</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__stop_app</span><span class="p">()</span>
 
         <span class="c1"># stop the transceiver and allocation controller</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__close_transceiver</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__close_transceiver</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -3508,13 +3488,9 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
                 <span class="s2">&quot;Error when closing Notifications&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clear_tags</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param bool clear_tags:</span>
-<span class="sd">        :param bool clear_routing_tables:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># if stopping on machine, clear IP tags and</span>
-        <span class="k">if</span> <span class="n">clear_tags</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_tags&quot;</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">ip_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">ip_tags</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">clear_ip_tag</span><span class="p">(</span>
                     <span class="n">ip_tag</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">board_address</span><span class="o">=</span><span class="n">ip_tag</span><span class="o">.</span><span class="n">board_address</span><span class="p">)</span>
@@ -3524,7 +3500,7 @@
                     <span class="n">board_address</span><span class="o">=</span><span class="n">reverse_ip_tag</span><span class="o">.</span><span class="n">board_address</span><span class="p">)</span>
 
         <span class="c1"># if clearing routing table entries, clear</span>
-        <span class="k">if</span> <span class="n">clear_routing_tables</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_routing_tables&quot;</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
                         <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
@@ -3538,15 +3514,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__close_transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param bool turn_off_machine:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__close_transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">turn_off_machine</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Turning off machine&quot;</span><span class="p">)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">power_off_machine</span><span class="o">=</span><span class="n">turn_off_machine</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__close_allocation_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -3554,19 +3524,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">turn_off_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=arguments-differ</span>
-             <span class="n">clear_routing_tables</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clear_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        End running of the simulation.</span>
 
-<span class="sd">        :param bool turn_off_machine:</span>
-<span class="sd">            decides if the machine should be powered down after running the</span>
-<span class="sd">            execution. Note that this powers down all boards connected to the</span>
-<span class="sd">            BMP connections given to the transceiver</span>
-<span class="sd">        :param bool clear_routing_tables: informs the tool chain if it</span>
-<span class="sd">            should turn off the clearing of the routing tables</span>
-<span class="sd">        :param bool clear_tags: informs the tool chain if it should clear the</span>
-<span class="sd">            tags off the machine at stop</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="p">[</span><span class="n">Simulator_Status</span><span class="o">.</span><span class="n">SHUTDOWN</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span><span class="s2">&quot;Simulator has already been shutdown&quot;</span><span class="p">)</span>
@@ -3586,7 +3547,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_recover_from_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
 
         <span class="c1"># shut down the machine properly</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">(</span><span class="n">turn_off_machine</span><span class="p">,</span> <span class="n">clear_routing_tables</span><span class="p">,</span> <span class="n">clear_tags</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">exn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_errored_file</span><span class="p">()</span>
