@@ -801,6 +801,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
+        self._run_until_complete = False
 
     def run(self, run_time, sync_time=0):
         """ Run a simulation for a fixed amount of time
@@ -1234,10 +1235,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
-            scamp_connection_data = get_config_str(
-                "Machine", "scamp_connections_data")
-            boot_port_num = get_config_int(
-                "Machine", "boot_connection_port_num")
+            scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
             self._board_version = get_config_int(
@@ -1246,7 +1244,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif allocator_data:
             (self._ipaddress, self._board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
-             boot_port_num, self._machine_allocation_controller
+             self._machine_allocation_controller
              ) = allocator_data
         else:
             return
@@ -1254,8 +1252,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(category, "Machine generator"):
             self._machine, self._txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
-                auto_detect_bmp, scamp_connection_data, boot_port_num,
-                reset_machine)
+                auto_detect_bmp, scamp_connection_data, reset_machine)
 
     def _execute_get_max_machine(self, total_run_time):
         """
@@ -1996,8 +1993,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer(MAPPING, "Router collision potential report"):
-            # TODO cfg flag!
+        with FecTimer(MAPPING, "Router collision potential report") as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_router_collision_potential_report"):
+                return
             router_collision_potential_report(
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)
