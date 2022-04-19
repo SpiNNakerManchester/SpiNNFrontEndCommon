@@ -3003,9 +3003,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
                 try:
-                    self.stop(
-                        turn_off_machine=False, clear_routing_tables=False,
-                        clear_tags=False)
+                    self.stop()
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
@@ -3430,36 +3428,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._original_machine_graph.add_edge(edge, partition_id)
         self._vertices_or_edges_added = True
 
-    def _shutdown(
-            self, turn_off_machine=None, clear_routing_tables=None,
-            clear_tags=None):
-        """
-        :param bool turn_off_machine:
-        :param bool clear_routing_tables:
-        :param bool clear_tags:
-        """
+    def _shutdown(self):
         self._status = Simulator_Status.SHUTDOWN
-
-        if turn_off_machine is None:
-            turn_off_machine = get_config_bool(
-                "Machine", "turn_off_machine")
-
-        if clear_routing_tables is None:
-            clear_routing_tables = get_config_bool(
-                "Machine", "clear_routing_tables")
-
-        if clear_tags is None:
-            clear_tags = get_config_bool("Machine", "clear_tags")
 
         if self._txrx is not None:
             # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+            self.__clear()
 
         # Fully stop the application
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self.__close_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3470,13 +3450,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.exception(
                 "Error when closing Notifications")
 
-    def __clear(self, clear_tags, clear_routing_tables):
-        """
-        :param bool clear_tags:
-        :param bool clear_routing_tables:
-        """
+    def __clear(self):
         # if stopping on machine, clear IP tags and
-        if clear_tags:
+        if get_config_bool("Machine", "clear_tags"):
             for ip_tag in self._tags.ip_tags:
                 self._txrx.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
@@ -3486,7 +3462,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     board_address=reverse_ip_tag.board_address)
 
         # if clearing routing table entries, clear
-        if clear_routing_tables:
+        if get_config_bool("Machine", "clear_routing_tables"):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
@@ -3500,15 +3476,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._txrx is not None and self._app_id is not None:
             self._txrx.stop_application(self._app_id)
 
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
+    def __close_transceiver(self):
         if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
+            self._txrx.close()
             self._txrx = None
 
     def __close_allocation_controller(self):
@@ -3516,19 +3486,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-             clear_routing_tables=None, clear_tags=None):
+    def stop(self):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
         """
         if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
@@ -3548,7 +3509,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._recover_from_error(e)
 
         # shut down the machine properly
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown()
 
         if exn is not None:
             self.write_errored_file()
