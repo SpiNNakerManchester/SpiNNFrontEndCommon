@@ -801,6 +801,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
+        self._run_until_complete = False
 
     def run(self, run_time, sync_time=0):
         """ Run a simulation for a fixed amount of time
@@ -1992,8 +1993,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer(MAPPING, "Router collision potential report"):
-            # TODO cfg flag!
+        with FecTimer(MAPPING, "Router collision potential report") as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_router_collision_potential_report"):
+                return
             router_collision_potential_report(
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)

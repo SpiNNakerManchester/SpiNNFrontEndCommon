@@ -19,6 +19,8 @@ from spinn_machine.router import Router
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 
+COLLISION_REPORT = "routing_collision_protential_report.rpt"
+
 
 def router_collision_potential_report(
         router_tables_by_partition, n_keys_map, machine):
@@ -27,10 +29,7 @@ def router_collision_potential_report(
     :param AbstractMachinePartitionNKeysMap n_keys_map:
     :param ~spinn_machine.Machine machine:
     """
-    file_name = os.path.join(
-        report_default_directory(),
-        "routing_collision_protential_report.rpt")
-
+    file_name = os.path.join(report_default_directory(), COLLISION_REPORT)
     with open(file_name, "w") as writer:
         collision_counts = _generate_data(
             router_tables_by_partition, n_keys_map, machine)
