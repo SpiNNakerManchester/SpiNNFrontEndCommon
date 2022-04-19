@@ -348,9 +348,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed
         """
+        if self._run_until_complete:
+            raise NotImplementedError("Second  run_until_complete")
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
-        self._run_until_complete = False
 
     def run(self, run_time, sync_time=0):
         """ Run a simulation for a fixed amount of time
@@ -361,6 +362,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             this duration.  The continue_simulation() method must then be
             called for the simulation to continue.
         """
+        if self._run_until_complete:
+            raise NotImplementedError("run after run_until_complete")
         self._run(run_time, sync_time)
 
     def __timesteps(self, time_in_ms):
