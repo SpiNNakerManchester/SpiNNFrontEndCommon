@@ -166,11 +166,11 @@ class _ExecutionContext(object):
                     raise ValueError(
                         "Reference {} requested from {} but not found"
                         .format(ref, core_to_fill))
-                pointer_table[ref_region] = self.__get_reference(
+                pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
                     ref_region)
             to_write = numpy.concatenate(
-                (core_to_fill.header, pointer_table)).tobytes()
+                (core_to_fill.header, pointer_table.view("uint32"))).tobytes()
             self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
                                      core_to_fill.base_address, to_write)
 
