@@ -139,8 +139,7 @@ def hbp_allocator(total_run_time, n_chips=None, n_boards=None):
 
     return (
         machine["machineName"], int(machine["version"]),
-        bmp_details, False, False, None, None,
-        hbp_job_controller)
+        bmp_details, False, False, None, hbp_job_controller)
 
 
 def _get_machine(url, n_chips, n_boards, total_run_time):
