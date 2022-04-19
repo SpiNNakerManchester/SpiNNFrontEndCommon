@@ -51,12 +51,10 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
-        interface.stop(turn_off_machine=False, clear_routing_tables=False,
-                       clear_tags=False)
+        interface.stop()
         self.assertTrue(mock_contoller.closed)
         with self.assertRaises(ConfigurationException):
-            interface.stop(turn_off_machine=False, clear_routing_tables=False,
-                           clear_tags=False)
+            interface.stop()
 
     def test_min_init(self):
         class_file = sys.modules[self.__module__].__file__
