@@ -68,8 +68,6 @@ from pacman.operations.router_compressors import (
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
-    malloc_based_routing_allocator import malloc_based_routing_info_allocator
-from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
     basic_routing_table_generator, merged_routing_table_generator)
@@ -1829,21 +1827,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Zoned routing info allocator"):
             self._routing_infos = flexible_allocate(self._application_graph)
 
-    def _execute_malloc_based_routing_info_allocator(self):
-        """
-        Runs, times and logs the Malloc Based Routing Info Allocator
-
-        Sets "routing_info" is called
-
-        .. note::
-            Calling of this method is based on the cfg info_allocator value
-
-        :return:
-        """
-        with FecTimer(MAPPING, "Malloc based routing info allocator"):
-            self._routing_infos = malloc_based_routing_info_allocator(
-                self._machine_graph, self._machine_partition_n_keys_map)
-
     def do_info_allocator(self):
         """
         Runs, times and logs one of the info allocaters
@@ -1860,8 +1843,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
             return self._execute_global_allocate()
-        if name == "MallocBasedRoutingInfoAllocator":
-            return self._execute_malloc_based_routing_info_allocator()
         if name == "ZonedRoutingInfoAllocator":
             return self._execute_flexible_allocate()
         if "," in name:
