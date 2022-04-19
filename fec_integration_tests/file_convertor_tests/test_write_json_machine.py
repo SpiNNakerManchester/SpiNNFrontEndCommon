@@ -144,7 +144,7 @@ class TestWriteJson(unittest.TestCase):
         set_config("Machine", "spalloc_port", self.spin2Port)
 
         try:
-            (hostname, version, _, _, _, _, _, m_allocation_controller) = \
+            (hostname, version, _, _, _, _, m_allocation_controller) = \
                 spalloc_allocator(n_chips=20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
