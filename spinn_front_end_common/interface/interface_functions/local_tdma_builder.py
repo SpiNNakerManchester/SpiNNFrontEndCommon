@@ -141,10 +141,6 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
         logger.warning(
             "A time scale factor of {} may be needed to run correctly"
             .format(time_scale_factor_needed))
-    elif max_fraction_of_sending < 1:
-        logger.info(
-            "The time scale factor could be reduced to {}"
-            .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
     for app_vertex in application_graph.vertices:
