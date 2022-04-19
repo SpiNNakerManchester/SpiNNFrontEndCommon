@@ -109,7 +109,7 @@ class _MockTransceiver(Transceiver):
         self._regions_rewritten.append((base_address, data))
 
     @overrides(Transceiver.close)
-    def close(self, close_original_connections=True, power_off_machine=False):
+    def close(self):
         pass
 
 
