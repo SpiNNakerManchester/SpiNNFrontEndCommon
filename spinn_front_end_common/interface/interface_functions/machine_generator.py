@@ -46,7 +46,7 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
-        scamp_connection_data,reset_machine_on_start_up):
+        scamp_connection_data, reset_machine_on_start_up):
     """ Makes a transceiver and a machine object.
 
     :param str bmp_details: the details of the BMP connections
