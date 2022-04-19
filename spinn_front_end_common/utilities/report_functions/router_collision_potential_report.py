@@ -18,12 +18,13 @@ from collections import defaultdict
 from spinn_machine.router import Router
 from spinn_front_end_common.data import FecDataView
 
+COLLISION_REPORT = "routing_collision_protential_report.rpt"
+
 
 def router_collision_potential_report():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
         "routing_collision_protential_report.rpt")
-
     with open(file_name, "w") as writer:
         collision_counts = _generate_data()
         _write_report(collision_counts, writer)

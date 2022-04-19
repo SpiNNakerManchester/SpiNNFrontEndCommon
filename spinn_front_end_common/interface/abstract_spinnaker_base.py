@@ -1480,8 +1480,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer(MAPPING, "Router collision potential report"):
-            # TODO cfg flag!
+        with FecTimer(MAPPING, "Router collision potential report") as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_router_collision_potential_report"):
+                return
             router_collision_potential_report()
 
     def _execute_locate_executable_start_type(self):
