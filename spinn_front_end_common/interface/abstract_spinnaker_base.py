@@ -758,10 +758,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
-            scamp_connection_data = get_config_str(
-                "Machine", "scamp_connections_data")
-            boot_port_num = get_config_int(
-                "Machine", "boot_connection_port_num")
+            scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
             board_version = get_config_int(
@@ -770,7 +767,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif allocator_data:
             (ipaddress, board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
-             boot_port_num, self._machine_allocation_controller
+             self._machine_allocation_controller
              ) = allocator_data
             self._data_writer.set_ipaddress(ipaddress)
         else:
@@ -779,8 +776,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(category, "Machine generator"):
             machine, transceiver = machine_generator(
                 bmp_details, board_version,
-                auto_detect_bmp, scamp_connection_data, boot_port_num,
-                reset_machine)
+                auto_detect_bmp, scamp_connection_data, reset_machine)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
@@ -2426,7 +2422,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
                 try:
-                    self.stop(clear_routing_tables=False, clear_tags=False)
+                    self.stop()
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
@@ -2652,23 +2648,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             return "general front end instance no machine set"
 
-    def _shutdown(
-            self, clear_routing_tables=None, clear_tags=None):
-        """
-        :param bool turn_off_machine:
-        :param bool clear_routing_tables:
-        :param bool clear_tags:
-
-        """
-        if clear_routing_tables is None:
-            clear_routing_tables = get_config_bool(
-                "Machine", "clear_routing_tables")
-
-        if clear_tags is None:
-            clear_tags = get_config_bool("Machine", "clear_tags")
+    def _shutdown(self):
 
         # if stopping on machine, clear IP tags and routing table
-        self.__clear(clear_tags, clear_routing_tables)
+        self.__clear()
 
         # stop the transceiver and allocation controller
         if self._data_writer.has_transceiver():
@@ -2676,19 +2659,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             transceiver.stop_application(self._data_writer.get_app_id())
 
         self.__close_allocation_controller()
-
         self._data_writer.clear_notification_protocol()
 
-    def __clear(self, clear_tags, clear_routing_tables):
-        """
-        :param bool clear_tags:
-        :param bool clear_routing_tables:
-        """
+    def __clear(self):
         if not self._data_writer.has_transceiver():
             return
         transceiver = self._data_writer.get_transceiver()
 
-        if clear_tags:
+        if get_config_bool("Machine", "clear_tags"):
             for ip_tag in self._data_writer.get_tags().ip_tags:
                 transceiver.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
@@ -2698,8 +2676,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     board_address=reverse_ip_tag.board_address)
 
         # if clearing routing table entries, clear
-        machine = self._data_writer.get_machine()
-        if clear_routing_tables:
+        if get_config_bool("Machine", "clear_routing_tables"):
+            machine = self._data_writer.get_machine()
             for router_table in self._data_writer.get_uncompressed():
                 if not machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
@@ -2711,34 +2689,21 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, clear_routing_tables=None, clear_tags=None):
+    def stop(self):
         """
         End running of the simulation.
 
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
         """
         self._data_writer.stopping()
         try:
-            self._stop(clear_routing_tables, clear_tags)
+            self._stop()
         finally:
             self._data_writer.shut_down()
 
-    def _stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-              clear_routing_tables=None, clear_tags=None):
+    def _stop(self):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
         """
         # Keep track of any exception to be re-raised
         exn = None
@@ -2756,7 +2721,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._recover_from_error(e)
 
         # shut down the machine properly
-        self._shutdown(clear_routing_tables, clear_tags)
+        self._shutdown()
 
         if exn is not None:
             self.write_errored_file()

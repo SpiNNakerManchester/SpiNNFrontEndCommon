@@ -46,16 +46,10 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
-        scamp_connection_data, boot_port_num, reset_machine_on_start_up):
+        scamp_connection_data,reset_machine_on_start_up):
     """ Makes a transceiver and a machine object.
 
     :param str bmp_details: the details of the BMP connections
-    :param set(tuple(int,int)) downed_chips:
-        the chips that are down which SARK thinks are alive
-    :param set(tuple(int,int,int)) downed_cores:
-        the cores that are down which SARK thinks are alive
-    :param set(tuple(int,int,int)) downed_links:
-        the links that are down which SARK thinks are alive
     :param int board_version:
         the version of the boards being used within the machine
         (1, 2, 3, 4 or 5)
@@ -65,7 +59,6 @@ def machine_generator(
         Job.connection dict,a String SC&MP connection data or None
     :type scamp_connection_data:
         dict((int,int), str) or None
-    :param int boot_port_num: the port number used for the boot connection
     :param bool reset_machine_on_start_up:
     :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinn_machine.Machine,
@@ -77,7 +70,7 @@ def machine_generator(
         hostname=FecDataView.get_ipaddress(),
         bmp_connection_data=_parse_bmp_details(bmp_details),
         version=board_version,
-        auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num)
+        auto_detect_bmp=auto_detect_bmp)
 
     if reset_machine_on_start_up:
         success = txrx.power_off_machine()
@@ -94,7 +87,7 @@ def machine_generator(
             "Please set a machine version number in the "
             "corresponding configuration (cfg) file")
     txrx.ensure_board_is_ready()
-    if isinstance(scamp_connection_data, dict):
+    if scamp_connection_data:
         txrx.add_scamp_connections(scamp_connection_data)
     else:
         txrx.discover_scamp_connections()

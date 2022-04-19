@@ -137,8 +137,7 @@ def hbp_allocator(total_run_time):
 
     return (
         machine["machineName"], int(machine["version"]),
-        bmp_details, False, False, None, None,
-        hbp_job_controller)
+        bmp_details, False, False, None, hbp_job_controller)
 
 
 def _get_machine(url, total_run_time):
