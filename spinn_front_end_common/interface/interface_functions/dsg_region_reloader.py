@@ -25,7 +25,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities.helpful_functions import (
-    generate_unique_folder_name, n_word_struct)
+    generate_unique_folder_name)
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 

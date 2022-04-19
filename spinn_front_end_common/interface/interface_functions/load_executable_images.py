@@ -20,7 +20,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.exceptions import SpiNNManCoresNotInStateException
-from spinn_front_end_common.utilities.emergency_recovery import emergency_recover_states_from_failure
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_states_from_failure)
 
 
 def load_app_images(executable_targets, app_id, transceiver):
