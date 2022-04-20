@@ -146,7 +146,7 @@ def spalloc_allocator(n_chips=None, n_boards=None):
 
     return (
         hostname, _MACHINE_VERSION, None, False,
-        False, scamp_connection_data, None, machine_allocation_controller
+        False, scamp_connection_data, machine_allocation_controller
     )
 
 
