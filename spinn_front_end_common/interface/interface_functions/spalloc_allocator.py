@@ -191,7 +191,10 @@ def spalloc_allocator(
     :type n_boards: int or None
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
-    :rtype: tuple(str, int, None, bool, bool, dict(tuple(int,int),str), None,
+    :return:
+        host, board version, BMP details, reset on startup flag, 
+        auto-detect BMP flag, board address map, allocation controller 
+    :rtype: tuple(str, int, object, bool, bool, dict(tuple(int,int),str),
         MachineAllocationController)
     """
 
@@ -210,8 +213,7 @@ def spalloc_allocator(
             spalloc_server, n_boards, bearer_token)
     else:
         host, connections, mac = _alloc_job_old(spalloc_server, n_boards)
-    return (host, _MACHINE_VERSION, None, False, False, connections, None,
-            mac)
+    return (host, _MACHINE_VERSION, None, False, False, connections, mac)
 
 
 def _allocate_job_new(

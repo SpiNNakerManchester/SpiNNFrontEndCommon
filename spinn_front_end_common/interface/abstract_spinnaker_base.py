@@ -814,6 +814,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             this duration.  The continue_simulation() method must then be
             called for the simulation to continue.
         """
+        if self._run_until_complete:
+            raise NotImplementedError("run after run_until_complete")
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
@@ -1239,10 +1241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
-            scamp_connection_data = get_config_str(
-                "Machine", "scamp_connections_data")
-            boot_port_num = get_config_int(
-                "Machine", "boot_connection_port_num")
+            scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
             self._board_version = get_config_int(
@@ -1251,7 +1250,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif allocator_data:
             (self._ipaddress, self._board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
-             boot_port_num, self._machine_allocation_controller
+             self._machine_allocation_controller
              ) = allocator_data
         else:
             return
@@ -1259,8 +1258,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(category, "Machine generator"):
             self._machine, self._txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
-                auto_detect_bmp, scamp_connection_data, boot_port_num,
-                reset_machine)
+                auto_detect_bmp, scamp_connection_data, reset_machine)
 
     def _execute_get_max_machine(self, total_run_time, bearer_token=None):
         """
@@ -2003,8 +2001,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer(MAPPING, "Router collision potential report"):
-            # TODO cfg flag!
+        with FecTimer(MAPPING, "Router collision potential report") as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_router_collision_potential_report"):
+                return
             router_collision_potential_report(
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)
@@ -3011,9 +3011,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
                 try:
-                    self.stop(
-                        turn_off_machine=False, clear_routing_tables=False,
-                        clear_tags=False)
+                    self.stop()
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
@@ -3438,36 +3436,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._original_machine_graph.add_edge(edge, partition_id)
         self._vertices_or_edges_added = True
 
-    def _shutdown(
-            self, turn_off_machine=None, clear_routing_tables=None,
-            clear_tags=None):
-        """
-        :param bool turn_off_machine:
-        :param bool clear_routing_tables:
-        :param bool clear_tags:
-        """
+    def _shutdown(self):
         self._status = Simulator_Status.SHUTDOWN
-
-        if turn_off_machine is None:
-            turn_off_machine = get_config_bool(
-                "Machine", "turn_off_machine")
-
-        if clear_routing_tables is None:
-            clear_routing_tables = get_config_bool(
-                "Machine", "clear_routing_tables")
-
-        if clear_tags is None:
-            clear_tags = get_config_bool("Machine", "clear_tags")
 
         if self._txrx is not None:
             # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+            self.__clear()
 
         # Fully stop the application
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self.__close_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3478,13 +3458,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.exception(
                 "Error when closing Notifications")
 
-    def __clear(self, clear_tags, clear_routing_tables):
-        """
-        :param bool clear_tags:
-        :param bool clear_routing_tables:
-        """
+    def __clear(self):
         # if stopping on machine, clear IP tags and
-        if clear_tags:
+        if get_config_bool("Machine", "clear_tags"):
             for ip_tag in self._tags.ip_tags:
                 self._txrx.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
@@ -3494,7 +3470,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     board_address=reverse_ip_tag.board_address)
 
         # if clearing routing table entries, clear
-        if clear_routing_tables:
+        if get_config_bool("Machine", "clear_routing_tables"):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
@@ -3508,15 +3484,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._txrx is not None and self._app_id is not None:
             self._txrx.stop_application(self._app_id)
 
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
+    def __close_transceiver(self):
         if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
+            self._txrx.close()
             self._txrx = None
 
     def __close_allocation_controller(self):
@@ -3524,19 +3494,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-             clear_routing_tables=None, clear_tags=None):
+    def stop(self):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
         """
         if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
@@ -3556,7 +3517,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._recover_from_error(e)
 
         # shut down the machine properly
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown()
 
         if exn is not None:
             self.write_errored_file()
