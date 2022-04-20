@@ -782,8 +782,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed
         """
-        if self._run_until_complete:
-            raise NotImplementedError("Second  run_until_complete")
         self._run_until_complete = True
         self._run(n_steps, sync_time=0)
 
