@@ -43,7 +43,7 @@ class _MockTransceiver(Transceiver):
         pass
 
     @overrides(Transceiver.close)
-    def close(self, close_original_connections=True, power_off_machine=False):
+    def close(self):
         pass
 
 
