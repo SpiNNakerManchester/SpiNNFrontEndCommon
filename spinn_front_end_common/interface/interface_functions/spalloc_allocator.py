@@ -193,8 +193,8 @@ def spalloc_allocator(
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
     :return:
-        host, board version, BMP details, reset on startup flag, 
-        auto-detect BMP flag, board address map, allocation controller 
+        host, board version, BMP details, reset on startup flag,
+        auto-detect BMP flag, board address map, allocation controller
     :rtype: tuple(str, int, object, bool, bool, dict(tuple(int,int),str),
         MachineAllocationController)
     """
