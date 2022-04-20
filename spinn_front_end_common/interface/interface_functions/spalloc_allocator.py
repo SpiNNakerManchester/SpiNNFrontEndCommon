@@ -31,7 +31,8 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.spalloc import parse_old_spalloc
+from spinn_front_end_common.utilities.helpful_functions import (
+    parse_old_spalloc)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards

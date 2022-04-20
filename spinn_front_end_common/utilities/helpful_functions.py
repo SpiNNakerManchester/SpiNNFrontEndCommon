@@ -16,6 +16,7 @@
 import os
 import logging
 import struct
+from urllib.parse import urlparse
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
@@ -283,3 +284,34 @@ def get_defaultable_source_id(entry):
     elif entry.link_ids:
         return list(entry.link_ids)[0]
     return 0
+
+
+def parse_old_spalloc(
+        spalloc_server, spalloc_port=22244, spalloc_user="unknown user"):
+    """
+    Parse a URL to the old-style service. This may take the form:
+
+        spalloc://user@spalloc.host.example.com:22244
+
+    The leading ``spalloc://`` is the mandatory part (as is the actual host
+    name). If the port and user are omitted, the defaults given in the other
+    arguments are used (or default defaults).
+
+    A bare hostname can be used instead. If that's the case (i.e., there's no
+    ``spalloc://`` prefix) then the port and user are definitely used.
+
+    :param str spalloc_server: Hostname or URL
+    :param int spalloc_port: Default port
+    :param str spalloc_user: Default user
+    :return: hostname, port, username
+    :rtype: tuple(str,int,str)
+    """
+    if spalloc_port is None or spalloc_port == "":
+        spalloc_port = 22244
+    if spalloc_user is None or spalloc_user == "":
+        spalloc_user = "unknown user"
+    parsed = urlparse(spalloc_server, "spalloc")
+    if parsed.netloc == "":
+        return spalloc_server, spalloc_port, spalloc_user
+    return parsed.hostname, (parsed.port or spalloc_port), \
+        (parsed.username or spalloc_user)
