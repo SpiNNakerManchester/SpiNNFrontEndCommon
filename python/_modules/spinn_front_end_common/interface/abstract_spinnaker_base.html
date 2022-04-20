@@ -837,8 +837,6 @@
 <span class="sd">            requested to run for the given number of steps.  The host will</span>
 <span class="sd">            still wait until the simulation itself says it has completed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Second  run_until_complete&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
