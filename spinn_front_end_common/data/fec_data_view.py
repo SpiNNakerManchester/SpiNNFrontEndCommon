@@ -284,7 +284,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Mainly ued to indicate the number of timesteps the vertex can and
         therefor should reserve memry for
 
-        Guaranteed to be positive int is available
+        Guaranteed to be positive int if available
 
         :rtype: int
         :raises SpiNNUtilsException:
@@ -311,8 +311,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Check if any/all of the time_step values are known
 
-        True When all simulation_time_step are known
-        False when none of the simulation_time_step values are known.
+        True When all simulation/hardware_time_step methods are known
+        False when none of the simulation/hardware_time_step values are known.
         There is never a case when some are known and others not
 
         :rtype: bool
@@ -495,7 +495,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Gets the number of chips needed if set
 
-        This will be the number of chips requested by the use during setup,
+        This will be the number of chips requested by the user during setup,
         even if this is less that what the partitioner reported.
 
         If the partitioner has run and the user has not specified a number,
@@ -886,7 +886,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 "live_packet_gatherer_params must be a "
                 "LivePacketGatherParameters")
 
-        # As partition_ids may come in as ain iterable such as odict_keys
+        # As partition_ids may come in as an iterable such as dict_keys
         partition_ids = list(partition_ids)
         for id in partition_ids:
             if not isinstance(id, str):
