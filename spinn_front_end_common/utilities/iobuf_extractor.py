@@ -148,8 +148,7 @@ class IOBufExtractor(object):
         warn_entries = list()
         # bit of both
         progress = self.__progress(self.__executable_targets.binaries)
-        binaries = FecDataView.get_executable_finder().get_executable_paths(
-            self.__binary_types)
+        binaries = FecDataView.get_executable_paths(self.__binary_types)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
         for binary in progress.over(self.__executable_targets.binaries):
             if binary in binaries:
@@ -187,8 +186,7 @@ class IOBufExtractor(object):
         error_entries = list()
         warn_entries = list()
         # some binaries
-        binaries = FecDataView.get_executable_finder().get_executable_paths(
-            self.__binary_types)
+        binaries = FecDataView.get_executable_paths(self.__binary_types)
         progress = self.__progress(binaries)
         for binary in progress.over(binaries):
             core_subsets = self.__executable_targets.get_cores_for_binary(

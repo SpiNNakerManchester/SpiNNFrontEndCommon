@@ -87,8 +87,7 @@ def emergency_recover_state_from_failure(vertex, placement):
     # pylint: disable=protected-access
     _emergency_state_check()
     target = ExecutableTargets()
-    path = FecDataView.get_executable_finder().get_executable_path(
-        vertex.get_binary_file_name())
+    path = FecDataView.get_executable_path(vertex.get_binary_file_name())
     target.add_processor(
         path, placement.x, placement.y, placement.p,
         vertex.get_binary_start_type())

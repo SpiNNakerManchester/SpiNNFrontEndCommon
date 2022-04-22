@@ -95,12 +95,11 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
             [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
              IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
              IOBuffer(0, 0, 3, text003)]))
-        FecDataView.get_executable_finder().add_path(path)
+        FecDataView.register_binary_search_path(path)
         writer.set_executable_targets(executable_targets)
 
     def testExectuableFinder(self):
-        executableFinder = FecDataView.get_executable_finder()
-        self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
+        self.assertIn(fooaplx, FecDataView.get_executable_path(fooaplx))
 
     def testCallSimple(self):
         folder = FecDataView.get_app_provenance_dir_path()

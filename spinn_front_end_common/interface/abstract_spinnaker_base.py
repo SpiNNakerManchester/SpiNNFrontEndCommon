@@ -241,7 +241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         FecTimer.setup(self)
 
-        self._data_writer.get_executable_finder().add_path(
+        self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
 
         self._data_writer.set_machine_generator(self._get_machine)

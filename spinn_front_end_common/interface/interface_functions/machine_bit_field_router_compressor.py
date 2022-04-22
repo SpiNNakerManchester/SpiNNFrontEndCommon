@@ -269,13 +269,12 @@ class _MachineBitFieldRouterCompressor(object):
         executable_targets = ExecutableTargets()
 
         # bit field executable paths
-        executable_finder = FecDataView.get_executable_finder()
         bit_field_sorter_executable_path = \
-            executable_finder.get_executable_path(
+            FecDataView.get_executable_path(
                 self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
 
         bit_field_compressor_executable_path = \
-            executable_finder.get_executable_path(self._compressor_aplx)
+            FecDataView.get_executable_path(self._compressor_aplx)
 
         # add the sets
         executable_targets.add_subsets(

@@ -44,8 +44,7 @@ def pair_compression():
     :raises SpinnFrontEndException: If compression fails
      """
     # pylint: disable=too-many-arguments
-    executable_finder = FecDataView.get_executable_finder()
-    binary_path = executable_finder.get_executable_path(
+    binary_path = FecDataView.get_executable_path(
         "simple_pair_compressor.aplx")
     compression = Compression(
         binary_path,
@@ -63,8 +62,7 @@ def ordered_covering_compression():
     :raises SpinnFrontEndException: If compression fails
     """
     # pylint: disable=too-many-arguments
-    executable_finder = FecDataView.get_executable_finder()
-    binary_path = executable_finder.get_executable_path(
+    binary_path = FecDataView.get_executable_path(
         "simple_unordered_compressor.aplx")
     compression = Compression(
         binary_path,
