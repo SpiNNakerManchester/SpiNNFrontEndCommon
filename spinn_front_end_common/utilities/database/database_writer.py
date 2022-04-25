@@ -256,7 +256,7 @@ class DatabaseWriter(SQLiteDB):
 
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing information object
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
             the machine graph object
         """
         with self.transaction() as cur:
