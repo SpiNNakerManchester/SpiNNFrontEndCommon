@@ -590,7 +590,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._n_loops = None
 
     def _is_per_timestep_sdram(self):
-        for placement in self._data_writer.get_placements():
+        for placement in self._data_writer.iterate_placemements():
             if placement.vertex.resources_required.sdram.per_timestep:
                 return True
         return False
@@ -652,7 +652,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
         seen_partitions = set()
 
-        for placement in self._data_writer.get_placements():
+        for placement in self._data_writer.iterate_placemements():
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
