@@ -820,8 +820,7 @@ def _search_route(source_placement, key_and_mask, routing_tables, machine):
 
     # If the destination is virtual, replace with the real destination chip
     text += _recursive_trace_to_destinations(
-        x, y, key_and_mask, machine, routing_tables, number_of_entries,
-        pre_space="        ")
+        x, y, key_and_mask, machine, routing_tables, pre_space="        ")
     return text
 
 

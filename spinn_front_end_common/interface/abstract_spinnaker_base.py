@@ -1461,7 +1461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                                    "live_packet_recorder_params"):
                 return
             lpg_multicast_routing_generator(
-                self._live_packet_recorder_parameters, self._placements,
+                self._live_packet_recorder_params, self._placements,
                 self._live_packet_recorder_parameters_mapping, self._machine,
                 self._routing_table_by_partition)
 
@@ -1538,7 +1538,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
             self._routing_table_by_partition = ner_route_traffic_aware(
-                self._machine, self._app_graph, self._placements)
+                self._machine, self._application_graph, self._placements)
 
     def _execute_ner_route(self):
         """
@@ -1551,7 +1551,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route"):
             self._routing_table_by_partition = ner_route(
-                self._machine, self.__app_graph, self._placements)
+                self._machine, self._application_graph, self._placements)
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1564,7 +1564,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
             self._routing_table_by_partition = basic_dijkstra_routing(
-                self._machine, self._app_graph, self._placements)
+                self._machine, self._application_graph, self._placements)
 
     def _execute_application_router(self):
         """
@@ -1747,7 +1747,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
         router_report_from_paths(
             self._router_tables, self._routing_infos, self._ipaddress,
-            self._app_graph, self._placements, self._machine)
+            self._application_graph, self._placements, self._machine)
 
     def _report_router_summary(self):
         """
@@ -1996,7 +1996,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
                 self._router_tables, self._machine, self._placements,
-                self._txrx, self._app_graph, self._routing_infos)
+                self._txrx, self._application_graph, self._routing_infos)
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
@@ -2017,8 +2017,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None
             machine_bit_field_ordered_covering_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
-                self._app_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._application_graph, self._placements,
+                self._executable_finder, self._routing_infos,
+                self._executable_targets)
             self._multicast_routes_loaded = True
             return None
 
@@ -2040,8 +2041,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
-                self._app_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._application_graph, self._placements,
+                self._executable_finder, self._routing_infos,
+                self._executable_targets)
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -2282,7 +2284,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports",  "write_bit_field_compressor_report"):
                 return
             # BitFieldSummary output ignored as never used
-            bitfield_compressor_report(self._app_graph, self._placements)
+            bitfield_compressor_report(
+                self._application_graph, self._placements)
 
     def _execute_load_fixed_routes(self):
         """
