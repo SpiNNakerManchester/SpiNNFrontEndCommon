@@ -76,15 +76,17 @@ class _GraphDataSpecificationWriter(object):
         targets.clear_ds()
 
         if placement_order is None:
-            placement_order = placements
+            placement_order = FecDataView.iterate_placemements()
+            n_placements = FecDataView.get_n_placements()
+        else:
+            n_placements = len(placement_order)
 
-        progress = ProgressBar(
-            placements.n_placements, "Generating data specifications")
+        progress = ProgressBar(n_placements, "Generating data specifications")
         vertices_to_reset = list()
 
         # Do in a context of global identifiers
         with ReferenceContext():
-            for placement in progress.over(placement_order.placements):
+            for placement in progress.over(placement_order):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
                 generated = self.__generate_data_spec_for_vertices(
