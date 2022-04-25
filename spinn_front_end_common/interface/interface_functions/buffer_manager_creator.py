@@ -26,14 +26,14 @@ def buffer_manager_creator():
 
     :rtype: BufferManager
     """
-    placements = FecDataView.get_placements()
     # pylint: disable=too-many-arguments
-    progress = ProgressBar(placements.n_placements, "Initialising buffers")
+    progress = ProgressBar(
+        FecDataView.get_n_placements(), "Initialising buffers")
 
     # Create the buffer manager
     buffer_manager = BufferManager()
 
-    for placement in progress.over(placements):
+    for placement in progress.over(FecDataView.iterate_placemements()):
         vertex = placement.vertex
         if isinstance(vertex, AbstractSendsBuffersFromHost) and \
                 vertex.buffering_input():

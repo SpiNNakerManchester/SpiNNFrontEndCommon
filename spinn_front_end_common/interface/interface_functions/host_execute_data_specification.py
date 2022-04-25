@@ -357,7 +357,7 @@ class _HostExecuteDataSpecification(object):
         java_caller = FecDataView.get_java_caller()
         if use_monitors:
             # Method also called with just recording params
-            java_caller.set_placements(FecDataView.get_placements())
+            java_caller.set_placements(FecDataView.iterate_placemements())
         progress.update()
 
         java_caller.execute_app_data_specification(use_monitors)

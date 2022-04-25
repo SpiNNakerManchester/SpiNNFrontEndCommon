@@ -298,7 +298,7 @@ class DatabaseWriter(SQLiteDB):
                     (self.__vertex_to_id[placement.vertex],
                      placement.x, placement.y, placement.p, self._machine_id)
                     # pylint: disable=not-an-iterable
-                    for placement in FecDataView.get_placements()))
+                    for placement in FecDataView.iterate_placemements()))
 
     def add_routing_infos(self):
         """ Adds the routing information (key masks etc) into the database

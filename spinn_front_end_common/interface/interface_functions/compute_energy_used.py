@@ -165,7 +165,7 @@ def __active_chips(placements):
     """
     return OrderedSet(
         FecDataView.get_chip_at(placement.x, placement.y)
-        for placement in placements
+        for placement in placements.placements
         if isinstance(placement.vertex, ChipPowerMonitorMachineVertex))
 
 

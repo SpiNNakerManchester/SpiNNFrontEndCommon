@@ -508,7 +508,7 @@ def sdram_usage_report_per_chip():
     :rtype: None
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
-    n_placements = FecDataView.get_placements().n_placements
+    n_placements = FecDataView.get_n_placements()
     time_date_string = time.strftime("%c")
     progress = ProgressBar(
         (n_placements * 2 + FecDataView.get_machine().n_chips * 2),
@@ -545,7 +545,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     f.write("Based on {} timesteps\n\n".format(timesteps))
     used_sdram_by_chip = dict()
     placements = sorted(
-        FecDataView.get_placements(), key=lambda x: x.vertex.label)
+        FecDataView.iterate_placemements(), key=lambda x: x.vertex.label)
     for placement in progress.over(placements, False):
         vertex_sdram = placement.vertex.resources_required.sdram
         core_sdram = vertex_sdram.get_total_sdram(timesteps)

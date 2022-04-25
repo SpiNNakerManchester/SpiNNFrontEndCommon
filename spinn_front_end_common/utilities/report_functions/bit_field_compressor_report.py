@@ -130,7 +130,7 @@ def _compute_to_merge_per_chip():
 
     machine_graph = FecDataView.get_runtime_machine_graph()
     # pylint: disable=not-an-iterable
-    for placement in FecDataView.get_placements():
+    for placement in FecDataView.iterate_placemements():
         binary_start_type = None
         if isinstance(placement.vertex, AbstractHasAssociatedBinary):
             binary_start_type = placement.vertex.get_binary_start_type()

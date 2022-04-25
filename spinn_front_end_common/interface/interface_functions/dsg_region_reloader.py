@@ -49,7 +49,6 @@ class _DSGRegionReloader(object):
         # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
-        placements = FecDataView.get_placements()
         run_dir_path = FecDataView.get_run_dir_path()
         self._data_dir = generate_unique_folder_name(
             run_dir_path, "reloaded_data_regions", "")
@@ -63,8 +62,8 @@ class _DSGRegionReloader(object):
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
 
-        progress = ProgressBar(placements.n_placements, "Reloading data")
-        for placement in progress.over(placements):
+        progress = ProgressBar(FecDataView.get_n_placements(), "Reloading data")
+        for placement in progress.over(FecDataView.iterate_placemements()):
             # Generate the data spec for the placement if needed
             self._regenerate_data_spec_for_vertices(placement)
 

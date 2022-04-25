@@ -30,13 +30,12 @@ def profile_data_gatherer():
 
     """
     # pylint: disable=too-many-arguments
-    placements = FecDataView.get_placements()
     progress = ProgressBar(
-        placements.n_placements, "Getting profile data")
+        FecDataView.get_n_placements(), "Getting profile data")
     provenance_file_path = FecDataView.get_app_provenance_dir_path()
 
     # retrieve provenance data from any cores that provide data
-    for placement in progress.over(placements):
+    for placement in progress.over(FecDataView.iterate_placemements()):
         if isinstance(placement.vertex, AbstractHasProfileData):
             # get data
             profile_data = placement.vertex.get_profile_data(placement)

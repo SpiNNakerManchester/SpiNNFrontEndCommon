@@ -152,7 +152,6 @@ class EnergyReport(object):
         """
         # pylint: disable=too-many-arguments, too-many-locals
         runtime_total_ms = FecDataView.get_time_scale_factor()
-        placements = FecDataView.get_placements()
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -172,7 +171,7 @@ class EnergyReport(object):
 
         # sort what to report by chip
         active_chips = defaultdict(dict)
-        for placement in placements:  # pylint: disable=not-an-iterable
+        for placement in FecDataView.iterate_placemements():
             vertex = placement.vertex
             if not isinstance(vertex, ChipPowerMonitorMachineVertex):
                 labels = active_chips[placement.x, placement.y]
