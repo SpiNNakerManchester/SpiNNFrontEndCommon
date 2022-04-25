@@ -62,7 +62,8 @@ class _DSGRegionReloader(object):
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
 
-        progress = ProgressBar(FecDataView.get_n_placements(), "Reloading data")
+        progress = ProgressBar(
+            FecDataView.get_n_placements(), "Reloading data")
         for placement in progress.over(FecDataView.iterate_placemements()):
             # Generate the data spec for the placement if needed
             self._regenerate_data_spec_for_vertices(placement)
