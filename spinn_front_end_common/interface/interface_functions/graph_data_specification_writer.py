@@ -84,7 +84,7 @@ class _GraphDataSpecificationWriter(object):
 
         # Do in a context of global identifiers
         with ReferenceContext():
-            for placement in progress.over(placement_order):
+            for placement in progress.over(placement_order.placements):
                 # Try to generate the data spec for the placement
                 vertex = placement.vertex
                 generated = self.__generate_data_spec_for_vertices(
