@@ -134,7 +134,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
 
         user_0_addresses = {
             placement.location: i * 1000
-            for i, placement in enumerate(placements)
+            for i, placement in enumerate(placements.placements)
         }
         transceiver = _MockTransceiver(user_0_addresses)
         writer.set_transceiver(transceiver)
@@ -154,7 +154,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             placements.n_placements * len(reload_region_data))
 
         # Check that the data rewritten is correct
-        for i, placement in enumerate(placements):
+        for i, placement in enumerate(placements.placements):
             user_0_address = user_0_addresses[placement.location]
             for j in range(len(reload_region_data)):
                 pos = (i * len(reload_region_data)) + j
