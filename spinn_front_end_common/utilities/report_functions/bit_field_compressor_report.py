@@ -138,7 +138,7 @@ def _compute_to_merge_per_chip(app_graph, placements):
     for partition in app_graph.outgoing_edge_partitions:
         for edge in partition.edges:
             splitter = edge.post_vertex.splitter
-            for vertex in splitter.get_source_specific_incoming_vertices(
+            for vertex in splitter.get_source_specific_in_coming_vertices(
                     partition.pre_vertex, partition.identifier):
                 if not isinstance(vertex, AbstractHasAssociatedBinary):
                     continue

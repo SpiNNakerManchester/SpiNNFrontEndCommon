@@ -241,14 +241,14 @@ def _write_one_router_partition_report(f, partition, machine, placements,
     for edge in partition.edges:
         for m_vertex in outgoing:
             source_placement = placements.get_placement_of_vertex(m_vertex)
-            key_and_mask = routing_infos.get_routing_info_from_pre_vertex(
+            r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
-            path, number_of_entries = _search_route(
-                source_placement, key_and_mask, routing_tables, machine)
+            path = _search_route(
+                source_placement, r_info.first_key_and_mask, routing_tables,
+                machine)
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
             f.write("{}\n".format(path))
-            f.write("        Route length: {}\n".format(number_of_entries))
 
             # End one entry:
             f.write("\n")

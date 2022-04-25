@@ -1844,7 +1844,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param bool do_sync: Whether to enable synchronization
         """
         if self.use_virtual_board:
-            pass
+            return
         self._txrx.control_sync(do_sync)
 
     def _do_mapping(self, total_run_time):
