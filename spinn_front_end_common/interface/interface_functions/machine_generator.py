@@ -47,7 +47,8 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 def machine_generator(
         hostname, bmp_details, board_version, auto_detect_bmp,
-        scamp_connection_data, reset_machine_on_start_up):
+        scamp_connection_data, reset_machine_on_start_up,
+        allocation_controller):
     """ Makes a transceiver and a machine object.
 
     :param str hostname:
@@ -69,11 +70,23 @@ def machine_generator(
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:
+    :param MachineAllocationController allocation_controller:
+        The allocation controller; in some cases, we delegate the creation of
+        the transceiver to it.
     :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinn_machine.Machine,
         ~spinnman.transceiver.Transceiver)
     """
     # pylint: disable=too-many-arguments
+    if allocation_controller:
+        # If there is an allocation controller and it wants to make a
+        # transceiver for us, we let it do so; transceivers obtained that way
+        # are already fully configured
+        txrx = allocation_controller.create_transceiver()
+        if txrx:
+            txrx.ensure_board_is_ready()
+            # Assume all connections are pre-discovered
+            return txrx.get_machine_details(), txrx
 
     txrx = create_transceiver_from_hostname(
         hostname=hostname,

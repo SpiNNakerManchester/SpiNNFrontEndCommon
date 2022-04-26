@@ -273,6 +273,7 @@ class LiveEventConnection(DatabaseConnection):
         :param DatabaseReader db:
         :param dict(str,int) vertex_sizes:
         """
+        # FIXME: rewrite this so it works with proxied connections!
         # Set up a single connection for receive
         if self.__receiver_connection is None:
             self.__receiver_connection = EIEIOConnection()

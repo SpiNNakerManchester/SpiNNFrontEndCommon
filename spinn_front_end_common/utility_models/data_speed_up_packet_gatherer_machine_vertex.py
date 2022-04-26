@@ -25,7 +25,6 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
-from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
@@ -645,6 +644,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=payload)
 
+    def __open_connection(self):
+        connection = get_simulator().open_scp_connection(
+            self._x, self._y, self._ip_address)
+        self.__reprogram_tag(connection)
+        return connection
+
     def _send_data_via_extra_monitors(
             self, transceiver, destination_chip_x, destination_chip_y,
             start_address, data_to_write):
@@ -658,9 +663,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int start_address: the base SDRAM address
         """
         # Set up the connection
-        self._connection = SCAMPConnection(
-            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        self.__reprogram_tag(self._connection)
+        self._connection = self.__open_connection()
 
         # how many packets after first one we need to send
         self._max_seq_num = ceildiv(
@@ -1152,9 +1155,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         transceiver = get_simulator().transceiver
 
         # Update the IP Tag to work through a NAT firewall
-        connection = SCAMPConnection(
-            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
-        self.__reprogram_tag(connection)
+        connection = self.__open_connection()
 
         # update transaction id for extra monitor
         extra_monitor.update_transaction_id()

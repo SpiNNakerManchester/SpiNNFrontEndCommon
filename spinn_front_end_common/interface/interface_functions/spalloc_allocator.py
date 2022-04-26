@@ -24,6 +24,7 @@ from spalloc.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
+from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.spalloc import (
     is_server_address, SpallocClient, SpallocJob, SpallocState)
 from spinn_front_end_common.abstract_models import (
@@ -33,20 +34,22 @@ from spinn_front_end_common.abstract_models.impl import (
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.helpful_functions import (
     parse_old_spalloc)
+from spinn_front_end_common.utilities.globals_variables import (
+    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
 class _NewSpallocJobController(MachineAllocationController):
-    __slots__ = [
+    __slots__ = (
         # the spalloc job object
         "_job",
         # the current job's old state
         "_state",
         "__client",
         "__closer"
-    ]
+    )
 
     def __init__(
             self, client: SpallocClient, job: SpallocJob,
@@ -105,16 +108,37 @@ class _NewSpallocJobController(MachineAllocationController):
             self.__client.close()
         super()._teardown()
 
+    @overrides(AbstractMachineAllocationController.create_transceiver)
+    def create_transceiver(self):
+        """
+        .. note::
+
+            This allocation controller proxies the transceiver's connections
+            via Spalloc. This allows it to work even outside the UNIMAN
+            firewall.
+        """
+        return self._job.create_transceiver(report_default_directory())
+
+    @overrides(AbstractMachineAllocationController.open_sdp_connection)
+    def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
+        """
+        .. note::
+
+            This allocation controller proxies connections via Spalloc. This
+            allows it to work even outside the UNIMAN firewall.
+        """
+        return self._job.connect_to_board(chip_x, chip_y, udp_port)
+
 
 class _OldSpallocJobController(MachineAllocationController):
-    __slots__ = [
+    __slots__ = (
         # the spalloc job object
         "_job",
         # the current job's old state
         "_state"
-    ]
+    )
 
-    def __init__(self, job: Job):
+    def __init__(self, job: Job, host: str):
         """
         :param ~spalloc.job.Job job:
         """
@@ -122,7 +146,7 @@ class _OldSpallocJobController(MachineAllocationController):
             raise Exception("must have a real job")
         self._job = job
         self._state = job.state
-        super().__init__("SpallocJobController")
+        super().__init__("SpallocJobController", host)
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
@@ -282,7 +306,7 @@ def _alloc_job_old(spalloc_server: str, n_boards: int) -> Tuple[
 
     job, hostname, scamp_connection_data = _launch_checked_job_old(
         n_boards, spalloc_kwargs)
-    machine_allocation_controller = _OldSpallocJobController(job)
+    machine_allocation_controller = _OldSpallocJobController(job, hostname)
     return (hostname, scamp_connection_data, machine_allocation_controller)
 
 

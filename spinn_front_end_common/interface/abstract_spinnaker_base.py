@@ -12,6 +12,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from ipaddress import ip_address
+from spinnman.connections.udp_packet_connections.scamp_connection import SCAMPConnection
 
 """
 main interface for the SpiNNaker tools
@@ -1258,7 +1260,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(category, "Machine generator"):
             self._machine, self._txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
-                auto_detect_bmp, scamp_connection_data, reset_machine)
+                auto_detect_bmp, scamp_connection_data, reset_machine,
+                self._machine_allocation_controller)
 
     def _execute_get_max_machine(self, total_run_time, bearer_token=None):
         """
@@ -2079,6 +2082,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._max_machine:
             self._max_machine = False
             self._machine = None
+        # TODO pass the bearer token somehow, if available
         allocator_data = self._execute_allocator(MAPPING, total_run_time)
         self._execute_machine_generator(MAPPING, allocator_data)
         assert(self._machine)
@@ -3493,6 +3497,27 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
+
+    def open_scp_connection(self, chip_x, chip_y, chip_ip_address):
+        """
+        Create an SCP connection to the given ethernet chip. SpiNNaker will
+        not be configured to map that connection to a tag; that is the
+        caller's responsibility.
+
+        :param int chip_x:
+            X coordinate of the ethernet chip to connect to.
+        :param int chip_y:
+            Y coordinate of the ethernet chip to connect to.
+        :param str chip_ip_address:
+            IP address of the ethernet chip to connect to.
+        :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
+        """
+        if self._machine_allocation_controller:
+            # See if the allocation controller wants to do it
+            conn = self._machine_allocation_controller.open_sdp_connection()
+            if conn:
+                return conn
+        return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
 
     def stop(self):
         """
