@@ -17,13 +17,12 @@ import logging
 import struct
 from threading import Thread
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import SpiNNakerTriadGeometry
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import DatabaseConnection
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.connections.udp_packet_connections.utils import (
     update_sdp_header_for_udp_send)
@@ -34,8 +33,12 @@ from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
+from spinn_front_end_common.utilities.database import DatabaseConnection
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_geometry: SpiNNakerTriadGeometry = \
+    SpiNNakerTriadGeometry.get_spinn5_geometry()
 
 # The maximum number of 32-bit keys that will fit in a packet
 _MAX_FULL_KEYS_PER_PACKET = 63
@@ -51,7 +54,10 @@ _TWO_SKIP = struct.Struct("<2x")
 
 class LiveEventConnection(DatabaseConnection):
     """ A connection for receiving and sending live events from and to\
-        SpiNNaker
+        SpiNNaker.
+
+    Note that this class is intended to be potentially usable from another
+    process than the one that the simulator is present in.
     """
     __slots__ = [
         "_atom_id_to_key",
@@ -68,11 +74,14 @@ class LiveEventConnection(DatabaseConnection):
         "__send_address_details",
         "__send_labels",
         "__sender_connection",
-        "__start_resume_callbacks"]
+        "__send_to_xy",
+        "__start_resume_callbacks",
+        "__simulator",
+        "__spalloc_job"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT,
-                 machine_vertices=False):
+                 machine_vertices=False, simulator=None, job=None):
         """
         :param str live_packet_gather_label:
             The label of the :py:class:`LivePacketGather` vertex to which
@@ -88,6 +97,14 @@ class LiveEventConnection(DatabaseConnection):
             Optional specification of the local port to listen on. Must match
             the port that the toolchain will send the notification on (19999
             by default)
+        :param AbstractSpinnakerBase simulator:
+            The simulator, used to look up how to proxy connections (if at
+            all). If not supplied and ``job`` is also not supplied, only direct
+            connections are possible.
+        :param ~spinnman.spalloc.SpallocJob job:
+            The spalloc job to use for port proxying. Ignored if simulator is
+            ``None``. If not supplied and ``simulator`` is also not supplied,
+            only direct connections are possible.
         """
         # pylint: disable=too-many-arguments
         super().__init__(
@@ -103,6 +120,9 @@ class LiveEventConnection(DatabaseConnection):
             list(send_labels) if send_labels is not None else None)
         self.__machine_vertices = machine_vertices
         self.__sender_connection = None
+        self.__send_to_xy = False
+        self.__simulator = simulator
+        self.__spalloc_job = job
         self.__send_address_details = dict()
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key = dict()
@@ -255,7 +275,17 @@ class LiveEventConnection(DatabaseConnection):
         :param dict(str,int) vertex_sizes:
         """
         if self.__sender_connection is None:
-            self.__sender_connection = UDPConnection()
+            if self.__simulator:
+                self.__sender_connection = \
+                    self.__simulator._machine_allocation_controller.\
+                    open_eieio_connection()
+            elif self.__spalloc_job:
+                self.__sender_connection = \
+                    self.__spalloc_job.open_listener_connection()
+            else:
+                self.__sender_connection = UDPConnection()
+            self.__send_to_xy = hasattr(
+                self.__sender_connection, "send_to_chip")
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -273,22 +303,33 @@ class LiveEventConnection(DatabaseConnection):
         :param DatabaseReader db:
         :param dict(str,int) vertex_sizes:
         """
-        # FIXME: rewrite this so it works with proxied connections!
         # Set up a single connection for receive
         if self.__receiver_connection is None:
-            self.__receiver_connection = EIEIOConnection()
+            if self.__simulator:
+                self.__receiver_connection = \
+                    self.__simulator._machine_allocation_controller.\
+                    open_eieio_connection()
+            elif self.__spalloc_job:
+                self.__receiver_connection = \
+                    self.__spalloc_job.open_listener_connection()
+            else:
+                self.__receiver_connection = EIEIOConnection()
+        indirect = hasattr(self.__receiver_connection, "update_tag")
         receivers = set()
         for label_id, label in enumerate(self.__receive_labels):
-            _, port, board_address, tag = self.__get_live_output_details(
+            _, port, board_address, tag, x, y = self.__get_live_output_details(
                 db, label)
 
             # Update the tag if not already done
             if (board_address, port, tag) not in receivers:
-                self.__update_tag(
-                    self.__receiver_connection, board_address, tag)
                 receivers.add((board_address, port, tag))
-                send_port_trigger_message(
-                    self.__receiver_connection, board_address)
+                if indirect:
+                    self.__receiver_connection.update_tag(x, y, tag)
+                    # No port trigger necessary; proxied already
+                else:
+                    _update_tag(self.__receiver_connection, board_address, tag)
+                    send_port_trigger_message(
+                        self.__receiver_connection, board_address)
 
             logger.info(
                 "Listening for traffic from {} on board {} on {}:{}",
@@ -332,7 +373,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self.__machine_vertices:
-            host, port, strip_sdp, board_address, tag = \
+            host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
                 db_reader.get_machine_live_output_details(
                     receive_label, self.__live_packet_gather_label)
             if host is None:
@@ -340,7 +381,7 @@ class LiveEventConnection(DatabaseConnection):
                     "no live output tag found for {} in machine graph".
                     format(receive_label))
         else:
-            host, port, strip_sdp, board_address, tag = \
+            host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
                 db_reader.get_live_output_details(
                     receive_label, self.__live_packet_gather_label)
             if host is None:
@@ -350,34 +391,7 @@ class LiveEventConnection(DatabaseConnection):
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
-        return host, port, board_address, tag
-
-    def __update_tag(self, connection, board_address, tag):
-        # Update an IP Tag with the sender's address and port
-        # This avoids issues with NAT firewalls
-        logger.debug("Updating tag for {}".format(board_address))
-        request = IPTagSet(
-            0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
-        request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
-        update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
-        data = _TWO_SKIP.pack() + request.bytestring
-        sent = False
-        tries_to_go = 3
-        while not sent:
-            try:
-                connection.send_to(data, (board_address, SCP_SCAMP_PORT))
-                response_data = connection.receive(1.0)
-                request.get_scp_response().read_bytestring(
-                    response_data, _TWO_SKIP.size)
-                sent = True
-            except SpinnmanTimeoutException as e:
-                if not tries_to_go:
-                    logger.info("No more tries - Error!")
-                    raise e
-
-                logger.info("Timeout, retrying")
-                tries_to_go -= 1
-        logger.debug("Done updating tag for {}".format(board_address))
+        return host, port, board_address, tag, chip_x, chip_y
 
     def __handle_possible_rerun_state(self):
         # reset from possible previous calls
@@ -517,9 +531,7 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events_in_packet += 1
 
-            self.__sender_connection.send_to(
-                self.__get_sdp_data(message, x, y, p),
-                (ip_address, SCP_SCAMP_PORT))
+            self._send(message, x, y, p, ip_address)
 
     def send_event_with_payload(self, label, atom_id, payload):
         """ Send an event with a payload from a single atom
@@ -553,9 +565,7 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events += 1
 
-            self.__sender_connection.send_to(
-                self.__get_sdp_data(message, x, y, p),
-                (ip_address, SCP_SCAMP_PORT))
+            self._send(message, x, y, p, ip_address)
 
     def send_eieio_message(self, message, label):
         """ Send an EIEIO message (using one-way the live input) to the \
@@ -569,9 +579,20 @@ class LiveEventConnection(DatabaseConnection):
         if target is None:
             return
         x, y, p, ip_address = target
-        self.__sender_connection.send_to(
-            self.__get_sdp_data(message, x, y, p),
-            (ip_address, SCP_SCAMP_PORT))
+        self._send(message, x, y, p, ip_address)
+
+    def _send(self, message, x, y, p, ip_address):
+        if self.__send_to_xy:
+            # NB: if true, there's also definitely a simulator
+            board_x, board_y = _geometry.get_ethernet_chip_coordinates(
+                x, y, self.__simulator.machine.width,
+                self.__simulator.machine.height)
+            self.__sender_connection.send_to_chip(
+                self.__get_sdp_data(message, x, y, p), board_x, board_y)
+        else:
+            self.__sender_connection.send_to(
+                self.__get_sdp_data(message, x, y, p),
+                (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
         self.__handle_possible_rerun_state()
@@ -590,3 +611,34 @@ class LiveEventConnection(DatabaseConnection):
                 source_chip_x=0, source_chip_y=0),
             data=message.bytestring)
         return _TWO_SKIP.pack() + sdp_message.bytestring
+
+
+def _update_tag(connection: EIEIOConnection, board_address: str, tag: int):
+    """
+    Update an IP Tag with the sender's address and port.
+    This avoids issues with NAT firewalls.
+    """
+    # This appears to assume that it always uses the root chip...
+    logger.debug("Updating tag for {}".format(board_address))
+    request = IPTagSet(
+        0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
+    request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
+    update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
+    data = _TWO_SKIP.pack() + request.bytestring
+    sent = False
+    tries_to_go = 3
+    while not sent:
+        try:
+            connection.send_to(data, (board_address, SCP_SCAMP_PORT))
+            response_data = connection.receive(1.0)
+            request.get_scp_response().read_bytestring(
+                response_data, _TWO_SKIP.size)
+            sent = True
+        except SpinnmanTimeoutException as e:
+            if not tries_to_go:
+                logger.info("No more tries - Error!")
+                raise e
+
+            logger.info("Timeout, retrying")
+            tries_to_go -= 1
+    logger.debug("Done updating tag for {}".format(board_address))

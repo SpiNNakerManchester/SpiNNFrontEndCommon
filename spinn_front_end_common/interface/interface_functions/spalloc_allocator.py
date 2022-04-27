@@ -129,6 +129,10 @@ class _NewSpallocJobController(MachineAllocationController):
         """
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
+    @overrides(AbstractMachineAllocationController.open_eieio_connection)
+    def open_eieio_connection(self):
+        return self._job.open_listener_connection()
+
 
 class _OldSpallocJobController(MachineAllocationController):
     __slots__ = (

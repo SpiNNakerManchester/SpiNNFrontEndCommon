@@ -69,3 +69,11 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
             port will result in a connection that can't easily be configured.
         :rtype: ~spinnman.connections.udp_packet_connections.SDPConnection
         """
+
+    @abstractmethod
+    def open_eieio_connection(self):
+        """
+        Open an unbound EIEIO connection.
+
+        :rtype: ~spinnman.connections.abstract_classes.EIEIOReceiver
+        """

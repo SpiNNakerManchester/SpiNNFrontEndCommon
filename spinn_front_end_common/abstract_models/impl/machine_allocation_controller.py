@@ -99,9 +99,10 @@ class MachineAllocationController(
         host = self.__connection_data[chip_x, chip_y]
         if not host:
             return None
-        if udp_port == SCP_SCAMP_PORT:
-            return SCAMPConnection(
-                chip_x=chip_x, chip_y=chip_y, remote_host=host)
-        else:
-            return EIEIOConnection(remote_host=host, remote_port=udp_port)
-            # FIXME: this is ugly because EIEIO tries to share connections
+        return SCAMPConnection(
+            chip_x=chip_x, chip_y=chip_y,
+            remote_host=host, remote_port=udp_port)
+
+    @overrides(AbstractMachineAllocationController.open_eieio_connection)
+    def open_eieio_connection(self):
+        return EIEIOConnection()

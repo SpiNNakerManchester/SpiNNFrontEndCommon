@@ -72,8 +72,10 @@ class DatabaseReader(SQLiteDB):
             stripped from the output from a vertex
 
         :param str label: The label of the vertex
-        :return: tuple of (IP address, port, strip SDP, board address, tag)
-        :rtype: tuple(str, int, bool, str, int)
+        :return:
+            tuple of (IP address, port, strip SDP, board address, tag,
+            chip X, chip Y)
+        :rtype: tuple(str, int, bool, str, int, int, int)
         """
         return self.__r2t(
             self.__exec_one(
@@ -82,7 +84,8 @@ class DatabaseReader(SQLiteDB):
                 WHERE pre_vertex_label = ?
                     AND post_vertex_label LIKE ?
                 """, label, str(receiver_label) + "%"),
-            "ip_address", "port", "strip_sdp", "board_address", "tag")
+            "ip_address", "port", "strip_sdp", "board_address", "tag",
+            "chip_x", "chip_y")
 
     def get_live_input_details(self, label):
         """ Get the IP address and port where live input should be sent\
@@ -106,8 +109,10 @@ class DatabaseReader(SQLiteDB):
 
         :param str label: The label of the vertex
         :param str receiver_label:
-        :return: tuple of (IP address, port, strip SDP, board address, tag)
-        :rtype: tuple(str, int, bool, str, int)
+        :return:
+            tuple of (IP address, port, strip SDP, board address, tag,
+            chip X, chip Y)
+        :rtype: tuple(str, int, bool, str, int, int, int)
         """
         return self.__r2t(
             self.__exec_one(
@@ -116,7 +121,8 @@ class DatabaseReader(SQLiteDB):
                 WHERE pre_vertex_label = ?
                     AND post_vertex_label LIKE ?
                 """, label, str(receiver_label) + "%"),
-            "ip_address", "port", "strip_sdp", "board_address", "tag")
+            "ip_address", "port", "strip_sdp", "board_address", "tag",
+            "chip_x", "chip_y")
 
     def get_machine_live_input_details(self, label):
         """ Get the IP address and port where live input should be sent\

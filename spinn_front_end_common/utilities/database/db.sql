@@ -216,7 +216,9 @@ CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     pre_app_vertices.vertex_label AS pre_vertex_label,
     pre_app_vertices.vertex_class AS pre_vertex_class,
     post_app_vertices.vertex_label AS post_vertex_label,
-    post_app_vertices.vertex_class AS post_vertex_class
+    post_app_vertices.vertex_class AS post_vertex_class,
+    post_placements.chip_x AS x,
+    post_placements.chip_y AS y
 FROM IP_tags
     JOIN Machine_vertices AS post_vertices
         ON IP_tags.vertex_id = post_vertices.vertex_id
@@ -231,7 +233,9 @@ FROM IP_tags
     JOIN Application_vertices AS pre_app_vertices
         ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id
     JOIN Application_vertices AS post_app_vertices
-        ON post_mapper.application_vertex_id = post_app_vertices.vertex_id;
+        ON post_mapper.application_vertex_id = post_app_vertices.vertex_id
+    JOIN Placements AS post_placements
+        ON post_vertices.vertex_id = post_placements.vertex_id;
 
 CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
     IP_tags.ip_address AS ip_address,
@@ -242,14 +246,18 @@ CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
     pre_vertices.label AS pre_vertex_label,
     pre_vertices.class AS pre_vertex_class,
     post_vertices.label AS post_vertex_label,
-    post_vertices.class AS post_vertex_class
+    post_vertices.class AS post_vertex_class,
+    post_placements.chip_x AS x,
+    post_placements.chip_y AS y
 FROM IP_tags
     JOIN Machine_vertices AS post_vertices
         ON IP_tags.vertex_id = post_vertices.vertex_id
     JOIN Machine_edges AS edges
         ON edges.post_vertex = post_vertices.vertex_id
     JOIN Machine_vertices AS pre_vertices
-        ON edges.pre_vertex = pre_vertices.vertex_id;
+        ON edges.pre_vertex = pre_vertices.vertex_id
+    JOIN Placements AS post_placements
+        ON post_vertices.vertex_id = post_placements.vertex_id;
 
 CREATE VIEW IF NOT EXISTS app_input_tag_view AS SELECT
     Reverse_IP_tags.board_address AS board_address,
