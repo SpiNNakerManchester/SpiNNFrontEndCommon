@@ -23,7 +23,6 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
 from .extra_monitor_support import ExtraMonitorSupport
 from .extra_monitor_support_machine_vertex import (
     ExtraMonitorSupportMachineVertex)
-from .live_packet_gather import LivePacketGather
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from .multi_cast_command import MultiCastCommand
 from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
@@ -35,7 +34,7 @@ __all__ = ["CommandSender", "CommandSenderMachineVertex",
            "ChipPowerMonitor", "ChipPowerMonitorMachineVertex",
            "DataSpeedUpPacketGather", "DataSpeedUpPacketGatherMachineVertex",
            "ExtraMonitorSupport", "ExtraMonitorSupportMachineVertex",
-           "LivePacketGather", "LivePacketGatherMachineVertex",
+           "LivePacketGatherMachineVertex",
            "MultiCastCommand", "ReverseIpTagMultiCastSource",
            "ReverseIPTagMulticastSourceMachineVertex",
            "StreamingContextManager"]

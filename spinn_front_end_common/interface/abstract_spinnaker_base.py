@@ -361,6 +361,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Notification interface if needed
         "_notification_interface",
+
+        # Map of machine vertex to LPG Machine vertex attached to
+        "_lpg_to_m_vertex"
     ]
 
     def __init__(
@@ -452,6 +455,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
+        self._lpg_for_m_vertex = None
 
         FecTimer.setup(self)
 
@@ -1457,7 +1461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_empty(self._live_packet_recorder_params,
                                    "live_packet_recorder_params"):
                 return
-            lpg_multicast_routing_generator(
+            self._lpg_for_m_vertex = lpg_multicast_routing_generator(
                 self._live_packet_recorder_params, self._placements,
                 self._live_packet_recorder_parameters_mapping, self._machine,
                 self._routing_table_by_partition)
@@ -1622,7 +1626,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             tag_allocator_report(self._tags)
 
-    def _execute_global_allocate(self):
+    def _execute_global_allocate(self, extra_allocations):
         """
         Runs, times and logs the Global Zoned Routing Info Allocator
 
@@ -1634,9 +1638,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Global allocate"):
-            self._routing_infos = global_allocate(self._application_graph)
+            self._routing_infos = global_allocate(
+                self._application_graph, extra_allocations)
 
-    def _execute_flexible_allocate(self):
+    def _execute_flexible_allocate(self, extra_allocations):
         """
         Runs, times and logs the Zoned Routing Info Allocator
 
@@ -1648,7 +1653,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return:
         """
         with FecTimer(MAPPING, "Zoned routing info allocator"):
-            self._routing_infos = flexible_allocate(self._application_graph)
+            self._routing_infos = flexible_allocate(
+                self._application_graph, extra_allocations)
 
     def do_info_allocator(self):
         """
@@ -1663,11 +1669,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException: if the cfg info_allocator value is
             unexpected
         """
+        extra_allocations = [
+            (v, part)
+            for verts in self._live_packet_recorder_params.values()
+            for v, parts in verts for part in parts]
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
-            return self._execute_global_allocate()
+            return self._execute_global_allocate(extra_allocations)
         if name == "ZonedRoutingInfoAllocator":
-            return self._execute_flexible_allocate()
+            return self._execute_flexible_allocate(extra_allocations)
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for info_allocator")
@@ -1807,7 +1817,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             self._executable_types = locate_executable_start_type(
-                self._application_graph, self._placements)
+                self._placements)
 
     def _execute_buffer_manager_creator(self):
         """
@@ -2661,10 +2671,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
-                self._tags, run_time, self._machine,
-                self._max_run_time_steps, self._placements,
-                self._routing_infos, self._router_tables,
-                self._app_id, self._application_graph)
+                self._tags, run_time, self._machine, self._placements,
+                self._routing_infos, self._app_id, self._application_graph,
+                self._lpg_for_m_vertex)
 
     def _execute_create_notifiaction_protocol(self):
         """

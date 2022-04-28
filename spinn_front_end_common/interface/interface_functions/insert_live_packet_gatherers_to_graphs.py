@@ -32,7 +32,8 @@ def insert_live_packet_gatherers_to_graphs(
         exiting placements to be added to
     :return: mapping of (LPG parameters, Ethernet coordinates) to
         LPG machine vertex
-    :rtype: dict((LivePacketGatherParameters,int,int),LivePacketGather)
+    :rtype: dict((LivePacketGatherParameters,int,int),
+        LivePacketGatherMachineVertex)
     """
     # Keep track of the vertices added by parameters and Ethernet chip
     lpg_params_to_vertices = dict()
