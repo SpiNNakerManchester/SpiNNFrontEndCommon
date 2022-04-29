@@ -25,7 +25,6 @@ from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
-from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource,
     ReverseIPtagResource, ResourceContainer, VariableSDRAM)
@@ -163,9 +162,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             n_keys=None,
             constraints=None,
 
-            # General input and output parameters
-            board_address=None,
-
             # Live input parameters
             receive_port=None,
             receive_sdp_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
@@ -202,8 +198,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
-            if board_address is not None:
-                self.add_constraint(BoardConstraint(board_address))
         self._receive_rate = receive_rate
         self._receive_sdp_port = receive_sdp_port
 

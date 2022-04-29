@@ -116,7 +116,6 @@ class _DatabaseInterface(object):
         :param ~.Machine machine:
         :param int runtime:
         :param ~.ApplicationGraph app_graph:
-        :param ~.MachineGraph machine_graph:
         :param int data_n_timesteps:
             The number of timesteps for which data space will been reserved
         :param ~.Placements placements:

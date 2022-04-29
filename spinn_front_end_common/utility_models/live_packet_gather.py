@@ -23,7 +23,7 @@ class LivePacketGather(ApplicationVertex):
         a SpiNNaker machine.
     """
 
-    __slots__ = ["__lpg_params"]
+    __slots__ = ["__lpg_params", "__incoming_edges"]
 
     def __init__(self, lpg_params, constraints=None):
         """
@@ -35,20 +35,20 @@ class LivePacketGather(ApplicationVertex):
         label = lpg_params.label or "Live Packet Gatherer"
         super(LivePacketGather, self).__init__(label, constraints)
         self.__lpg_params = lpg_params
-        self._incoming_edges = list()
+        self.__incoming_edges = list()
 
     def add_incoming_edge(self, edge):
-        self._incoming_edges.append(edge)
+        self.__incoming_edges.append(edge)
 
     @property
     def n_atoms(self):
         return 1
 
     def __get_key_translation_sdram(self):
-        if not self._lpg_params.translate_keys:
+        if not self.__lpg_params.translate_keys:
             return 0
         n_entries = 0
-        for edge in self._incoming_edges:
+        for edge in self.__incoming_edges:
             n_entries += len(
                 edge.pre_vertex.splitter.get_in_coming_slices()[0])
         return n_entries * LivePacketGatherMachineVertex._KEY_ENTRY_SIZE

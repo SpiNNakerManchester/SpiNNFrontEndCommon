@@ -46,13 +46,13 @@ def generate_provenance_item(x, y, bit_fields_merged):
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
-def bitfield_compressor_report(machine_graph, placements):
+def bitfield_compressor_report(app_graph, placements):
     """
     Generates a report that shows the impact of the compression of \
     bitfields into the routing table.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
+    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        the graph
     :param ~pacman.model.placements.Placements placements: the placements
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
@@ -60,7 +60,7 @@ def bitfield_compressor_report(machine_graph, placements):
     file_name = os.path.join(report_default_directory(), _FILE_NAME)
     try:
         with open(file_name, "w") as f:
-            return _write_report(f, machine_graph, placements)
+            return _write_report(f, app_graph, placements)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
@@ -126,29 +126,27 @@ def _merged_component(to_merge_per_chip, writer):
             average_per_chip_merged)
 
 
-def _compute_to_merge_per_chip(machine_graph, placements):
+def _compute_to_merge_per_chip(app_graph, placements):
     """
-    :param ~.MachineGraph machine_graph:
+    :param ~.ApplicationGraph app_graph:
     :param ~.Placements placements:
     :rtype: tuple(int, int, int, float or int)
     """
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
-    for placement in placements:
-        binary_start_type = None
-        if isinstance(placement.vertex, AbstractHasAssociatedBinary):
-            binary_start_type = placement.vertex.get_binary_start_type()
-
-        if binary_start_type != ExecutableType.SYSTEM:
-            seen_partitions = set()
-            for incoming_partition in machine_graph.\
-                    get_multicast_edge_partitions_ending_at_vertex(
-                        placement.vertex):
-                if incoming_partition not in seen_partitions:
-                    total_to_merge += 1
-                    to_merge_per_chip[placement.x, placement.y] += 1
-                    seen_partitions.add(incoming_partition)
+    for partition in app_graph.outgoing_edge_partitions:
+        for edge in partition.edges:
+            splitter = edge.post_vertex.splitter
+            for vertex in splitter.get_source_specific_in_coming_vertices(
+                    partition.pre_vertex, partition.identifier):
+                if not isinstance(vertex, AbstractHasAssociatedBinary):
+                    continue
+                if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
+                    continue
+                place = placements.get_placement_of_vertex(vertex)
+                to_merge_per_chip[place.chip] += 1
+                total_to_merge += 1
 
     return total_to_merge, to_merge_per_chip
 
@@ -174,17 +172,17 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
     return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
 
-def _write_report(writer, machine_graph, placements):
+def _write_report(writer, app_graph, placements):
     """ writes the report
 
     :param ~io.FileIO writer: the file writer
-    :param ~.MachineGraph machine_graph: the machine graph
+    :param ~.ApplicationGraph app_graph: the graph
     :param ~.Placements placements: the placements
     :return: a summary
     :rtype: BitFieldSummary
     """
     total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip(
-        machine_graph, placements)
+        app_graph, placements)
     (max_to_merge_per_chip, low_to_merge_per_chip,
      average_per_chip_to_merge) = _before_merge_component(
         total_to_merge, to_merge_per_chip)

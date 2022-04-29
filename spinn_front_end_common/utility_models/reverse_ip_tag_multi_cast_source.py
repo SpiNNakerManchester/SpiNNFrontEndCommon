@@ -21,7 +21,6 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
     ReverseIPtagResource)
-from pacman.model.constraints.placer_constraints import BoardConstraint
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints)
 from spinn_front_end_common.abstract_models.impl import (
@@ -43,9 +42,6 @@ class ReverseIpTagMultiCastSource(
     def __init__(
             self, n_keys, label=None, constraints=None,
             max_atoms_per_core=sys.maxsize,
-
-            # General parameters
-            board_address=None,
 
             # Live input parameters
             receive_port=None,
@@ -128,7 +124,6 @@ class ReverseIpTagMultiCastSource(
         self._n_atoms = self.round_n_atoms(n_keys, "n_keys")
 
         # Store the parameters for EIEIO
-        self._board_address = board_address
         self._receive_port = receive_port
         self._receive_sdp_port = receive_sdp_port
         self._receive_tag = receive_tag
@@ -143,8 +138,6 @@ class ReverseIpTagMultiCastSource(
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
-            if board_address is not None:
-                self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
         self._send_buffer_times = self._validate_send_buffer_times(
@@ -248,7 +241,6 @@ class ReverseIpTagMultiCastSource(
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,
-            board_address=self._board_address,
             receive_port=self._receive_port,
             receive_sdp_port=self._receive_sdp_port,
             receive_tag=self._receive_tag,
