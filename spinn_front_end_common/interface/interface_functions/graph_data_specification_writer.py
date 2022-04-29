@@ -71,7 +71,6 @@ class _GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        placements = FecDataView.get_placements()
         targets = DsSqlliteDatabase()
         targets.clear_ds()
 
