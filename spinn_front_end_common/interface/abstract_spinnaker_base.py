@@ -2040,7 +2040,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._placements, self._tags, self._txrx,
                 self._extra_monitor_to_chip_mapping,
                 self._vertex_to_ethernet_connected_chip_mapping,
-                self._machine, self._fixed_routes, self._java_caller)
+                self._machine, self._fixed_routes, self._java_caller,
+                self._machine_allocation_controller)
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """

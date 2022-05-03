@@ -36,12 +36,15 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
+from spinnman.connections.connection_listener import ConnectionListener
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance import (
     BUFFER, ProvenanceWriter)
+from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+    import SpallocJobController
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -128,13 +131,20 @@ class BufferManager(object):
         "_machine",
 
         # Support class to help call Java
-        "_java_caller"
+        "_java_caller",
+
+        # The machine controller, in case it wants to make proxied connections
+        # for us
+        "_machine_controller",
+
+        # The proxied receiver connection, if we have one
+        "_proxied_connection"
     ]
 
     def __init__(self, placements, tags, transceiver,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 java_caller=None):
+                 java_caller=None, machine_allocation_controller=None):
         """
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
@@ -153,6 +163,8 @@ class BufferManager(object):
         :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :param JavaCaller java_caller:
             Support class to call Java, or ``None`` to use Python
+        :param MachineAllocationController machine_allocation_controller:
+            The machine controller, if known.
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -163,6 +175,9 @@ class BufferManager(object):
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
         self._fixed_routes = fixed_routes
         self._machine = machine
+        self._machine_controller = machine_allocation_controller if isinstance(
+                machine_allocation_controller, SpallocJobController) else None
+        self._proxied_connection = None
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -286,12 +301,23 @@ class BufferManager(object):
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
-        connection = self._transceiver.register_udp_listener(
-            self._receive_buffer_command_message, EIEIOConnection,
-            local_port=tag.port, local_host=tag.ip_address)
+        if self._machine_controller:
+            if not self._proxied_connection:
+                self._proxied_connection = \
+                    self._machine_controller.open_eieio_listener()
+                listener = ConnectionListener(self._proxied_connection)
+                listener.start()
+                listener.add_callback(self._receive_buffer_command_message)
+                # TODO: get the transceiver to partially adopt this connection
+            connection = self._proxied_connection
+            connection.update_tag_by_ip(tag.ip_address, tag.tag)
+        else:
+            connection = self._transceiver.register_udp_listener(
+                self._receive_buffer_command_message, EIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
+            utility_functions.send_port_trigger_message(
+                connection, tag.board_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
-        utility_functions.send_port_trigger_message(
-            connection, tag.board_address)
         logger.info(
             "Listening for packets using tag {} on {}:{}",
             tag.tag, connection.local_ip_address, connection.local_port)

@@ -23,7 +23,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 def buffer_manager_creator(
         placements, tags, txrx, extra_monitor_to_chip_mapping=None,
         packet_gather_cores_to_ethernet_connection_map=None, machine=None,
-        fixed_routes=None, java_caller=None):
+        fixed_routes=None, java_caller=None,
+        machine_allocation_controller=None):
     """ Creates a buffer manager.
 
     :param ~pacman.model.placements.Placements placements:
@@ -40,6 +41,7 @@ def buffer_manager_creator(
     :param fixed_routes:
     :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
     :param JavaCaller java_caller:
+    :param MachineAllocationController machine_allocation_controller:
     :rtype: BufferManager
     """
     # pylint: disable=too-many-arguments
@@ -52,7 +54,8 @@ def buffer_manager_creator(
             packet_gather_cores_to_ethernet_connection_map),
         extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
         machine=machine, fixed_routes=fixed_routes,
-        java_caller=java_caller)
+        java_caller=java_caller,
+        machine_allocation_controller=machine_allocation_controller)
 
     for placement in progress.over(placements.placements):
         vertex = placement.vertex

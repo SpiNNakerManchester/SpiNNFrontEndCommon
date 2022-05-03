@@ -41,7 +41,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
 
 
-class _NewSpallocJobController(MachineAllocationController):
+class SpallocJobController(MachineAllocationController):
     __slots__ = (
         # the spalloc job object
         "_job",
@@ -281,7 +281,7 @@ def _allocate_job_new(
             logger.debug(
                 "boards: {}",
                 str(connections).replace("{", "[").replace("}", "]"))
-        allocation_controller = _NewSpallocJobController(client, job, task)
+        allocation_controller = SpallocJobController(client, job, task)
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()

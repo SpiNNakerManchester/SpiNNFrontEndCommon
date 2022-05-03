@@ -76,7 +76,8 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             placements=pl, tags=t, transceiver=trnx,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
-            fixed_routes=None)
+            fixed_routes=None,
+            java_caller=None, machine_allocation_controller=None)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
