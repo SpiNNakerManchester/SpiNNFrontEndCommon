@@ -960,6 +960,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
+        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._monitor_map[(x, y)]
 
     @classmethod
@@ -1015,6 +1016,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
+        # pylint: disable=unsubscriptable-object
         return cls.__fec_data._gatherer_map[(x, y)]
 
     @classmethod
