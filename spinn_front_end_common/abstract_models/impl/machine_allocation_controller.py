@@ -104,5 +104,14 @@ class MachineAllocationController(
             remote_host=host, remote_port=udp_port)
 
     @overrides(AbstractMachineAllocationController.open_eieio_connection)
-    def open_eieio_connection(self):
+    def open_eieio_connection(self, chip_x, chip_y):
+        if not self.__connection_data:
+            return None
+        host = self.__connection_data[chip_x, chip_y]
+        if not host:
+            return None
+        return EIEIOConnection(remote_host=host, remote_port=SCP_SCAMP_PORT)
+
+    @overrides(AbstractMachineAllocationController.open_eieio_listener)
+    def open_eieio_listener(self):
         return EIEIOConnection()

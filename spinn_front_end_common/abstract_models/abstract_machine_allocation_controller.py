@@ -71,7 +71,19 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def open_eieio_connection(self):
+    def open_eieio_connection(self, chip_x, chip_y):
+        """
+        Open a connection to a specific ethernet chip for EIEIO. Caller will
+        have to arrange for SpiNNaker to pay attention to the connection.
+
+        :param int chip_x: ethernet chip x location
+        :param int chip_y: ethernet chip y location
+
+        :rtype: ~spinnman.connections.abstract_classes.EIEIOSender
+        """
+
+    @abstractmethod
+    def open_eieio_listener(self):
         """
         Open an unbound EIEIO connection.
 

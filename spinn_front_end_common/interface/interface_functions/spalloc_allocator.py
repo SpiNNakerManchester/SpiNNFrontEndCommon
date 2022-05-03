@@ -130,7 +130,11 @@ class _NewSpallocJobController(MachineAllocationController):
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
     @overrides(AbstractMachineAllocationController.open_eieio_connection)
-    def open_eieio_connection(self):
+    def open_eieio_connection(self, chip_x, chip_y):
+        return self._job.open_eieio_connection(chip_x, chip_y, SCP_SCAMP_PORT)
+
+    @overrides(AbstractMachineAllocationController.open_eieio_listener)
+    def open_eieio_listener(self):
         return self._job.open_listener_connection()
 
 

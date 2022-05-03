@@ -12,8 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from ipaddress import ip_address
-from spinnman.connections.udp_packet_connections.scamp_connection import SCAMPConnection
 
 """
 main interface for the SpiNNaker tools
@@ -37,6 +35,7 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets, Machine
 
 from spinnman import __version__ as spinnman_version
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model.cpu_infos import CPUInfos
@@ -3514,7 +3513,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._machine_allocation_controller:
             # See if the allocation controller wants to do it
-            conn = self._machine_allocation_controller.open_sdp_connection()
+            conn = self._machine_allocation_controller.open_sdp_connection(
+                chip_x, chip_y)
             if conn:
                 return conn
         return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
