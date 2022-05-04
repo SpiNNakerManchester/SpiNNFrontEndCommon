@@ -32,9 +32,7 @@ def database_interface(
     :param ~pacman.model.placements.Placements placements:
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     :param int app_id:
-    :param ~pacman.model.graphs.application.ApplicationGraph
-        application_graph:
-    :type application_graph:
+    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     :param dict(MachineVertex,LivePacketGatherMachineVertex)
         lpg_for_m_vertex:
     :return: Database interface, where the database is located
