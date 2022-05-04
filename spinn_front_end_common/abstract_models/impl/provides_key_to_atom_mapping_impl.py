@@ -24,7 +24,10 @@ class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
     @overrides(
         AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping)
     def routing_key_partition_atom_mapping(self, routing_info, partition):
-        vertex_slice = partition.pre_vertex.vertex_slice
-        keys = routing_info.get_keys(vertex_slice.n_atoms)
-        start = vertex_slice.lo_atom
-        return enumerate(keys, start)
+        for m_vertex in partition.pre_vertex.machine_vertices:
+            vertex_slice = m_vertex.vertex_slice
+            r_info = routing_info.get_routing_info_from_pre_vertex(
+                m_vertex, partition.identifier)
+            keys = r_info.get_keys(vertex_slice.n_atoms)
+            start = vertex_slice.lo_atom
+            yield from enumerate(keys, start)

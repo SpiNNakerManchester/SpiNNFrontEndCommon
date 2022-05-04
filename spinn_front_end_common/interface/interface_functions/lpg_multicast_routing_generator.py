@@ -25,6 +25,8 @@ def lpg_multicast_routing_generator(
     progress = ProgressBar(
         live_packet_gatherer_parameters, "Routing Live Output")
 
+    lpg_for_m_vertex = dict()
+
     for lpg_params in progress.over(live_packet_gatherer_parameters):
         # locate vertices to connect to a LPG with these params
         for app_vertex, part_ids in live_packet_gatherer_parameters[
@@ -41,7 +43,10 @@ def lpg_multicast_routing_generator(
                     lpg_place = placements.get_placement_of_vertex(lpg)
                     route = most_direct_route(
                         placement.chip, lpg_place.chip, machine)
-                    targets = targets_by_chip([m_vertex], placements, machine)
+                    targets = targets_by_chip([lpg], placements, machine)
                     convert_a_route(
                         routing_tables, m_vertex, part_id, placement.p, None,
                         route, targets)
+                    lpg_for_m_vertex[m_vertex, part_id] = lpg
+
+    return lpg_for_m_vertex
