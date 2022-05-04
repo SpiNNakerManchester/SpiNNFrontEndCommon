@@ -37,7 +37,15 @@ class DatabaseConnection(UDPConnection):
     .. note::
         The machine description database reader can only be used while the
         registered database callbacks are running.
+
+    .. note::
+        This class coordinates with the :py:class:`NotificationProtocol` class
+        without routing messages via SpiNNaker.
     """
+    # This class must NOT be proxied! It does not handle messages from
+    # SpiNNaker itself, but rather between the toolchain and any visualisation
+    # tools plugged into it. The message it receives in __run() is sent by
+    # NotificationProtocol._send_read_notification
 
     __slots__ = [
         "__database_callbacks",

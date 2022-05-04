@@ -31,7 +31,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class NotificationProtocol(AbstractContextManager):
     """ The protocol which hand shakes with external devices about the\
-        database and starting execution
+        database and starting execution.
+
+    The messages sent by this are received by instances of
+    :py:class:`DatabaseConnection` (and its subclasses). They are not routed
+    via SpiNNaker.
     """
     __slots__ = [
         "__database_message_connections",
