@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -40,7 +40,6 @@ class NotificationProtocol(AbstractContextManager):
     __slots__ = [
         "__database_message_connections",
         "__sent_visualisation_confirmation",
-        "__socket_addresses",
         "__wait_for_read_confirmation",
         "__wait_futures",
         "__wait_pool"]
@@ -51,8 +50,6 @@ class NotificationProtocol(AbstractContextManager):
         :type socket_addresses:
             set(~spinn_utilities.socket_address.SocketAddress)
         """
-        self.__socket_addresses = socket_addresses
-
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
@@ -60,12 +57,13 @@ class NotificationProtocol(AbstractContextManager):
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
-        self.__database_message_connections = list()
-        for socket_address in socket_addresses:
-            self.__database_message_connections.append(EIEIOConnection(
+        self.__database_message_connections = [
+            # These connections are not used to talk to SpiNNaker boards
+            EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
-                remote_port=socket_address.notify_port_no))
+                remote_port=socket_address.notify_port_no)
+            for socket_address in socket_addresses]
 
     def wait_for_confirmation(self):
         """ If asked to wait for confirmation, waits for all external systems\
@@ -125,10 +123,10 @@ class NotificationProtocol(AbstractContextManager):
 
         :param str database_path: the path to the database file
         """
-        notification_thread = self.__wait_pool.submit(
-                self._send_read_notification, database_path)
+        notification_task = self.__wait_pool.submit(
+            self._send_read_notification, database_path)
         if self.__wait_for_read_confirmation:
-            self.__wait_futures.append(notification_thread)
+            self.__wait_futures.append(notification_task)
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
@@ -173,18 +171,18 @@ class NotificationProtocol(AbstractContextManager):
         self.__sent_visualisation_confirmation = True
 
         # if the system needs to wait, try receiving a packet back
-        for c in self.__database_message_connections:
-            try:
-                if self.__wait_for_read_confirmation:
+        if self.__wait_for_read_confirmation:
+            for c in self.__database_message_connections:
+                try:
                     c.receive_eieio_message()
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:  # pylint: disable=broad-except
-                logger.warning(
-                    "*** Failed to receive notification from external "
-                    "application on {}:{} about the database ***",
-                    c.remote_ip_address, c.remote_port, exc_info=True)
+                except Exception:  # pylint: disable=broad-except
+                    logger.warning(
+                        "*** Failed to receive notification from external "
+                        "application on {}:{} about the database ***",
+                        c.remote_ip_address, c.remote_port, exc_info=True)
 
     @property
     def sent_visualisation_confirmation(self):
@@ -195,9 +193,11 @@ class NotificationProtocol(AbstractContextManager):
         return self.__sent_visualisation_confirmation
 
     def close(self):
-        """ Closes the thread pool
+        """ Closes the thread pool and the connections.
         """
         if self.__wait_pool:
             self.__wait_pool.shutdown()
             self.__wait_futures = list()
             self.__wait_pool = None
+        for c in self.__database_message_connections:
+            c.close()
