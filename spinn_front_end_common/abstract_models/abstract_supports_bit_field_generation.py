@@ -35,10 +35,9 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def bit_field_builder_region(self, transceiver, placement):
+    def bit_field_builder_region(self, placement):
         """ returns the SDRAM address for the bit field builder data
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield builder data
         :rtype: int
