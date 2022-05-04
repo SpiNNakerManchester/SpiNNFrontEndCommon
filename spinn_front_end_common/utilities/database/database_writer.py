@@ -18,7 +18,6 @@ import os
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
