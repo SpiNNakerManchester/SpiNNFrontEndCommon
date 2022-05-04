@@ -363,7 +363,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_notification_interface",
 
         # Map of machine vertex to LPG Machine vertex attached to
-        "_lpg_to_m_vertex"
+        "_lpg_for_m_vertex"
     ]
 
     def __init__(
