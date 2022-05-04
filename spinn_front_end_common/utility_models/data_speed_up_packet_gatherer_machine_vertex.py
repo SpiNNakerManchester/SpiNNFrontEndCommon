@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 import os
 import datetime
 import logging
@@ -24,7 +23,6 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
@@ -37,7 +35,7 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
     get_simulator, report_default_directory)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, n_word_struct)
+    convert_vertices_to_core_subset, n_word_struct, retarget_tag)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
@@ -539,7 +537,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w") as writer:
+            with open(self._in_report_path, "w", encoding='utf-8') as writer:
                 writer.write(
                     "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
                     " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
@@ -556,7 +554,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a") as writer:
+        with open(self._in_report_path, "a", encoding='utf-8') as writer:
             writer.write(
                 "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took_ms,
@@ -647,7 +645,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def __open_connection(self):
         connection = get_simulator().open_scp_connection(
             self._x, self._y, self._ip_address)
-        self.__reprogram_tag(connection)
+        retarget_tag(connection, self._x, self._y, self._remote_tag)
         return connection
 
     def _send_data_via_extra_monitors(
@@ -1102,26 +1100,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             except Exception:  # pylint: disable=broad-except
                 log.exception("Couldn't get core state")
 
-    def __reprogram_tag(self, connection):
-        """ Make our tag deliver to the given connection.
-
-        :param ~.SCAMPConnection connection: The connection to deliver to.
-        """
-        request = IPTagSet(
-            self._x, self._y, [0, 0, 0, 0], 0,
-            self._remote_tag, strip=True, use_sender=True)
-        data = connection.get_scp_data(request)
-        exn = None
-        for _ in range(3):
-            try:
-                connection.send(data)
-                _, _, response, offset = connection.receive_scp_response()
-                request.get_scp_response().read_bytestring(response, offset)
-                return
-            except SpinnmanTimeoutException as e:
-                exn = e
-        raise exn or SpinnmanTimeoutException
-
     def get_data(
             self, extra_monitor, placement, memory_address,
             length_in_bytes, fixed_routes):
@@ -1294,7 +1272,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if os.path.isfile(report_path):
             writer_behaviour = "a"
 
-        with open(report_path, writer_behaviour) as writer:
+        with open(report_path, writer_behaviour, encoding='utf-8') as writer:
             writer.write("[{}:{}:{}] = {}\n".format(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 

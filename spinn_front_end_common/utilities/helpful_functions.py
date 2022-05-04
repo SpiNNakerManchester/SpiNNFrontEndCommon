@@ -19,7 +19,13 @@ import struct
 from urllib.parse import urlparse
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
+from spinnman.constants import SCP_SCAMP_PORT, SCP_TIMEOUT
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPFlag
+from spinnman.messages.scp.impl import IPTagSet
 from spinnman.model.enums import CPUState
+from spinnman.connections.udp_packet_connections import (
+    update_sdp_header_for_udp_send)
 from . import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -315,3 +321,48 @@ def parse_old_spalloc(
         return spalloc_server, spalloc_port, spalloc_user
     return parsed.hostname, (parsed.port or spalloc_port), \
         (parsed.username or spalloc_user)
+
+
+def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
+    """
+    Make a tag deliver to the given connection.
+
+    :param ~.UDPConnection connection:
+        The connection to deliver to.
+    :param int x:
+        The X coordinate of the ethernet chip we are sending the message to.
+    :param int y:
+        The Y coordinate of the ethernet chip we are sending the message to.
+    :param int tag:
+        The ID of the tag to retarget.
+    :param str ip_address:
+        What IP address to send the message to. If ``None``, the connection is
+        assumed to be connected to a specific board already.
+    :param bool strip:
+        Whether the tag should strip the SDP header before sending to the
+        connection.
+    """
+    # If the connection itself knows how, delegate to it
+    if hasattr(connection, "update_tag"):
+        connection.update_tag(tag)
+        return
+    request = IPTagSet(
+        x, y, [0, 0, 0, 0], 0, tag, strip=strip, use_sender=True)
+    request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
+    update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
+    data = b'\0\0' + request.bytestring
+    exn = None
+    for _ in range(3):
+        try:
+            if ip_address:
+                # Not connected: say where to go
+                connection.send_to(data, (ip_address, SCP_SCAMP_PORT))
+            else:
+                # Connected: must not say where to go
+                connection.send(data)
+            response_data = connection.receive(SCP_TIMEOUT)
+            request.get_scp_response().read_bytestring(response_data, 2)
+            return
+        except SpinnmanTimeoutException as e:
+            exn = e
+    raise exn or SpinnmanTimeoutException

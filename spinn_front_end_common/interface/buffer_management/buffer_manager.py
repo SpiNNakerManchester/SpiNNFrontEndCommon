@@ -36,7 +36,6 @@ from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
-from spinnman.connections.connection_listener import ConnectionListener
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
@@ -138,7 +137,7 @@ class BufferManager(object):
         "_machine_controller",
 
         # The proxied receiver connection, if we have one
-        "_proxied_connection"
+        "__proxied_connection"
     ]
 
     def __init__(self, placements, tags, transceiver,
@@ -176,8 +175,8 @@ class BufferManager(object):
         self._fixed_routes = fixed_routes
         self._machine = machine
         self._machine_controller = machine_allocation_controller if isinstance(
-                machine_allocation_controller, SpallocJobController) else None
-        self._proxied_connection = None
+            machine_allocation_controller, SpallocJobController) else None
+        self.__proxied_connection = None
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -296,21 +295,21 @@ class BufferManager(object):
                         packet.space_available, vertex,
                         packet.region_id, packet.sequence_no)
 
-    def _create_connection(self, tag):
+    def __create_connection(self, tag):
         """
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
         if self._machine_controller:
-            if not self._proxied_connection:
-                self._proxied_connection = \
+            if not self.__proxied_connection:
+                self.__proxied_connection = \
                     self._machine_controller.open_eieio_listener()
-                listener = ConnectionListener(self._proxied_connection)
-                listener.start()
-                listener.add_callback(self._receive_buffer_command_message)
-                # TODO: get the transceiver to partially adopt this connection
-            connection = self._proxied_connection
+                self._transceiver.register_existing_udp_listener(
+                    self._receive_buffer_command_message,
+                    self.__proxied_connection)
+            connection = self.__proxied_connection
             connection.update_tag_by_ip(tag.ip_address, tag.tag)
+            # No trigger message needed
         else:
             connection = self._transceiver.register_udp_listener(
                 self._receive_buffer_command_message, EIEIOConnection,
@@ -343,7 +342,7 @@ class BufferManager(object):
                         # If connection already setup, ensure subsequent
                         # boards use same listener port in their tag
                         if self._listener_port is None:
-                            connection = self._create_connection(tag)
+                            connection = self.__create_connection(tag)
                             tag.port = connection.local_port
                             self._listener_port = connection.local_port
                         else:
@@ -352,7 +351,7 @@ class BufferManager(object):
                     # In case we have tags with different specified ports,
                     # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
-                        self._create_connection(tag)
+                        self.__create_connection(tag)
 
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices which require\
