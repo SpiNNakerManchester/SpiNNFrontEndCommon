@@ -22,6 +22,13 @@ CREATE TABLE IF NOT EXISTS configuration_parameters(
     value REAL,
     PRIMARY KEY (parameter_id));
 
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);
+
 CREATE TABLE IF NOT EXISTS Machine_layout(
     machine_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x_dimension INTEGER,

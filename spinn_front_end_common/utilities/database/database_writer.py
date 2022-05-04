@@ -24,6 +24,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
 from pacman.model.graphs.machine import MulticastEdgePartition
+from spinnman.spalloc.abstract_classes import SpallocJob
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -208,6 +209,17 @@ class DatabaseWriter(SQLiteDB):
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", app_id)])
+
+    def add_proxy_configuration(self, job: SpallocJob):
+        """ Store the proxy configuration.
+
+        :param SpallocJob job:
+            The job handle to get the proxy configuration from.
+        """
+        if not job or not isinstance(job, SpallocJob):
+            return
+        with self.transaction() as cur:
+            job._write_credentials_to_db(cur)
 
     def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
         """ Add the machine graph into the database.

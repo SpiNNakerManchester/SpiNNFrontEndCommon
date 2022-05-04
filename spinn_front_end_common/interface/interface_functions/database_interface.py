@@ -18,6 +18,10 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
+from spinn_front_end_common.utilities.globals_variables import get_simulator
+from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
+    import (
+        SpallocJobController)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -101,10 +105,14 @@ class _DatabaseInterface(object):
         if self._needs_db:
             logger.info("creating live event connection database in {}",
                         self._writer.database_path)
+            mac = get_simulator()._machine_allocation_controller
+            job = None
+            if mac and isinstance(mac, SpallocJobController):
+                job = mac._job
             self._write_to_db(
                 machine, runtime, application_graph, machine_graph,
                 data_n_timesteps, placements, routing_infos, router_tables,
-                tags, app_id)
+                tags, app_id, job)
 
         if self._needs_db:
             return self._writer.database_path
@@ -113,7 +121,7 @@ class _DatabaseInterface(object):
     def _write_to_db(
             self, machine, runtime, app_graph, machine_graph,
             data_n_timesteps, placements, routing_infos, router_tables,
-            tags, app_id):
+            tags, app_id, job):
         """
         :param ~.Machine machine:
         :param int runtime:
@@ -126,12 +134,14 @@ class _DatabaseInterface(object):
         :param ~.MulticastRoutingTables router_tables:
         :param ~.Tags tags:
         :param int app_id:
+        :param SpallocJob job:
         """
         # pylint: disable=too-many-arguments
 
         with self._writer as w, ProgressBar(
                 9, "Creating graph description database") as p:
             w.add_system_params(runtime, app_id)
+            w.add_proxy_configuration(job)
             p.update()
             w.add_machine_objects(machine)
             p.update()
