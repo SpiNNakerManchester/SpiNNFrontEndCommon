@@ -51,7 +51,8 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanException</span>
+<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SpinnmanException</span><span class="p">,</span> <span class="n">SpiNNManCoresNotInStateException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
@@ -62,7 +63,7 @@
         <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
         <span class="n">executable_finder</span><span class="p">,</span> <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
         <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
-        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
 <span class="sd">        Used for on-chip expanders, compressors, etc.</span>
 
@@ -84,10 +85,14 @@
 <span class="sd">        Or `None` for all binaries</span>
 <span class="sd">    :param progress_bar: Possible progress bar to update.</span>
 <span class="sd">           end() will be called after state checked</span>
+<span class="sd">    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None</span>
 <span class="sd">    :param ~logging.Logger logger:</span>
 <span class="sd">        If provided and IOBUF is extracted, will be used to log errors and</span>
 <span class="sd">        warnings</span>
-<span class="sd">    :type progress_bar: ~spinn_utilities.progress_bar.ProgressBar or None</span>
+<span class="sd">    :param timeout:</span>
+<span class="sd">        Number of seconds to wait before force stopping, or None to wait</span>
+<span class="sd">        forever</span>
+<span class="sd">    :type timeout: float or None</span>
 <span class="sd">    :raise SpinnmanException:</span>
 <span class="sd">        If one should arise from the underlying SpiNNMan calls</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -115,13 +120,18 @@
 
     <span class="c1"># Wait for the executable to finish</span>
     <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">core_state_string</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">transceiver</span><span class="o">.</span><span class="n">wait_for_cores_to_be_in_state</span><span class="p">(</span>
             <span class="n">check_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">cpu_end_states</span><span class="p">,</span>
-            <span class="n">progress_bar</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">)</span>
+            <span class="n">progress_bar</span><span class="o">=</span><span class="n">progress_bar</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">progress_bar</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">progress_bar</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
         <span class="n">succeeded</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="n">SpiNNManCoresNotInStateException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="n">ex</span>
+        <span class="n">core_state_string</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_core_status_string</span><span class="p">(</span>
+            <span class="n">ex</span><span class="o">.</span><span class="n">failed_core_states</span><span class="p">())</span>
     <span class="k">except</span> <span class="n">SpinnmanException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
         <span class="c1"># Delay the exception until iobuf is ready</span>
         <span class="n">error</span> <span class="o">=</span> <span class="n">ex</span>
@@ -144,6 +154,8 @@
     <span class="n">transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">core_state_string</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">core_state_string</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">error</span>  <span class="c1"># pylint: disable=raising-bad-type</span></div>
 
 
