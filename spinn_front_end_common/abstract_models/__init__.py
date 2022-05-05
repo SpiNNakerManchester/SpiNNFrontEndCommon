@@ -33,8 +33,6 @@ from .abstract_vertex_with_dependent_vertices import (
     AbstractVertexWithEdgeToDependentVertices)
 from .abstract_supports_database_injection import (
     AbstractSupportsDatabaseInjection)
-from .abstract_supports_bit_field_generation import (
-    AbstractSupportsBitFieldGeneration)
 from .abstract_supports_bit_field_routing_compression import (
     AbstractSupportsBitFieldRoutingCompression)
 from .abstract_can_reset import AbstractCanReset
@@ -49,5 +47,4 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",
-           "AbstractSupportsBitFieldGeneration",
            "AbstractSupportsBitFieldRoutingCompression"]
