@@ -19,13 +19,15 @@ from spinnman.spalloc import SpallocClient
 class DatabaseReader(SQLiteDB):
     """ A reader for the database.
     """
-    __slots__ = []
+    __slots__ = ("__job", "__looked_for_job")
 
     def __init__(self, database_path):
         """
         :param str database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
+        self.__job = None
+        self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
         with self.transaction() as cur:
@@ -44,8 +46,12 @@ class DatabaseReader(SQLiteDB):
         :return: Job handle, if one exists. ``None`` otherwise.
         :rtype: ~spinnman.spalloc.SpallocJob
         """
-        with self.transaction() as cur:
-            return SpallocClient.open_job_from_database(cur)
+        # This is maintaining an object we only make once
+        if not self.__looked_for_job:
+            with self.transaction() as cur:
+                self.__job = SpallocClient.open_job_from_database(cur)
+            self.__looked_for_job = True
+        return self.__job
 
     def get_key_to_atom_id_mapping(self, label):
         """ Get a mapping of event key to atom ID for a given vertex

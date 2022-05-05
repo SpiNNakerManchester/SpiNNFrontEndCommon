@@ -71,7 +71,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT,
-                 machine_vertices=False, simulator=None, job=None):
+                 machine_vertices=False):
         """
         :param str live_packet_gather_label:
             The label of the :py:class:`LivePacketGather` vertex to which
@@ -87,14 +87,6 @@ class LiveEventConnection(DatabaseConnection):
             Optional specification of the local port to listen on. Must match
             the port that the toolchain will send the notification on (19999
             by default)
-        :param AbstractSpinnakerBase simulator:
-            The simulator, used to look up how to proxy connections (if at
-            all). If not supplied and ``job`` is also not supplied, only direct
-            connections are possible.
-        :param ~spinnman.spalloc.SpallocJob job:
-            The spalloc job to use for port proxying. Ignored if simulator is
-            ``None``. If not supplied and ``simulator`` is also not supplied,
-            only direct connections are possible.
         """
         # pylint: disable=too-many-arguments
         super().__init__(
@@ -110,8 +102,6 @@ class LiveEventConnection(DatabaseConnection):
             list(send_labels) if send_labels is not None else None)
         self.__machine_vertices = machine_vertices
         self.__sender_connection = None
-        self.__simulator = simulator
-        self.__spalloc_job = job
         self.__send_address_details = dict()
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key = dict()
@@ -264,13 +254,9 @@ class LiveEventConnection(DatabaseConnection):
         :param dict(str,int) vertex_sizes:
         """
         if self.__sender_connection is None:
-            if self.__simulator:
-                self.__sender_connection = \
-                    self.__simulator._machine_allocation_controller.\
-                    open_eieio_connection()
-            elif self.__spalloc_job:
-                self.__sender_connection = \
-                    self.__spalloc_job.open_listener_connection()
+            job = db.get_job()
+            if job:
+                self.__sender_connection = job.open_listener_connection()
             else:
                 self.__sender_connection = UDPConnection()
         for label in self.__send_labels:
@@ -292,13 +278,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         # Set up a single connection for receive
         if self.__receiver_connection is None:
-            if self.__simulator:
-                self.__receiver_connection = \
-                    self.__simulator._machine_allocation_controller.\
-                    open_eieio_connection()
-            elif self.__spalloc_job:
-                self.__receiver_connection = \
-                    self.__spalloc_job.open_listener_connection()
+            job = db.get_job()
+            if job:
+                self.__receiver_connection = job.open_listener_connection()
             else:
                 self.__receiver_connection = EIEIOConnection()
         indirect = hasattr(self.__receiver_connection, "update_tag")
