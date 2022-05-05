@@ -19,16 +19,14 @@ import struct
 from urllib.parse import urlparse
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
-from spinnman.constants import SCP_SCAMP_PORT, SCP_TIMEOUT
-from spinnman.exceptions import SpinnmanTimeoutException
-from spinnman.messages.sdp import SDPFlag
-from spinnman.messages.scp.impl import IPTagSet
 from spinnman.model.enums import CPUState
-from spinnman.connections.udp_packet_connections import (
-    update_sdp_header_for_udp_send)
+from spinnman.utilities.utility_functions import (
+    reprogram_tag, reprogram_tag_to_listener)
 from . import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinnman.spalloc.abstract_classes import (
+    SpallocEIEIOListener, SpallocEIEIOConnection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _n_word_structs = []
@@ -343,26 +341,11 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
         connection.
     """
     # If the connection itself knows how, delegate to it
-    if hasattr(connection, "update_tag"):
+    if isinstance(connection, SpallocEIEIOListener):
+        connection.update_tag(x, y, tag)
+    elif isinstance(connection, SpallocEIEIOConnection):
         connection.update_tag(tag)
-        return
-    request = IPTagSet(
-        x, y, [0, 0, 0, 0], 0, tag, strip=strip, use_sender=True)
-    request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
-    update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
-    data = b'\0\0' + request.bytestring
-    exn = None
-    for _ in range(3):
-        try:
-            if ip_address:
-                # Not connected: say where to go
-                connection.send_to(data, (ip_address, SCP_SCAMP_PORT))
-            else:
-                # Connected: must not say where to go
-                connection.send(data)
-            response_data = connection.receive(SCP_TIMEOUT)
-            request.get_scp_response().read_bytestring(response_data, 2)
-            return
-        except SpinnmanTimeoutException as e:
-            exn = e
-    raise exn or SpinnmanTimeoutException
+    elif ip_address:
+        reprogram_tag_to_listener(connection, x, y, ip_address, tag, strip)
+    else:
+        reprogram_tag(connection, tag, strip)
