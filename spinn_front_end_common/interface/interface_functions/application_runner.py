@@ -28,7 +28,7 @@ SAFETY_FINISH_TIME = 0.1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def application_runner(runtime, time_threshold, run_until_complete=False):
+def application_runner(runtime, time_threshold, run_until_complete):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 

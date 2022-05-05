@@ -2325,7 +2325,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 time_threshold = get_config_int(
                     "Machine", "post_simulation_overrun_before_error")
-            application_runner(run_time, time_threshold)
+            application_runner(
+                run_time, time_threshold, self._run_until_complete)
 
     def _execute_extract_iobuff(self):
         """
