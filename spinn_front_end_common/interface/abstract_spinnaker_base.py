@@ -2465,8 +2465,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If there are no cores in a bad state, find those not yet in
         # their finished state
+        transceiver = self._data_writer.get_transceiver()
         if not unsuccessful_cores:
-            transceiver = self._data_writer.get_transceiver()
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
                 failed_cores = transceiver.get_cores_not_in_state(
@@ -2476,7 +2476,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        logger.error(self._txrx.get_core_status_string(unsuccessful_cores))
+        logger.error(transceiver.get_core_status_string(unsuccessful_cores))
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
