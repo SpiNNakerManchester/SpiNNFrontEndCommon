@@ -219,7 +219,7 @@ class DatabaseWriter(SQLiteDB):
         if not job or not isinstance(job, SpallocJob):
             return
         with self.transaction() as cur:
-            job._write_credentials_to_db(cur)
+            job._write_session_credentials_to_db(cur)
 
     def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
         """ Add the machine graph into the database.

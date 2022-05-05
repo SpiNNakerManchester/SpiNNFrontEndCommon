@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinnman.spalloc import SpallocClient
 
 
 class DatabaseReader(SQLiteDB):
@@ -34,6 +35,17 @@ class DatabaseReader(SQLiteDB):
     @staticmethod
     def __r2t(row, *args):
         return tuple(None if row is None else row[key] for key in args)
+
+    def get_job(self):
+        """
+        Get the job described in the database. If no job exists, direct
+        connection to boards should be used.
+
+        :return: Job handle, if one exists. ``None`` otherwise.
+        :rtype: ~spinnman.spalloc.SpallocJob
+        """
+        with self.transaction() as cur:
+            return SpallocClient.open_job_from_database(cur)
 
     def get_key_to_atom_id_mapping(self, label):
         """ Get a mapping of event key to atom ID for a given vertex
