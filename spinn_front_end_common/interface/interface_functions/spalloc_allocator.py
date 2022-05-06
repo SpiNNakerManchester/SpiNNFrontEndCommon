@@ -32,8 +32,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.helpful_functions import (
-    parse_old_spalloc)
+from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 

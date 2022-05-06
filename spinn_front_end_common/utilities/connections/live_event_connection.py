@@ -29,7 +29,7 @@ from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
-from spinn_front_end_common.utilities.helpful_functions import retarget_tag
+from spinn_front_end_common.utilities.utility_calls import retarget_tag
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

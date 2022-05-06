@@ -17,8 +17,7 @@ from spalloc import ProtocolClient
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine, virtual_machine
 from spinnman.spalloc import is_server_address, SpallocClient
-from spinn_front_end_common.utilities.helpful_functions import (
-    parse_old_spalloc)
+from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
 
 
 def spalloc_max_machine_generator(bearer_token: str = None) -> Machine:

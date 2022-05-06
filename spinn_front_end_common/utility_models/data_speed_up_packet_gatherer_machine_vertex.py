@@ -35,9 +35,10 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.globals_variables import (
     get_simulator, report_default_directory)
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, n_word_struct, retarget_tag)
+    convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
+from spinn_front_end_common.utilities.utility_calls import retarget_tag
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
