@@ -142,7 +142,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
-    DataSpeedUpPacketGatherMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex,
+    WrapperApplicationEdge, WrapperApplicationVertex)
 from spinn_front_end_common.utilities import FecTimer
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
@@ -3367,10 +3368,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
-        if self._original_machine_graph.n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
         self._original_application_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
@@ -3383,12 +3380,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             If there is an attempt to add the same vertex more than once
         """
         # check that there's no application vertices added so far
-        if self._original_application_graph.n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
-        self._original_machine_graph.add_vertex(vertex)
-        self._vertices_or_edges_added = True
+        wrapped = WrapperApplicationVertex(vertex)
+        self.add_application_vertex(wrapped)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -3408,8 +3401,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param str partition_id:
             the partition identifier for the outgoing edge partition
         """
-        self._original_machine_graph.add_edge(edge, partition_id)
-        self._vertices_or_edges_added = True
+        wrapper = WrapperApplicationEdge(edge)
+        self.add_application_edge(wrapper, partition_id)
 
     def _shutdown(self):
         self._status = Simulator_Status.SHUTDOWN
