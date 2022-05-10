@@ -205,12 +205,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
 
-        # the end user pacman machine graph, used to hold vertices which
-        # represent cores.
-        # Object created by init. Added to but never new object
-        "_original_machine_graph",
-
-        # The holder for where machine graph vertices are placed.
+       # The holder for where machine graph vertices are placed.
         "_placements",
 
         # The holder for the routing table entries for all used routers in this
@@ -439,9 +434,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
-        self._original_machine_graph = MachineGraph(
-            label=graph_label,
-            application_graph=self._original_application_graph)
 
         self._machine_allocation_controller = None
         self._txrx = None
@@ -785,8 +777,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if self._original_application_graph.n_vertices:
             return True
-        if self._original_machine_graph.n_vertices:
-            return True
         logger.warning(
             "Your graph has no vertices in it. "
             "Therefor the run call will exit immediately.")
@@ -817,14 +807,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
-        if self._original_application_graph.n_vertices:
-            if self._original_machine_graph.n_vertices:
-                raise ConfigurationException(
-                    "Illegal state where both original_application and "
-                    "original machine graph have vertices in them")
-
         self._application_graph = self._original_application_graph.clone()
-        self._machine_graph = self._original_machine_graph.clone()
+        self._machine_graph = MachineGraph(
+            label=self._application_graph.label,
+            application_graph=self._application_graph)
 
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
@@ -3185,26 +3171,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                         if reset_flags:
                             edge.mark_no_changes()
 
-        # if no application, but a machine graph, check for changes there
-        elif self._original_machine_graph.n_vertices:
-            for machine_vertex in self._original_machine_graph.vertices:
-                if isinstance(machine_vertex, AbstractChangableAfterRun):
-                    if machine_vertex.requires_mapping:
-                        changed = True
-                    if machine_vertex.requires_data_generation:
-                        data_changed = True
-                    if reset_flags:
-                        machine_vertex.mark_no_changes()
-            for partition in \
-                    self._original_machine_graph.outgoing_edge_partitions:
-                for machine_edge in partition.edges:
-                    if isinstance(machine_edge, AbstractChangableAfterRun):
-                        if machine_edge.requires_mapping:
-                            changed = True
-                        if machine_edge.requires_data_generation:
-                            data_changed = True
-                        if reset_flags:
-                            machine_edge.mark_no_changes()
         return changed, data_changed
 
     @property
@@ -3239,13 +3205,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: ~pacman.model.graphs.machine.MachineGraph
         """
         return MachineGraphView(self._machine_graph)
-
-    @property
-    def original_machine_graph(self):
-        """
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return self._original_machine_graph
 
     @property
     def original_application_graph(self):
@@ -3572,15 +3531,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def __reset_graph_elements(self):
         # Reset any object that can reset
-        if self._original_application_graph.n_vertices:
-            for vertex in self._original_application_graph.vertices:
-                self.__reset_object(vertex)
-            for p in self._original_application_graph.outgoing_edge_partitions:
-                for edge in p.edges:
-                    self.__reset_object(edge)
-        elif self._original_machine_graph.n_vertices:
-            for machine_vertex in self._original_machine_graph.vertices:
-                self.__reset_object(machine_vertex)
-            for p in self._original_machine_graph.outgoing_edge_partitions:
-                for machine_edge in p.edges:
-                    self.__reset_object(machine_edge)
+        for vertex in self._original_application_graph.vertices:
+            self.__reset_object(vertex)
+        for p in self._original_application_graph.outgoing_edge_partitions:
+            for edge in p.edges:
+                self.__reset_object(edge)
