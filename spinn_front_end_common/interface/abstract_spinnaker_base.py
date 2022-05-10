@@ -205,7 +205,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
 
-       # The holder for where machine graph vertices are placed.
+        # The holder for where machine graph vertices are placed.
         "_placements",
 
         # The holder for the routing table entries for all used routers in this
