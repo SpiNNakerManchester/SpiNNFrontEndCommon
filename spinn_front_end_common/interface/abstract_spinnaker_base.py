@@ -768,6 +768,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
+        self._original_application_graph.reset()
         self._application_graph = self._original_application_graph.clone()
 
     def __timesteps(self, time_in_ms):
