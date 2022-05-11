@@ -246,7 +246,7 @@ class DatabaseWriter(SQLiteDB):
                     INSERT INTO event_to_atom_mapping(
                         vertex_id, event_id, atom_id)
                     VALUES (?, ?, ?)
-                    """, ((m_vertex_id, i, key)
+                    """, ((m_vertex_id, int(key), i)
                           for i, key in enumerate(keys, start))
                 )
 
