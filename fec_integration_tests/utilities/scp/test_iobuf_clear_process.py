@@ -38,7 +38,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         # Set up a connection to the "machine"
         connection = SCAMPConnection(
             0, 0, remote_host="127.0.0.1", remote_port=receiver.local_port)
-        selector = RoundRobinConnectionSelector([connection])
+        selector = RoundRobinConnectionSelector([connection], None)
 
         # Create the process and run it
         process = ClearIOBUFProcess(selector)
