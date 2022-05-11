@@ -1002,7 +1002,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 fixed_route=self._last_status.is_reinjecting_fixed_route)
         except Exception:  # pylint: disable=broad-except
             log.exception("Error resetting timeouts")
-            log.error("Checking if the cores are OK...")
+            log.error("Checking if the cores are OK ...")
             core_subsets = convert_vertices_to_core_subset(
                 FecDataView.iterate_monitors())
             try:
