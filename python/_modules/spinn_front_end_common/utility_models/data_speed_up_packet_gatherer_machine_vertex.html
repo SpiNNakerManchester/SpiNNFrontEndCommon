@@ -1128,7 +1128,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error resetting timeouts&quot;</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Checking if the cores are OK...&quot;</span><span class="p">)</span>
             <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
-                <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+                <span class="n">extra_monitor_cores</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">error_cores</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cores_not_in_state</span><span class="p">(</span>
                     <span class="n">core_subsets</span><span class="p">,</span> <span class="p">{</span><span class="n">CPUState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">})</span>
