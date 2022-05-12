@@ -18,7 +18,7 @@ from threading import Thread
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
-from spinnman.messages.eieio import EIEIOType
+from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.sdp.sdp_flag import SDPFlag
@@ -26,7 +26,6 @@ from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.connections.udp_packet_connections import UDPConnection
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
 from spinn_front_end_common.utilities.utility_calls import retarget_tag
@@ -258,7 +257,7 @@ class LiveEventConnection(DatabaseConnection):
             if job:
                 self.__sender_connection = job.open_listener_connection()
             else:
-                self.__sender_connection = UDPConnection()
+                self.__sender_connection = EIEIOConnection()
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -552,7 +551,17 @@ class LiveEventConnection(DatabaseConnection):
         x, y, p, ip_address = target
         self._send(message, x, y, p, ip_address)
 
-    def _send(self, message: EIEIODataMessage, x, y, p, ip_address):
+    def _send(self, message: AbstractEIEIOMessage, x, y, p, ip_address):
+        """
+        Send an EIEIO message to a particular core.
+
+        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
+            The EIEIO message to send
+        :param int x: Destination chip X coordinate
+        :param int y: Destination chip Y coordinate
+        :param int p: Destination core number
+        :param str ip_address: What ethernet chip to send via
+        """
         # Create an SDP message - no reply so source is unimportant
         # SDP port can be anything except 0 as the target doesn't care
         sdp_message = SDPMessage(

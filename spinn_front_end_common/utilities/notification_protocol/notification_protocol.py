@@ -20,7 +20,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
-    DatabaseConfirmation, NotificationProtocolPauseStop,
+    NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
@@ -59,6 +59,7 @@ class NotificationProtocol(AbstractContextManager):
         self.__sent_visualisation_confirmation = False
         self.__database_message_connections = [
             # These connections are not used to talk to SpiNNaker boards
+            # but rather to code running on the current host computer
             EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
@@ -151,7 +152,7 @@ class NotificationProtocol(AbstractContextManager):
                 "via the command packet, please set the file path manually "
                 "and set the .cfg parameter [Database] send_file_path to "
                 "False")
-        message = DatabaseConfirmation(database_path)
+        message = NotificationProtocolDatabaseLocation(database_path)
 
         # Send command and wait for response
         logger.info(

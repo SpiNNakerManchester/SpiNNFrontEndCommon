@@ -100,19 +100,7 @@ class DatabaseConnection(UDPConnection):
             "ready", self.local_ip_address, self.local_port)
         try:
             while self.__running:
-                try:
-                    data, address = self.receive_with_address(timeout=3)
-                except SpinnmanTimeoutException:
-                    continue
-                self.__read_db(address, data)
-
-                # Wait for the start of the simulation
-                if self.__start_resume_callback is not None:
-                    self.__start_resume()
-
-                # Wait for the end of the simulation
-                if self.__pause_and_stop_callback is not None:
-                    self.__pause_stop()
+                self.__process_run_cycle(timeout=3)
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
@@ -120,7 +108,26 @@ class DatabaseConnection(UDPConnection):
         finally:
             self.__running = False
 
-    def __read_db(self, address, data):
+    def __process_run_cycle(self, timeout):
+        """
+        Heart of :py:meth:`__run`.
+        """
+        # Wait to be told by the toolchain where the DB is located
+        try:
+            data, toolchain_address = self.receive_with_address(timeout)
+        except SpinnmanTimeoutException:
+            return
+        self.__read_db(toolchain_address, data)
+
+        # Wait for the start of the simulation
+        if self.__start_resume_callback is not None:
+            self.__start_resume()
+
+        # Wait for the end of the simulation
+        if self.__pause_and_stop_callback is not None:
+            self.__pause_stop()
+
+    def __read_db(self, toolchain_address, data):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
@@ -137,13 +144,13 @@ class DatabaseConnection(UDPConnection):
 
         # Send the response
         logger.info("Notifying the toolchain that the database has been read")
-        self._send_command(CMDS.DATABASE_CONFIRMATION, address)
+        self.__send_command(CMDS.DATABASE, toolchain_address)
 
     def __start_resume(self):
         logger.info(
             "Waiting for message to indicate that the simulation has "
             "started or resumed")
-        command_code = self._receive_command()
+        command_code = self.__receive_command()
         if command_code != CMDS.START_RESUME_NOTIFICATION.value:
             raise SpinnmanInvalidPacketException(
                 "command_code",
@@ -156,7 +163,7 @@ class DatabaseConnection(UDPConnection):
         logger.info(
             "Waiting for message to indicate that the simulation has "
             "stopped or paused")
-        command_code = self._receive_command()
+        command_code = self.__receive_command()
         if command_code != CMDS.STOP_PAUSE_NOTIFICATION.value:
             raise SpinnmanInvalidPacketException(
                 "command_code",
@@ -165,10 +172,11 @@ class DatabaseConnection(UDPConnection):
         # Call the callback
         self.__pause_and_stop_callback()
 
-    def _send_command(self, command, address):
-        self.send_to(EIEIOCommandHeader(command.value).bytestring, address)
+    def __send_command(self, command, toolchain_address):
+        self.send_to(EIEIOCommandHeader(command.value).bytestring,
+                     toolchain_address)
 
-    def _receive_command(self):
+    def __receive_command(self):
         return EIEIOCommandHeader.from_bytestring(self.receive(), 0).command
 
     def close(self):
