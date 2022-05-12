@@ -1091,7 +1091,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
             core_subsets = convert_vertices_to_core_subset(
-                extra_monitor_cores, placements)
+                extra_monitor_cores.values(), placements)
             try:
                 error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
