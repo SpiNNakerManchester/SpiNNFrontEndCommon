@@ -62,7 +62,7 @@ class EnergyReport(object):
         # summary report path
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
-        # create detailed report
+       # create detailed report
         with open(detailed_report, "w") as f:
             self._write_detailed_report(power_used, f)
 
@@ -80,7 +80,9 @@ class EnergyReport(object):
         # pylint: disable=too-many-arguments, too-many-locals
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = FecDataView.get_time_scale_factor()
+        runtime_total_ms = (
+                FecDataView.get_current_run_time_ms() *
+                FecDataView.get_time_scale_factor())
 
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
@@ -151,7 +153,9 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         """
         # pylint: disable=too-many-arguments, too-many-locals
-        runtime_total_ms = FecDataView.get_time_scale_factor()
+        runtime_total_ms = (
+                FecDataView.get_current_run_time_ms() *
+                FecDataView.get_time_scale_factor())
 
         # write warning about accuracy etc
         self._write_warning(f)
