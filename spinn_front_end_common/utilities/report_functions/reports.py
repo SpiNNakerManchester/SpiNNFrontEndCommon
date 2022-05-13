@@ -597,7 +597,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report(app_graph, routing_infos):
+def routing_info_report(app_graph, extra_allocations, routing_infos):
     """ Generates a report which says which keys is being allocated to each\
         vertex
 
@@ -607,35 +607,39 @@ def routing_info_report(app_graph, routing_infos):
     file_name = os.path.join(report_default_directory(), _VIRTKEY_FILENAME)
     try:
         with open(file_name, "w") as f:
-            progress = ProgressBar(app_graph.n_outgoing_edge_partitions,
+            vertex_partitions = set(
+                (p.pre_vertex, p.identifier)
+                for p in app_graph.outgoing_edge_partitions)
+            vertex_partitions.update(extra_allocations)
+            progress = ProgressBar(len(vertex_partitions),
                                    "Generating Routing info report")
-            for part in progress.over(app_graph.outgoing_edge_partitions):
-                _write_vertex_virtual_keys(f, part, routing_infos)
+            for pre_vert, part_id in progress.over(vertex_partitions):
+                _write_vertex_virtual_keys(f, pre_vert, part_id, routing_infos)
             progress.end()
     except IOError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
 
 
-def _write_vertex_virtual_keys(f, part, routing_infos):
+def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
     """
     :param ~io.FileIO f:
-    :param MachineVertex vertex:
+    :param ApplicationVertex pre_vertex:
+    :param str part_id:
     :param RoutingInfo routing_infos:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
     rinfo = routing_infos.get_routing_info_from_pre_vertex(
-        part.pre_vertex, part.identifier)
+        pre_vertex, part_id)
     # Might be None if the partition has no outgoing vertices e.g. a Poisson
     # source replaced by SDRAM comms
     if rinfo is not None:
-        f.write("Vertex: {}\n".format(part.pre_vertex))
+        f.write("Vertex: {}\n".format(pre_vertex))
         f.write("    Partition: {}, Routing Info: {}\n".format(
-            part.identifier, rinfo.keys_and_masks))
-        for m_vertex in part.pre_vertex.splitter.get_out_going_vertices(
-                part.identifier):
+            part_id, rinfo.keys_and_masks))
+        for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
-                m_vertex, part.identifier)
+                m_vertex, part_id)
             if r_info is not None:
                 f.write("    Machine Vertex: {}, Routing Info: {}\n".format(
                     m_vertex, r_info.keys_and_masks))

@@ -29,8 +29,6 @@ from pacman.model.partitioner_splitters.abstract_splitters import (
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.abstract_models.impl import (
-    ProvidesKeyToAtomMappingImpl)
 from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
 from spinn_front_end_common.utilities.database import DatabaseReader
 from pacman.model.graphs.common.slice import Slice
@@ -59,7 +57,7 @@ class TestSplitter(AbstractSplitterCommon):
         pass
 
 
-class TestAppVertex(ApplicationVertex, ProvidesKeyToAtomMappingImpl):
+class TestAppVertex(ApplicationVertex):
     def __init__(self, n_atoms, label):
         super(TestAppVertex, self).__init__(
             label=label, splitter=TestSplitter())

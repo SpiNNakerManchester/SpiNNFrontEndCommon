@@ -1693,7 +1693,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
-            routing_info_report(self._application_graph, self._routing_infos)
+            extra_allocations = [
+                (v, part)
+                for verts in self._live_packet_recorder_params.values()
+                for v, parts in verts for part in parts]
+            routing_info_report(self._application_graph, extra_allocations,
+                                self._routing_infos)
 
     def _execute_basic_routing_table_generator(self):
         """
