@@ -48,5 +48,6 @@ def lpg_multicast_routing_generator(
                         routing_tables, m_vertex, part_id, placement.p, None,
                         route, targets)
                     lpg_for_m_vertex[m_vertex, part_id] = lpg
+                    lpg.add_incoming_source(m_vertex, part_id)
 
     return lpg_for_m_vertex
