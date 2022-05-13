@@ -270,3 +270,7 @@ class LivePacketGatherMachineVertex(
         :rtype: int
         """
         return cls._CONFIG_SIZE
+
+    @property
+    def params(self):
+        return self._lpg_params

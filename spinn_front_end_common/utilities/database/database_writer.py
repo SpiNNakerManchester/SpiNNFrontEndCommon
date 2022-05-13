@@ -18,7 +18,7 @@ import os
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
-    AbstractSupportsDatabaseInjection)
+    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
 
@@ -233,21 +233,29 @@ class DatabaseWriter(SQLiteDB):
             ~pacman.model.graphs.application.ApplicationGraph
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
+        # This could happen if there are no LPGs
+        if lpg_for_m_vertex is None:
+            return
         with self.transaction() as cur:
-            for m_vertex, partition_id in lpg_for_m_vertex.keys():
-                r_info = routing_infos.get_routing_info_from_pre_vertex(
-                    m_vertex, partition_id)
-                vertex_slice = m_vertex.vertex_slice
-                keys = r_info.get_keys(vertex_slice.n_atoms)
-                start = vertex_slice.lo_atom
+            for (m_vertex, partition_id) in lpg_for_m_vertex.keys():
+                atom_keys = list()
+                if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
+                    atom_keys = m_vertex.app_vertex.get_atom_key_map(
+                        m_vertex, partition_id, routing_infos)
+                else:
+                    r_info = routing_infos.get_routing_info_from_pre_vertex(
+                        m_vertex, partition_id)
+                    vertex_slice = m_vertex.vertex_slice
+                    keys = r_info.get_keys(vertex_slice.n_atoms)
+                    start = vertex_slice.lo_atom
+                    atom_keys = [(i, k) for i, k in enumerate(keys, start)]
                 m_vertex_id = self.__vertex_to_id[m_vertex]
                 cur.executemany(
                     """
                     INSERT INTO event_to_atom_mapping(
                         vertex_id, event_id, atom_id)
                     VALUES (?, ?, ?)
-                    """, ((m_vertex_id, i, key)
-                          for i, key in enumerate(keys, start))
+                    """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
     def add_lpg_mapping(self, lpg_for_m_vertex):
@@ -260,9 +268,9 @@ class DatabaseWriter(SQLiteDB):
             cur.executemany(
                 """
                 INSERT INTO m_vertex_to_lpg_vertex(
-                    pre_vertex_id, post_vertex_id)
-                VALUES(?, ?)
-                """, ((self.__vertex_to_id[m_vertex],
+                    pre_vertex_id, partition_id, post_vertex_id)
+                VALUES(?, ?, ?)
+                """, ((self.__vertex_to_id[m_vertex], part_id,
                        self.__vertex_to_id[lpg_m_vertex])
-                      for (m_vertex, _part_id), lpg_m_vertex
+                      for (m_vertex, part_id), lpg_m_vertex
                       in lpg_for_m_vertex.items()))

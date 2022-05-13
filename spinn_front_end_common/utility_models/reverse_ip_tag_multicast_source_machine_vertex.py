@@ -49,7 +49,6 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, time_scale_factor)
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints,
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -75,7 +74,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
-        AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
     """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets.
@@ -354,6 +352,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Get a mask and maximum number of keys for the number of keys
         # requested
         self._mask = self._calculate_mask(n_keys)
+        self.add_constraint(FixedKeyAndMaskConstraint(
+                [BaseKeyAndMask(self._virtual_key, self._mask)]))
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the
@@ -715,14 +715,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):  # @UnusedVariable
-        if self._virtual_key is not None:
-            return list([FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(self._virtual_key, self._mask)])])
-        return list()
 
     @property
     def virtual_key(self):

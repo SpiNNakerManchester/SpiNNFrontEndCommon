@@ -21,10 +21,6 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
     ReverseIPtagResource)
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints)
-from spinn_front_end_common.abstract_models.impl import (
-    ProvidesKeyToAtomMappingImpl)
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
@@ -32,9 +28,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class ReverseIpTagMultiCastSource(
-        ApplicationVertex, LegacyPartitionerAPI,
-        AbstractProvidesOutgoingPartitionConstraints,
-        ProvidesKeyToAtomMappingImpl):
+        ApplicationVertex, LegacyPartitionerAPI):
     """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
     """
@@ -221,12 +215,6 @@ class ReverseIpTagMultiCastSource(
 
     def enable_recording(self, new_state=True):
         self._is_recording = new_state
-
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        return partition.pre_vertex.get_outgoing_partition_constraints(
-            partition)
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(

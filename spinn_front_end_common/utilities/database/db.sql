@@ -77,8 +77,9 @@ CREATE TABLE IF NOT EXISTS Placements(
 -- A map of which machine vertex is connected to which LPG vertex
 CREATE TABLE IF NOT EXISTS m_vertex_to_lpg_vertex(
     pre_vertex_id INTEGER,
+    partition_id TEXT,
     post_vertex_id INTEGER,
-    PRIMARY KEY (pre_vertex_id, post_vertex_id)
+    PRIMARY KEY (pre_vertex_id, partition_id, post_vertex_id)
     FOREIGN KEY (pre_vertex_id)
         REFERENCES Machine_vertices(vertex_id),
     FOREIGN KEY (post_vertex_id)
