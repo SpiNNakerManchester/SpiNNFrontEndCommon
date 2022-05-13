@@ -24,6 +24,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
 from pacman.model.graphs.machine import MulticastEdgePartition
+import numpy
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -155,6 +156,9 @@ class DatabaseWriter(SQLiteDB):
         with self.transaction() as cur:
             # add vertices
             for vertex in application_graph.vertices:
+                max_atoms = vertex.get_max_atoms_per_core()
+                if not isinstance(max_atoms, int):
+                    max_atoms = int(numpy.prod(max_atoms))
                 self.__vertex_to_id[vertex] = self.__insert(
                     cur,
                     """
@@ -164,7 +168,7 @@ class DatabaseWriter(SQLiteDB):
                     VALUES(?, ?, ?, ?)
                     """,
                     vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    vertex.get_max_atoms_per_core())
+                    max_atoms)
 
             # add edges
             for edge in application_graph.edges:

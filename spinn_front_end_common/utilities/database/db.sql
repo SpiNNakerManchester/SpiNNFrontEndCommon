@@ -148,8 +148,8 @@ CREATE TABLE IF NOT EXISTS Placements(
     chip_p INTEGER,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (chip_x, chip_y, chip_p, machine_id)
-        REFERENCES Processor(chip_x, chip_y, physical_id, machine_id));
+    FOREIGN KEY (chip_x, chip_y, machine_id)
+        REFERENCES Machine_chip(chip_x, chip_y, machine_id));
 
 -- The mapping of machine edges to the keys and masks used in SpiNNaker
 -- packets.
