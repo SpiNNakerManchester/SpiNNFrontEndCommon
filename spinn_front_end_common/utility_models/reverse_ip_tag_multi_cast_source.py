@@ -54,8 +54,8 @@ class ReverseIpTagMultiCastSource(
             # Extra flag for input without a reserved port
             reserve_reverse_ip_tag=False,
 
-            # Flag to indicate that data will be received to inject
-            enable_injection=False,
+            # Name of partition to inject keys with
+            injection_partition_id=None,
 
             # splitter object
             splitter=None):
@@ -105,8 +105,9 @@ class ReverseIpTagMultiCastSource(
         :type send_buffer_partition_id: str or None
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
-        :param bool enable_injection:
-            Flag to indicate that data will be received to inject
+        :param str injection_partition:
+            If not None, will enable injection and specify the partition to
+            send injected keys with
         :param splitter: the splitter object needed for this vertex
         :type splitter: None or AbstractSplitterCommon
         """
@@ -140,7 +141,7 @@ class ReverseIpTagMultiCastSource(
 
         # Store the buffering details
         self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
-        self._enable_injection = enable_injection
+        self._injection_partition_id = injection_partition_id
 
         # Store recording parameters
         self._is_recording = False
@@ -238,7 +239,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_times=send_buffer_times,
             send_buffer_partition_id=self._send_buffer_partition_id,
             reserve_reverse_ip_tag=self._reserve_reverse_ip_tag,
-            enable_injection=self._enable_injection)
+            injection_partition_id=self._injection_partition_id)
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
         if resources_required:

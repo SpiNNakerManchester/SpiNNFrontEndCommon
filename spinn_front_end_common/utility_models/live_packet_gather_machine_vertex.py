@@ -25,8 +25,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-    AbstractSupportsDatabaseInjection)
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
@@ -38,8 +37,7 @@ _TWO_BYTES = struct.Struct("<BB")
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        AbstractSupportsDatabaseInjection):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
     """ Used to gather multicast packets coming from cores and stream them \
         out to a receiving application on host. Only ever deployed on chips \
         with a working Ethernet connection.
@@ -106,11 +104,6 @@ class LivePacketGatherMachineVertex(
             sdram=ConstantSDRAM(self.get_sdram_usage() +
                                 self._get_key_translation_sdram()),
             iptags=[self._lpg_params.get_iptag_resource()])
-
-    @property
-    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
-    def is_in_injection_mode(self):
-        return True
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)

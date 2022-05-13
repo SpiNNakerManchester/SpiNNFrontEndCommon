@@ -18,6 +18,8 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -94,6 +96,15 @@ def _write_to_db(
             w.add_lpg_mapping(lpg_for_m_vertex)
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
+            machine_vertices = list()
+            if lpg_for_m_vertex is not None:
+                machine_vertices.extend(lpg_for_m_vertex.keys())
+            machine_vertices.extend(
+                (vertex, vertex.injection_partition_id)
+                for app_vertex in app_graph.vertices
+                for vertex in app_vertex.machine_vertices
+                if isinstance(vertex, AbstractSupportsDatabaseInjection)
+                and vertex.is_in_injection_mode)
             w.create_atom_to_event_id_mapping(
-                lpg_for_m_vertex, routing_infos)
+                machine_vertices, routing_infos)
         p.update()
