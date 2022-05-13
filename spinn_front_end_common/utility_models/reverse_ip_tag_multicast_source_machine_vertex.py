@@ -352,7 +352,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Get a mask and maximum number of keys for the number of keys
         # requested
         self._mask = self._calculate_mask(n_keys)
-        self.add_constraint(FixedKeyAndMaskConstraint(
+        self.app_vertex.add_constraint(FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)]))
 
         if self._prefix is not None:
