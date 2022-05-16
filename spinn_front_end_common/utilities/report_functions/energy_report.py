@@ -50,7 +50,7 @@ class EnergyReport(object):
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
     def write_energy_report(
-            self, placements, buffer_manager, power_used):
+            self, placements, runtime, buffer_manager, power_used):
         """ Writes the report.
 
         :param ~pacman.model.placements.Placements placements: the placements
