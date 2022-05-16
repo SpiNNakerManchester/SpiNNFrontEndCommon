@@ -110,7 +110,12 @@ CREATE VIEW IF NOT EXISTS label_event_atom_view AS SELECT
     e_to_a.event_id AS event,
     app_vtx.vertex_label AS label
 FROM event_to_atom_mapping AS e_to_a
-    NATURAL JOIN Application_vertices AS app_vtx;
+    JOIN Machine_vertices as machine_vertices
+        ON e_to_a.vertex_id == machine_vertices.vertex_id
+    JOIN graph_mapper_vertex as mapper
+        ON machine_vertices.vertex_id == mapper.machine_vertex_id
+    JOIN Application_vertices AS app_vtx
+        ON mapper.application_vertex_id == app_vtx.vertex_id;
 
 CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.ip_address AS ip_address,

@@ -226,7 +226,7 @@ class DatabaseWriter(SQLiteDB):
                     for ipt, vert in tags.ip_tags_vertices))
 
     def create_atom_to_event_id_mapping(
-            self, lpg_for_m_vertex, routing_infos):
+            self, machine_vertices, routing_infos):
         """
         :param app_graph:
         :type app_graph:
@@ -234,10 +234,10 @@ class DatabaseWriter(SQLiteDB):
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
         # This could happen if there are no LPGs
-        if lpg_for_m_vertex is None:
+        if machine_vertices is None:
             return
         with self.transaction() as cur:
-            for (m_vertex, partition_id) in lpg_for_m_vertex.keys():
+            for (m_vertex, partition_id) in machine_vertices:
                 atom_keys = list()
                 if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
                     atom_keys = m_vertex.app_vertex.get_atom_key_map(

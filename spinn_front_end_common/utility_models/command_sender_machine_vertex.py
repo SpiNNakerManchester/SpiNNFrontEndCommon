@@ -131,7 +131,7 @@ class CommandSenderMachineVertex(
                     self._edge_partition_id_counter)
                 self._keys_to_partition_id[key] = partition_id
                 self._edge_partition_id_counter += 1
-                self.add_constraint(
+                self.app_vertex.add_constraint(
                     FixedKeyAndMaskConstraint(
                         [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)],
                         partition=partition_id))

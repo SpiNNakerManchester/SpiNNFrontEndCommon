@@ -124,8 +124,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         packets; if port is set to None this can be used to enable the
         reception of packets on a randomly assigned port, which can be read
         from the database
-    :param bool enable_injection:
-        Flag to indicate that data will be received to inject
+    :param str injection_partition:
+        If not None, will enable injection and specify the partition to send
+        injected keys with
     """
 
     class _REGIONS(IntEnum):
@@ -177,14 +178,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Extra flag for receiving packets without a port
             reserve_reverse_ip_tag=False,
 
-            # Flag to indicate that data will be received to inject
-            enable_injection=False):
+            # Partition to send injection keys with
+            injection_partition_id=None):
         # pylint: disable=too-many-arguments, too-many-locals
         if vertex_slice is None:
             if n_keys is not None:
                 vertex_slice = Slice(0, n_keys - 1)
             else:
                 raise KeyError("Either provide a vertex_slice or n_keys")
+
+        if (send_buffer_partition_id is not None and
+                injection_partition_id is not None):
+            raise Exception(
+                "Can't specify both send_buffer_partition_id and"
+                " injection_partition_id")
 
         super().__init__(label, constraints, app_vertex, vertex_slice)
 
@@ -228,9 +235,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = False
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = (
-            receive_port is not None or reserve_reverse_ip_tag or
-            enable_injection)
+        self._injection_partition_id = injection_partition_id
 
         # Sort out the keys to be used
         self._virtual_key = virtual_key
@@ -352,7 +357,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Get a mask and maximum number of keys for the number of keys
         # requested
         self._mask = self._calculate_mask(n_keys)
-        self.add_constraint(FixedKeyAndMaskConstraint(
+        self.app_vertex.add_constraint(FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)]))
 
         if self._prefix is not None:
@@ -593,8 +598,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
         """
         if self._virtual_key is None:
-            rinfo = routing_info.get_routing_info_from_pre_vertex(
-                self, self._send_buffer_partition_id)
+            rinfo = None
+            if self._send_buffer_partition_id is not None:
+                rinfo = routing_info.get_routing_info_from_pre_vertex(
+                    self, self._send_buffer_partition_id)
+            if self._injection_partition_id is not None:
+                rinfo = routing_info.get_routing_info_from_pre_vertex(
+                    self, self._injection_partition_id)
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
@@ -733,7 +743,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
-        return self._in_injection_mode
+        return self._injection_partition_id is not None
+
+    @property
+    @overrides(AbstractSupportsDatabaseInjection.injection_partition_id)
+    def injection_partition_id(self):
+        return self._injection_partition_id
 
     @inject_items({
         "first_machine_time_step": "FirstMachineTimeStep",
