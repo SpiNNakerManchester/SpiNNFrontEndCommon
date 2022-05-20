@@ -74,7 +74,6 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;__database_message_connections&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__sent_visualisation_confirmation&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__socket_addresses&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_for_read_confirmation&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_pool&quot;</span><span class="p">]</span>
@@ -85,7 +84,6 @@
 <span class="sd">        :type socket_addresses:</span>
 <span class="sd">            set(~spinn_utilities.socket_address.SocketAddress)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__socket_addresses</span> <span class="o">=</span> <span class="n">socket_addresses</span>
 
         <span class="c1"># Determines whether to wait for confirmation that the database</span>
         <span class="c1"># has been read before starting the simulation</span>

@@ -463,6 +463,33 @@ running</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions">
+<span class="sig-name descname"><span class="pre">get_edges_and_partitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_edges_and_partitions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct edges from this vertex to the vertices that this vertex            knows how to target (and has keys allocated for).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Do not call this directly from outside either a
+<a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSender" title="spinn_front_end_common.utility_models.CommandSender"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommandSender</span></code></a> or a
+<a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="spinn_front_end_common.utility_models.CommandSenderMachineVertex"><code class="xref py py-class docutils literal notranslate"><span class="pre">CommandSenderMachineVertex</span></code></a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pre_vertex</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSender" title="spinn_front_end_common.utility_models.CommandSender"><em>CommandSender</em></a><em> or </em><a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="spinn_front_end_common.utility_models.CommandSenderMachineVertex"><em>CommandSenderMachineVertex</em></a>) – </p></li>
+<li><p><strong>vertex_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractVertex</span></code></p></li>
+<li><p><strong>edge_type</strong> (<em>callable</em>) – subclass of <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEdge</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>edges, partition IDs</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<em>AbstractEdge</em>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_command_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">commands</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_n_command_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_n_command_bytes" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
@@ -1373,6 +1400,11 @@ and <code class="xref py py-class docutils literal notranslate"><span class="pre
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.KEY_ENTRY_SIZE">
+<span class="sig-name descname"><span class="pre">KEY_ENTRY_SIZE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">12</span></em><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.KEY_ENTRY_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER">
 <span class="sig-name descname"><span class="pre">TRAFFIC_IDENTIFIER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'LPG_EVENT_STREAM'</span></em><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER" title="Permalink to this definition">¶</a></dt>

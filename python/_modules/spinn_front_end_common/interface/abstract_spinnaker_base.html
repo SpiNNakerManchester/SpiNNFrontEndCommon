@@ -471,8 +471,6 @@
         <span class="c1"># update graph label if needed</span>
         <span class="k">if</span> <span class="n">graph_label</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">graph_label</span> <span class="o">=</span> <span class="s2">&quot;Application_graph&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">graph_label</span> <span class="o">=</span> <span class="n">graph_label</span>
 
         <span class="c1"># pacman objects</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_original_application_graph</span> <span class="o">=</span> <span class="n">ApplicationGraph</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">graph_label</span><span class="p">)</span>
@@ -561,6 +559,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_system_multicast_router_timeout_keys</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_ethernet_connected_chip_mapping</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_machine_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ipaddress</span> <span class="o">=</span> <span class="kc">None</span>
@@ -943,7 +942,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_adjust_config</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
 
         <span class="c1"># Install the Control-C handler</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="n">threading</span><span class="o">.</span><span class="n">_MainThread</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="nb">type</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">())):</span>
             <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__signal_handler</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_raise_keyboard_interrupt</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span>
@@ -1084,7 +1084,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># Indicate that the signal handler needs to act</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="n">threading</span><span class="o">.</span><span class="n">_MainThread</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">(),</span> <span class="nb">type</span><span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">main_thread</span><span class="p">())):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_raise_keyboard_interrupt</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception_handler</span>
@@ -1476,8 +1477,7 @@
                                    <span class="s2">&quot;live_packet_recorder_params&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">preallocate_resources_for_live_packet_gatherers</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_preallocate_for_chip_power_monitor</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">pre_allocated_resources</span><span class="p">):</span>
@@ -2195,8 +2195,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="c1"># Only needs the x and y of chips with routing tables</span>
-            <span class="n">routing_setup</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
+            <span class="n">routing_setup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router_tables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_txrx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_graph_binary_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2603,7 +2602,6 @@
 <span class="sd">        Runs, times and logs any extra load algorithms</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">_report_memory_on_host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2832,15 +2830,14 @@
                 <span class="n">run_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="p">)</span>
 
-            <span class="n">energy_provenance_reporter</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">)</span>
+            <span class="n">energy_provenance_reporter</span><span class="p">(</span><span class="n">power_used</span><span class="p">)</span>
 
             <span class="c1"># create energy reporter</span>
             <span class="n">energy_reporter</span> <span class="o">=</span> <span class="n">EnergyReport</span><span class="p">()</span>
 
             <span class="c1"># run energy report</span>
             <span class="n">energy_reporter</span><span class="o">.</span><span class="n">write_energy_report</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_provenance_reports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2848,7 +2845,6 @@
 <span class="sd">        Runs any reports based on provenance</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
 
     <span class="k">def</span> <span class="nf">_execute_clear_io_buf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

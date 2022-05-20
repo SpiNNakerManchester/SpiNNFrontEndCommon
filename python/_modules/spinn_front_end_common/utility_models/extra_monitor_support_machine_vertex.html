@@ -478,13 +478,13 @@
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="s2">&quot;Number_of_Router_Configuration_Changes&quot;</span><span class="p">,</span> <span class="n">n_router_changes</span><span class="p">),</span>
+                <span class="s2">&quot;Number_of_Router_Configuration_Changes&quot;</span><span class="p">,</span> <span class="n">n_router_changes</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="s2">&quot;Number_of_Relevant_SDP_Messages&quot;</span><span class="p">,</span> <span class="n">n_sdp_packets</span><span class="p">),</span>
+                <span class="s2">&quot;Number_of_Relevant_SDP_Messages&quot;</span><span class="p">,</span> <span class="n">n_sdp_packets</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="s2">&quot;Number_of_Input_Streamlets&quot;</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">),</span>
+                <span class="s2">&quot;Number_of_Input_Streamlets&quot;</span><span class="p">,</span> <span class="n">n_in_streams</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_monitor</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
                 <span class="s2">&quot;Number_of_Output_Streamlets&quot;</span><span class="p">,</span> <span class="n">n_out_streams</span><span class="p">)</span></div>

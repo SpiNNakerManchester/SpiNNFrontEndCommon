@@ -347,14 +347,11 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.energy_provenance_reporter">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">energy_provenance_reporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power_used</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.energy_provenance_reporter" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">energy_provenance_reporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power_used</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.energy_provenance_reporter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the power usage information into provenance data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>power_used</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed" title="spinn_front_end_common.utilities.utility_objs.PowerUsed"><em>PowerUsed</em></a>) – The computed basic power consumption information</p></li>
-<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – Used for describing what a core was actually doing</p></li>
-</ul>
+<dd class="field-odd"><p><strong>power_used</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed" title="spinn_front_end_common.utilities.utility_objs.PowerUsed"><em>PowerUsed</em></a>) – The computed basic power consumption information</p>
 </dd>
 </dl>
 </dd></dl>
@@ -855,14 +852,13 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.preallocate_resources_for_live_packet_gatherers">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">preallocate_resources_for_live_packet_gatherers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.preallocate_resources_for_live_packet_gatherers" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">preallocate_resources_for_live_packet_gatherers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.preallocate_resources_for_live_packet_gatherers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds Live Packet Gatherer resources as required for a machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_parameters</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a><em>,
 </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em><em>)</em><em>)</em><em>)</em>) – the LPG parameters requested by the script</p></li>
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
 <li><p><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a>) – other preallocated resources</p></li>
 </ul>
 </dd>
@@ -936,13 +932,12 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.routing_setup">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">routing_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.routing_setup" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">routing_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.routing_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialises the routers. Note that this does not load any routes into    them.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p></li>
-<li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – </p></li>
 </ul>

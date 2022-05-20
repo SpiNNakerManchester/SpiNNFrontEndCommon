@@ -296,6 +296,7 @@
 <span class="sd">    :return: A struct for working with that many words.</span>
 <span class="sd">    :rtype: ~struct.Struct</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=global-statement</span>
     <span class="k">global</span> <span class="n">_n_word_structs</span>
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">_n_word_structs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_words</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">_n_word_structs</span> <span class="o">+=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">n_words</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">_n_word_structs</span><span class="p">))</span>

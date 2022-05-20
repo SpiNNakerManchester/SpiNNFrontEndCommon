@@ -218,7 +218,7 @@
 
 <div class="viewcode-block" id="SqlLiteDatabase.store_data_in_region_buffer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractDatabase</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="c1"># pylint: disable=too-many-arguments, unused-argument</span>
         <span class="c1"># TODO: Use missing</span>
         <span class="n">datablob</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Binary</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>

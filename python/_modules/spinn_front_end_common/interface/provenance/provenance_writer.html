@@ -198,7 +198,7 @@
 <span class="sd">                VALUES(?, ?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="ProvenanceWriter.insert_gatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
+<div class="viewcode-block" id="ProvenanceWriter.insert_gatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bytes_read</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
                         <span class="n">the_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Records provenance into the gatherer_provenance</span>
@@ -206,7 +206,7 @@
 <span class="sd">        :param int x: X coordinate of the chip</span>
 <span class="sd">        :param int y: Y coordinate of the chip</span>
 <span class="sd">        :param int address: sdram address read from</span>
-<span class="sd">        :param int bytes: number of bytes read</span>
+<span class="sd">        :param int bytes_read: number of bytes read</span>
 <span class="sd">        :param int run: run number</span>
 <span class="sd">        :param str description: type of value</span>
 <span class="sd">        :param float the_value: data</span>
@@ -217,7 +217,7 @@
 <span class="sd">                INSERT INTO gatherer_provenance(</span>
 <span class="sd">                    x, y, address, bytes, run, description, the_value)</span>
 <span class="sd">                VALUES(?, ?, ?, ?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bytes_read</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_monitor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">insert_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

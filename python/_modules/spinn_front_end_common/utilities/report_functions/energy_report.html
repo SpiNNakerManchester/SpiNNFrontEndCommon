@@ -88,12 +88,10 @@
     <span class="n">_SUMMARY_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;summary_energy_report.rpt&quot;</span>
 
 <div class="viewcode-block" id="EnergyReport.write_energy_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report">[docs]</a>    <span class="k">def</span> <span class="nf">write_energy_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Writes the report.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placements placements: the placements</span>
-<span class="sd">        :param ~spinn_machine.Machine machine: the machine</span>
-<span class="sd">        :param int runtime:</span>
 <span class="sd">        :param BufferManager buffer_manager:</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :rtype: None</span>
@@ -114,12 +112,12 @@
         <span class="n">runtime_total_ms</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">()</span>
 
         <span class="c1"># create detailed report</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">detailed_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">detailed_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_detailed_report</span><span class="p">(</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">)</span>
+                <span class="n">placements</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">)</span>
 
         <span class="c1"># create summary report</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_summary_report</span><span class="p">(</span><span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
@@ -196,11 +194,10 @@
             <span class="k">return</span> <span class="s2">&quot;(over </span><span class="si">{}</span><span class="s2"> seconds)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_detailed_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write detailed report and calculate costs</span>
 
 <span class="sd">        :param ~.Placements placements: placements</span>
-<span class="sd">        :param ~.Machine machine: machine representation</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :param float runtime_total_ms:</span>

@@ -129,6 +129,13 @@ where their where late arriving spikes.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.demo">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">demo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.demo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.demo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A demonstration of how to use this class.</p>
+<p>See also unittests/interface/provenance/test_provenance_database.py</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum">
 <span class="sig-name descname"><span class="pre">get_category_timer_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_category_timer_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the total runtime for one category of algorithms</p>
@@ -522,7 +529,7 @@ if different.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer">
-<span class="sig-name descname"><span class="pre">insert_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_gatherer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bytes_read</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_gatherer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Records provenance into the gatherer_provenance</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -530,7 +537,7 @@ if different.</p>
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the chip</p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the chip</p></li>
 <li><p><strong>address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – sdram address read from</p></li>
-<li><p><strong>bytes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of bytes read</p></li>
+<li><p><strong>bytes_read</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of bytes read</p></li>
 <li><p><strong>run</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – run number</p></li>
 <li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of value</p></li>
 <li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – data</p></li>

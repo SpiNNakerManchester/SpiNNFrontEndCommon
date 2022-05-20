@@ -105,7 +105,7 @@
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">:</span>
             <span class="n">n_entries</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span>
                 <span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">get_in_coming_slices</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">n_entries</span> <span class="o">*</span> <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">_KEY_ENTRY_SIZE</span>
+        <span class="k">return</span> <span class="n">n_entries</span> <span class="o">*</span> <span class="n">LivePacketGatherMachineVertex</span><span class="o">.</span><span class="n">KEY_ENTRY_SIZE</span>
 
 <div class="viewcode-block" id="LivePacketGather.get_resources_used_by_atoms"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather.get_resources_used_by_atoms">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">LegacyPartitionerAPI</span><span class="o">.</span><span class="n">get_resources_used_by_atoms</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_resources_used_by_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">):</span>  <span class="c1"># @UnusedVariable</span>
