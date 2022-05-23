@@ -63,11 +63,11 @@ class EnergyReport(object):
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # create detailed report
-        with open(detailed_report, "w") as f:
+        with open(detailed_report, "w", encoding="utf-8") as f:
             self._write_detailed_report(power_used, f)
 
         # create summary report
-        with open(summary_report, "w") as f:
+        with open(summary_report, "w", encoding="utf-8") as f:
             self._write_summary_report(f, power_used)
 
     @classmethod

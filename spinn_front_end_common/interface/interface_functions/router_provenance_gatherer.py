@@ -25,6 +25,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def router_provenance_gatherer():
     gather = _RouterProvenanceGatherer()
+    # pylint: disable=protected-access
     gather._add_router_provenance_data()
 
 

@@ -44,6 +44,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
 
 REPORTS_DIRNAME = "reports"
+# pylint: disable=protected-access
 
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):

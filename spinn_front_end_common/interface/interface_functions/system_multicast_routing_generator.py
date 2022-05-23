@@ -42,6 +42,7 @@ def system_multicast_routing_generator():
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     generator = _SystemMulticastRoutingGenerator()
+    # pylint: disable=protected-access
     return generator._run()
 
 

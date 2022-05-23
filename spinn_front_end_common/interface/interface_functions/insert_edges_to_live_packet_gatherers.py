@@ -35,6 +35,7 @@ def insert_edges_to_live_packet_gatherers(
     """
     inserter = _InsertEdgesToLivePacketGatherers(
         live_packet_gatherers_to_vertex_mapping)
+    # pylint: disable=protected-access
     inserter._run()
 
 

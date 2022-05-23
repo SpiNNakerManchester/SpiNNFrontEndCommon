@@ -31,6 +31,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 # from spinn_front_end_common.utility_models import CommandSender
 
 logger = FormatAdapter(logging.getLogger(__name__))
+# pylint: disable=protected-access
 
 
 class _FecDataModel(object):

@@ -57,7 +57,7 @@ def tag_allocator_report():
     tag_infos = FecDataView.get_tags()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 len(list(tag_infos.ip_tags)) +
                 len(list(tag_infos.reverse_ip_tags)),
@@ -127,7 +127,7 @@ def _do_router_summary_report(file_name, progress, routing_tables):
     time_date_string = time.strftime("%c")
     convert = Router.convert_routing_table_entry_to_spinnaker_route
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write("        Routing Summary Report\n")
             f.write("        ======================\n\n")
             f.write(f"Generated: {time_date_string} "
@@ -187,7 +187,7 @@ def router_report_from_paths():
     machine_graph = FecDataView.get_runtime_machine_graph()
     routing_infos = FecDataView.get_routing_infos()
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 machine_graph.n_outgoing_edge_partitions,
                 "Generating Routing path report")
@@ -245,7 +245,7 @@ def partitioner_report():
         FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
                                    "Generating partitioner report")
 
@@ -298,7 +298,7 @@ def placement_report_with_application_graph_by_vertex():
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
                                    "Generating placement report")
 
@@ -356,7 +356,7 @@ def placement_report_without_application_graph_by_vertex():
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine_graph.n_vertices,
                                    "Generating placement report")
 
@@ -401,7 +401,7 @@ def placement_report_with_application_graph_by_core():
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
 
@@ -462,7 +462,7 @@ def placement_report_without_application_graph_by_core():
     machine = FecDataView.get_machine()
     placements = FecDataView.get_placements()
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
 
@@ -514,7 +514,7 @@ def sdram_usage_report_per_chip():
         (n_placements * 2 + FecDataView.get_machine().n_chips * 2),
         "Generating SDRAM usage report")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write("        Memory Usage by Core\n")
             f.write("        ====================\n\n")
             f.write(f"Generated: {time_date_string} "
@@ -589,7 +589,7 @@ def routing_info_report():
     machine_graph = FecDataView.get_runtime_machine_graph()
     routing_infos = FecDataView.get_routing_infos()
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
                                    "Generating Routing info report")
             for vertex in machine_graph.vertices:
@@ -663,7 +663,7 @@ def generate_routing_table(routing_table, top_level_folder):
         routing_table.x, routing_table.y)
     file_path = os.path.join(top_level_folder, file_name)
     try:
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write("Router contains {} entries\n".format(
                 routing_table.number_of_entries))
 
@@ -713,7 +713,7 @@ def generate_comparison_router_report(compressed_routing_tables):
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _COMPARED_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 routing_tables,
                 "Generating comparison of router table report")

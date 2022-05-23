@@ -201,7 +201,7 @@ class ConfigHandler(object):
         time_of_run_file_name = os.path.join(
             timestamp_dir_path, TIMESTAMP_FILENAME)
         _, timestamp = os.path.split(timestamp_dir_path)
-        with open(time_of_run_file_name, "w") as f:
+        with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)
 
         if get_config_bool("Logging", "warnings_at_end_to_file"):
@@ -212,7 +212,7 @@ class ConfigHandler(object):
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
             self._data_writer.get_timestamp_dir_path(), file_name)
-        with open(app_file_name, "w") as f:
+        with open(app_file_name, "w", encoding="utf-8") as f:
             f.writelines("file_name")
 
     def write_finished_file(self):

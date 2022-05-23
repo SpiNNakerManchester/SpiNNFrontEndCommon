@@ -25,7 +25,7 @@ def router_collision_potential_report():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
         "routing_collision_protential_report.rpt")
-    with open(file_name, "w") as writer:
+    with open(file_name, "w", encoding="utf-8") as writer:
         collision_counts = _generate_data()
         _write_report(collision_counts, writer)
 

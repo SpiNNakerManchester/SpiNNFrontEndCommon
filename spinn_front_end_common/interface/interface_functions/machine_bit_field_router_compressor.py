@@ -648,14 +648,13 @@ class _MachineBitFieldRouterCompressor(object):
         raise CantFindSDRAMToUseException()
 
     def _add_to_addresses(
-            self, vertex, placement, transceiver, region_addresses,
+            self, vertex, placement, region_addresses,
             sdram_block_addresses_and_sizes):
         """ adds data about the API-based vertex.
 
         :param AbstractSupportsBitFieldRoutingCompression vertex:
             vertex which utilises the API
         :param ~.Placement placement: placement of vertex
-        :param ~.Transceiver transceiver:  spinnman instance
         :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
         :param sdram_block_addresses_and_sizes: store for surplus SDRAM
@@ -692,7 +691,6 @@ class _MachineBitFieldRouterCompressor(object):
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
         machine_graph = FecDataView.get_runtime_machine_graph()
-        transceiver = FecDataView.get_transceiver()
         for vertex in progress_bar.over(
                 machine_graph.vertices, finish_at_end=False):
             placement = FecDataView.get_placement_of_vertex(vertex)
@@ -701,7 +699,7 @@ class _MachineBitFieldRouterCompressor(object):
             if isinstance(
                     vertex, AbstractSupportsBitFieldRoutingCompression):
                 self._add_to_addresses(
-                    vertex, placement, transceiver, region_addresses,
+                    vertex, placement, region_addresses,
                     sdram_block_addresses_and_sizes)
 
         return region_addresses, sdram_block_addresses_and_sizes

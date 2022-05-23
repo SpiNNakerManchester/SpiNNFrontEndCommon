@@ -38,6 +38,7 @@ def application_runner(runtime, time_threshold, run_until_complete):
         :raises ConfigurationException:
     """
     runner = _ApplicationRunner()
+    # pylint: disable=protected-access
     runner._run(runtime, time_threshold, run_until_complete)
 
 

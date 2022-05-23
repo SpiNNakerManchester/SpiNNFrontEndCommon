@@ -33,6 +33,7 @@ def graph_binary_gatherer():
     :rtype: ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer()
+    # pylint: disable=protected-access
     return gatherer._run()
 
 

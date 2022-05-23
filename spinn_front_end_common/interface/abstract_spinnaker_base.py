@@ -245,6 +245,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             os.path.dirname(common_model_binaries.__file__))
 
         self._data_writer.set_machine_generator(self._get_machine)
+        self._run_timer = None
 
     def _hard_reset(self):
         """

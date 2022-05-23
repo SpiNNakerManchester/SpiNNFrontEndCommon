@@ -30,6 +30,7 @@ def insert_edges_to_extra_monitor_functionality():
 
     """
     inserter = _InsertEdgesToExtraMonitorFunctionality()
+    # pylint: disable=protected-access
     inserter._run()
 
 

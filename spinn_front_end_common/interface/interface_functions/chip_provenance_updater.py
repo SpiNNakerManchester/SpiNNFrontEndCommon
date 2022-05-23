@@ -33,6 +33,7 @@ _LIMIT = 10
 
 def chip_provenance_updater(all_core_subsets):
     updater = _ChipProvenanceUpdater(all_core_subsets)
+    # pylint: disable=protected-access
     updater._run()
 
 

@@ -32,6 +32,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 
 def dsg_region_reloader():
     reloader = _DSGRegionReloader()
+    # pylint: disable=protected-access
     reloader._run()
 
 

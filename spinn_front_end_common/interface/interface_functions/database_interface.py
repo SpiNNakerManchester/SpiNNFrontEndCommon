@@ -30,6 +30,7 @@ def database_interface(runtime):
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface()
+    # pylint: disable=protected-access
     return interface._run(runtime)
 
 
