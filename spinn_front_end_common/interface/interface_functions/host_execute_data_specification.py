@@ -337,20 +337,6 @@ class _HostExecuteDataSpecification(object):
         self._placements = None
         self._txrx = transceiver
 
-    def __java_all(self):
-        """ Does the Data Specification Execution and loading using Java
-
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            2, "Executing data specifications and loading data using Java")
-
-        self._java.set_machine(self._machine)
-        progress.update()
-        self._java.execute_data_specification()
-
-        progress.end()
-
     def execute_application_data_specs(
             self, dsg_targets, executable_targets,
             placements=None, extra_monitor_cores=None,
@@ -387,7 +373,7 @@ class _HostExecuteDataSpecification(object):
             uses_advanced_monitors = False
         try:
             if self._java:
-                self.__java_app(dsg_targets, uses_advanced_monitors)
+                self.__java_app(uses_advanced_monitors)
             else:
                 self.__python_app(dsg_targets, uses_advanced_monitors)
         except:  # noqa: E722
@@ -485,7 +471,7 @@ class _HostExecuteDataSpecification(object):
         # pylint: disable=too-many-arguments
 
         dsg_targets.mark_system_cores(system_cores(executable_targets))
-        if self.__java:
+        if self._java:
             self.__java_sys()
         else:
             self.__python_sys(dsg_targets)
