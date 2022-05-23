@@ -46,6 +46,7 @@ def insert_live_packet_gatherers_to_graphs(
     """
     inserter = _InsertLivePacketGatherersToGraphs(
         machine_graph, application_graph)
+    # pylint: disable=protected-access
     return inserter._run(live_packet_gatherer_parameters, machine)
 
 

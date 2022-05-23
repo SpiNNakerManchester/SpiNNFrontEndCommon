@@ -49,6 +49,7 @@ def database_interface(
         :rtype: tuple(DatabaseInterface, str)
     """
     interface = _DatabaseInterface(machine_graph)
+    # pylint: disable=protected-access
     return interface._run(
         machine_graph, tags, runtime, machine, data_n_timesteps, placements,
         routing_infos, router_tables, app_id, application_graph)
