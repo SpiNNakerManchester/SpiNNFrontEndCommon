@@ -516,7 +516,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w") as writer:
+            with open(self._in_report_path, "w", encoding="utf-8") as writer:
                 writer.write(
                     "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
                     " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
@@ -533,7 +533,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a") as writer:
+        with open(self._in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took_ms,
@@ -1269,7 +1269,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if os.path.isfile(report_path):
             writer_behaviour = "a"
 
-        with open(report_path, writer_behaviour) as writer:
+        with open(report_path, writer_behaviour, encoding="utf-8") as writer:
             writer.write("[{}:{}:{}] = {}\n".format(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 

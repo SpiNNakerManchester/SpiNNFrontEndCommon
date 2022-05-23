@@ -43,6 +43,8 @@ class BufferedReceivingData(object):
     def __init__(self):
         self._db_file = os.path.join(report_default_directory(), DB_FILE_NAME)
         self._db = None
+        self.__sizes_and_addresses = None
+        self.__data_flushed = None
         self.reset()
 
     def reset(self):

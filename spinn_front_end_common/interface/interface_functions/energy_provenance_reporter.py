@@ -33,13 +33,11 @@ _BASIC_PROPERTIES = (
 _PROV_KEY = "power_provenance"
 
 
-def energy_provenance_reporter(power_used, placements):
+def energy_provenance_reporter(power_used):
     """ Converts the power usage information into provenance data.
 
     :param PowerUsed power_used:
         The computed basic power consumption information
-    :param ~pacman.model.placements.Placements placements:
-        Used for describing what a core was actually doing
     """
     with ProvenanceWriter() as db:
         for prop in _BASIC_PROPERTIES:

@@ -36,6 +36,7 @@ def graph_binary_gatherer(placements, executable_finder):
     :rtype: ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer(executable_finder)
+    # pylint: disable=protected-access
     return gatherer._run(placements)
 
 

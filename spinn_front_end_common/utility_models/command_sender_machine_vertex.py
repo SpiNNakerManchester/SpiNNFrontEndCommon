@@ -316,7 +316,7 @@ class CommandSenderMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    def _get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
+    def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
         """ Construct edges from this vertex to the vertices that this vertex\
             knows how to target (and has keys allocated for).
 
@@ -353,7 +353,7 @@ class CommandSenderMachineVertex(
         :rtype:
             tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
         """
-        return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
+        return self.get_edges_and_partitions(self, MachineVertex, MachineEdge)
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                parse_extra_provenance_items)

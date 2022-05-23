@@ -48,6 +48,7 @@ def system_multicast_routing_generator(
     """
     generator = _SystemMulticastRoutingGenerator(
         machine, extra_monitor_cores, placements)
+    # pylint: disable=protected-access
     return generator._run()
 
 

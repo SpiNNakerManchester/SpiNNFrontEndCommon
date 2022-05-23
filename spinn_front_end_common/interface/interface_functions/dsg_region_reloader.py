@@ -32,6 +32,7 @@ from spinn_front_end_common.utilities.globals_variables import (
 
 def dsg_region_reloader(transceiver, placements, hostname):
     reloader = _DSGRegionReloader(transceiver, hostname)
+    # pylint: disable=protected-access
     reloader._run(placements)
 
 
