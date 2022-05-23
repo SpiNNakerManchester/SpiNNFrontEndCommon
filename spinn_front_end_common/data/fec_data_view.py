@@ -888,8 +888,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         # As partition_ids may come in as an iterable such as dict_keys
         partition_ids = list(partition_ids)
-        for id in partition_ids:
-            if not isinstance(id, str):
+        for partition_id in partition_ids:
+            if not isinstance(partition_id, str):
                 raise ConfigurationException(
                     "partition_ids must be a iterable of str")
 
