@@ -56,7 +56,7 @@ def write_json_partition_n_keys_map(partition_to_n_keys_map, json_folder):
         progress.update()
 
     # dump to json file
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(json_obj, f)
 
     if progress:

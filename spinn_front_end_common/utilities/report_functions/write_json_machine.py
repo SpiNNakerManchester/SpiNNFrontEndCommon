@@ -56,7 +56,7 @@ def write_json_machine(machine, json_folder, progress_bar):
             progress.end()
 
         # dump to json file
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
 
     if progress:

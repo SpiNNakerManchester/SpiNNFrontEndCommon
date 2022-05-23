@@ -28,7 +28,7 @@ def tags_from_machine_report(transceiver):
     """
     filename = os.path.join(report_default_directory(), _REPORT_FILENAME)
     tags = _get_tags(transceiver)
-    with open(filename, "w") as f:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")
         f.write("==================================\n")
         for tag in tags:

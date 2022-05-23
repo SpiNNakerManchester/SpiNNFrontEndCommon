@@ -58,7 +58,7 @@ def bitfield_compressor_report(machine_graph, placements):
     """
     file_name = os.path.join(report_default_directory(), _FILE_NAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             return _write_report(f, machine_graph, placements)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
