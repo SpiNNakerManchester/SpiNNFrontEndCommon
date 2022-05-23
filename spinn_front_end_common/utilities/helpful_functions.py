@@ -242,6 +242,7 @@ def n_word_struct(n_words):
     :return: A struct for working with that many words.
     :rtype: ~struct.Struct
     """
+    # pylint: disable=global-statement
     global _n_word_structs
     while len(_n_word_structs) < n_words + 1:
         _n_word_structs += [None] * (n_words + 1 - len(_n_word_structs))

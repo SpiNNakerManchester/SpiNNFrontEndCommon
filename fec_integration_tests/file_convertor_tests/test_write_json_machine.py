@@ -72,9 +72,9 @@ class TestWriteJson(unittest.TestCase):
     def json_compare(self, file1, file2):
         if filecmp.cmp(file1, file2):
             return
-        with open(file1) as json_file:
+        with open(file1, encoding="utf-8") as json_file:
             json1 = json.load(json_file)
-        with open(file2) as json_file:
+        with open(file2, encoding="utf-8") as json_file:
             json2 = json.load(json_file)
         if json1 == json2:
             return

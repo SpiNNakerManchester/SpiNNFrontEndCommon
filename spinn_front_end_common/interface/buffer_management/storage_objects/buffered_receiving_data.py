@@ -43,6 +43,8 @@ class BufferedReceivingData(object):
         self._db_file = os.path.join(
             FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self._db = None
+        self.__sizes_and_addresses = None
+        self.__data_flushed = None
         self.reset()
 
     def reset(self):

@@ -237,7 +237,7 @@ class IOBufExtractor(object):
         mode = "a" if os.path.exists(file_name) else "w"
 
         # write iobuf to file and call out errors and warnings.
-        with open(file_name, mode) as f:
+        with open(file_name, mode, encoding="utf-8") as f:
             for line in iobuf.iobuf.split("\n"):
                 replaced = replacer.replace(line)
                 f.write(replaced)

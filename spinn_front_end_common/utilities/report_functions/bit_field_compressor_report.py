@@ -54,7 +54,7 @@ def bitfield_compressor_report():
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             return _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"

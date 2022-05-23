@@ -28,7 +28,7 @@ def memory_map_on_host_report():
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FOLDER_NAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
             for key, start_address, memory_used, memory_written in \
                     FecDataView.get_dsg_targets().info_iteritems():

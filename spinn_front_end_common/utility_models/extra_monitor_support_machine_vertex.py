@@ -404,13 +404,13 @@ class ExtraMonitorSupportMachineVertex(
         with ProvenanceWriter() as db:
             db.insert_monitor(
                 placement.x, placement.y,
-                "Number_of_Router_Configuration_Changes", n_router_changes),
+                "Number_of_Router_Configuration_Changes", n_router_changes)
             db.insert_monitor(
                 placement.x, placement.y,
-                "Number_of_Relevant_SDP_Messages", n_sdp_packets),
+                "Number_of_Relevant_SDP_Messages", n_sdp_packets)
             db.insert_monitor(
                 placement.x, placement.y,
-                "Number_of_Input_Streamlets", n_in_streams),
+                "Number_of_Input_Streamlets", n_in_streams)
             db.insert_monitor(
                 placement.x, placement.y,
                 "Number_of_Output_Streamlets", n_out_streams)

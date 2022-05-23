@@ -49,7 +49,7 @@ def write_json_placements():
     progress.update()
 
     # dump to json file
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(json_obj, f)
 
     progress.end()

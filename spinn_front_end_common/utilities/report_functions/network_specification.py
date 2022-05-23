@@ -32,7 +32,7 @@ def network_specification():
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
     graph = FecDataView.get_runtime_best_graph()
     try:
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write("*** Vertices:\n")
             for vertex in graph.vertices:
                 _write_report(f, vertex, graph)

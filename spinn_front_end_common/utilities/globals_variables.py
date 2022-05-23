@@ -18,7 +18,7 @@ from spinn_utilities.exceptions import SimulatorNotSetupException
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 
-# pylint: disable=global-statement
+# pylint: disable=global-statement, protected-access
 _simulator = None
 __temp_dir = None
 __unittest_mode = False

@@ -40,7 +40,7 @@ def generate_routing_compression_checker_report(
         "routing_compression_checker_report.rpt")
 
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 routing_tables.routing_tables,
                 "Generating routing compression checker report")
