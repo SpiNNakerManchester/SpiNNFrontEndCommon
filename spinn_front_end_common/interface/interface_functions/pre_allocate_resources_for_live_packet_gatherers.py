@@ -19,7 +19,7 @@ from spinn_front_end_common.utility_models import (
 
 
 def preallocate_resources_for_live_packet_gatherers(
-        live_packet_gatherer_parameters, machine, pre_allocated_resources):
+        live_packet_gatherer_parameters, pre_allocated_resources):
     """ Adds Live Packet Gatherer resources as required for a machine.
 
     :param live_packet_gatherer_parameters:
@@ -27,8 +27,6 @@ def preallocate_resources_for_live_packet_gatherers(
     :type live_packet_gatherer_parameters:
         dict(LivePacketGatherParameters,
         list(tuple(~pacman.model.graphs.AbstractVertex, list(str))))
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
     :param pre_allocated_resources: other preallocated resources
     :type pre_allocated_resources:
         ~pacman.model.resources.PreAllocatedResourceContainer

@@ -65,5 +65,5 @@ class CommandSender(
         :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),
             list(str))
         """
-        return self._machine_vertex._get_edges_and_partitions(
+        return self._machine_vertex.get_edges_and_partitions(
             self, ApplicationVertex, ApplicationEdge)

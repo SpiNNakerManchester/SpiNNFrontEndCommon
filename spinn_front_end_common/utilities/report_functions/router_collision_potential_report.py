@@ -30,7 +30,7 @@ def router_collision_potential_report(
     :param ~spinn_machine.Machine machine:
     """
     file_name = os.path.join(report_default_directory(), COLLISION_REPORT)
-    with open(file_name, "w") as writer:
+    with open(file_name, "w", encoding="utf-8") as writer:
         collision_counts = _generate_data(
             router_tables_by_partition, n_keys_map, machine)
         _write_report(collision_counts, writer)

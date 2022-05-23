@@ -113,7 +113,7 @@ class SQLiteDB(AbstractContextManager):
             self.__db.text_factory = text_factory
 
         if ddl_file:
-            with open(ddl_file) as f:
+            with open(ddl_file, encoding="utf-8") as f:
                 sql = f.read()
             self.__db.executescript(sql)
             # Stamp the DB with a schema version, which is the first four

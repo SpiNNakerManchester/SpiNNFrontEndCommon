@@ -66,7 +66,7 @@ class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
         for edge in self._incoming_edges:
             n_entries += len(
                 edge.pre_vertex.splitter.get_in_coming_slices()[0])
-        return n_entries * LivePacketGatherMachineVertex._KEY_ENTRY_SIZE
+        return n_entries * LivePacketGatherMachineVertex.KEY_ENTRY_SIZE
 
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable

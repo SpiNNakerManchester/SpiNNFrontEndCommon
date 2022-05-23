@@ -33,7 +33,7 @@ def network_specification(graph):
     """
     filename = os.path.join(report_default_directory(), _FILENAME)
     try:
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             f.write("*** Vertices:\n")
             for vertex in graph.vertices:
                 _write_report(f, vertex, graph)
