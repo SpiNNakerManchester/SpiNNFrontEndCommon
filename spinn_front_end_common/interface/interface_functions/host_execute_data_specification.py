@@ -389,7 +389,7 @@ class _HostExecuteDataSpecification(object):
             if self._java:
                 self.__java_app(dsg_targets, uses_advanced_monitors)
             else:
-                self.__python_ap(dsg_targets, uses_advanced_monitors)
+                self.__python_app(dsg_targets, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
