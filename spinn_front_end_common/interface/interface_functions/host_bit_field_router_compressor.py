@@ -530,8 +530,8 @@ class _HostBasedBitFieldRouterCompressor(object):
             # next one
             cores_to_add_for.append(cores[worst_core_id])
             diff = (
-                most_costly_cores[cores[worst_core_id]] -
-                most_costly_cores[cores[worst_core_id + 1]])
+                most_costly_cores[chip_x, chip_y][cores[worst_core_id]] -
+                most_costly_cores[chip_x, chip_y][cores[worst_core_id + 1]])
 
             # order over most effective bitfields
             coverage = processor_coverage_by_bitfield[cores[worst_core_id]]

@@ -245,10 +245,13 @@ class DatabaseWriter(SQLiteDB):
                 else:
                     r_info = routing_infos.get_routing_info_from_pre_vertex(
                         m_vertex, partition_id)
-                    vertex_slice = m_vertex.vertex_slice
-                    keys = r_info.get_keys(vertex_slice.n_atoms)
-                    start = vertex_slice.lo_atom
-                    atom_keys = [(i, k) for i, k in enumerate(keys, start)]
+                    # r_info could be None if there are no outgoing edges,
+                    # at which point there is nothing to do here anyway
+                    if r_info is not None:
+                        vertex_slice = m_vertex.vertex_slice
+                        keys = r_info.get_keys(vertex_slice.n_atoms)
+                        start = vertex_slice.lo_atom
+                        atom_keys = [(i, k) for i, k in enumerate(keys, start)]
                 m_vertex_id = self.__vertex_to_id[m_vertex]
                 cur.executemany(
                     """
