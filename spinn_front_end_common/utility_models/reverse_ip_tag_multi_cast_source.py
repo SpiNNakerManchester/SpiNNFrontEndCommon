@@ -120,7 +120,7 @@ class ReverseIpTagMultiCastSource(
         :param splitter: the splitter object needed for this vertex
         :type splitter: None or AbstractSplitterCommon
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
         super().__init__(
             label, constraints, max_atoms_per_core, splitter=splitter)
 
@@ -218,9 +218,7 @@ class ReverseIpTagMultiCastSource(
         for vertex in self.machine_vertices:
             vertex_slice = vertex.vertex_slice
             send_buffer_times_to_set = self._send_buffer_times
-            # pylint: disable=len-as-condition
-            if (self._send_buffer_times is not None and
-                    len(self._send_buffer_times)):
+            if self._send_buffer_times:
                 if hasattr(self._send_buffer_times[0], "__len__"):
                     send_buffer_times_to_set = self._send_buffer_times[
                         vertex_slice.lo_atom:vertex_slice.hi_atom + 1]

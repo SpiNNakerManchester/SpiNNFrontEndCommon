@@ -107,7 +107,6 @@ class ChipPowerMonitorMachineVertex(
         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
-        # pylint: disable=too-many-locals
         step_in_microseconds = machine_time_step() * time_scale_factor()
         # The number of sample per step CB believes does not have to be an int
         samples_per_step = (step_in_microseconds / sampling_frequency)
@@ -154,7 +153,6 @@ class ChipPowerMonitorMachineVertex(
         :param ~data_specification.DataSpecificationGenerator spec: data spec
         :param int data_n_time_steps: timesteps to reserve data for
         """
-        # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -183,7 +181,6 @@ class ChipPowerMonitorMachineVertex(
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
         """
-        # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))

@@ -94,9 +94,6 @@ class _GraphDataSpecificationWriter(object):
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-        # pylint: disable=attribute-defined-outside-init
-
         # iterate though vertices and call generate_data_spec for each
         # vertex
         targets = DsSqlliteDatabase(self._machine, self._app_id)

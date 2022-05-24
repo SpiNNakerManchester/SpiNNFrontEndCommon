@@ -25,7 +25,6 @@ from spinn_front_end_common.utilities.constants import (
 
 class _ClearIOBUFRequest(AbstractSCPRequest):
     def __init__(self, x, y, p):
-        # pylint: disable=too-many-arguments
 
         super().__init__(
             SDPHeader(

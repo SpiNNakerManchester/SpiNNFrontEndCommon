@@ -57,7 +57,6 @@ class _DSGRegionReloader(object):
         :param ~pacman.model.placements.Placements placements:
             the list of placements of the machine graph to cores
         """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
         if not os.path.exists(self._data_dir):
