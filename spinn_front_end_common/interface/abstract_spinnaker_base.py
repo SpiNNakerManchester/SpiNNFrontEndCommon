@@ -3474,14 +3474,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise ConfigurationException("Simulator has already been shutdown")
         self._status = Simulator_Status.SHUTDOWN
 
-        # Keep track of any exception to be re-raised
-        exn = None
-
         # If we have run forever, stop the binaries
 
         try:
             if (self._has_ran and self._current_run_timesteps is None and
-                not self._use_virtual_board and not self._run_until_complete):
+                    not self._use_virtual_board and
+                    not self._run_until_complete):
                 self._do_stop_workflow()
         except Exception as e:
             self._recover_from_error(e)

@@ -175,7 +175,7 @@ class _GraphDataSpecificationWriter(object):
                     if size > est_size:
                         logger.warning(
                             ("Region {} of vertex {} is bigger than expected: "
-                            "{} estimated vs. {} actual"),
+                             "{} estimated vs. {} actual"),
                             i, vertex.label, est_size, size)
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
