@@ -3479,20 +3479,18 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have run forever, stop the binaries
 
-        if (self._has_ran and self._current_run_timesteps is None and
+        try:
+            if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board and not self._run_until_complete):
-            try:
                 self._do_stop_workflow()
-            except Exception as e:
-                exn = e
-                self._recover_from_error(e)
-
-        # shut down the machine properly
-        self._shutdown()
-
-        if exn is not None:
+        except Exception as e:
+            self._recover_from_error(e)
             self.write_errored_file()
-            raise exn  # pylint: disable=raising-bad-type
+            raise
+        finally:
+            # shut down the machine properly
+            self._shutdown()
+
         self.write_finished_file()
 
     def _execute_application_finisher(self):
