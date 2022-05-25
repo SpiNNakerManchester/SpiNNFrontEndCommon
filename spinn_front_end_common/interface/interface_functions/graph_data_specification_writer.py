@@ -173,6 +173,7 @@ class _GraphDataSpecificationWriter(object):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))
                     est_size = est_size.get_total_sdram(data_n_timesteps)
                     if size > est_size:
+                        # pylint: disable=logging-too-many-args
                         logger.warning(
                             ("Region {} of vertex {} is bigger than expected: "
                              "{} estimated vs. {} actual"),
