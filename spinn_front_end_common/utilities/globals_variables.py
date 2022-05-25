@@ -23,7 +23,7 @@ from spinn_front_end_common.utilities.exceptions import (
     SimulatorRunningException, SimulatorNotSetupException,
     SimulatorShutdownException)
 
-# pylint: disable=global-statement
+# pylint: disable=global-statement, protected-access
 _simulator = None
 __temp_dir = None
 __unittest_mode = False

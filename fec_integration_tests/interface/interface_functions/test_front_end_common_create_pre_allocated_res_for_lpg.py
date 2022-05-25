@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
-from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.resources import PreAllocatedResourceContainer
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -33,7 +32,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         unittest_setup()
 
     def test_one_lpg_params(self):
-        machine = virtual_machine(width=12, height=12)
 
         default_params = {
             'use_prefix': False,
@@ -60,7 +58,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
 
         # verify sdram
@@ -74,12 +71,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 1)
 
     def test_none(self):
-        machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = dict()
         # run  pre allocator
         pre_res = preallocate_resources_for_live_packet_gatherers(
             live_packet_gatherer_parameters=live_packet_gatherers,
-            machine=machine,
             pre_allocated_resources=PreAllocatedResourceContainer())
         self.assertEqual(
             pre_res.sdram_all.get_total_sdram(0), 0)
@@ -90,12 +85,10 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         self.assertEqual(pre_res.cores_ethernet, 0)
 
     def test_fail(self):
-        machine = virtual_machine(width=12, height=12)
         live_packet_gatherers = {'foo': 'bar'}
         with self.assertRaises(Exception) as exn:
             preallocate_resources_for_live_packet_gatherers(
                 live_packet_gatherer_parameters=live_packet_gatherers,
-                machine=machine,
                 pre_allocated_resources=PreAllocatedResourceContainer())
         # Make sure we know what the exception was; NOT an important test!
         self.assertEqual(

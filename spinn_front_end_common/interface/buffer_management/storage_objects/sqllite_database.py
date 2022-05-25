@@ -180,7 +180,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
 
     @overrides(AbstractDatabase.store_data_in_region_buffer)
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
         with self.transaction() as cursor:

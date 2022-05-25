@@ -55,6 +55,7 @@ def application_runner(
     """
     runner = _ApplicationRunner(
         executable_types, app_id, txrx, no_sync_changes)
+    # pylint: disable=protected-access
     return runner._run(buffer_manager, notification_interface, runtime,
                        time_threshold, machine, run_until_complete)
 

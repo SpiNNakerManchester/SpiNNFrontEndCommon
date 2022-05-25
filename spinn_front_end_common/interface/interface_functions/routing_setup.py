@@ -21,7 +21,7 @@ from spinnman.model.enums import (
     DiagnosticFilterSource)
 
 
-def routing_setup(router_tables, app_id, transceiver, machine):
+def routing_setup(router_tables, transceiver, machine):
     """
     Initialises the routers. Note that this does not load any routes into\
     them.
@@ -29,7 +29,6 @@ def routing_setup(router_tables, app_id, transceiver, machine):
     :param router_tables:
     :type router_tables:
         ~pacman.model.routing_tables.MulticastRoutingTables
-    :param int app_id:
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~spinn_machine.Machine machine:
     """
