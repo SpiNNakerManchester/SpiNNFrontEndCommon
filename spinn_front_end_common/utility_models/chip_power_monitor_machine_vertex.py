@@ -97,7 +97,6 @@ class ChipPowerMonitorMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        # pylint: disable=arguments-differ
         return self.get_resources(self._sampling_frequency)
 
     @staticmethod
