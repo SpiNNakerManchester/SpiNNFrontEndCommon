@@ -50,8 +50,6 @@ from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge)
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
-from pacman.operations.chip_id_allocator_algorithms import (
-    malloc_based_chip_id_allocator)
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
@@ -1290,16 +1288,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             network_specification(self._application_graph)
 
-    def _execute_chip_id_allocator(self):
-        """
-        Runs, times and logs the ChipIdAllocator
-
-        """
-        with FecTimer(MAPPING, "Chip ID allocator"):
-            malloc_based_chip_id_allocator(
-                self._machine, self._application_graph)
-            # return ignored as changes done inside original machine object
-
     def _execute_insert_live_packet_gatherers_to_graphs(
             self, system_placements):
         """
@@ -1890,7 +1878,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_machine_generator(MAPPING, allocator_data)
         assert(self._machine)
         self._json_machine()
-        self._execute_chip_id_allocator()
         self._report_board_chip()
 
         system_placements = Placements()
