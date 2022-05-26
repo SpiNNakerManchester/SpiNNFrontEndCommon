@@ -363,10 +363,18 @@ def _write_one_vertex_application_placement(f, vertex, placements):
         lo_atom = sv.vertex_slice.lo_atom
         hi_atom = sv.vertex_slice.hi_atom
         num_atoms = sv.vertex_slice.n_atoms
-        cur_placement = placements.get_placement_of_vertex(sv)
-        x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-        f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
-                .format(lo_atom, hi_atom, num_atoms, x, y, p))
+        if isinstance(sv, AbstractSpiNNakerLink):
+            f.write("  Slice {}:{} ({} atoms) on SpiNNaker Link {} \n"
+                    .format(lo_atom, hi_atom, num_atoms, sv.spinnaker_link_id))
+        elif isinstance(sv, AbstractFPGA):
+            f.write("  Slice {}:{} ({} atoms) on FGPA {}, {}) \n"
+                    .format(lo_atom, hi_atom, num_atoms, sv.fpga_id,
+                            sv.fpga_link_id))
+        else:
+            cur_placement = placements.get_placement_of_vertex(sv)
+            x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
+            f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
+                    .format(lo_atom, hi_atom, num_atoms, x, y, p))
     f.write("\n")
 
 
