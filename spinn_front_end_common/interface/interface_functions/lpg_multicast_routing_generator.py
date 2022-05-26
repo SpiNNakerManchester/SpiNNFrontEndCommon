@@ -14,7 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
-    most_direct_route, convert_a_route)
+    most_direct_route, convert_a_route, vertex_chip_and_route)
 from pacman.operations.router_algorithms.ner_route import targets_by_chip
 
 
@@ -35,17 +35,17 @@ def lpg_multicast_routing_generator(
                 m_vertices = app_vertex.splitter.get_out_going_vertices(
                     part_id)
                 for m_vertex in m_vertices:
-                    placement = placements.get_placement_of_vertex(m_vertex)
-                    chip = machine.get_chip_at(placement.x, placement.y)
+                    (x, y), (m_vertex, core, link) = vertex_chip_and_route(
+                        m_vertex, placements, machine)
+                    chip = machine.get_chip_at(x, y)
                     x = chip.nearest_ethernet_x
                     y = chip.nearest_ethernet_y
                     lpg = lpg_to_vertex[lpg_params, x, y]
                     lpg_place = placements.get_placement_of_vertex(lpg)
-                    route = most_direct_route(
-                        placement.chip, lpg_place.chip, machine)
+                    route = most_direct_route((x, y), lpg_place.chip, machine)
                     targets = targets_by_chip([lpg], placements, machine)
                     convert_a_route(
-                        routing_tables, m_vertex, part_id, placement.p, None,
+                        routing_tables, m_vertex, part_id, core, link,
                         route, targets)
                     lpg_for_m_vertex[m_vertex, part_id] = lpg
                     lpg.add_incoming_source(m_vertex, part_id)
