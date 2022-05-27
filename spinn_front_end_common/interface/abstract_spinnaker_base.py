@@ -15,7 +15,6 @@
 """
 main interface for the SpiNNaker tools
 """
-from collections import defaultdict
 import logging
 import math
 import signal
@@ -84,11 +83,10 @@ from spinn_front_end_common.interface.interface_functions import (
     host_based_bit_field_router_compressor,
     hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
-    insert_extra_monitor_vertices_to_graphs,
-    insert_live_packet_gatherers_to_graphs,
+    insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
     local_tdma_builder, locate_executable_start_type,
-    lpg_multicast_routing_generator, machine_generator,
+    lpg_placement_setter, machine_generator,
     placements_provenance_gatherer, profile_data_gatherer,
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_setup, routing_table_loader,
@@ -122,10 +120,9 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex)
+    CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
 from spinn_front_end_common.utilities import FecTimer
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
@@ -278,10 +275,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # dict of exucutable types to cores
         "_executable_types",
 
-        # mapping between parameters and the vertices which need to talk to
-        # them
-        # Created during init. Added to but never new object
-        "_live_packet_recorder_params",
+        # A dict of live packet gather params to Application LGP vertices
+        "_lpg_vertices",
 
         # mapping of live packet recorder parameters to vertex
         "_live_packet_recorder_parameters_mapping",
@@ -400,7 +395,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "n_boards_required")
 
         # store for Live Packet Gatherers
-        self._live_packet_recorder_params = defaultdict(list)
+        self._lpg_vertices = dict()
 
         # update graph label if needed
         if graph_label is None:
@@ -640,8 +635,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param list(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
-        self._live_packet_recorder_params[live_packet_gatherer_params].append(
-            (vertex_to_record_from, partition_ids))
+        lpg_vertex = self._lpg_vertices.get(live_packet_gatherer_params)
+        if lpg_vertex is None:
+            lpg_vertex = LivePacketGather(
+                live_packet_gatherer_params, live_packet_gatherer_params.label)
+            self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
+            self._original_application_graph.add_vertex(lpg_vertex)
+        for part_id in partition_ids:
+            self._original_application_graph.add_edge(
+                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
@@ -1288,20 +1290,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             network_specification(self._application_graph)
 
-    def _execute_insert_live_packet_gatherers_to_graphs(
-            self, system_placements):
+    def _execute_split_lpg_vertices(self, system_placements):
         """
-        Runs, times and logs the InsertLivePacketGatherersToGraphs if required
+        Runs, times and logs the SplitLPGVertices if required
         """
-        with FecTimer(
-                MAPPING, "Insert live packet gatherers to graphs") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            self._live_packet_recorder_parameters_mapping = \
-                insert_live_packet_gatherers_to_graphs(
-                    self._live_packet_recorder_params, self._machine,
-                    system_placements)
+        with FecTimer(MAPPING, "Split Live Gather Vertices"):
+            split_lpg_vertices(
+                self._application_graph, self._machine, system_placements)
 
     def _report_board_chip(self):
         """
@@ -1442,19 +1437,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_lpg_multicast_router(self):
+    def _exectute_lpg_placement_setter(self):
         """
-        Runs, times and logs lpg_multicast_router if required
+        Runs, times and logs lpg_placement_setter
         """
-        with FecTimer(
-                MAPPING, "LPG Multicast router") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            self._lpg_for_m_vertex = lpg_multicast_routing_generator(
-                self._live_packet_recorder_params, self._placements,
-                self._live_packet_recorder_parameters_mapping, self._machine,
-                self._routing_table_by_partition)
+        with FecTimer(MAPPING, "LPG Placement setter"):
+            lpg_placement_setter(self._application_graph, self._placements)
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -1659,15 +1647,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException: if the cfg info_allocator value is
             unexpected
         """
-        extra_allocations = [
-            (v, part)
-            for verts in self._live_packet_recorder_params.values()
-            for v, parts in verts for part in parts]
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
-            return self._execute_global_allocate(extra_allocations)
+            return self._execute_global_allocate([])
         if name == "ZonedRoutingInfoAllocator":
-            return self._execute_flexible_allocate(extra_allocations)
+            return self._execute_flexible_allocate([])
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for info_allocator")
@@ -1682,12 +1666,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
-            extra_allocations = [
-                (v, part)
-                for verts in self._live_packet_recorder_params.values()
-                for v, parts in verts for part in parts]
-            routing_info_report(self._application_graph, extra_allocations,
-                                self._routing_infos)
+            routing_info_report(
+                self._application_graph, [], self._routing_infos)
 
     def _execute_basic_routing_table_generator(self):
         """
@@ -1881,21 +1861,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_board_chip()
 
         system_placements = Placements()
-        self._execute_insert_live_packet_gatherers_to_graphs(system_placements)
+        self._execute_split_lpg_vertices(system_placements)
         self._execute_insert_chip_power_monitors(system_placements)
         self._execute_insert_extra_monitor_vertices(system_placements)
 
         self._execute_partitioner_report()
         self._execute_local_tdma_builder()
-        # self._json_partition_n_keys_map()
         self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         self._json_placements()
 
+        self._exectute_lpg_placement_setter()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
         self._do_routing()
-        self._execute_lpg_multicast_router()
 
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()
