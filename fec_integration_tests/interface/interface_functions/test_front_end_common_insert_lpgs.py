@@ -18,11 +18,18 @@ from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
+from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
-    insert_live_packet_gatherers_to_graphs)
+    split_lpg_vertices)
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import LivePacketGather
+
+
+class TestVertex(ApplicationVertex):
+    def __init__(self, n_atoms):
+        self.n_atoms = n_atoms
 
 
 class TestInsertLPGs(unittest.TestCase):
@@ -52,22 +59,21 @@ class TestInsertLPGs(unittest.TestCase):
             'tag': None,
             'label': "Test"}
 
-        # data stores needed by algorithm
-        live_packet_gatherers = dict()
+        app_graph = ApplicationGraph("Test")
         default_params_holder = LivePacketGatherParameters(**default_params)
-        live_packet_gatherers[default_params_holder] = list()
+        lpg_vertex = LivePacketGather(default_params_holder)
+        app_graph.add_vertex(lpg_vertex)
 
-        # run edge inserter that should go boom
-        placements = Placements()
-        lpg_verts_mapping = insert_live_packet_gatherers_to_graphs(
-            live_packet_gatherers, machine, placements)
+        system_placements = Placements()
+        split_lpg_vertices(app_graph, machine, system_placements)
 
         locs = set()
         locs.add((0, 0))
         locs.add((4, 8))
         locs.add((8, 4))
-        for (_, x, y), m_vertex in lpg_verts_mapping.items():
-            locs.remove((x, y))
+        for m_vertex in lpg_vertex.machine_vertices:
+            placement = system_placements.get_placement_of_vertex(m_vertex)
+            locs.remove((placement.x, placement.y))
             self.assertIsNotNone(m_vertex)
             self.assertIsInstance(m_vertex, MachineVertex)
 
