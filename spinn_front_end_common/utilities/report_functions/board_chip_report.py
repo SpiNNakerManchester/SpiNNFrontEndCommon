@@ -54,5 +54,5 @@ def _write_report(writer, machine, progress_bar):
                 for chip in machine.get_chips_by_ethernet(e_chip.x, e_chip.y)]
 
         writer.write(
-            "board with IP address : {} : has chips {}\n".format(
-                e_chip.ip_address, xyps))
+            "board with IP address : {} : has chips [{}]\n".format(
+                e_chip.ip_address, xyps.join(", ")))
