@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>spinn_front_end_common.interface.buffer_management package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,9 +48,9 @@
           <div class="body" role="main">
             
   <section id="spinn-front-end-common-interface-buffer-management-package">
-<h1>spinn_front_end_common.interface.buffer_management package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-package" title="Permalink to this headline">¶</a></h1>
+<h1>spinn_front_end_common.interface.buffer_management package<a class="headerlink" href="#spinn-front-end-common-interface-buffer-management-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html">spinn_front_end_common.interface.buffer_management.buffer_models package</a><ul>
@@ -64,14 +65,14 @@
 </div>
 </section>
 <section id="module-spinn_front_end_common.interface.buffer_management">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.</span></span><span class="sig-name descname"><span class="pre">BufferManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gather_cores_to_ethernet_connection_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_to_chip_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Manager of send buffers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The placements of the vertices</p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – The tags assigned to the vertices</p></li>
@@ -89,7 +90,7 @@
 <span class="sig-name descname"><span class="pre">add_receiving_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_receiving_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_receiving_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a vertex into the managed list for vertices which require            buffers to be received from them during runtime.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><em>AbstractReceiveBuffersToHost</em></a>) – the vertex to be managed</p>
 </dd>
 </dl>
@@ -100,7 +101,7 @@
 <span class="sig-name descname"><span class="pre">add_sender_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.add_sender_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a vertex into the managed list for vertices which require            buffers to be sent to them during runtime.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost"><em>AbstractSendsBuffersFromHost</em></a>) – the vertex to be managed</p>
 </dd>
 </dl>
@@ -111,7 +112,7 @@
 <span class="sig-name descname"><span class="pre">clear_recorded_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.clear_recorded_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the recorded data stored in memory.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – placement x coordinate</p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – placement y coordinate</p></li>
@@ -127,17 +128,17 @@
 <span class="sig-name descname"><span class="pre">get_data_by_placement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_by_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data container for all the data retrieved            during the simulation from a specific region area of a core.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement to get the data from</p></li>
 <li><p><strong>recording_region_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – desired recording data region</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>an array contained all the data received during the
 simulation, and a flag indicating if any data was missing</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)">bytearray</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>)</p>
 </dd>
 </dl>
@@ -147,7 +148,7 @@ simulation, and a flag indicating if any data was missing</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements">
 <span class="sig-name descname"><span class="pre">get_data_for_placements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_for_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – Where to get the data from.</p></li>
 <li><p><strong>progress</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><em>None</em>) – How to measure/display the progress.</p></li>
@@ -179,7 +180,7 @@ simulation, and a flag indicating if any data was missing</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sender_vertices</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.sender_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>The vertices which are buffered.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost" title="spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost">AbstractSendsBuffersFromHost</a>)</p>
 </dd>
 </dl>
@@ -240,7 +241,7 @@ simulation, and a flag indicating if any data was missing</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -269,7 +270,7 @@ simulation, and a flag indicating if any data was missing</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

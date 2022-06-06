@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>spinn_front_end_common.utilities.scp package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,20 +48,20 @@
           <div class="body" role="main">
             
   <section id="spinn-front-end-common-utilities-scp-package">
-<h1>spinn_front_end_common.utilities.scp package<a class="headerlink" href="#spinn-front-end-common-utilities-scp-package" title="Permalink to this headline">¶</a></h1>
+<h1>spinn_front_end_common.utilities.scp package<a class="headerlink" href="#spinn-front-end-common-utilities-scp-package" title="Permalink to this heading">¶</a></h1>
 <section id="module-spinn_front_end_common.utilities.scp">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.scp" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.scp" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.scp.ClearIOBUFProcess">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.scp.</span></span><span class="sig-name descname"><span class="pre">ClearIOBUFProcess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_selector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.scp.ClearIOBUFProcess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractMultiConnectionProcess</span></code></p>
 <p>How to clear the IOBUF buffers of a set of cores.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The cores must be using the simulation interface.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
 </dd>
 </dl>
@@ -68,7 +69,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.scp.ClearIOBUFProcess.clear_iobuf">
 <span class="sig-name descname"><span class="pre">clear_iobuf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_subsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/clear_iobuf_process.html#ClearIOBUFProcess.clear_iobuf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.ClearIOBUFProcess.clear_iobuf" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a>) – </p></li>
 <li><p><strong>n_cores</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Defaults to the number of cores in <cite>core_subsets</cite>.</p></li>
@@ -82,14 +83,14 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.scp.UpdateRuntimeProcess">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.scp.</span></span><span class="sig-name descname"><span class="pre">UpdateRuntimeProcess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connection_selector</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.scp.UpdateRuntimeProcess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">spinnman.processes.abstract_multi_connection_process.AbstractMultiConnectionProcess</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractMultiConnectionProcess</span></code></p>
 <p>How to update the target running time of a set of cores.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The cores must be using the simulation interface.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
 </dd>
 </dl>
@@ -97,7 +98,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.scp.UpdateRuntimeProcess.update_runtime">
 <span class="sig-name descname"><span class="pre">update_runtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infinite_run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_subsets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sync_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/scp/update_runtime_process.html#UpdateRuntimeProcess.update_runtime"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.scp.UpdateRuntimeProcess.update_runtime" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>current_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -157,7 +158,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -186,7 +187,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

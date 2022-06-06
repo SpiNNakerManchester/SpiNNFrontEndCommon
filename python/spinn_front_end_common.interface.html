@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>spinn_front_end_common.interface package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -46,9 +47,9 @@
           <div class="body" role="main">
             
   <section id="spinn-front-end-common-interface-package">
-<h1>spinn_front_end_common.interface package<a class="headerlink" href="#spinn-front-end-common-interface-package" title="Permalink to this headline">¶</a></h1>
+<h1>spinn_front_end_common.interface package<a class="headerlink" href="#spinn-front-end-common-interface-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html">spinn_front_end_common.interface.buffer_management package</a><ul>
@@ -94,18 +95,18 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-spinn_front_end_common.interface.abstract_spinnaker_base">
-<span id="spinn-front-end-common-interface-abstract-spinnaker-base-module"></span><h2>spinn_front_end_common.interface.abstract_spinnaker_base module<a class="headerlink" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base" title="Permalink to this headline">¶</a></h2>
+<span id="spinn-front-end-common-interface-abstract-spinnaker-base-module"></span><h2>spinn_front_end_common.interface.abstract_spinnaker_base module<a class="headerlink" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base" title="Permalink to this heading">¶</a></h2>
 <p>main interface for the SpiNNaker tools</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></span><span class="sig-name descname"><span class="pre">AbstractSpinnakerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph_label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_socket_addresses</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_front_end_common.interface.config_handler.ConfigHandler</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigHandler</span></code></a></p>
 <p>Main interface into the tools logic flow.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v6.0)"><em>ExecutableFinder</em></a>) – How to find APLX files to deploy to SpiNNaker</p></li>
 <li><p><strong>graph_label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – A label for the overall application graph</p></li>
@@ -119,7 +120,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge">
 <span class="sig-name descname"><span class="pre">add_application_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge_to_add</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_identifier</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>edge_to_add</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v6.0)"><em>ApplicationEdge</em></a>) – the edge to add to the graph</p></li>
 <li><p><strong>partition_identifier</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the partition identifier for the outgoing edge partition</p></li>
@@ -132,10 +133,10 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex">
 <span class="sig-name descname"><span class="pre">add_application_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_application_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_application_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – the vertex to add to the graph</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – when both graphs contain vertices</p></li>
 <li><p><strong>PacmanConfigurationException</strong> – If there is an attempt to add the same vertex more than once</p></li>
@@ -149,7 +150,7 @@
 <span class="sig-name descname"><span class="pre">add_live_packet_gatherer_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_record_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds parameters for a new LPG if needed, or adds to the tracker             for parameters. Note that LPGs can be inserted to track behaviour             either at the application graph level or at the machine graph             level, but not both at the same time.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) – params to look for a LPG</p></li>
 <li><p><strong>vertex_to_record_from</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – the vertex that needs to send to a given LPG</p></li>
@@ -163,7 +164,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge">
 <span class="sig-name descname"><span class="pre">add_machine_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_edge" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>edge</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v6.0)"><em>MachineEdge</em></a>) – the edge to add to the graph</p></li>
 <li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the partition identifier for the outgoing edge partition</p></li>
@@ -176,10 +177,10 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex">
 <span class="sig-name descname"><span class="pre">add_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_machine_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>) – the vertex to add to the graph</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – when both graphs contain vertices</p></li>
 <li><p><strong>PacmanConfigurationException</strong> – If there is an attempt to add the same vertex more than once</p></li>
@@ -193,7 +194,7 @@
 <span class="sig-name descname"><span class="pre">add_socket_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.add_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_socket_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add the address of a socket used in the run notification protocol.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>) – The address of the database socket</p>
 </dd>
 </dl>
@@ -207,7 +208,7 @@
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a></p>
 </dd>
 </dl>
@@ -218,7 +219,7 @@
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">buffer_manager</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.buffer_manager" title="Permalink to this definition">¶</a></dt>
 <dd><p>The buffer manager being used for loading/extracting buffers</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager"><em>BufferManager</em></a></p>
 </dd>
 </dl>
@@ -246,7 +247,7 @@ to read this data from.</p>
 <p>Which alloactor is run depends on the cfg info_allocator value</p>
 <p>This method is the entry point for adding a new Info Allocator</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – if the cfg info_allocator value is
 unexpected</p>
 </dd>
@@ -258,7 +259,7 @@ unexpected</p>
 <span class="sig-name descname"><span class="pre">exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.exception_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handler of exceptions</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>exctype</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – the type of exception received</p></li>
 <li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#Exception" title="(in Python v3.8)"><em>Exception</em></a>) – the value of the exception</p></li>
@@ -272,7 +273,7 @@ unexpected</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fixed_routes</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.fixed_routes" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)"><em>FixedRouteEntry</em></a>)</p>
 </dd>
 </dl>
@@ -283,7 +284,7 @@ unexpected</p>
 <span class="sig-name descname"><span class="pre">get_current_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.get_current_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_current_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the current simulation time.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -294,10 +295,10 @@ unexpected</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_number_of_available_cores_on_machine</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.get_number_of_available_cores_on_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of available cores on the machine after taking            into account preallocated resources.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>number of available cores</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -308,7 +309,7 @@ unexpected</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_ran</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.has_ran" title="Permalink to this definition">¶</a></dt>
 <dd><p>Whether the simulation has executed anything at all.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -331,13 +332,13 @@ unexpected</p>
 <dd><p>Lists the keys of the data currently available.</p>
 <p>Keys exposed this way are limited to the ones needed for injection</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of the keys for which there is data</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>)</p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#KeyError" title="(in Python v3.8)"><strong>KeyError</strong></a> – Amethod this call depends on could raise this
 exception, but that indicates a programming mismatch</p>
 </dd>
@@ -349,7 +350,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">machine</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>The python machine description object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
 </dd>
 </dl>
@@ -367,7 +368,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_calls_to_run</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.n_calls_to_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number for this or the next end_user call to run</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -378,7 +379,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_loops</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.n_loops" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number for this or the net loop within an end_user run</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a> or None</p>
 </dd>
 </dl>
@@ -389,7 +390,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">no_machine_time_steps</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.no_machine_time_steps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of machine time steps.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -400,7 +401,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">none_labelled_edge_count</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.none_labelled_edge_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times edges have not been labelled.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -410,7 +411,7 @@ exception, but that indicates a programming mismatch</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">original_application_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_application_graph" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a></p>
 </dd>
 </dl>
@@ -420,7 +421,7 @@ exception, but that indicates a programming mismatch</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">original_machine_graph</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.original_machine_graph" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a></p>
 </dd>
 </dl>
@@ -431,7 +432,7 @@ exception, but that indicates a programming mismatch</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">placements</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Where machine vertices are placed on the machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a></p>
 </dd>
 </dl>
@@ -447,7 +448,7 @@ exception, but that indicates a programming mismatch</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">routing_infos</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.routing_infos" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a></p>
 </dd>
 </dl>
@@ -458,7 +459,7 @@ exception, but that indicates a programming mismatch</p>
 <span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sync_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a simulation for a fixed amount of time</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the run duration in milliseconds.</p></li>
 <li><p><strong>sync_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – If not 0, this specifies that the simulation should pause after
@@ -474,7 +475,7 @@ called for the simulation to continue.</p></li>
 <span class="sig-name descname"><span class="pre">run_until_complete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.run_until_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run a simulation until it completes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n_steps</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – If not None, this specifies that the simulation should be
 requested to run for the given number of steps.  The host will
 still wait until the simulation itself says it has completed</p>
@@ -492,10 +493,10 @@ still wait until the simulation itself says it has completed</p>
 requirements have be computed based on the graph.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of boards required</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p>ConfigurationException
 If any machine requirements have already been set</p>
 </dd>
@@ -522,7 +523,7 @@ If any machine requirements have already been set</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tags</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.tags" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a></p>
 </dd>
 </dl>
@@ -533,7 +534,7 @@ If any machine requirements have already been set</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">transceiver</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.transceiver" title="Permalink to this definition">¶</a></dt>
 <dd><p>How to talk to the machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a></p>
 </dd>
 </dl>
@@ -544,7 +545,7 @@ If any machine requirements have already been set</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_virtual_board</span></span><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.use_virtual_board" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if this run is using a virtual machine</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -560,7 +561,7 @@ If any machine requirements have already been set</p>
 
 </section>
 <section id="module-spinn_front_end_common.interface.config_handler">
-<span id="spinn-front-end-common-interface-config-handler-module"></span><h2>spinn_front_end_common.interface.config_handler module<a class="headerlink" href="#module-spinn_front_end_common.interface.config_handler" title="Permalink to this headline">¶</a></h2>
+<span id="spinn-front-end-common-interface-config-handler-module"></span><h2>spinn_front_end_common.interface.config_handler module<a class="headerlink" href="#module-spinn_front_end_common.interface.config_handler" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_handler.</span></span><span class="sig-name descname"><span class="pre">ConfigHandler</span></span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="Permalink to this definition">¶</a></dt>
@@ -570,7 +571,7 @@ If any machine requirements have already been set</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">
 <span class="sig-name descname"><span class="pre">child_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">child_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">must_create</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.child_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parent</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
 <li><p><strong>child_name</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
@@ -579,13 +580,13 @@ its parents) must be created by this call, and an exception will be
 thrown if this fails.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The fully qualified name of the child folder.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#OSError" title="(in Python v3.8)"><strong>OSError</strong></a> – if the directory existed ahead of time and creation
 was required by the user</p>
 </dd>
@@ -597,7 +598,7 @@ was required by the user</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">machine_time_step</span></span><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timestep, in microseconds</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -608,7 +609,7 @@ was required by the user</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">machine_time_step_ms</span></span><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timestep, in milli_seconds</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -619,7 +620,7 @@ was required by the user</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">machine_time_step_per_ms</span></span><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.machine_time_step_per_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The machine timesteps in a milli_second</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -630,7 +631,7 @@ was required by the user</p>
 <span class="sig-name descname"><span class="pre">set_up_timings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.set_up_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set up timings of the machine</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_time_step</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – An explicitly specified time step for the machine.  If None,
 the value is read from the config</p></li>
@@ -667,7 +668,7 @@ folders that are finished.
 
 </section>
 <section id="module-spinn_front_end_common.interface.java_caller">
-<span id="spinn-front-end-common-interface-java-caller-module"></span><h2>spinn_front_end_common.interface.java_caller module<a class="headerlink" href="#module-spinn_front_end_common.interface.java_caller" title="Permalink to this headline">¶</a></h2>
+<span id="spinn-front-end-common-interface-java-caller-module"></span><h2>spinn_front_end_common.interface.java_caller module<a class="headerlink" href="#module-spinn_front_end_common.interface.java_caller" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.java_caller.</span></span><span class="sig-name descname"><span class="pre">JavaCaller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_call</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_spinnaker_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_properties</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_jar_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller" title="Permalink to this definition">¶</a></dt>
@@ -677,7 +678,7 @@ This includes the work of preparing data for transmitting to Java and        bac
 <p>This separates the choices of how to call the Java batch vs streaming,        jar locations, parameters, etc from the rest of the python code.</p>
 <p>Creates a java caller and checks the user/config parameters.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>json_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The location where the machine JSON is written.</p></li>
 <li><p><strong>java_call</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Call to start java. Including the path if required.</p></li>
@@ -691,7 +692,7 @@ If <cite>None</cite> the assumption is that it is the same parent directory as
 For example <code class="docutils literal notranslate"><span class="pre">-Dlogging.level=DEBUG</span></code></p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – if simple parameter checking fails.</p>
 </dd>
 </dl>
@@ -703,10 +704,10 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>use_monitors</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>PacmanExternalAlgorithmFailedToCompleteException</strong> – On failure of the Java code.</p>
 </dd>
 </dl>
@@ -717,7 +718,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 <span class="sig-name descname"><span class="pre">execute_data_specification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes all the data specs, uploading the result to the machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PacmanExternalAlgorithmFailedToCompleteException</strong> – On failure of the Java code.</p>
 </dd>
 </dl>
@@ -731,7 +732,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PacmanExternalAlgorithmFailedToCompleteException</strong> – On failure of the Java code.</p>
 </dd>
 </dl>
@@ -745,7 +746,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 </dd>
 </dl>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PacmanExternalAlgorithmFailedToCompleteException</strong> – On failure of the Java code.</p>
 </dd>
 </dl>
@@ -755,7 +756,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">
 <span class="sig-name descname"><span class="pre">set_advanced_monitors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gathers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_advanced_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The placements of the vertices</p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – The tags assigned to the vertices</p></li>
@@ -763,7 +764,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 <li><p><strong>packet_gathers</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex"><em>DataSpeedUpPacketGatherMachineVertex</em></a><em>)</em>) – Where the packet gatherers are</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
@@ -774,7 +775,7 @@ For example <code class="docutils literal notranslate"><span class="pre">-Dloggi
 <span class="sig-name descname"><span class="pre">set_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Passes the machine in leaving this class to decide pass it to Java.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – A machine Object</p>
 </dd>
 </dl>
@@ -795,7 +796,7 @@ database.</p>
 <p>Currently this method uses JSON but that may well change to using the
 database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The Placements Object</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – The Transceiver</p></li>
@@ -809,7 +810,7 @@ database.</p>
 <span class="sig-name descname"><span class="pre">set_report_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">report_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.set_report_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder" title="Permalink to this definition">¶</a></dt>
 <dd><p>Passes the database file in.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Path to directory with SQLite databases and into which java will
 write.</p>
 </dd>
@@ -820,7 +821,7 @@ write.</p>
 
 </section>
 <section id="module-spinn_front_end_common.interface">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -872,7 +873,7 @@ write.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -900,7 +901,7 @@ write.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

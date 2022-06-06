@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>spinn_front_end_common.utilities.utility_objs package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,9 +48,9 @@
           <div class="body" role="main">
             
   <section id="spinn-front-end-common-utilities-utility-objs-package">
-<h1>spinn_front_end_common.utilities.utility_objs package<a class="headerlink" href="#spinn-front-end-common-utilities-utility-objs-package" title="Permalink to this headline">¶</a></h1>
+<h1>spinn_front_end_common.utilities.utility_objs package<a class="headerlink" href="#spinn-front-end-common-utilities-utility-objs-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.html">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages package</a><ul>
@@ -64,11 +65,11 @@
 </div>
 </section>
 <section id="module-spinn_front_end_common.utilities.utility_objs">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.utility_objs" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.utility_objs" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.DPRIFlags">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">DPRIFlags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.DPRIFlags" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>SCP Dropped Packet Reinjection (DPRI) packet type flags</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.DPRIFlags.FIXED_ROUTE">
@@ -95,10 +96,10 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ExecutableFinder">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">ExecutableFinder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_search_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_common_binaries_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">spinn_utilities.executable_finder.ExecutableFinder</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutableFinder</span></code></a></p>
 <p>Manages a set of folders in which to search for binaries, and allows        for binaries to be discovered within this path. This adds a default        location to look to the base class.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>binary_search_paths</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – The initial set of folders to search for binaries.</p></li>
 <li><p><strong>include_common_binaries_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If True (i.e. the default), the
@@ -116,7 +117,7 @@ path will be looked in last.</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ExecutableType">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">ExecutableType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
 <p>The different types of executable from the perspective of how they        are started and controlled.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ExecutableType.NO_APPLICATION">
@@ -151,7 +152,7 @@ path will be looked in last.</p></li>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Parameter holder for LPGs so that they can be instantiated at a        later date.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If the parameters passed are known to be an invalid combination.</p>
 </dd>
 </dl>
@@ -160,7 +161,7 @@ path will be looked in last.</p></li>
 <span class="sig-name descname"><span class="pre">get_iptag_resource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/live_packet_gather_parameters.html#LivePacketGatherParameters.get_iptag_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.get_iptag_resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a description of the IPtag that the LPG for these parameters             will require.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a></p>
 </dd>
 </dl>
@@ -258,7 +259,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_cores</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.active_cores" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enumeration of the coordinates of the cores that can report active            energy usage.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
@@ -269,7 +270,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_routers</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.active_routers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enumeration of the coordinates of the routers that can report            active energy usage.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
@@ -281,7 +282,7 @@ path will be looked in last.</p></li>
 <dd><p>Adds energy for a particular core. It can be called multiple            times per core.</p>
 <p>Only intended to be used during construction of this object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -298,7 +299,7 @@ path will be looked in last.</p></li>
 <dd><p>Adds energy for a particular router. It can be called multiple            times per router.</p>
 <p>Only intended to be used during construction of this object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -313,7 +314,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">baseline_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.baseline_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Baseline/idle energy used, in Joules. This is used by things like            the frames the SpiNNaker boards are held in, the cooling system,            etc.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -324,7 +325,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">booted_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.booted_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken when the machine is booted, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -335,7 +336,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chip_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.chip_energy_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used by all SpiNNaker chips during active simulation            running, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -346,7 +347,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_gen_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.data_gen_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used during the data generation phase, in Joules. Assumes            that the SpiNNaker system has been shut down.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -357,7 +358,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_gen_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.data_gen_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken by data generation phase, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -368,7 +369,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exec_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.exec_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken by active simulation running, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -379,7 +380,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fpga_exec_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.fpga_exec_energy_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used by all FPGAs during active simulation running, in            Joules. This is <em>included</em> in the total FPGA energy.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -390,7 +391,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fpga_total_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.fpga_total_energy_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used by all FPGAs in total, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -402,14 +403,14 @@ path will be looked in last.</p></li>
 <dd><p>Energy used (above idle baseline) by a particular core, in Joules.</p>
 <p>Unused cores always report 0.0 for this.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -421,13 +422,13 @@ path will be looked in last.</p></li>
 <dd><p>Energy used (above idle baseline) by a particular router, in             Joules.</p>
 <p>Unused routers always report 0.0 for this.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -438,7 +439,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loading_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.loading_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used during data loading, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -449,7 +450,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loading_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.loading_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken by data loading, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -460,7 +461,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.mapping_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used during the mapping phase, in Joules. Assumes that            the SpiNNaker system has been shut down.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -471,7 +472,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.mapping_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken by the mapping phase, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -482,7 +483,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_chips</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.num_chips" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of chips used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -493,7 +494,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_cores</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.num_cores" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of cores used, including for SCAMP.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -504,7 +505,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_fpgas</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.num_fpgas" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of FPGAs used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -515,7 +516,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_frames</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.num_frames" title="Permalink to this definition">¶</a></dt>
 <dd><p>The total number of frames used.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -526,7 +527,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">packet_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.packet_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used by packet transmission, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -537,7 +538,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">saving_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.saving_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Energy used during data extraction, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -548,7 +549,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">saving_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.saving_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken by data extraction, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -559,7 +560,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.total_energy_joules" title="Permalink to this definition">¶</a></dt>
 <dd><p>Total of all energy costs, in Joules.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -570,7 +571,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_time_secs</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.total_time_secs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time taken in total, in seconds.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
@@ -584,7 +585,7 @@ path will be looked in last.</p></li>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Represents a status information report from dropped packet reinjection.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytes" title="(in Python v3.8)"><em>bytes</em></a>) – The data containing the information</p></li>
 <li><p><strong>offset</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The offset in the data where the information starts</p></li>
@@ -596,7 +597,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_fixed_route</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_fixed_route" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if re-injection of fixed-route packets is enabled</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -607,7 +608,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_multicast</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_multicast" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if re-injection of multicast packets is enabled</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -618,7 +619,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_nearest_neighbour</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_nearest_neighbour" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if re-injection of nearest neighbour packets is enabled</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -629,7 +630,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_point_to_point</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_point_to_point" title="Permalink to this definition">¶</a></dt>
 <dd><p>True if re-injection of point-to-point packets is enabled</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
@@ -640,7 +641,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_dropped_packet_overflows</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packet_overflows" title="Permalink to this definition">¶</a></dt>
 <dd><p>Of the n_dropped_packets received, how many were lost due to not            having enough space in the queue of packets to reinject</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -651,7 +652,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_dropped_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of packets dropped by the router and received by            the reinjection functionality (may not fit in the queue though)</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -662,7 +663,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_link_dumps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_link_dumps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times that when a dropped packet was caused due to            a link failing to take the packet.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -673,7 +674,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_missed_dropped_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_missed_dropped_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times that when a dropped packet was read it was            found that another one or more packets had also been dropped,            but had been missed</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -684,7 +685,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_processor_dumps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_processor_dumps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of times that when a dropped packet was caused due to            a processor failing to take the packet.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -695,7 +696,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_reinjected_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_reinjected_packets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Of the n_dropped_packets received, how many packets were            successfully re injected</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -706,7 +707,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">router_wait1_timeout</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.router_wait1_timeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>The WAIT1 timeout value of the router, in cycles.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -717,7 +718,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">router_wait1_timeout_parameters</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.router_wait1_timeout_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>The WAIT1 timeout value of the router as mantissa and exponent.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
 </dd>
 </dl>
@@ -728,7 +729,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">router_wait2_timeout</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.router_wait2_timeout" title="Permalink to this definition">¶</a></dt>
 <dd><p>The WAIT2 timeout value of the router, in cycles.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -739,7 +740,7 @@ path will be looked in last.</p></li>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">router_wait2_timeout_parameters</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.router_wait2_timeout_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>The WAIT2 timeout value of the router as mantissa and exponent.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
 </dd>
 </dl>
@@ -794,7 +795,7 @@ path will be looked in last.</p></li>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -823,7 +824,7 @@ path will be looked in last.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>

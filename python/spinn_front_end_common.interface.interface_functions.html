@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
     <title>spinn_front_end_common.interface.interface_functions package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,6 +12,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -47,9 +48,9 @@
           <div class="body" role="main">
             
   <section id="spinn-front-end-common-interface-interface-functions-package">
-<h1>spinn_front_end_common.interface.interface_functions package<a class="headerlink" href="#spinn-front-end-common-interface-interface-functions-package" title="Permalink to this headline">¶</a></h1>
+<h1>spinn_front_end_common.interface.interface_functions package<a class="headerlink" href="#spinn-front-end-common-interface-interface-functions-package" title="Permalink to this heading">¶</a></h1>
 <section id="module-spinn_front_end_common.interface.interface_functions">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">FindApplicationChipsUsed</span></span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed" title="Permalink to this definition">¶</a></dt>
@@ -60,10 +61,10 @@
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/find_application_chips_used.html#FindApplicationChipsUsed.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds how many application chips there were and the cost on             each chip</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – placements</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>a tuple with 4 elements.</p>
 <ol class="arabic simple">
 <li><p>how many chips were used</p></li>
@@ -73,7 +74,7 @@
 </ol>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a>)</p>
 </dd>
 </dl>
@@ -90,16 +91,16 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.PreAllocateForBitFieldRouterCompressor.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/pre_allocate_for_bit_field_router_compressor.html#PreAllocateForBitFieldRouterCompressor.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.PreAllocateForBitFieldRouterCompressor.__call__" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
 <li><p><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a>) – other preallocated resources</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>preallocated resources</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a></p>
 </dd>
 </dl>
@@ -112,14 +113,14 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">application_finisher</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_types</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.application_finisher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handles finishing the running of an application, collecting the        status of the cores that the application was running on.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 <li><p><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>executable_types</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a><em>)</em>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException" title="spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException"><strong>ExecutableFailedToStopException</strong></a> – </p>
 </dd>
 </dl>
@@ -130,7 +131,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">application_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notification_interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_sync_changes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_until_complete</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.application_runner" title="Permalink to this definition">¶</a></dt>
 <dd><p>Ensures all cores are initialised correctly, ran, and completed        successfully.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>buffer_manager</strong> (<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager"><em>BufferManager</em></a>) – </p></li>
 <li><p><strong>notification_interface</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol"><em>NotificationProtocol</em></a>) – </p></li>
@@ -144,13 +145,13 @@
 <li><p><strong>run_until_complete</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Number of synchronisation changes</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – </p>
 </dd>
 </dl>
@@ -161,7 +162,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">buffer_extractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.buffer_extractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts data in between runs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
@@ -176,7 +177,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">buffer_manager_creator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_to_chip_mapping</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packet_gather_cores_to_ethernet_connection_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.buffer_manager_creator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a buffer manager.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – </p></li>
@@ -189,7 +190,7 @@
 <li><p><strong>java_caller</strong> (<a class="reference internal" href="spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller" title="spinn_front_end_common.interface.java_caller.JavaCaller"><em>JavaCaller</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager">BufferManager</a></p>
 </dd>
 </dl>
@@ -200,7 +201,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">chip_io_buf_clearer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_types</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_clearer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the logging output buffer of an application running on a        SpiNNaker machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>executable_types</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a><em>)</em>) – </p></li>
@@ -214,17 +215,17 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">chip_io_buf_extractor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_extractor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p></li>
 <li><p><strong>executable_finder</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableFinder" title="spinn_front_end_common.utilities.utility_objs.ExecutableFinder"><em>ExecutableFinder</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>error_entries, warn_entries</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>),<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
@@ -240,7 +241,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">chip_runtime_updater</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_until_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_sync_steps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.chip_runtime_updater" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the runtime of an application running on a SpiNNaker machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -258,7 +259,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">compute_energy_used</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_allocation_controller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.compute_energy_used" title="Permalink to this definition">¶</a></dt>
 <dd><p>This algorithm does the actual work of computing energy used by a        simulation (or other application) running on SpiNNaker.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – </p></li>
@@ -275,7 +276,7 @@
 <li><p><strong>machine_allocation_controller</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController"><em>MachineAllocationController</em></a>) – (optional)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed" title="spinn_front_end_common.utilities.utility_objs.PowerUsed">PowerUsed</a></p>
 </dd>
 </dl>
@@ -286,7 +287,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">create_notification_protocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">socket_addresses</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.create_notification_protocol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds the notification protocol for GUI and external device         interaction.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>socket_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)"><em>set</em></a><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a><em>)</em>) – Where to notify.</p></li>
 <li><p><strong>database_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
@@ -300,7 +301,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">database_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_n_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.database_interface" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes a database of the graph(s) and other information.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – </p></li>
@@ -314,10 +315,10 @@
 <li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Database interface, where the database is located</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(DatabaseInterface, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>)</p>
 </dd>
 </dl>
@@ -333,13 +334,13 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">edge_to_n_keys_mapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.edge_to_n_keys_mapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Works out the number of keys needed for each edge.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.DictBasedMachinePartitionNKeysMap" title="(in PACMAN v6.0)"><em>DictBasedMachinePartitionNKeysMap</em></a></p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If no graph is available</p>
 </dd>
 </dl>
@@ -350,7 +351,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">energy_provenance_reporter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">power_used</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.energy_provenance_reporter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the power usage information into provenance data.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>power_used</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed" title="spinn_front_end_common.utilities.utility_objs.PowerUsed"><em>PowerUsed</em></a>) – The computed basic power consumption information</p>
 </dd>
 </dl>
@@ -361,7 +362,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">execute_application_data_specs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsg_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_cores_to_ethernet_connection_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.execute_application_data_specs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the data specs for all non-system targets.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the python representation of the SpiNNaker machine</p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the spinnman instance</p></li>
@@ -382,7 +383,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">execute_system_data_specs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsg_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">java_caller</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.execute_system_data_specs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execute the data specs for all system targets.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the spinnman instance</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the python representation of the spinnaker machine</p></li>
@@ -400,14 +401,14 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_binary_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">executable_finder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_binary_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extracts binaries to be executed.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
 <li><p><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p></li>
 <li><p><strong>executable_finder</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.executable_finder.ExecutableFinder" title="(in SpiNNUtils v6.0)"><em>ExecutableFinder</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>ExecutableTargets</p>
 </dd>
 </dl>
@@ -417,7 +418,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.graph_data_specification_writer">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_data_specification_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_n_timesteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_data_specification_writer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – placements of machine graph to cores</p></li>
 <li><p><strong>hostname</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – SpiNNaker machine name</p></li>
@@ -426,13 +427,13 @@
 <li><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – the optional order in which placements should be examined</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>DSG targets</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>DataSpecificationTargets</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If the DSG asks to use more SDRAM than is available.</p>
 </dd>
 </dl>
@@ -443,7 +444,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_measurer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plan_n_timesteps</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_measurer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Works out how many chips a machine graph needs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – The machine_graph to measure.</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – The machine with respect to which to partition the application
@@ -451,10 +452,10 @@ graph.</p></li>
 <li><p><strong>plan_n_timesteps</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of timesteps to plan for.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The size of the graph in number of chips.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
@@ -465,7 +466,7 @@ graph.</p></li>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets provenance information from the graphs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – The machine graph to inspect</p></li>
 <li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – The optional application graph</p></li>
@@ -479,7 +480,7 @@ graph.</p></li>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_allocator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request a machine from the HBP remote access server that will fit        a number of chips.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p></li>
 <li><p><strong>n_chips</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of chips required.
@@ -487,16 +488,16 @@ Only used if n_boards is None</p></li>
 <li><p><strong>n_boards</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of boards required</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>machine name, machine version, BMP details (if any),
 reset on startup flag, auto-detect BMP, SCAMP connection details,
 boot port, allocation controller</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)">object</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)">object</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)">object</a>,
 <a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController">MachineAllocationController</a>)</p>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman/#pacman.exceptions.PacmanConfigurationException" title="(in PACMAN v6.0)"><strong>PacmanConfigurationException</strong></a> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
 </dd>
 </dl>
@@ -507,10 +508,10 @@ boot port, allocation controller</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_max_machine_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_max_machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a virtual machine of the width and height of the maximum        machine a given HBP server can generate.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
 </dd>
 </dl>
@@ -521,7 +522,7 @@ boot port, allocation controller</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">host_based_bit_field_router_compressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_infos</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_based_bit_field_router_compressor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Entry point when using the PACMANAlgorithmExecutor</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – routing tables (uncompressed and unordered)</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – SpiNNMachine instance</p></li>
@@ -531,10 +532,10 @@ boot port, allocation controller</p>
 <li><p><strong>routing_infos</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a>) – routing information</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>compressed routing table entries</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
@@ -545,7 +546,7 @@ boot port, allocation controller</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_chip_power_monitors_to_graphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_chip_power_monitors_to_graphs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds chip power monitor vertices on Ethernet connected chips as        required.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the machine graph</p></li>
@@ -561,7 +562,7 @@ boot port, allocation controller</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_edges_to_extra_monitor_functionality</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_ethernet_connected_chip_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_edges_to_extra_monitor_functionality" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts edges between vertices who use MC speed up and its local            MC data gatherer.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the machine graph instance</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements</p></li>
@@ -578,7 +579,7 @@ boot port, allocation controller</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_edges_to_live_packet_gatherers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_packet_gatherers_to_vertex_mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_keys_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_edges_to_live_packet_gatherers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add edges from the recorded vertices to the local Live PacketGatherers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_parameters</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a><em>,
 </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em><em>)</em><em>)</em><em>)</em>) – the set of parameters</p></li>
@@ -601,7 +602,7 @@ with it</p></li>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_extra_monitor_vertices_to_graphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts the extra monitor vertices into the graph that correspond to    the extra monitor cores required.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – spinnMachine instance</p></li>
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – machine graph</p></li>
@@ -609,12 +610,12 @@ with it</p></li>
 <li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – app graph</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>vertex to Ethernet connection map,
 list of extra_monitor_vertices,
 vertex_to_chip_map</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">DataSpeedUpPacketGatherMachineVertex</a>),
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">ExtraMonitorSupportMachineVertex</a>),
@@ -628,7 +629,7 @@ vertex_to_chip_map</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_live_packet_gatherers_to_graphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">application_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add LPG vertices on Ethernet connected chips as required.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_parameters</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a><em>,
 </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em><em>)</em><em>)</em><em>)</em>) – the Live Packet Gatherer parameters requested by the script</p></li>
@@ -637,11 +638,11 @@ vertex_to_chip_map</p>
 <li><p><strong>application_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – the application graph</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>mapping between LPG parameters and LPG application and
 machine vertices</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters">LivePacketGatherParameters</a>,
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGather" title="spinn_front_end_common.utility_models.LivePacketGather">LivePacketGather</a> or None,
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">LivePacketGatherMachineVertex</a>)))</p>
@@ -654,7 +655,7 @@ machine vertices</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">load_app_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.load_app_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Go through the executable targets and load each binary to everywhere         and then send a start request to the cores that actually use it.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -669,7 +670,7 @@ machine vertices</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">load_fixed_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.load_fixed_routes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a set of fixed routes onto a SpiNNaker machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>,</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)"><em>FixedRouteEntry</em></a><em>)</em>) – </p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
@@ -684,7 +685,7 @@ machine vertices</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">load_sys_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.load_sys_images" title="Permalink to this definition">¶</a></dt>
 <dd><p>Go through the executable targets and load each binary to everywhere         and then send a start request to the cores that actually use it.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -749,7 +750,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 </pre></div>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – machine graph.</p></li>
 <li><p><strong>n_keys_map</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.AbstractMachinePartitionNKeysMap" title="(in PACMAN v6.0)"><em>AbstractMachinePartitionNKeysMap</em></a>) – the map of partitions to n keys.</p></li>
@@ -764,13 +765,13 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">locate_executable_start_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.locate_executable_start_type" title="Permalink to this definition">¶</a></dt>
 <dd><p>Discovers where applications of particular types need to be launched.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a> or None)</p>
 </dd>
 </dl>
@@ -781,7 +782,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">machine_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hostname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bmp_details</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">board_version</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_detect_bmp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scamp_connection_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_machine_on_start_up</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a transceiver and a machine object.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>hostname</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the hostname or IP address of the SpiNNaker machine</p></li>
 <li><p><strong>bmp_details</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the details of the BMP connections</p></li>
@@ -795,10 +796,10 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <li><p><strong>reset_machine_on_start_up</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Transceiver, and description of machine it is connected to</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>,
 <a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>)</p>
 </dd>
@@ -810,7 +811,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">placements_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets provenance information from vertices on the machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpiNNMan interface object</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The placements of the vertices</p></li>
@@ -824,7 +825,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">pre_allocate_resources_for_extra_monitor_support</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_extra_monitor_support" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocates resources for the extra monitors.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a>) – resources already preallocated</p>
 </dd>
 </dl>
@@ -835,16 +836,16 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">preallocate_resources_for_chip_power_monitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.preallocate_resources_for_chip_power_monitor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds chip power monitor resources as required</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sampling_frequency</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the frequency of sampling</p></li>
 <li><p><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a>) – other preallocated resources</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>preallocated resources</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a></p>
 </dd>
 </dl>
@@ -855,17 +856,17 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">preallocate_resources_for_live_packet_gatherers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_parameters</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_allocated_resources</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.preallocate_resources_for_live_packet_gatherers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds Live Packet Gatherer resources as required for a machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_parameters</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a><em>,
 </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em><em>)</em><em>)</em><em>)</em>) – the LPG parameters requested by the script</p></li>
 <li><p><strong>pre_allocated_resources</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a>) – other preallocated resources</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>preallocated resources</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.PreAllocatedResourceContainer" title="(in PACMAN v6.0)"><em>PreAllocatedResourceContainer</em></a></p>
 </dd>
 </dl>
@@ -876,7 +877,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">process_partition_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.process_partition_constraints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds constraints to partitions if the vertices at either end of the        partition request it.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p>
 </dd>
 </dl>
@@ -887,7 +888,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">profile_data_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.profile_data_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all the profiling data recorded by vertices and writes it to        files.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpiNNMan interface object</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The placements of the vertices</p></li>
@@ -901,14 +902,14 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">read_routing_tables_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.read_routing_tables_from_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads compressed routing tables from a SpiNNaker machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
 <li><p><strong>routing_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – uncompressed routing tables</p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
@@ -918,7 +919,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.router_provenance_gatherer">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">router_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_vertices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.router_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpiNNMan interface object</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine</p></li>
@@ -935,7 +936,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">routing_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.routing_setup" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialises the routers. Note that this does not load any routes into    them.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p></li>
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
@@ -950,7 +951,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">routing_table_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">router_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.routing_table_loader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads routes into initialised routers.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
@@ -971,14 +972,14 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chips</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_boards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_allocator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Request a machine from a SPALLOC server that will fit the given        number of chips.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_chips</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The number of chips required.
 IGNORED if n_boards is not None</p></li>
 <li><p><strong>n_boards</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The number of boards required</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, None, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, None, None,
 <a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController">MachineAllocationController</a>)</p>
 </dd>
@@ -990,10 +991,10 @@ IGNORED if n_boards is not None</p></li>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_max_machine_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_max_machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a maximum virtual machine a given allocation server can generate.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A virtual machine</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
 </dd>
 </dl>
@@ -1004,18 +1005,18 @@ IGNORED if n_boards is not None</p></li>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">system_multicast_routing_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_monitor_cores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates routing table entries used by the data in processes with the        extra monitor cores.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – </p></li>
 <li><p><strong>extra_monitor_cores</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>,</em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em>) – </p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>routing tables, destination-to-key map,
 board-locn-to-timeout-key map</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(MulticastRoutingTables,
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
@@ -1027,7 +1028,7 @@ board-locn-to-timeout-key map</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">tags_loader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.tags_loader" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads tags onto the machine.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the transceiver object</p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – the tags object which contains IP and reverse IP tags;
@@ -1042,13 +1043,13 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">virtual_machine_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.virtual_machine_generator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a virtual machine with given dimensions and configuration.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>The virtual machine.</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
 </dd>
-<dt class="field-odd">Raises</dt>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#Exception" title="(in Python v3.8)"><strong>Exception</strong></a> – If given bad arguments</p>
 </dd>
 </dl>
@@ -1100,7 +1101,7 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -1129,7 +1130,7 @@ could be <code class="docutils literal notranslate"><span class="pre">None</span
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
     </div>
   </body>
 </html>
