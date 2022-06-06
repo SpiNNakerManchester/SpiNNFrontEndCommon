@@ -55,4 +55,4 @@ def _write_report(writer, machine, progress_bar):
 
         writer.write(
             "board with IP address : {} : has chips [{}]\n".format(
-                e_chip.ip_address, xyps.join(", ")))
+                e_chip.ip_address, ", ".join(xyps)))
