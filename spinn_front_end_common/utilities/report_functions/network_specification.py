@@ -50,8 +50,9 @@ def _write_report(f, vertex, graph):
     :param ApplicationGraph graph:
     """
     if isinstance(vertex, ApplicationVertex):
-        f.write("Vertex {}, size: {}, model: {}\n".format(
-            vertex.label, vertex.n_atoms, vertex.__class__.__name__))
+        f.write("Vertex {}, size: {}, model: {}, max_atoms{}\n".format(
+            vertex.label, vertex.n_atoms, vertex.__class__.__name__,
+            vertex.get_max_atoms_per_core()))
     else:
         f.write("Vertex {}, model: {}\n".format(
             vertex.label, vertex.__class__.__name__))
