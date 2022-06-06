@@ -50,7 +50,7 @@ def _write_report(writer, machine, progress_bar):
     :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
     """
     for e_chip in progress_bar.over(machine.ethernet_connected_chips):
-        xyps = [f"{chip.x}, {chip.y}, P: {chip.get_physical_core_id(0)}"
+        xyps = [f"({chip.x}, {chip.y}, P: {chip.get_physical_core_id(0)})"
                 for chip in machine.get_chips_by_ethernet(e_chip.x, e_chip.y)]
 
         writer.write(
