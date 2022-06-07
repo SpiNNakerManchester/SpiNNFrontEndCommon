@@ -52,11 +52,13 @@ def _write_report(writer, machine, progress_bar):
     down_links = list()
     down_chips = list()
     down_cores = list()
-    for chip in progress_bar.over(machine.ethernet_connected_chips):
+    for e_chip in progress_bar.over(machine.ethernet_connected_chips):
         existing_chips = list()
-        for x, y in machine.get_xys_by_ethernet(chip.x, chip.y):
+        for x, y in machine.get_xys_by_ethernet(e_chip.x, e_chip.y):
             if machine.is_chip_at(x, y):
-                existing_chips.append((x, y))
+                chip = machine.get_chip_at(x, y)
+                existing_chips.append(
+                    f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
                 down_procs = set(range(18))
                 for proc in chip.processors:
                     down_procs.remove(proc.processor_id)
@@ -64,13 +66,15 @@ def _write_report(writer, machine, progress_bar):
                     down_cores.append((x, y, p))
             else:
                 down_chips.append((x, y))
-        writer.write(
-            f"board with IP address: {chip.ip_address} has chips"
-            f" {existing_chips}\n")
-        for x, y in existing_chips:
             for link in range(6):
                 if not machine.is_link_at(x, y, link):
                     down_links.append((x, y, link))
+
+        existing_chips = ", ".join(existing_chips)
+        writer.write(
+            f"board with IP address: {chip.ip_address} has chips"
+            f" {existing_chips}\n")
+
     down_chips_out = ":".join(f"{x},{y}" for x, y in down_chips)
     down_cores_out = ":".join(f"{x},{y},{p}" for x, y, p in down_cores)
     down_links_out = ":".join(f"{x},{y},{l}" for x, y, l in down_links)
