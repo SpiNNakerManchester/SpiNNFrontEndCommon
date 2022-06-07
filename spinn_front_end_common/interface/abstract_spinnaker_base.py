@@ -438,8 +438,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # update graph label if needed
         if graph_label is None:
             graph_label = "Application_graph"
-        else:
-            graph_label = graph_label
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
@@ -528,6 +526,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
+        self._run_timer = None
 
     def _machine_clear(self):
         self._ipaddress = None
@@ -910,7 +909,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(
+                threading.current_thread(), type(threading.main_thread())):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self._last_except_hook
@@ -1050,7 +1050,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(
+                threading.current_thread(), type(threading.main_thread())):
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
@@ -1484,8 +1485,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                                    "live_packet_recorder_params"):
                 return
             preallocate_resources_for_live_packet_gatherers(
-                self._live_packet_recorder_params,
-                self._machine, pre_allocated_resources)
+                self._live_packet_recorder_params, pre_allocated_resources)
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
@@ -2204,8 +2204,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             # Only needs the x and y of chips with routing tables
-            routing_setup(
-                self._router_tables, self._app_id, self._txrx, self._machine)
+            routing_setup(self._router_tables, self._txrx, self._machine)
 
     def _execute_graph_binary_gatherer(self):
         """
@@ -2612,7 +2611,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs any extra load algorithms
 
         """
-        pass
 
     def _report_memory_on_host(self):
         """
@@ -2841,15 +2839,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 run_time, self._buffer_manager,
                 self._machine_allocation_controller)
 
-            energy_provenance_reporter(power_used, self._placements)
+            energy_provenance_reporter(power_used)
 
             # create energy reporter
             energy_reporter = EnergyReport()
 
             # run energy report
             energy_reporter.write_energy_report(
-                self._placements, self._machine,
-                self._current_run_timesteps,
+                self._placements,  self._current_run_timesteps,
                 self._buffer_manager, power_used)
 
     def _do_provenance_reports(self):
@@ -2857,7 +2854,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs any reports based on provenance
 
         """
-        pass
 
     def _execute_clear_io_buf(self, runtime):
         """

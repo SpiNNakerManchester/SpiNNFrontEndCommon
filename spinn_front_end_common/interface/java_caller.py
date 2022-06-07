@@ -133,8 +133,6 @@ class JavaCaller(object):
                 java_spinnaker_path, "JavaSpiNNaker")
             if os.path.isdir(indirect_path):
                 java_spinnaker_path = indirect_path
-            else:
-                java_spinnaker_path = java_spinnaker_path
         auto_jar_file = os.path.join(
             java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
@@ -345,7 +343,7 @@ class JavaCaller(object):
             json_obj.append(json_gather)
 
         # dump to json file
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
 
         return path
@@ -366,7 +364,7 @@ class JavaCaller(object):
                     json_obj.append(json_p)
 
         # dump to json file
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
 
         return path

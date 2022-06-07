@@ -59,7 +59,7 @@ def tag_allocator_report(tag_infos):
 
     file_name = os.path.join(report_default_directory(), _TAGS_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 len(list(tag_infos.ip_tags)) +
                 len(list(tag_infos.reverse_ip_tags)),
@@ -154,7 +154,7 @@ def _do_router_summary_report(
     time_date_string = time.strftime("%c")
     convert = Router.convert_routing_table_entry_to_spinnaker_route
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write("        Routing Summary Report\n")
             f.write("        ======================\n\n")
             f.write("Generated: {} for target machine '{}'\n\n".format(
@@ -219,7 +219,7 @@ def router_report_from_paths(
     file_name = os.path.join(report_default_directory(), _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
                                    "Generating Routing path report")
 
@@ -282,7 +282,7 @@ def partitioner_report(hostname, graph):
         report_default_directory(), _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(graph.n_vertices,
                                    "Generating partitioner report")
 
@@ -336,7 +336,7 @@ def placement_report_with_application_graph_by_vertex(
         report_default_directory(), _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(graph.n_vertices,
                                    "Generating placement report")
 
@@ -395,7 +395,7 @@ def placement_report_without_application_graph_by_vertex(
         report_default_directory(), _PLACEMENT_VTX_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine_graph.n_vertices,
                                    "Generating placement report")
 
@@ -443,7 +443,7 @@ def placement_report_with_application_graph_by_core(
         report_default_directory(), _PLACEMENT_CORE_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine.n_chips,
                                    "Generating placement by core report")
 
@@ -504,7 +504,7 @@ def placement_report_without_application_graph_by_core(
         report_default_directory(), _PLACEMENT_CORE_SIMPLE_FILENAME)
     time_date_string = time.strftime("%c")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine.chips,
                                    "Generating placement by core report")
 
@@ -563,7 +563,7 @@ def sdram_usage_report_per_chip(
     progress = ProgressBar((len(placements) * 2 + machine.n_chips * 2),
                            "Generating SDRAM usage report")
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write("        Memory Usage by Core\n")
             f.write("        ====================\n\n")
             f.write("Generated: {} for target machine '{}'\n\n".format(
@@ -640,7 +640,7 @@ def routing_info_report(machine_graph, routing_infos):
     """
     file_name = os.path.join(report_default_directory(), _VIRTKEY_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
                                    "Generating Routing info report")
             for vertex in machine_graph.vertices:
@@ -715,7 +715,7 @@ def generate_routing_table(routing_table, top_level_folder):
         routing_table.x, routing_table.y)
     file_path = os.path.join(top_level_folder, file_name)
     try:
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write("Router contains {} entries\n".format(
                 routing_table.number_of_entries))
 
@@ -766,7 +766,7 @@ def generate_comparison_router_report(
     """
     file_name = os.path.join(report_default_directory(), _COMPARED_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(
                 routing_tables.routing_tables,
                 "Generating comparison of router table report")

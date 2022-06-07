@@ -31,7 +31,7 @@ def fixed_route_from_machine_report(transceiver, machine, app_id):
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")
 
-    with open(file_name, "w") as f:
+    with open(file_name, "w", encoding="utf-8") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
             if not chip.virtual:
