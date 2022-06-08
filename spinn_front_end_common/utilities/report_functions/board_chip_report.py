@@ -64,8 +64,11 @@ def _write_report(writer, machine, progress_bar):
                 for proc in chip.processors:
                     down_procs.remove(proc.processor_id)
                 for p in down_procs:
-                    down_cores.append((l_x, l_y, -chip.get_physical_core_id(p),
-                                       e_chip.ip_address))
+                    phys_p = chip.get_physical_core_id(p)
+                    core = p
+                    if phys_p is not None:
+                        core = -phys_p
+                    down_cores.append((l_x, l_y, core, e_chip.ip_address))
             else:
                 down_chips.append((l_x, l_y, e_chip.ip_address))
             for link in range(6):
