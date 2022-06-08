@@ -54,7 +54,8 @@ def _write_report(writer, machine, progress_bar):
     down_cores = list()
     for e_chip in progress_bar.over(machine.ethernet_connected_chips):
         existing_chips = list()
-        for x, y in machine.get_xys_by_ethernet(e_chip.x, e_chip.y):
+        for l_x, l_y in machine.local_xys:
+            x, y = machine.get_global_xy(l_x, l_y, e_chip.x, e_chip.y)
             if machine.is_chip_at(x, y):
                 chip = machine.get_chip_at(x, y)
                 existing_chips.append(
@@ -63,21 +64,33 @@ def _write_report(writer, machine, progress_bar):
                 for proc in chip.processors:
                     down_procs.remove(proc.processor_id)
                 for p in down_procs:
-                    down_cores.append((x, y, p))
+                    down_cores.append((l_x, l_y, -chip.get_physical_core_id(p),
+                                       e_chip.ip_address))
             else:
-                down_chips.append((x, y))
+                down_chips.append((l_x, l_y, e_chip.ip_address))
             for link in range(6):
                 if not machine.is_link_at(x, y, link):
-                    down_links.append((x, y, link))
+                    down_links.append((l_x, l_y, link, e_chip.ip_address))
 
         existing_chips = ", ".join(existing_chips)
         writer.write(
-            f"board with IP address: {chip.ip_address} has chips"
+            f"board with IP address: {e_chip.ip_address} has chips"
             f" {existing_chips}\n")
 
-    down_chips_out = ":".join(f"{x},{y}" for x, y in down_chips)
-    down_cores_out = ":".join(f"{x},{y},{p}" for x, y, p in down_cores)
-    down_links_out = ":".join(f"{x},{y},{l}" for x, y, l in down_links)
+    down_chips_out = ":".join(
+        f"{x},{y},{ip}" for x, y, ip in down_chips)
+    down_cores_out = ":".join(
+        f"{x},{y},{p},{ip}" for x, y, p, ip in down_cores)
+    down_links_out = ":".join(
+        f"{x},{y},{l},{ip}" for x, y, l, ip in down_links)
     writer.write(f"Down chips: {down_chips_out}\n")
     writer.write(f"Down cores: {down_cores_out}\n")
     writer.write(f"Down Links: {down_links_out}\n")
+
+
+def _get_local_xy(self, chip):
+    local_x = ((chip.x - chip.nearest_ethernet_x + self._width)
+               % self._width)
+    local_y = ((chip.y - chip.nearest_ethernet_y + self._height)
+               % self._height)
+    return local_x, local_y
