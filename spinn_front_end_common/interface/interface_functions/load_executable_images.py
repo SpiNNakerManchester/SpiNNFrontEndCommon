@@ -24,7 +24,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 
 # 10 seconds is lots of time to wait for the application to become ready!
-_APP_READY_TIMEOUT = 10000
+_APP_READY_TIMEOUT = 10.0
 
 
 def load_app_images(executable_targets, app_id, transceiver):
