@@ -23,6 +23,9 @@ from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 
+# 10 seconds is lots of time to wait for the application to become ready!
+_APP_READY_TIMEOUT = 10000
+
 
 def load_app_images(executable_targets, app_id, transceiver):
     """ Go through the executable targets and load each binary to everywhere\
@@ -105,5 +108,6 @@ def __start_simulation(executable_targets, txrx, app_id):
     :param int app_id:
     """
     txrx.wait_for_cores_to_be_in_state(
-        executable_targets.all_core_subsets, app_id, [CPUState.READY])
+        executable_targets.all_core_subsets, app_id, [CPUState.READY],
+        timeout=_APP_READY_TIMEOUT)
     txrx.send_signal(app_id, Signal.START)
