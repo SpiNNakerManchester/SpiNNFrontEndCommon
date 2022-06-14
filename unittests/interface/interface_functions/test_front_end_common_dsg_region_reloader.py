@@ -106,7 +106,7 @@ class _MockTransceiver(object):
     @overrides(Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False, get_sum=False):
         self._regions_rewritten.append((base_address, data))
 
 
