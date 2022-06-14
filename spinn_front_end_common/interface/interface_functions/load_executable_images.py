@@ -73,15 +73,23 @@ def __load_images(executable_targets, app_id, txrx, filt, label):
     # Compute what work is to be done here
     binaries, cores = filter_targets(executable_targets, filt)
 
-    # ISSUE: Loading order may be non-constant on older Python
-    progress = ProgressBar(cores.total_processors + 1, label)
-    for binary in binaries:
-        progress.update(flood_fill_binary_to_spinnaker(
-            executable_targets, binary, txrx, app_id))
+    try:
+        # ISSUE: Loading order may be non-constant on older Python
+        progress = ProgressBar(cores.total_processors + 1, label)
+        for binary in binaries:
+            progress.update(flood_fill_binary_to_spinnaker(
+                executable_targets, binary, txrx, app_id))
 
-    __start_simulation(cores, txrx, app_id)
-    progress.update()
-    progress.end()
+        __start_simulation(cores, txrx, app_id)
+        progress.update()
+        progress.end()
+    except Exception as e:
+        try:
+            txrx.stop_application(app_id)
+        except Exception:
+            # Ignore this, this was just an attempt at recovery
+            pass
+        raise e
 
 
 def filter_targets(targets, filt):
