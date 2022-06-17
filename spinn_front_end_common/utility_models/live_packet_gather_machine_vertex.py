@@ -55,7 +55,7 @@ class LivePacketGatherMachineVertex(
     _N_ADDITIONAL_PROVENANCE_ITEMS = 4
     _CONFIG_SIZE = 13 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
-    _KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
+    KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
     def __init__(
             self, lpg_params, constraints=None, app_vertex=None, label=None):
@@ -92,7 +92,7 @@ class LivePacketGatherMachineVertex(
     def _get_key_translation_sdram(self):
         if not self._lpg_params.translate_keys:
             return 0
-        return len(self._incoming_edges) * self._KEY_ENTRY_SIZE
+        return len(self._incoming_edges) * self.KEY_ENTRY_SIZE
 
     @property
     @overrides(MachineVertex.resources_required)

@@ -433,8 +433,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # update graph label if needed
         if graph_label is None:
             graph_label = "Application_graph"
-        else:
-            graph_label = graph_label
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
@@ -523,6 +521,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._system_multicast_router_timeout_keys = None
         self._tags = None
         self._vertex_to_ethernet_connected_chip_mapping = None
+        self._run_timer = None
 
     def _machine_clear(self):
         self._ipaddress = None
@@ -811,6 +810,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             this duration.  The continue_simulation() method must then be
             called for the simulation to continue.
         """
+        if self._run_until_complete:
+            raise NotImplementedError("run after run_until_complete")
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
@@ -903,7 +904,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(
+                threading.current_thread(), type(threading.main_thread())):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self._last_except_hook
@@ -1044,7 +1046,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if isinstance(
+                threading.current_thread(), type(threading.main_thread())):
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
@@ -1234,10 +1237,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             bmp_details = get_config_str("Machine", "bmp_names")
             auto_detect_bmp = get_config_bool(
                 "Machine", "auto_detect_bmp")
-            scamp_connection_data = get_config_str(
-                "Machine", "scamp_connections_data")
-            boot_port_num = get_config_int(
-                "Machine", "boot_connection_port_num")
+            scamp_connection_data = None
             reset_machine = get_config_bool(
                 "Machine", "reset_machine_on_startup")
             self._board_version = get_config_int(
@@ -1246,7 +1246,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif allocator_data:
             (self._ipaddress, self._board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
-             boot_port_num, self._machine_allocation_controller
+             self._machine_allocation_controller
              ) = allocator_data
         else:
             return
@@ -1254,8 +1254,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(category, "Machine generator"):
             self._machine, self._txrx = machine_generator(
                 self._ipaddress, bmp_details, self._board_version,
-                auto_detect_bmp, scamp_connection_data, boot_port_num,
-                reset_machine)
+                auto_detect_bmp, scamp_connection_data, reset_machine)
 
     def _execute_get_max_machine(self, total_run_time):
         """
@@ -1440,8 +1439,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                                    "live_packet_recorder_params"):
                 return
             preallocate_resources_for_live_packet_gatherers(
-                self._live_packet_recorder_params,
-                self._machine, pre_allocated_resources)
+                self._live_packet_recorder_params, pre_allocated_resources)
 
     def _execute_preallocate_for_chip_power_monitor(
             self, pre_allocated_resources):
@@ -1996,8 +1994,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Write, time and log the router collision report
         """
-        with FecTimer(MAPPING, "Router collision potential report"):
-            # TODO cfg flag!
+        with FecTimer(MAPPING, "Router collision potential report") as timer:
+            if timer.skip_if_cfg_false(
+                    "Reports", "write_router_collision_potential_report"):
+                return
             router_collision_potential_report(
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)
@@ -2157,8 +2157,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             # Only needs the x and y of chips with routing tables
-            routing_setup(
-                self._router_tables, self._app_id, self._txrx, self._machine)
+            routing_setup(self._router_tables, self._txrx, self._machine)
 
     def _execute_graph_binary_gatherer(self):
         """
@@ -2565,7 +2564,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs any extra load algorithms
 
         """
-        pass
 
     def _report_memory_on_host(self):
         """
@@ -2794,15 +2792,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 run_time, self._buffer_manager,
                 self._machine_allocation_controller)
 
-            energy_provenance_reporter(power_used, self._placements)
+            energy_provenance_reporter(power_used)
 
             # create energy reporter
             energy_reporter = EnergyReport()
 
             # run energy report
             energy_reporter.write_energy_report(
-                self._placements, self._machine,
-                self._current_run_timesteps,
+                self._placements,  self._current_run_timesteps,
                 self._buffer_manager, power_used)
 
     def _do_provenance_reports(self):
@@ -2810,7 +2807,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs any reports based on provenance
 
         """
-        pass
 
     def _execute_clear_io_buf(self, runtime):
         """
@@ -3004,9 +3000,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # if in debug mode, do not shut down machine
             if get_config_str("Mode", "mode") != "Debug":
                 try:
-                    self.stop(
-                        turn_off_machine=False, clear_routing_tables=False,
-                        clear_tags=False)
+                    self.stop()
                 except Exception as stop_e:
                     logger.exception(f"Error {stop_e} when attempting to stop")
 
@@ -3061,25 +3055,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        for (x, y, p), core_info in unsuccessful_cores.items():
-            state = core_info.state
-            rte_state = ""
-            if state == CPUState.RUN_TIME_EXCEPTION:
-                rte_state = " ({})".format(core_info.run_time_error.name)
-            logger.error("{}, {}, {}: {}{} {}".format(
-                x, y, p, state.name, rte_state, core_info.application_name))
-            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-                logger.error(
-                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
-                        core_info.registers[0], core_info.registers[1],
-                        core_info.registers[2], core_info.registers[3]))
-                logger.error(
-                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}".format(
-                        core_info.registers[4], core_info.registers[5],
-                        core_info.registers[6], core_info.registers[7]))
-                logger.error("PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}".format(
-                    core_info.processor_state_register,
-                    core_info.stack_pointer, core_info.link_register))
+        logger.error(self._txrx.get_core_status_string(unsuccessful_cores))
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -3431,36 +3407,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._original_machine_graph.add_edge(edge, partition_id)
         self._vertices_or_edges_added = True
 
-    def _shutdown(
-            self, turn_off_machine=None, clear_routing_tables=None,
-            clear_tags=None):
-        """
-        :param bool turn_off_machine:
-        :param bool clear_routing_tables:
-        :param bool clear_tags:
-        """
+    def _shutdown(self):
         self._status = Simulator_Status.SHUTDOWN
-
-        if turn_off_machine is None:
-            turn_off_machine = get_config_bool(
-                "Machine", "turn_off_machine")
-
-        if clear_routing_tables is None:
-            clear_routing_tables = get_config_bool(
-                "Machine", "clear_routing_tables")
-
-        if clear_tags is None:
-            clear_tags = get_config_bool("Machine", "clear_tags")
 
         if self._txrx is not None:
             # if stopping on machine, clear IP tags and routing table
-            self.__clear(clear_tags, clear_routing_tables)
+            self.__clear()
 
         # Fully stop the application
         self.__stop_app()
 
         # stop the transceiver and allocation controller
-        self.__close_transceiver(turn_off_machine)
+        self.__close_transceiver()
         self.__close_allocation_controller()
 
         try:
@@ -3471,13 +3429,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.exception(
                 "Error when closing Notifications")
 
-    def __clear(self, clear_tags, clear_routing_tables):
-        """
-        :param bool clear_tags:
-        :param bool clear_routing_tables:
-        """
+    def __clear(self):
         # if stopping on machine, clear IP tags and
-        if clear_tags:
+        if get_config_bool("Machine", "clear_tags"):
             for ip_tag in self._tags.ip_tags:
                 self._txrx.clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
@@ -3487,7 +3441,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     board_address=reverse_ip_tag.board_address)
 
         # if clearing routing table entries, clear
-        if clear_routing_tables:
+        if get_config_bool("Machine", "clear_routing_tables"):
             for router_table in self._router_tables.routing_tables:
                 if not self._machine.get_chip_at(
                         router_table.x, router_table.y).virtual:
@@ -3501,15 +3455,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._txrx is not None and self._app_id is not None:
             self._txrx.stop_application(self._app_id)
 
-    def __close_transceiver(self, turn_off_machine):
-        """
-        :param bool turn_off_machine:
-        """
+    def __close_transceiver(self):
         if self._txrx is not None:
-            if turn_off_machine:
-                logger.info("Turning off machine")
-
-            self._txrx.close(power_off_machine=turn_off_machine)
+            self._txrx.close()
             self._txrx = None
 
     def __close_allocation_controller(self):
@@ -3517,19 +3465,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
-    def stop(self, turn_off_machine=None,  # pylint: disable=arguments-differ
-             clear_routing_tables=None, clear_tags=None):
+    def stop(self):
         """
         End running of the simulation.
 
-        :param bool turn_off_machine:
-            decides if the machine should be powered down after running the
-            execution. Note that this powers down all boards connected to the
-            BMP connections given to the transceiver
-        :param bool clear_routing_tables: informs the tool chain if it
-            should turn off the clearing of the routing tables
-        :param bool clear_tags: informs the tool chain if it should clear the
-            tags off the machine at stop
         """
         if self._status in [Simulator_Status.SHUTDOWN]:
             raise ConfigurationException("Simulator has already been shutdown")
@@ -3549,7 +3488,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._recover_from_error(e)
 
         # shut down the machine properly
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown()
 
         if exn is not None:
             self.write_errored_file()
