@@ -58,7 +58,7 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :rtype: None
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
@@ -91,8 +91,6 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
         f.write(
@@ -165,7 +163,7 @@ class EnergyReport(object):
         :param float runtime_total_ms:
             total runtime with time scale factor taken into account
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
 
         # write warning about accuracy etc
         self._write_warning(f)

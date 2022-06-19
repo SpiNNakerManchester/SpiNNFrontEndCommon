@@ -41,7 +41,6 @@ def insert_extra_monitor_vertices_to_graphs(
         list(ExtraMonitorSupportMachineVertex),
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
-    # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
     progress = ProgressBar(
         machine.n_chips + len(list(machine.ethernet_connected_chips)),
@@ -111,7 +110,6 @@ def __add_second_monitors_machine_graph(
     :return: list of extra monitor vertices
     :rtype: list(~.MachineVertex)
     """
-    # pylint: disable=too-many-arguments
 
     for chip in progress.over(machine.chips, finish_at_end=False):
         if chip.virtual:

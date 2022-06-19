@@ -158,7 +158,7 @@ class LivePacketGatherMachineVertex(
         """
         :param ~pacman.model.tags.Tags tags:
         """
-        # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:

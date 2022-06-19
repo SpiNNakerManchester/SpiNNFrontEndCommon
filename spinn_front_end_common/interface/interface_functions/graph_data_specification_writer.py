@@ -49,6 +49,7 @@ def graph_data_specification_writer(
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter(hostname, machine, app_id)
+    # pylint: disable=protected-access
     return writer._run(placements, data_n_timesteps, placement_order)
 
 
@@ -93,9 +94,6 @@ class _GraphDataSpecificationWriter(object):
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-        # pylint: disable=attribute-defined-outside-init
-
         # iterate though vertices and call generate_data_spec for each
         # vertex
         targets = DsSqlliteDatabase(self._machine, self._app_id)
@@ -175,10 +173,11 @@ class _GraphDataSpecificationWriter(object):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))
                     est_size = est_size.get_total_sdram(data_n_timesteps)
                     if size > est_size:
-                        logger.warn(
+                        # pylint: disable=logging-too-many-args
+                        logger.warning(
                             "Region {} of vertex {} is bigger than expected: "
-                            "{} estimated vs. {} actual".format(
-                                i, vertex.label, est_size, size))
+                            "{} estimated vs. {} actual",
+                            i, vertex.label, est_size, size)
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
