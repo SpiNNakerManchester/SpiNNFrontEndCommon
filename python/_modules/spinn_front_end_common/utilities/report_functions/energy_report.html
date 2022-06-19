@@ -97,7 +97,7 @@
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="k">if</span> <span class="n">buffer_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping Energy report as no buffer_manager set&quot;</span><span class="p">)</span>
             <span class="k">return</span>
@@ -130,8 +130,6 @@
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
-
         <span class="c1"># write summary data</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Summary energy file</span><span class="se">\n</span><span class="s2">-------------------</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
@@ -204,7 +202,7 @@
 <span class="sd">        :param float runtime_total_ms:</span>
 <span class="sd">            total runtime with time scale factor taken into account</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+        <span class="c1"># pylint: disable=too-many-arguments</span>
 
         <span class="c1"># write warning about accuracy etc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_warning</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -444,7 +442,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

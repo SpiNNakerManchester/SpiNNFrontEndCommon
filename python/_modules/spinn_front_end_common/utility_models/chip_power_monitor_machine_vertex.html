@@ -137,7 +137,6 @@
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=arguments-differ</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_resources</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_resources"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_resources">[docs]</a>    <span class="nd">@staticmethod</span>
@@ -147,7 +146,6 @@
 <span class="sd">        :param float sampling_frequency:</span>
 <span class="sd">        :rtype: ~pacman.model.resources.ResourceContainer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-locals</span>
         <span class="n">step_in_microseconds</span> <span class="o">=</span> <span class="n">machine_time_step</span><span class="p">()</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">()</span>
         <span class="c1"># The number of sample per step CB believes does not have to be an int</span>
         <span class="n">samples_per_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">step_in_microseconds</span> <span class="o">/</span> <span class="n">sampling_frequency</span><span class="p">)</span>
@@ -194,7 +192,6 @@
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec: data spec</span>
 <span class="sd">        :param int data_n_time_steps: timesteps to reserve data for</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for ChipPowerMonitor Instance ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Construct the data images needed for the Neuron:</span>
@@ -223,7 +220,6 @@
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            the DSG spec writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">()))</span>
@@ -363,7 +359,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>

@@ -627,7 +627,7 @@
 
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">reader</span><span class="p">:</span>
                 <span class="c1"># n_bytes=None already means &#39;read everything&#39;</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">n_bytes</span><span class="p">)</span>  <span class="c1"># pylint: disable=no-member</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">n_bytes</span><span class="p">)</span>
             <span class="c1"># Number of bytes to write is now length of buffer we have</span>
             <span class="n">n_bytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">n_bytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1361,8 +1361,6 @@
 <span class="sd">        :return: whether all packets are transmitted</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-locals</span>
-
         <span class="c1"># locate missing sequence numbers from pile</span>
         <span class="n">missing_seq_nums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_missing_seq_nums</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span>
 
@@ -1701,7 +1699,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
     </div>
   </body>
 </html>
