@@ -60,6 +60,5 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
     def get_resources_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             ):
-        # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             self._sampling_frequency)

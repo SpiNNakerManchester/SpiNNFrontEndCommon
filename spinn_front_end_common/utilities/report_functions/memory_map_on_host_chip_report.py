@@ -61,7 +61,6 @@ def _describe_mem_map(f, txrx, x, y, p):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    # pylint: disable=too-many-arguments
     # Read the memory map data from the given core
     region_table_addr = _get_region_table_addr(txrx, x, y, p)
     memmap_data = txrx.read_memory(
