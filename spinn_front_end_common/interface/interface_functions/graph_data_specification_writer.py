@@ -27,7 +27,7 @@ from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def graph_data_specification_writer(
