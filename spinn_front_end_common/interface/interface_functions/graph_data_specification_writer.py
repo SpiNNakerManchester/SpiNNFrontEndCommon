@@ -18,6 +18,7 @@ import logging
 
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from data_specification import DataSpecificationGenerator
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
