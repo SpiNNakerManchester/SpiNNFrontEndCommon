@@ -18,6 +18,7 @@ import logging
 
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from data_specification import DataSpecificationGenerator
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
@@ -27,7 +28,7 @@ from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def graph_data_specification_writer(
