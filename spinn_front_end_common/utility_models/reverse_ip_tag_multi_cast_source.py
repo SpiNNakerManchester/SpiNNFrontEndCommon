@@ -216,10 +216,10 @@ class ReverseIpTagMultiCastSource(
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
         for vertex in self.machine_vertices:
-            vertex_slice = vertex.vertex_slice
             send_buffer_times_to_set = self._send_buffer_times
-            if self._send_buffer_times:
+            if len(self._send_buffer_times) > 0:
                 if hasattr(self._send_buffer_times[0], "__len__"):
+                    vertex_slice = vertex.vertex_slice
                     send_buffer_times_to_set = self._send_buffer_times[
                         vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
             vertex.send_buffer_times = send_buffer_times_to_set
