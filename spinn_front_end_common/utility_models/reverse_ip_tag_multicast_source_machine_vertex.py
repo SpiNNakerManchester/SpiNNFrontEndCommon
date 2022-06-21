@@ -186,7 +186,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # Flag to indicate that data will be received to inject
             enable_injection=False):
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
         if vertex_slice is None:
             if n_keys is not None:
                 vertex_slice = Slice(0, n_keys - 1)

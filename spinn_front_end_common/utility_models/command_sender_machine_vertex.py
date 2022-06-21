@@ -168,7 +168,7 @@ class CommandSenderMachineVertex(
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing infos
         """
-        # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=arguments-differ
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 self, self._keys_to_partition_id[mc_key])

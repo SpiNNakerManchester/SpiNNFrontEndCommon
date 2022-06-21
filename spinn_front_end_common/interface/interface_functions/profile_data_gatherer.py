@@ -34,8 +34,6 @@ def profile_data_gatherer(transceiver, placements):
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
     """
-    # pylint: disable=too-many-arguments
-
     progress = ProgressBar(
         placements.n_placements, "Getting profile data")
     provenance_file_path = app_provenance_file_path()
