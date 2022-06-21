@@ -338,22 +338,6 @@ class _HostExecuteDataSpecification(object):
         self._placements = None
         self._txrx = transceiver
 
-    def __java_all(self, dsg_targets):
-        """ Does the Data Specification Execution and loading using Java
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            2, "Executing data specifications and loading data using Java")
-
-        self._java.set_machine(self._machine)
-        progress.update()
-        self._java.execute_data_specification()
-
-        progress.end()
-
     def execute_application_data_specs(
             self, dsg_targets, executable_targets,
             placements=None, extra_monitor_cores=None,
@@ -388,10 +372,11 @@ class _HostExecuteDataSpecification(object):
         if get_config_bool(
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
-
-        impl_method = self.__java_app if self._java else self.__python_app
         try:
-            impl_method(dsg_targets, uses_advanced_monitors)
+            if self._java:
+                self.__java_app(uses_advanced_monitors)
+            else:
+                self.__python_app(dsg_targets, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
@@ -456,9 +441,8 @@ class _HostExecuteDataSpecification(object):
         if use_monitors:
             self.__reset_router_timeouts()
 
-    def __java_app(self, dsg_targets, use_monitors):
+    def __java_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
         """
         # create a progress bar for end users
@@ -488,14 +472,14 @@ class _HostExecuteDataSpecification(object):
         # pylint: disable=too-many-arguments
 
         dsg_targets.mark_system_cores(system_cores(executable_targets))
-        impl_method = self.__java_sys if self._java else self.__python_sys
-        impl_method(dsg_targets)
+        if self._java:
+            self.__java_sys()
+        else:
+            self.__python_sys(dsg_targets)
 
-    def __java_sys(self, dsg_targets):
+    def __java_sys(self):
         """ Does the Data Specification Execution and loading using Java
 
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
         """
         # create a progress bar for end users
         progress = ProgressBar(

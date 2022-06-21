@@ -65,7 +65,6 @@ def _emergency_state_check(txrx, app_id):
                 errors))
 
 
-# TRICKY POINT: Have to delay the import to here because of import circularity
 def _emergency_iobuf_extract(txrx, executable_targets):
     """
     :param ~.Transceiver txrx:
