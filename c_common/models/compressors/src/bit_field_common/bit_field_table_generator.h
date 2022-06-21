@@ -23,6 +23,7 @@
 #include "../common/constants.h"
 #include "routing_tables.h"
 #include <filter_info.h>
+#include <utils.h>
 
 //! max number of links on a router
 #define MAX_LINKS_PER_ROUTER    6
@@ -61,29 +62,39 @@ int count_unique_keys(
 //! \param[in] filters: List of the bitfields to me merged in
 //! \param[in] bit_field_processors: List of the processors for each bitfield
 //! \param[in] bf_found: Number of bitfields found.
-void generate_table(
+//! \param[in/out] core_atom: The core-atom to start from, updated with where
+//!                           we got to
+//! \return Whether more calls are needed for the bit field in question
+bool generate_table(
         entry_t original_entry, filter_info_t **restrict filters,
-        uint32_t *restrict bit_field_processors, int bf_found) {
-    uint32_t n_atoms = filters[0]->n_atoms;
+        uint32_t *restrict bit_field_processors, int bf_found,
+        struct core_atom *core_atom) {
 
+    // Remove the processor bits from the route that match the bitfields
     uint32_t stripped_route = original_entry.route;
-    for (int i =0; i < bf_found; i++) {
-        // Safety code to be removed
-        if (!bit_field_test(&stripped_route,
-                bit_field_processors[i] + MAX_LINKS_PER_ROUTER)) {
-            log_error("WHAT THE F***!");
-        }
+    for (int i = 0; i < bf_found; i++) {
         bit_field_clear(&stripped_route,
                 bit_field_processors[i] + MAX_LINKS_PER_ROUTER);
     }
 
-    // iterate though each atom and set the route when needed
-    for (uint32_t atom = 0; atom < n_atoms; atom++) {
-        // Assigning to a uint32 creates a copy
+    // Go through the atoms, potentially starting where we left off
+    uint32_t first_atom = global_atom(filters[0], core_atom);
+    uint32_t n_atoms = filters[0]->n_atoms;
+    for (uint32_t atom = first_atom; atom < n_atoms; atom++) {
+
+        // Stop when the route no longer matches the key from the bit field,
+        // as this will resume with another entry later
+        uint32_t atom_key = get_bf_key(filters[0], core_atom);
+        if ((atom_key & original_entry.key_mask.mask)
+                != original_entry.key_mask.key) {
+            // We need to continue this later, so say yes!
+            return true;
+        }
+
+        // Start with a copy of the stripped route
         uint32_t new_route = stripped_route;
 
-        // iterate through the bitfield processor's and see if they need this
-        // atom
+        // Add the processor for each bit field where the bit for the atom is set
         for (int bf_index = 0; bf_index < bf_found; bf_index++) {
             log_debug("data address is %x", filters[bf_index]->data);
             if (bit_field_test(filters[bf_index]->data, atom)) {
@@ -95,13 +106,20 @@ void generate_table(
             }
         }
 
+        // Add a new entry based on the bit fields
         routing_tables_append_new_entry(
-                original_entry.key_mask.key + atom,
+                original_entry.key_mask.key + (atom - first_atom),
                 NEURON_LEVEL_MASK, new_route, original_entry.source);
+
+        // Get the next core atom for the next round
+        next_core_atom(filters[0], core_atom);
     }
+
     log_debug("key %d atoms %d size %d",
             original_entry.key_mask.key, n_atoms,
             routing_table_get_n_entries());
+    // We got through all atoms, so say no!
+    return false;
 }
 
 //! \brief Take a midpoint and read the sorted bitfields,
@@ -156,19 +174,37 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
     int *restrict sort_order =  sorted_bit_fields->sort_order;
     entry_t *restrict original = uncompressed_table->entries;
     uint32_t original_size =  uncompressed_table->size;
-    int n_bit_fields = sorted_bit_fields->n_bit_fields;
+    uint32_t n_bit_fields = sorted_bit_fields->n_bit_fields;
 
     filter_info_t * filters[MAX_PROCESSORS];
     uint32_t bit_field_processors[MAX_PROCESSORS];
-    int bf_i = 0;
     log_debug("pre size %d", routing_table_get_n_entries());
 
-    for (uint32_t rt_i = 0; rt_i < original_size; rt_i++) {
-        uint32_t key = original[rt_i].key_mask.key;
-        log_debug("key %d", key);
-        int bf_found = 0;
+    // Go through key-sorted bit fields and routing entries in tandem.
+    // Note: there may be multiple routing entries for each bit field,
+    // but there must be only one bit field per processor per routing entry!
+    uint32_t rt_i = 0;
+    uint32_t bf_i = 0;
+    while (bf_i < n_bit_fields && rt_i < original_size) {
+        // Find a routing entry that starts at the current bit field (there
+        // must be one, because combined entries must be from the same source
+        // at this point).
+        while (rt_i < original_size &&
+                original[rt_i].key_mask.key != bit_fields[bf_i]->key) {
+            routing_tables_append_entry(original[rt_i++]);
+        }
 
-        while ((bf_i < n_bit_fields) && (bit_fields[bf_i]->key == key)) {
+        // Get out while you still can!
+        if (rt_i >= original_size) {
+            break;
+        }
+
+        // Now find all bit fields with the same key, which will have the same
+        // remaining properties too (like atoms per core etc.) since they will
+        // be from the same source.
+        uint32_t key = original[rt_i].key_mask.key;
+        uint32_t bf_found = 0;
+        while (bf_i < n_bit_fields && bit_fields[bf_i]->key == key) {
             if (sort_order[bf_i] < mid_point) {
                 filters[bf_found] = bit_fields[bf_i];
                 bit_field_processors[bf_found] = processor_ids[bf_i];
@@ -177,14 +213,25 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
             bf_i++;
         }
 
+        // If we found any bit fields that now match, create entries for each
+        // routing entry that continues to match the keys
         if (bf_found > 0) {
-            generate_table(original[rt_i], filters, bit_field_processors,
-                    bf_found);
-        } else {
-            routing_tables_append_entry(original[rt_i]);
+            // While the bit field is not finished from this entry, keep
+            // generating more
+            struct core_atom core_atom = {0, 0};
+            while (rt_i < original_size
+                    && generate_table(original[rt_i], filters,
+                            bit_field_processors, bf_found, &core_atom)) {
+                rt_i++;
+            }
         }
-        log_debug("key %d size %d",
-                original[rt_i].key_mask.key, routing_table_get_n_entries());
+    }
+
+    // At this point, we might still not have finished the routing table;
+    // all remaining entries must be outside of the bit fields, so just copy
+    // them.
+    while (rt_i < original_size) {
+        routing_tables_append_entry(original[rt_i++]);
     }
 }
 
