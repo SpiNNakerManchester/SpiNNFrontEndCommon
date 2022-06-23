@@ -353,10 +353,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_n_chips_needed",
 
         # Notification interface if needed
-        "_notification_interface",
-
-        # Map of machine vertex to LPG Machine vertex attached to
-        "_lpg_for_m_vertex"
+        "_notification_interface"
     ]
 
     def __init__(
@@ -446,7 +443,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._vertices_or_edges_added = False
         self._first_machine_time_step = None
         self._compressor_provenance = None
-        self._lpg_for_m_vertex = None
 
         FecTimer.setup(self)
 
@@ -2641,8 +2637,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
                 self._tags, run_time, self._machine, self._placements,
-                self._routing_infos, self._app_id, self._application_graph,
-                self._lpg_for_m_vertex)
+                self._routing_infos, self._app_id, self._application_graph)
 
     def _execute_create_notifiaction_protocol(self):
         """

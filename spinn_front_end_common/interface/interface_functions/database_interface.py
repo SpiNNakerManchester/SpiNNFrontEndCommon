@@ -26,7 +26,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface(
         tags, runtime, machine, placements, routing_infos, app_id,
-        application_graph, lpg_for_m_vertex):
+        application_graph):
     """
     :param ~pacman.model.tags.Tags tags:
     :param int runtime:
@@ -35,14 +35,12 @@ def database_interface(
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     :param int app_id:
     :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
-    :param dict(MachineVertex,LivePacketGatherMachineVertex) lpg_for_m_vertex:
     :return: Database interface, where the database is located
     :rtype: tuple(DatabaseInterface, str)
     """
     # pylint: disable=too-many-arguments
     writer = DatabaseWriter()
-    needs_db = writer.auto_detect_database(
-        application_graph, lpg_for_m_vertex)
+    needs_db = writer.auto_detect_database(application_graph)
     user_create_database = get_config_bool("Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
@@ -55,7 +53,7 @@ def database_interface(
                     writer.database_path)
         _write_to_db(
             writer, machine, runtime, application_graph, placements,
-            routing_infos, tags, app_id, lpg_for_m_vertex)
+            routing_infos, tags, app_id)
 
     if needs_db:
         return writer.database_path
@@ -64,7 +62,7 @@ def database_interface(
 
 def _write_to_db(
         writer, machine, runtime, app_graph, placements, routing_infos, tags,
-        app_id, lpg_for_m_vertex):
+        app_id):
     """
     :param ~.Machine machine:
     :param int runtime:
@@ -92,19 +90,16 @@ def _write_to_db(
         p.update()
         w.add_tags(tags)
         p.update()
-        if lpg_for_m_vertex is not None:
-            w.add_lpg_mapping(lpg_for_m_vertex)
+        lpg_source_machine_vertices = w.add_lpg_mapping(app_graph)
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices = list()
-            if lpg_for_m_vertex is not None:
-                machine_vertices.extend(lpg_for_m_vertex.keys())
-            machine_vertices.extend(
+            machine_vertices = [
                 (vertex, vertex.injection_partition_id)
                 for app_vertex in app_graph.vertices
                 for vertex in app_vertex.machine_vertices
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
-                and vertex.is_in_injection_mode)
+                and vertex.is_in_injection_mode]
+            machine_vertices.extend(lpg_source_machine_vertices)
             w.create_atom_to_event_id_mapping(
                 machine_vertices, routing_infos)
         p.update()

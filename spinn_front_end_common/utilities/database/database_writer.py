@@ -21,6 +21,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
+from spinn_front_end_common.utility_models import LivePacketGather
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -65,7 +66,7 @@ class DatabaseWriter(SQLiteDB):
         self._machine_id = 0
 
     @staticmethod
-    def auto_detect_database(app_graph, lpg_for_m_vertex):
+    def auto_detect_database(app_graph):
         """ Auto detects if there is a need to activate the database system
 
         :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
@@ -73,7 +74,8 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        return (lpg_for_m_vertex or
+        return (any(isinstance(app_vertex, LivePacketGather)
+                    for app_vertex in app_graph.vertices) or
                 any(isinstance(vertex, AbstractSupportsDatabaseInjection)
                     and vertex.is_in_injection_mode
                     for app_vertex in app_graph.vertices
@@ -261,12 +263,20 @@ class DatabaseWriter(SQLiteDB):
                     """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
-    def add_lpg_mapping(self, lpg_for_m_vertex):
+    def add_lpg_mapping(self, app_graph):
         """ Add mapping from machine vertex to LPG machine vertex
 
-        :param dict(MachineVertex,LivePacketGatherMachineVertex)
-            lpg_for_m_vertex:
+        :param ApplicationGraph app_graph:
+            The application graph to get the LPG vertices from
+        :return: A list of (source vertex, partition id)
+        :rtype: list(MachineVertex, str)
         """
+        targets = [(m_vertex, part_id, lpg_m_vertex)
+                   for vertex in app_graph.vertices
+                   if isinstance(vertex, LivePacketGather)
+                   for lpg_m_vertex, m_vertex, part_id
+                   in vertex.splitter.targeted_lpgs]
+
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -275,5 +285,6 @@ class DatabaseWriter(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, ((self.__vertex_to_id[m_vertex], part_id,
                        self.__vertex_to_id[lpg_m_vertex])
-                      for (m_vertex, part_id), lpg_m_vertex
-                      in lpg_for_m_vertex.items()))
+                      for m_vertex, part_id, lpg_m_vertex in targets))
+
+        return [(source, part_id) for source, part_id, _target in targets]

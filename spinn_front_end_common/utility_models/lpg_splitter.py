@@ -27,7 +27,8 @@ class LPGSplitter(AbstractSplitterCommon):
     __slots__ = [
         "__machine",
         "__placements",
-        "__m_vertices_by_ethernet"
+        "__m_vertices_by_ethernet",
+        "__targeted_lpgs"
     ]
 
     def __init__(self):
@@ -35,6 +36,7 @@ class LPGSplitter(AbstractSplitterCommon):
         self.__machine = None
         self.__placements = None
         self.__m_vertices_by_ethernet = dict()
+        self.__targeted_lpgs = set()
 
     def create_vertices(self, machine, system_placements):
         self.__machine = machine
@@ -86,7 +88,20 @@ class LPGSplitter(AbstractSplitterCommon):
             lpg_vertex = self.__m_vertices_by_ethernet[
                 chip.nearest_ethernet_x, chip.nearest_ethernet_y]
             target_map[lpg_vertex].append(m_vertex)
+            self.__targeted_lpgs.add(
+                (lpg_vertex, m_vertex, partition_id))
         return [(tgt, sources) for tgt, sources in target_map.items()]
+
+    @property
+    def targeted_lpgs(self):
+        """ Get which LPG machine vertex is targeted by which machine vertex
+            and partition
+
+        :return:
+             A set of (lpg machine vertex, source machine vertex, partition_id)
+        :rtype: set(LivePacketGatherMachineVertex, MachineVertex, str)
+        """
+        return self.__targeted_lpgs
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
     def get_out_going_vertices(self, partition_id):
