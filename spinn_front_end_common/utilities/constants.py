@@ -19,6 +19,7 @@ from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 # conversion from words to bytes
 BYTES_PER_WORD = 4
 BYTES_PER_3_WORDS = 12
+BYTES_PER_4_WORDS = 16
 BYTES_PER_SHORT = 2
 BYTES_PER_KB = 1024
 

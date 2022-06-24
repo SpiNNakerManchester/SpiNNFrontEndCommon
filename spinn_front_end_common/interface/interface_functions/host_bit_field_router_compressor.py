@@ -33,7 +33,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, BYTES_PER_3_WORDS)
+    BYTES_PER_WORD, BYTES_PER_4_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
@@ -180,16 +180,22 @@ class _BitFieldData(object):
         # P cooridnate of processor this applies to
         "processor_id",
         # index of this entry in the "sorted_list"
-        "sort_index"
+        "sort_index",
+        # The shift to get the core id
+        "core_shift",
+        # The number of atoms per core
+        "n_atoms_per_core"
     ]
 
     def __init__(self, processor_id, bit_field, master_pop_key,
-                 n_atoms_address, n_atoms_word):
+                 n_atoms_address, n_atoms_word, core_shift, n_atoms_per_core):
         self.processor_id = processor_id
         self.bit_field = bit_field
         self.master_pop_key = master_pop_key
         self.n_atoms_address = n_atoms_address
         self.n_atoms_word = n_atoms_word
+        self.core_shift = core_shift
+        self.n_atoms_per_core = n_atoms_per_core
         self.sort_index = None
 
     def __str__(self):
@@ -255,7 +261,7 @@ class _HostBasedBitFieldRouterCompressor(object):
     MERGED_SETTER = 0x80000000
 
     # struct for performance requirements.
-    _THREE_WORDS = struct.Struct("<III")
+    _FOUR_WORDS = struct.Struct("<IIII")
 
     # for router report
     _LOWER_16_BITS = 0xFFFF
@@ -462,11 +468,11 @@ class _HostBasedBitFieldRouterCompressor(object):
             # read in each bitfield
             for _ in range(0, n_filters):
                 # master pop key, n words and read pointer
-                master_pop_key, n_atoms_word, read_pointer = \
-                    self._THREE_WORDS.unpack(transceiver.read_memory(
-                        chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
+                master_pop_key, n_atoms_word, n_per_core_word, read_pointer = \
+                    self._FOUR_WORDS.unpack(transceiver.read_memory(
+                        chip_x, chip_y, reading_address, BYTES_PER_4_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
-                reading_address += BYTES_PER_3_WORDS
+                reading_address += BYTES_PER_4_WORDS
 
                 # merged: 1; all_ones: 1; n_atoms: 30;
                 atoms = n_atoms_word & self.N_ATOMS_MASK
@@ -479,8 +485,9 @@ class _HostBasedBitFieldRouterCompressor(object):
                         n_words_to_read * BYTES_PER_WORD))
 
                 # sorted by best coverage of redundant packets
-                data = _BitFieldData(processor_id, bit_field, master_pop_key,
-                                     n_atoms_address, n_atoms_word)
+                data = _BitFieldData(
+                    processor_id, bit_field, master_pop_key, n_atoms_address,
+                    n_atoms_word, n_per_core_word & 0x1F, n_per_core_word >> 5)
                 as_array = data.bit_field_as_bit_array()
                 # Number of fields in the array that are zero instead of one
                 n_redundant_packets = len(as_array) - sum(as_array)
