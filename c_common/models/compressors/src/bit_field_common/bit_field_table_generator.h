@@ -141,16 +141,18 @@ static inline uint32_t bit_field_table_generator_max_size(
 
     // Check every bitfield to see if is to be used
     // Only need each key once to track last used as tables is sorted by key
-    uint32_t used_key = FAILED_TO_FIND;
-    for (int bf_i = sorted_bit_fields->n_bit_fields -1;  bf_i >= 0; bf_i--) {
+    uint32_t last_key = 0xFFFFFFFF;
+    bool is_last_key = false;
+    for (int bf_i = 0; bf_i < sorted_bit_fields->n_bit_fields; bf_i++) {
         if (sort_order[bf_i] < mid_point) {
-            if (used_key != bit_fields[bf_i]->key) {
-                used_key = bit_fields[bf_i]->key;
+            if (!is_last_key || last_key != bit_fields[bf_i]->key) {
+                last_key = bit_fields[bf_i]->key;
+                is_last_key = true;
 
                 // One entry per atom but we can remove the uncompressed one
                 max_size += bit_fields[bf_i]->n_atoms -1;
                 log_debug("key %d size %d",
-                        used_key, bit_fields[bf_i]->n_atoms);
+                        last_key, bit_fields[bf_i]->n_atoms);
             }
         }
     }
@@ -224,6 +226,8 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
                             bit_field_processors, bf_found, &core_atom)) {
                 rt_i++;
             }
+            // The last one will return false, so increment one more time
+            rt_i++;
         }
     }
 
