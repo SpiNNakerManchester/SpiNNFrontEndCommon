@@ -90,6 +90,7 @@ class LPGSplitter(AbstractSplitterCommon):
             target_map[lpg_vertex].append(m_vertex)
             self.__targeted_lpgs.add(
                 (lpg_vertex, m_vertex, partition_id))
+            lpg_vertex.add_incoming_source(m_vertex, partition_id)
         return [(tgt, sources) for tgt, sources in target_map.items()]
 
     @property
