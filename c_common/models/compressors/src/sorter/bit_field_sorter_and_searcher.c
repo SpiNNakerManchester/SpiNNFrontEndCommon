@@ -864,7 +864,8 @@ void check_compressors(UNUSED uint unused0, UNUSED uint unused1) {
             if (finished_state > COMPRESSING) {
                 no_new_result = false;
                 process_compressor_response(processor_id, finished_state);
-            } else if (state != CPU_STATE_RUN && state != CPU_STATE_PAUSE) {
+            } else if (state != CPU_STATE_RUN && state != CPU_STATE_PAUSE
+                    && state != CPU_STATE_DEAD) {
                 log_error("CPU %u Failed!", processor_id);
                 failed_cpu = true;
                 no_new_result = false;
