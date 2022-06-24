@@ -26,13 +26,14 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters.abstract_splitters import (
     AbstractSplitterCommon)
+from pacman.model.graphs.common.slice import Slice
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utilities.database import DatabaseReader
-from pacman.model.graphs.common.slice import Slice
-from spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters import LivePacketGatherParameters
 
 
 class TestSplitter(AbstractSplitterCommon):
