@@ -29,9 +29,10 @@ from pacman.model.partitioner_splitters.abstract_splitters import (
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utility_models import LivePacketGatherMachineVertex
+from spinn_front_end_common.utility_models import LivePacketGather
 from spinn_front_end_common.utilities.database import DatabaseReader
 from pacman.model.graphs.common.slice import Slice
+from spinn_front_end_common.utilities.utility_objs.live_packet_gather_parameters import LivePacketGatherParameters
 
 
 class TestSplitter(AbstractSplitterCommon):
@@ -94,11 +95,11 @@ def _add_rinfo(
 def _place_vertices(app_vertex, placements, chips):
     chip_iter = iter(chips)
     x, y = next(chip_iter)
-    to_go = 15
+    to_go = 14
     for m_vertex in app_vertex.machine_vertices:
         if to_go == 0:
             x, y = next(chip_iter)
-            to_go = 15
+            to_go = 14
         placements.add_placement(Placement(m_vertex, x, y, 16 - to_go))
         to_go -= 1
 
@@ -107,6 +108,9 @@ def test_database_interface():
     unittest_setup()
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
+
+    machine = virtual_machine(8, 8)
+    placements = Placements()
 
     app_graph = ApplicationGraph("Test")
     app_vertex_1 = TestAppVertex(100, "test_1")
@@ -117,13 +121,18 @@ def test_database_interface():
 
     _make_m_vertices(app_vertex_1, 10, 10)
     _make_m_vertices(app_vertex_2, 20, 20)
-    lpg_m_vertex = LivePacketGatherMachineVertex(
-        None, label="LiveSpikeReceiver")
+    params = LivePacketGatherParameters(label="LiveSpikeReceiver")
+    lpg_vertex = LivePacketGather(params, label="LiveSpikeReceiver")
+    app_graph.add_vertex(lpg_vertex)
+    app_graph.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    placements = Placements()
+    lpg_vertex.splitter.create_vertices(machine, placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
-    placements.add_placement(Placement(lpg_m_vertex, 2, 2, 0))
+
+    lpg_vertex.splitter.set_placements(placements)
+    lpg_vertex.splitter.get_source_specific_in_coming_vertices(
+        app_vertex_1, "Test")
 
     routing_info = RoutingInfo()
     _add_rinfo(
@@ -133,18 +142,13 @@ def test_database_interface():
         app_vertex_2, "Test", routing_info,
         0x20000000, 0xFFFF0000, 0x0000FF00, 8)
 
-    machine = virtual_machine(8, 8)
     tags = Tags()
     tag = IPTag("127.0.0.1", 0, 0, 1, "127.0.0.1", 12345, True)
-    tags.add_ip_tag(tag, lpg_m_vertex)
-    lpg_for_m_vertex = {
-        (m_vertex, "Test"): lpg_m_vertex
-        for m_vertex in app_vertex_1.machine_vertices
-    }
+    tags.add_ip_tag(tag, next(iter(lpg_vertex.machine_vertices)))
 
     db_path = database_interface(
-        tags, 1000, machine, placements, routing_info, 17, app_graph,
-        lpg_for_m_vertex)
+        tags, 1000, machine, placements, routing_info, 17, app_graph)
+    print(db_path)
 
     reader = DatabaseReader(db_path)
     assert(reader.get_ip_address(0, 0) == machine.get_chip_at(0, 0).ip_address)
@@ -155,7 +159,7 @@ def test_database_interface():
     assert(reader.get_configuration_parameter_value("runtime") == 1000)
     assert(
         reader.get_live_output_details(
-            app_vertex_1.label, lpg_m_vertex.label) ==
+            app_vertex_1.label, lpg_vertex.label) ==
         (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag))
     assert(reader.get_atom_id_to_key_mapping(app_vertex_1.label))
     assert(reader.get_key_to_atom_id_mapping(app_vertex_1.label))

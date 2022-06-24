@@ -39,8 +39,7 @@ def database_interface(
     :rtype: tuple(DatabaseInterface, str)
     """
     # pylint: disable=too-many-arguments
-    writer = DatabaseWriter()
-    needs_db = writer.auto_detect_database(application_graph)
+    needs_db = DatabaseWriter.auto_detect_database(application_graph)
     user_create_database = get_config_bool("Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
@@ -49,13 +48,13 @@ def database_interface(
             needs_db = user_create_database
 
     if needs_db:
+        writer = DatabaseWriter()
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
         _write_to_db(
             writer, machine, runtime, application_graph, placements,
             routing_infos, tags, app_id)
-
-    if needs_db:
+        writer.close()
         return writer.database_path
     return None
 
