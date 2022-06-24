@@ -206,6 +206,10 @@ class _MachineBitFieldRouterCompressor(object):
         except SpiNNManCoresNotInStateException as e:
             logger.exception(transceiver.get_core_status_string(
                 e.failed_core_states()))
+            try:
+                transceiver.stop_application(routing_table_compressor_app_id)
+            except Exception:
+                logger.warning("Could not stop compressor!")
             raise e
 
         # start the host side compressions if needed
