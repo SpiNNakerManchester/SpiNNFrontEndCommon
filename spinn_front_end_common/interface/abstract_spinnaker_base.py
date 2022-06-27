@@ -2680,11 +2680,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         self._data_writer.stopping()
-        try:
-            self._stop()
-        finally:
-            self._data_writer.shut_down()
-
         # If we have run forever, stop the binaries
 
         try:
