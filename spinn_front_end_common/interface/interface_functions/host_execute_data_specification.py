@@ -282,7 +282,6 @@ class _HostExecuteDataSpecification(object):
         if get_config_bool(
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
-
         try:
             if FecDataView.has_java_caller():
                 return self.__java_app(uses_advanced_monitors)

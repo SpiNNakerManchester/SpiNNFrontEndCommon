@@ -47,7 +47,6 @@ class _DSGRegionReloader(object):
     def _run(self):
         """
         """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
         run_dir_path = FecDataView.get_run_dir_path()

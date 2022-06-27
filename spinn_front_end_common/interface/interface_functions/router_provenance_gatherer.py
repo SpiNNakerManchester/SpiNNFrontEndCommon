@@ -66,7 +66,6 @@ class _RouterProvenanceGatherer(object):
         :param ~.MulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=too-many-arguments, bare-except
         x = table.x
         y = table.y
         if not FecDataView.get_chip_at(x, y).virtual:
@@ -87,7 +86,6 @@ class _RouterProvenanceGatherer(object):
         :param ~.Chip chip:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=bare-except
         try:
             transceiver = FecDataView.get_transceiver()
             diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)

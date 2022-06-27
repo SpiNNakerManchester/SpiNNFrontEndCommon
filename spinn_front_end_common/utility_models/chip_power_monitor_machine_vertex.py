@@ -95,7 +95,6 @@ class ChipPowerMonitorMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        # pylint: disable=arguments-differ
         return self.get_resources(self._sampling_frequency)
 
     @staticmethod
@@ -105,7 +104,6 @@ class ChipPowerMonitorMachineVertex(
         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
-        # pylint: disable=too-many-locals
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
                             sampling_frequency)
@@ -149,7 +147,6 @@ class ChipPowerMonitorMachineVertex(
         :param ~data_specification.DataSpecificationGenerator spec: data spec
         :param int data_n_time_steps: timesteps to reserve data for
         """
-        # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -178,7 +175,6 @@ class ChipPowerMonitorMachineVertex(
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
         """
-        # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))

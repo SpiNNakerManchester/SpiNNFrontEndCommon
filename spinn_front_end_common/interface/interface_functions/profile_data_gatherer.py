@@ -29,7 +29,6 @@ def profile_data_gatherer():
         files.
 
     """
-    # pylint: disable=too-many-arguments
     progress = ProgressBar(
         FecDataView.get_n_placements(), "Getting profile data")
     provenance_file_path = FecDataView.get_app_provenance_dir_path()

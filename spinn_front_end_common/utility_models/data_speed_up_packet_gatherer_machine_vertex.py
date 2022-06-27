@@ -557,7 +557,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             with open(data, "rb") as reader:
                 # n_bytes=None already means 'read everything'
-                data = reader.read(n_bytes)  # pylint: disable=no-member
+                data = reader.read(n_bytes)
             # Number of bytes to write is now length of buffer we have
             n_bytes = len(data)
         elif n_bytes is None:
@@ -1232,8 +1232,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: whether all packets are transmitted
         :rtype: bool
         """
-        # pylint: disable=too-many-locals
-
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
 

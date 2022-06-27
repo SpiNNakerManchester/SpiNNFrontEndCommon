@@ -60,7 +60,6 @@ def virtual_machine_generator():
             raise Exception("Unknown version {}".format(version))
 
     if json_path is None:
-        # pylint: disable=too-many-arguments
         machine = virtual_machine(
             width=width, height=height,
             n_cpus_per_chip=Machine.max_cores_per_chip(),

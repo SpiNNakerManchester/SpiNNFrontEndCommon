@@ -2685,32 +2685,22 @@ class AbstractSpinnakerBase(ConfigHandler):
         finally:
             self._data_writer.shut_down()
 
-    def _stop(self):
-        """
-        End running of the simulation.
-
-        """
-        # Keep track of any exception to be re-raised
-        exn = None
-
         # If we have run forever, stop the binaries
 
-        if (self._data_writer.is_ran_ever()
-                and self._data_writer.get_current_run_timesteps() is None
-                and not get_config_bool("Machine", "virtual_board")
-                and not self._run_until_complete):
-            try:
+        try:
+            if (self._data_writer.is_ran_ever()
+                    and self._data_writer.get_current_run_timesteps() is None
+                    and not get_config_bool("Machine", "virtual_board")
+                    and not self._run_until_complete):
                 self._do_stop_workflow()
-            except Exception as e:
-                exn = e
-                self._recover_from_error(e)
-
-        # shut down the machine properly
-        self._shutdown()
-
-        if exn is not None:
+        except Exception as e:
+            self._recover_from_error(e)
             self.write_errored_file()
-            raise exn  # pylint: disable=raising-bad-type
+            raise
+        finally:
+            # shut down the machine properly
+            self._shutdown()
+
         self.write_finished_file()
 
     def _execute_application_finisher(self):

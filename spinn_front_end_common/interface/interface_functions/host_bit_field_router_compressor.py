@@ -260,6 +260,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param int chip_y:
         :param ~pacman.model.placements.Placements placements:
         """
+        # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
         for p in range(0, Machine.max_cores_per_chip()):

@@ -32,7 +32,6 @@ def routing_table_from_machine_report(routing_tables):
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param int app_id:
     """
-    # pylint: disable=protected-access
     tables = list(routing_tables.routing_tables)
     progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 

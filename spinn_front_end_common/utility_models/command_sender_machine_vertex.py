@@ -166,7 +166,6 @@ class CommandSenderMachineVertex(
             the routing infos
         """
         routing_infos = FecDataView.get_routing_infos()
-        # pylint: disable=too-many-arguments, arguments-differ
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 self, self._keys_to_partition_id[mc_key])

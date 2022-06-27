@@ -318,7 +318,6 @@ def __board_n_operational_fpgas(ethernet_chip):
     :param ~.Chip ethernet_chip: the ethernet chip to look from
     :return: number of FPGAs on, on this board
     """
-    # pylint: disable=too-many-locals
 
     # TODO: should be possible to get this info from Machine
 

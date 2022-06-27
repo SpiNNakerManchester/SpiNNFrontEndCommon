@@ -54,7 +54,6 @@ class EnergyReport(object):
         :rtype: None
         """
         report_dir = FecDataView.get_run_dir_path()
-        # pylint: disable=too-many-arguments, too-many-locals
 
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
@@ -152,7 +151,6 @@ class EnergyReport(object):
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-        # pylint: disable=too-many-arguments, too-many-locals
         runtime_total_ms = (
                 FecDataView.get_current_run_time_ms() *
                 FecDataView.get_time_scale_factor())

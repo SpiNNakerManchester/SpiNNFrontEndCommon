@@ -96,7 +96,6 @@ def __add_second_monitors_machine_graph(progress, machine, vertex_to_chip_map):
     :return: list of extra monitor vertices
     :rtype: list(~.MachineVertex)
     """
-    # pylint: disable=too-many-arguments
 
     machine_graph = FecDataView.get_runtime_machine_graph()
     for chip in progress.over(machine.chips, finish_at_end=False):
