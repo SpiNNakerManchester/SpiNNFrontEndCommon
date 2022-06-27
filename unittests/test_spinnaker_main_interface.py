@@ -16,7 +16,7 @@
 import os
 import sys
 import unittest
-from spinn_utilities.exceptions import UnexpectedStateChange
+from spinn_utilities.exceptions import SimulatorShutdownException
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
@@ -50,7 +50,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         self.assertFalse(mock_contoller.closed)
         interface.stop()
         self.assertTrue(mock_contoller.closed)
-        with self.assertRaises(UnexpectedStateChange):
+        with self.assertRaises(SimulatorShutdownException):
             interface.stop()
 
     def test_min_init(self):

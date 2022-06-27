@@ -2697,6 +2697,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._shutdown()
 
         self.write_finished_file()
+        self._data_writer.shut_down()
 
     def _execute_application_finisher(self):
         with FecTimer(RUN_LOOP, "Application finisher"):
