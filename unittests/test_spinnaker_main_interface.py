@@ -16,8 +16,7 @@
 import os
 import sys
 import unittest
-from spinn_utilities.exceptions import (
-    SimulatorShutdownException, UnexpectedStateChange)
+from spinn_utilities.exceptions import UnexpectedStateChange
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
