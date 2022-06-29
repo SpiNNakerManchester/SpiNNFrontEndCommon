@@ -23,6 +23,8 @@ from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 
 
 class LPGSplitter(AbstractSplitterCommon):
+    """ Splitter for the LivePacketGather vertex
+    """
 
     __slots__ = [
         "__machine",
@@ -39,6 +41,9 @@ class LPGSplitter(AbstractSplitterCommon):
         self.__targeted_lpgs = set()
 
     def create_vertices(self, machine, system_placements):
+        """ Special way of making LPG machine vertices, where one is placed
+            on each Ethernet chip.  Note that this adds to system placements.
+        """
         self.__machine = machine
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(
@@ -55,6 +60,11 @@ class LPGSplitter(AbstractSplitterCommon):
                 if not p.is_monitor]
 
     def set_placements(self, placements):
+        """ Set the placements made, so the correct links can be made from
+            any vertices that target the LPG to the vertex closest on the
+            machine.  This is special to this splitter, so needs special care
+            to make use of it.
+        """
         self.__placements = placements
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)

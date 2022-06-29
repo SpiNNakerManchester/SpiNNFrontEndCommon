@@ -467,7 +467,6 @@ class _HostBasedBitFieldRouterCompressor(object):
 
             # read in each bitfield
             for _ in range(0, n_filters):
-                # master pop key, n words and read pointer
                 master_pop_key, n_atoms_word, n_per_core_word, read_pointer = \
                     self._FOUR_WORDS.unpack(transceiver.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_4_WORDS))

@@ -150,7 +150,7 @@ static inline uint32_t bit_field_table_generator_max_size(
                 is_last_key = true;
 
                 // One entry per atom but we can remove the uncompressed one
-                max_size += bit_fields[bf_i]->n_atoms -1;
+                max_size += bit_fields[bf_i]->n_atoms - 1;
                 log_debug("key %d size %d",
                         last_key, bit_fields[bf_i]->n_atoms);
             }

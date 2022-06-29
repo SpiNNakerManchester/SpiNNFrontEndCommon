@@ -21,7 +21,8 @@ import os
 import tempfile
 import threading
 from spinn_utilities.config_holder import get_config_bool
-from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
+from data_specification.constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.utilities.globals_variables import (
@@ -57,7 +58,8 @@ def get_region_base_address_offset(app_data_base_address, region):
     :param int region: the region ID we're looking for
     """
     return (app_data_base_address +
-            APP_PTR_TABLE_HEADER_BYTE_SIZE + (region * 4 * 3))
+            APP_PTR_TABLE_HEADER_BYTE_SIZE +
+            (region * APP_PTR_TABLE_REGION_BYTE_SIZE))
 
 
 _DAT_TMPL = "{}_dataSpec_{}_{}_{}.dat"

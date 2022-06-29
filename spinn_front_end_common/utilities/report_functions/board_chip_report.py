@@ -15,6 +15,7 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import Machine, Router
 from spinn_front_end_common.utilities.globals_variables import (
     report_default_directory)
 
@@ -60,7 +61,7 @@ def _write_report(writer, machine, progress_bar):
                 chip = machine.get_chip_at(x, y)
                 existing_chips.append(
                     f"({x}, {y}, P: {chip.get_physical_core_id(0)})")
-                down_procs = set(range(18))
+                down_procs = set(range(Machine.DEFAULT_MAX_CORES_PER_CHIP))
                 for proc in chip.processors:
                     down_procs.remove(proc.processor_id)
                 for p in down_procs:
@@ -71,7 +72,7 @@ def _write_report(writer, machine, progress_bar):
                     down_cores.append((l_x, l_y, core, e_chip.ip_address))
             else:
                 down_chips.append((l_x, l_y, e_chip.ip_address))
-            for link in range(6):
+            for link in range(Router.MAX_LINKS_PER_ROUTER):
                 if not machine.is_link_at(x, y, link):
                     down_links.append((l_x, l_y, link, e_chip.ip_address))
 
