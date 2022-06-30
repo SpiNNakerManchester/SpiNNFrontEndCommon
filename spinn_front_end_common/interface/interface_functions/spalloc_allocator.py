@@ -121,10 +121,10 @@ def spalloc_allocator(n_chips=None, n_boards=None):
     # Work out how many boards are needed
     if n_boards is None:
         n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
-        # If the number of boards rounded up is less than 10% of a board
+        # If the number of boards rounded up is less than 50% of a board
         # bigger than the actual number of boards,
         # add another board just in case.
-        if math.ceil(n_boards) - n_boards < 0.1:
+        if math.ceil(n_boards) - n_boards < 0.5:
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
 
