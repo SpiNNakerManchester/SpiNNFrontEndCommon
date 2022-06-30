@@ -30,6 +30,11 @@ from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
+#: The number of chips per board to use in calculations to ensure that
+#: the number of boards allocated is enough.  This is 2 less than the maximum
+#: as there are a few boards with 2 down chips in the big machine.
+CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
+
 
 class _SpallocJobController(MachineAllocationController):
     __slots__ = [
@@ -120,7 +125,7 @@ def spalloc_allocator(n_chips=None, n_boards=None):
 
     # Work out how many boards are needed
     if n_boards is None:
-        n_boards_float = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
+        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
         logger.info("{:.2f} Boards Required for {} chips",
                     n_boards_float, n_chips)
         # If the number of boards rounded up is less than 50% of a board
@@ -129,7 +134,6 @@ def spalloc_allocator(n_chips=None, n_boards=None):
         n_boards = int(math.ceil(n_boards_float))
         if n_boards - n_boards_float < 0.5:
             n_boards += 1
-    logger.info("Requesting {} boards", n_boards)
 
     spalloc_kw_args = {
         'hostname': get_config_str("Machine", "spalloc_server"),
