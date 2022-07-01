@@ -3209,6 +3209,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                     not self._use_virtual_board and
                     not self._run_until_complete):
                 self._do_stop_workflow()
+            elif (get_config_bool("reports", "read_provenance_data_on_end") and
+                  not get_config_bool("reports", "read_provenance_data")):
+                set_config("reports", "read_provenance_data", "True")
+                self._do_read_provenance()
+
         except Exception as e:
             self._recover_from_error(e)
             self.write_errored_file()
