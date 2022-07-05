@@ -1007,12 +1007,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         command_sender = None
         vertices = self._application_graph.vertices
         graph = self._application_graph
-        command_sender_vertex = CommandSender
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
                 if command_sender is None:
-                    command_sender = command_sender_vertex(
+                    command_sender = CommandSender(
                         "auto_added_command_sender", None)
                     graph.add_vertex(command_sender)
 
@@ -1818,14 +1817,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._application_graph, self._placements, self._app_id,
                 self._txrx)
 
-    def _control_sync(self, do_sync):
+    def _execute_control_sync(self, do_sync):
         """ Control synchronization on board
 
         :param bool do_sync: Whether to enable synchronization
         """
-        if self.use_virtual_board:
-            return
-        self._txrx.control_sync(do_sync)
+        with FecTimer(MAPPING, "Control Sync") as timer:
+            if timer.skip_if_virtual_board():
+                return
+            self._txrx.control_sync(do_sync)
 
     def _do_mapping(self, total_run_time):
         """
@@ -2448,7 +2448,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_data_generation()
 
-        self._control_sync(False)
+        self._execute_control_sync(False)
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
         self._execute_system_data_specification()
@@ -2740,7 +2740,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
 
         provide_injectables(self)
-        self._control_sync(False)
+        self._execute_control_sync(False)
 
         self._execute_sdram_usage_report_per_chip()
         self._report_drift(start=True)
@@ -2758,7 +2758,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # reset at the end of each do_run cycle
         self._first_machine_time_step = None
         self._report_drift(start=False)
-        self._control_sync(True)
+        self._execute_control_sync(True)
         clear_injectables()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
