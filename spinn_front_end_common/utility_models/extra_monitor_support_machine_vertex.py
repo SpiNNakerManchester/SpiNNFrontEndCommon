@@ -122,13 +122,9 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints=None, app_vertex=None,
-            reinject_multicast=None, reinject_point_to_point=False,
+            self, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param constraints: constraints on this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         :param bool reinject_multicast:
             if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
@@ -140,14 +136,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         # pylint: disable=too-many-arguments
         super().__init__(
-            label="SYSTEM:ExtraMonitor", constraints=constraints,
-            app_vertex=app_vertex)
+            label="SYSTEM:ExtraMonitor", constraints=None, app_vertex=None)
 
-        if reinject_multicast is None:
-            self._reinject_multicast = get_config_bool(
-                "Machine", "enable_reinjection")
-        else:
-            self._reinject_multicast = reinject_multicast
+        self._reinject_multicast = get_config_bool(
+            "Machine", "enable_reinjection")
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
