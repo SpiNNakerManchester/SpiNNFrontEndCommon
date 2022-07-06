@@ -205,7 +205,7 @@ def router_report_from_paths(
     time_date_string = time.strftime("%c")
     partitions = get_app_partitions(graph)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(len(partitions),
                                    "Generating Routing path report")
 
@@ -614,7 +614,7 @@ def routing_info_report(app_graph, extra_allocations, routing_infos):
     """
     file_name = os.path.join(report_default_directory(), _VIRTKEY_FILENAME)
     try:
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             vertex_partitions = set(
                 (p.pre_vertex, p.identifier)
                 for p in app_graph.outgoing_edge_partitions)
