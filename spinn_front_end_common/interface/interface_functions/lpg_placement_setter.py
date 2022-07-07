@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,10 +12,10 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from spinn_front_end_common.utility_models import LivePacketGather
 
 
-def AbstractProvidesOutgoingPartitionConstraints():
-    raise NotImplementedError(
-        "Outgoing partition constraints can now be simply added to the"
-        " pre-vertex directly e.g."
-        " self.add_constraint(FixedKeyAndMaskConstraint(...))")
+def lpg_placement_setter(app_graph, placements):
+    for vertex in app_graph.vertices:
+        if isinstance(vertex, LivePacketGather):
+            vertex.splitter.set_placements(placements)

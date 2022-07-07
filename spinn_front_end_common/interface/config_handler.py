@@ -143,10 +143,6 @@ class ConfigHandler(object):
                 set_config("Reports", "write_energy_report", "False")
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as using virtual boards")
-            if get_config_bool("Reports", "write_board_chip_report"):
-                set_config("Reports", "write_board_chip_report", "False")
-                logger.info("[Reports]write_board_chip_report has been set to"
-                            " False as using virtual boards")
 
     def _previous_handler(self):
         self._error_on_previous("loading_algorithms")

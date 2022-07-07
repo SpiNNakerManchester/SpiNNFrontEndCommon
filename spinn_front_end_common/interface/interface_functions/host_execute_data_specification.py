@@ -132,7 +132,8 @@ class _ExecutionContext(object):
         # We don't have to write this bit now; we can still to the rest
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
-            to_write = numpy.concatenate((header, pointer_table)).tobytes()
+            to_write = numpy.concatenate(
+                (header, pointer_table.view("uint32"))).tobytes()
             self.__txrx.write_memory(x, y, base_address, to_write)
 
         # Write each region
@@ -149,7 +150,7 @@ class _ExecutionContext(object):
             data = region.region_data[:max_pointer]
 
             # Write the data to the position
-            writer_func(x, y, pointer_table[region_id], data)
+            writer_func(x, y, pointer_table[region_id]["pointer"], data)
             bytes_written += len(data)
 
         return base_address, size_allocated, bytes_written
@@ -165,11 +166,11 @@ class _ExecutionContext(object):
                     raise ValueError(
                         "Reference {} requested from {} but not found"
                         .format(ref, core_to_fill))
-                pointer_table[ref_region] = self.__get_reference(
+                pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
                     ref_region)
             to_write = numpy.concatenate(
-                (core_to_fill.header, pointer_table)).tobytes()
+                (core_to_fill.header, pointer_table.view("uint32"))).tobytes()
             self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
                                      core_to_fill.base_address, to_write)
 
@@ -192,7 +193,7 @@ class _ExecutionContext(object):
                     "Reference {} used previously as {} so cannot be used by"
                     " {}, {}, {}, {}".format(
                         ref, ref_to_use, x, y, p, ref_region))
-            ptr = pointer_table[ref_region]
+            ptr = pointer_table[ref_region]["pointer"]
             self.__references_to_use[ref] = _RegionToRef(
                 x, y, p, ref_region, ptr)
 
@@ -217,7 +218,7 @@ class _ExecutionContext(object):
             ref = executor.get_region(ref_region).ref
             # If already been created, use directly
             if ref in self.__references_to_use:
-                pointer_table[ref_region] = self.__get_reference(
+                pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, x, y, p, ref_region)
             else:
                 coreToFill.regions.append((ref_region, ref))

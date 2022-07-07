@@ -22,8 +22,7 @@ from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
-    AbstractGeneratesDataSpecification)
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -37,8 +36,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification):
     """ Machine vertex for injecting packets at particular times or in \
         response to particular events into a SpiNNaker application.
     """
@@ -90,7 +88,6 @@ class CommandSenderMachineVertex(
         self._timed_commands = list()
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
-        self._partition_id_to_keys = dict()
         self._keys_to_partition_id = dict()
         self._edge_partition_id_counter = 0
         self._vertex_to_key_map = dict()
@@ -129,11 +126,15 @@ class CommandSenderMachineVertex(
 
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
-
-            partition_id = "COMMANDS{}".format(self._edge_partition_id_counter)
-            self._keys_to_partition_id[key] = partition_id
-            self._partition_id_to_keys[partition_id] = key
-            self._edge_partition_id_counter += 1
+            if key not in self._keys_to_partition_id:
+                partition_id = "COMMANDS{}".format(
+                    self._edge_partition_id_counter)
+                self._keys_to_partition_id[key] = partition_id
+                self._edge_partition_id_counter += 1
+                self.app_vertex.add_constraint(
+                    FixedKeyAndMaskConstraint(
+                        [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)],
+                        partition=partition_id))
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -314,14 +315,6 @@ class CommandSenderMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
-
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        return [FixedKeyAndMaskConstraint([
-            BaseKeyAndMask(
-                self._partition_id_to_keys[partition.identifier],
-                self._DEFAULT_COMMAND_MASK)])]
 
     def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
         """ Construct edges from this vertex to the vertices that this vertex\

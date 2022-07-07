@@ -19,8 +19,8 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
     """ Indicates an object that provides locally obtained provenance data.
 
-    GraphProvenanceGatherer will check all Vertices and all Edges in both the
-    MachineGraph and if it exists the ApplicationGraph
+    GraphProvenanceGatherer will check all Vertices and all Edges in
+    the ApplicationGraph
     """
 
     __slots__ = ()

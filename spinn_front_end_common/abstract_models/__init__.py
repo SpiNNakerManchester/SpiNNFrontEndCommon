@@ -19,10 +19,6 @@ from .abstract_generates_data_specification import (
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 from .abstract_machine_allocation_controller import (
     AbstractMachineAllocationController)
-from .abstract_provides_incoming_partition_constraints import (
-    AbstractProvidesIncomingPartitionConstraints)
-from .abstract_provides_key_to_atom_mapping import (
-    AbstractProvidesKeyToAtomMapping)
 from .abstract_provides_outgoing_partition_constraints import (
     AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_rewrites_data_specification import (
@@ -38,16 +34,16 @@ from .abstract_supports_bit_field_generation import (
 from .abstract_supports_bit_field_routing_compression import (
     AbstractSupportsBitFieldRoutingCompression)
 from .abstract_can_reset import AbstractCanReset
+from .has_custom_atom_key_map import HasCustomAtomKeyMap
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
            "AbstractMachineAllocationController",
-           "AbstractProvidesIncomingPartitionConstraints",
-           "AbstractProvidesKeyToAtomMapping",
            "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices", "AbstractCanReset",
            "AbstractSupportsBitFieldGeneration",
-           "AbstractSupportsBitFieldRoutingCompression"]
+           "AbstractSupportsBitFieldRoutingCompression",
+           "HasCustomAtomKeyMap"]

@@ -67,24 +67,15 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         self.__initial_offset = new_value
 
-    def find_n_phases_for(self, machine_graph, n_keys_map):
+    def get_n_phases(self):
         """ Compute the number of phases needed for this application vertex. \
             This is the maximum number of packets any machine vertex created \
-            by this application vertex can send in one simulation time step.
+            by this application vertex can send in one simulation time step,
+            which defaults to the number of atoms in the graph.
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        :param n_keys_map:
-        :type n_keys_map:
-            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
         :rtype: int
         """
-        return max(
-            sum(
-                n_keys_map.n_keys_for_partition(outgoing_partition)
-                for outgoing_partition in
-                machine_graph.get_multicast_edge_partitions_starting_at_vertex(
-                    machine_vertex))
-            for machine_vertex in self.machine_vertices)
+        return self.n_atoms
 
     def generate_tdma_data_specification_data(self, vertex_index):
         """ Generates the TDMA configuration data needed for the data spec
