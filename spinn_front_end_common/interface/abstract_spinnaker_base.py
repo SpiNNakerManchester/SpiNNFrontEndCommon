@@ -1409,7 +1409,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Application Placer"):
             self._placements = place_application_graph(
                 self._machine, self._application_graph, self._plan_n_timesteps,
-                system_placements)
+                system_placements, self._report_default_directory)
 
     def _do_placer(self, system_placements):
         """
