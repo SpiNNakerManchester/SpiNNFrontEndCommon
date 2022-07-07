@@ -47,7 +47,7 @@ class LPGSplitter(AbstractSplitterCommon):
         self.__machine = machine
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(
-                self.governed_app_vertex.params)
+                self.governed_app_vertex.params, self.governed_app_vertex)
             self.governed_app_vertex.remember_machine_vertex(lpg_vtx)
             cores = self.__cores(machine, eth.x, eth.y)
             p = cores[system_placements.n_placements_on_chip(eth.x, eth.y)]

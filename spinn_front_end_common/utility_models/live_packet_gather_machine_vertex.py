@@ -56,7 +56,7 @@ class LivePacketGatherMachineVertex(
     KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
     def __init__(
-            self, lpg_params, constraints=None, label=None):
+            self, lpg_params, app_vertex=None, constraints=None, label=None):
         """
         :param LivePacketGatherParameters lpg_params:
         :param str label:
@@ -66,7 +66,8 @@ class LivePacketGatherMachineVertex(
         """
         # inheritance
         super().__init__(
-            label or lpg_params.label, constraints=constraints)
+            label or lpg_params.label, constraints=constraints,
+            app_vertex=app_vertex)
 
         # app specific data items
         self._lpg_params = lpg_params
