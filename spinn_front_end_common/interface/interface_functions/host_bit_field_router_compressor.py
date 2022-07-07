@@ -88,7 +88,7 @@ def host_based_bit_field_router_compressor(
             for vertex, _ in splitter.get_source_specific_in_coming_vertices(
                     partition.pre_vertex, partition.identifier):
                 place = placements.get_placement_of_vertex(vertex)
-                most_costly_cores[place.chip][place.p] += 1
+                most_costly_cores[place.xy][place.p] += 1
 
     # start the routing table choice conversion
     for router_table in progress.over(router_tables.routing_tables):
