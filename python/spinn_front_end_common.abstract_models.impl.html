@@ -76,14 +76,14 @@
 <p>Support for a vertex that simplifies generating a data specification.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_data_specification">
-<span class="sig-name descname"><span class="pre">generate_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_data_specable_vertex.html#MachineDataSpecableVertex.generate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_data_specification" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_data_specable_vertex.html#MachineDataSpecableVertex.generate_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a data specification.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – (Injected)</p></li>
+<li><p><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – (Injected)</p></li>
 <li><p><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a>) – (Injected)</p></li>
 <li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – (Injected)</p></li>
 </ul>
@@ -96,13 +96,13 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_machine_data_specification">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_machine_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iptags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_iptags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_data_specable_vertex.html#MachineDataSpecableVertex.generate_machine_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_machine_data_specification" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_machine_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iptags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_iptags</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_data_specable_vertex.html#MachineDataSpecableVertex.generate_machine_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_machine_data_specification" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write into.</p></li>
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Where this node is on the SpiNNaker machine.</p></li>
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – The graph containing this node.</p></li>
+<li><p><strong>graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – The graph containing this node.</p></li>
 <li><p><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a>) – The routing info.</p></li>
 <li><p><strong>iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><em>IPTag</em></a><em>) or </em><em>None</em>) – The (forward) IP tags for the vertex, if any</p></li>
 <li><p><strong>reverse_iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><em>ReverseIPTag</em></a><em>) or </em><em>None</em>) – The reverse IP tags for the vertex, if any</p></li>
@@ -110,32 +110,6 @@
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.ProvidesKeyToAtomMappingImpl">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.impl.</span></span><span class="sig-name descname"><span class="pre">ProvidesKeyToAtomMappingImpl</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.ProvidesKeyToAtomMappingImpl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping" title="spinn_front_end_common.abstract_models.AbstractProvidesKeyToAtomMapping"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractProvidesKeyToAtomMapping</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.ProvidesKeyToAtomMappingImpl.routing_key_partition_atom_mapping">
-<span class="sig-name descname"><span class="pre">routing_key_partition_atom_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/provides_key_to_atom_mapping_impl.html#ProvidesKeyToAtomMappingImpl.routing_key_partition_atom_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.ProvidesKeyToAtomMappingImpl.routing_key_partition_atom_mapping" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a list of atom to key mapping.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>routing_info</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.RoutingInfo" title="(in PACMAN v6.0)"><em>RoutingInfo</em></a>) – the routing info object to consider</p></li>
-<li><p><strong>partition</strong> (<em>OutgoingEdgePartition</em>) – the routing partition to handle.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a iterable of tuples of atom IDs to keys.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -160,23 +134,6 @@ placed on a core, used in partitioning.</p></li>
 <dd class="field-even"><p><strong>PacmanInvalidParameterException</strong> – If one of the constraints is not valid</p>
 </dd>
 </dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.find_n_phases_for">
-<span class="sig-name descname"><span class="pre">find_n_phases_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_keys_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.find_n_phases_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.find_n_phases_for" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute the number of phases needed for this application vertex.             This is the maximum number of packets any machine vertex created             by this application vertex can send in one simulation time step.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – </p></li>
-<li><p><strong>n_keys_map</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.AbstractMachinePartitionNKeysMap" title="(in PACMAN v6.0)"><em>AbstractMachinePartitionNKeysMap</em></a>) – </p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data">
 <span class="sig-name descname"><span class="pre">generate_tdma_data_specification_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.generate_tdma_data_specification_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data" title="Permalink to this definition">¶</a></dt>
@@ -204,6 +161,20 @@ placed on a core, used in partitioning.</p></li>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases">
+<span class="sig-name descname"><span class="pre">get_n_phases</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_n_phases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Compute the number of phases needed for this application vertex.             This is the maximum number of packets any machine vertex created             by this application vertex can send in one simulation time step,</dt><dd><p>which defaults to the number of atoms in the graph.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>

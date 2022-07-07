@@ -80,6 +80,7 @@ $(function() {
 <div class="textblock"><code>#include &quot;<a class="el" href="constants_8h_source.html">../common/constants.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="routing__tables_8h_source.html">routing_tables.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="filter__info_8h_source.html">filter_info.h</a>&gt;</code><br />
+<code>#include &lt;<a class="elRef" href="http://spinnakermanchester.github.io/spinn_common/utils_8h.html">utils.h</a>&gt;</code><br />
 </div>
 <p><a href="bit__field__table__generator_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -99,9 +100,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ae418a7d916acc1c8414e63962acbf150"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#ae418a7d916acc1c8414e63962acbf150">count_unique_keys</a> (<a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>, int midpoint)</td></tr>
 <tr class="memdesc:ae418a7d916acc1c8414e63962acbf150"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count the number of unique keys in the list up to the midpoint.  <a href="bit__field__table__generator_8h.html#ae418a7d916acc1c8414e63962acbf150">More...</a><br /></td></tr>
 <tr class="separator:ae418a7d916acc1c8414e63962acbf150"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50a1dbe2c13c2f83f20876206b62541a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a50a1dbe2c13c2f83f20876206b62541a">generate_table</a> (<a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> original_entry, <a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> **restrict filters, uint32_t *restrict bit_field_processors, int bf_found)</td></tr>
-<tr class="memdesc:a50a1dbe2c13c2f83f20876206b62541a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a routing tables by merging an entry and a list of bitfields by processor.  <a href="bit__field__table__generator_8h.html#a50a1dbe2c13c2f83f20876206b62541a">More...</a><br /></td></tr>
-<tr class="separator:a50a1dbe2c13c2f83f20876206b62541a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2acf82b1bbe408e5b6e075cf8beb463f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#a2acf82b1bbe408e5b6e075cf8beb463f">generate_table</a> (<a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> original_entry, <a class="el" href="filter__info_8h.html#structfilter__info__t">filter_info_t</a> **restrict filters, uint32_t *restrict bit_field_processors, int bf_found, struct <a class="el" href="filter__info_8h.html#structcore__atom">core_atom</a> *<a class="el" href="filter__info_8h.html#structcore__atom">core_atom</a>)</td></tr>
+<tr class="memdesc:a2acf82b1bbe408e5b6e075cf8beb463f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate a routing tables by merging an entry and a list of bitfields by processor.  <a href="bit__field__table__generator_8h.html#a2acf82b1bbe408e5b6e075cf8beb463f">More...</a><br /></td></tr>
+<tr class="separator:a2acf82b1bbe408e5b6e075cf8beb463f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="memItemLeft" align="right" valign="top">static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bit__field__table__generator_8h.html#af67eedbb6f9ea96b5d8eb2cede279c48">bit_field_table_generator_max_size</a> (int mid_point, <a class="el" href="routing__table_8h.html#structtable__t">table_t</a> *restrict uncompressed_table, <a class="el" href="compressor__sorter__structs_8h.html#structsorted__bit__fields__t">sorted_bit_fields_t</a> *restrict <a class="el" href="bit__field__sorter__and__searcher_8c.html#abe73a2259d14e3152ae6ff8192ed5afb">sorted_bit_fields</a>)</td></tr>
 <tr class="memdesc:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a midpoint and read the sorted bitfields, computing the max size of the routing table.  <a href="bit__field__table__generator_8h.html#af67eedbb6f9ea96b5d8eb2cede279c48">More...</a><br /></td></tr>
 <tr class="separator:af67eedbb6f9ea96b5d8eb2cede279c48"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,18 +160,18 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the number of unique keys </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00038">38</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00039">39</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
-<a id="a50a1dbe2c13c2f83f20876206b62541a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50a1dbe2c13c2f83f20876206b62541a">&#9670;&nbsp;</a></span>generate_table()</h2>
+<a id="a2acf82b1bbe408e5b6e075cf8beb463f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2acf82b1bbe408e5b6e075cf8beb463f">&#9670;&nbsp;</a></span>generate_table()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void generate_table </td>
+          <td class="memname">bool generate_table </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="routing__table_8h.html#structentry__t">entry_t</a>&#160;</td>
           <td class="paramname"><em>original_entry</em>, </td>
@@ -191,7 +192,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>bf_found</em>&#160;</td>
+          <td class="paramname"><em>bf_found</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="filter__info_8h.html#structcore__atom">core_atom</a> *&#160;</td>
+          <td class="paramname"><em>core_atom</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -208,11 +215,13 @@ Functions</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">filters</td><td>List of the bitfields to me merged in </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bit_field_processors</td><td>List of the processors for each bitfield </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bf_found</td><td>Number of bitfields found. </td></tr>
+    <tr><td class="paramdir"></td><td class="paramname">[in/out]</td><td><a class="el" href="filter__info_8h.html#structcore__atom" title="A core and an atom for counting.">core_atom</a>: The core-atom to start from, updated with where we got to </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>Whether more calls are needed for the bit field in question </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00064">64</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00068">68</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
@@ -267,7 +276,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>size of table(s) to be generated in entries </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00113">113</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00131">131</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
@@ -321,7 +330,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00149">149</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00169">169</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
@@ -349,7 +358,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00193">193</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00244">244</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
@@ -397,7 +406,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether the first entry is greater than the second </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00206">206</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00257">257</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>
@@ -425,7 +434,7 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00214">214</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="bit__field__table__generator_8h_source.html#l00265">265</a> of file <a class="el" href="bit__field__table__generator_8h_source.html">bit_field_table_generator.h</a>.</p>
 
 </div>
 </div>

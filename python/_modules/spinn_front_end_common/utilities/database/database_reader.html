@@ -123,98 +123,6 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
             <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DatabaseReader.get_live_input_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_input_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_input_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the IP address and port where live input should be sent\</span>
-<span class="sd">            for a given vertex</span>
-
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :return: tuple of (IP address, port)</span>
-<span class="sd">        :rtype: tuple(str, int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT * FROM app_input_tag_view</span>
-<span class="sd">                WHERE application_label = ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
-            <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.get_machine_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
-<span class="sd">            stripped from the output from a machine vertex</span>
-
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :param str receiver_label:</span>
-<span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag)</span>
-<span class="sd">        :rtype: tuple(str, int, bool, str, int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT * FROM machine_output_tag_view</span>
-<span class="sd">                WHERE pre_vertex_label = ?</span>
-<span class="sd">                    AND post_vertex_label LIKE ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.get_machine_live_input_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_input_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the IP address and port where live input should be sent\</span>
-<span class="sd">            for a given machine vertex</span>
-
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :return: tuple of (IP address, port)</span>
-<span class="sd">        :rtype: tuple(str, int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT * FROM machine_input_tag_view</span>
-<span class="sd">                WHERE machine_label = ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
-            <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.get_machine_live_output_key"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_output_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_output_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :param str receiver_label:</span>
-<span class="sd">        :rtype: tuple(int,int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT * FROM machine_edge_key_view</span>
-<span class="sd">                WHERE pre_vertex_label = ?</span>
-<span class="sd">                    AND post_vertex_label LIKE ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.get_machine_live_input_key"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_machine_live_input_key">[docs]</a>    <span class="k">def</span> <span class="nf">get_machine_live_input_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :rtype: tuple(int,int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT * FROM machine_edge_key_view</span>
-<span class="sd">                WHERE pre_vertex_label = ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">),</span>
-            <span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;mask&quot;</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DatabaseReader.get_n_atoms"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_n_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the number of atoms in a given vertex</span>
-
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :return: The number of atoms</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            SELECT no_atoms FROM Application_vertices</span>
-<span class="sd">            WHERE vertex_label = ?</span>
-<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-        <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;no_atoms&quot;</span><span class="p">]</span></div>
-
 <div class="viewcode-block" id="DatabaseReader.get_configuration_parameter_value"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>
 
@@ -232,20 +140,6 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
-
-<div class="viewcode-block" id="DatabaseReader.get_placement"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placement">[docs]</a>    <span class="k">def</span> <span class="nf">get_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the placement of a machine vertex with a given label</span>
-
-<span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :return: The x, y, p coordinates of the vertex</span>
-<span class="sd">        :rtype: tuple(int, int, int)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            SELECT x, y, p FROM machine_vertex_placement</span>
-<span class="sd">            WHERE vertex_label = ?</span>
-<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the placements of an application vertex with a given label</span>

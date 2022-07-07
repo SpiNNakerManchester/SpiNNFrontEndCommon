@@ -157,6 +157,7 @@
     <path>/github/workspace/c_common/front_end_common_lib/include/</path>
     <filename>data__specification_8h.html</filename>
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="yes" imported="no">common-typedefs.h</includes>
+    <class kind="struct">region_desc_t</class>
     <class kind="struct">data_specification_metadata_t</class>
     <member kind="function">
       <type>data_specification_metadata_t *</type>
@@ -425,6 +426,28 @@
     <filename>filter__info_8h.html</filename>
     <class kind="struct">filter_info_t</class>
     <class kind="struct">filter_region_t</class>
+    <class kind="struct">core_atom</class>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>next_core_atom</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>a7061148863142c77add4ed3f689e54a3</anchor>
+      <arglist>(filter_info_t *filter, struct core_atom *core_atom)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static uint32_t</type>
+      <name>get_bf_key</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>aca2a76959bd8aaf836d7f3033e20345e</anchor>
+      <arglist>(filter_info_t *filter, struct core_atom *core_atom)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static uint32_t</type>
+      <name>global_atom</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>a3ccbd95bd8b1b2fe2e02cdc92071fbcc</anchor>
+      <arglist>(filter_info_t *filter, struct core_atom *core_atom)</arglist>
+    </member>
   </compound>
   <compound kind="file">
     <name>key_atom_map.h</name>
@@ -2685,11 +2708,11 @@
       <arglist>(sorted_bit_fields_t *restrict sorted_bit_fields, int midpoint)</arglist>
     </member>
     <member kind="function">
-      <type>void</type>
+      <type>bool</type>
       <name>generate_table</name>
       <anchorfile>bit__field__table__generator_8h.html</anchorfile>
-      <anchor>a50a1dbe2c13c2f83f20876206b62541a</anchor>
-      <arglist>(entry_t original_entry, filter_info_t **restrict filters, uint32_t *restrict bit_field_processors, int bf_found)</arglist>
+      <anchor>a2acf82b1bbe408e5b6e075cf8beb463f</anchor>
+      <arglist>(entry_t original_entry, filter_info_t **restrict filters, uint32_t *restrict bit_field_processors, int bf_found, struct core_atom *core_atom)</arglist>
     </member>
     <member kind="function" static="yes">
       <type>static uint32_t</type>
@@ -5968,6 +5991,7 @@
     <includes id="common-typedefs_8h" name="common-typedefs.h" local="no" imported="no">common-typedefs.h</includes>
     <includes id="spinn__extra_8h" name="spinn_extra.h" local="no" imported="no">spinn_extra.h</includes>
     <includes id="common_8h" name="common.h" local="yes" imported="no">common.h</includes>
+    <includes id="data__specification_8h" name="data_specification.h" local="yes" imported="no">data_specification.h</includes>
     <includes id="wfi_8h" name="wfi.h" local="no" imported="no">wfi.h</includes>
     <class kind="struct">dumped_packet_t</class>
     <class kind="struct">sdp_data_out_t</class>
@@ -5977,7 +6001,6 @@
     <class kind="struct">reinject_config_t</class>
     <class kind="struct">data_speed_out_config_t</class>
     <class kind="struct">extra_monitor_provenance_t</class>
-    <class kind="struct">dse_header_t</class>
     <member kind="define">
       <type>#define</type>
       <name>DMA_BURST_SIZE</name>
@@ -6109,20 +6132,6 @@
       <name>ROUTER_TIMEOUT_MAX</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>aa0db95a85b8b152145278edb4c80a016</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DSE_MAGIC</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a65e5cfc85f6e1b3e2ada0229794cb1ca</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="define">
-      <type>#define</type>
-      <name>DSE_VERSION</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a6451df34fe62a074394822d80b90baa0</anchor>
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
@@ -6365,13 +6374,6 @@
       <name>sark_int_han</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>a6d542339b492b2ad62a803b09b001365</anchor>
-      <arglist>(void)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>dse_validate</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a9da1170f356db7c1f77f0097224738d6</anchor>
       <arglist>(void)</arglist>
     </member>
     <member kind="function" static="yes">
@@ -7144,6 +7146,13 @@
       <anchor>a8e27a2d54802977e972b39ce4d018f60</anchor>
       <arglist></arglist>
     </member>
+    <member kind="variable" static="yes">
+      <type>static data_specification_metadata_t *</type>
+      <name>dse_regions</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a39f6072f94d2974d3a2c89cdaef7b9e9</anchor>
+      <arglist></arglist>
+    </member>
   </compound>
   <compound kind="union">
     <name>a_key_t</name>
@@ -7787,6 +7796,11 @@
     </member>
   </compound>
   <compound kind="struct">
+    <name>core_atom</name>
+    <filename>filter__info_8h.html</filename>
+    <anchor>structcore__atom</anchor>
+  </compound>
+  <compound kind="struct">
     <name>cs_provenance_t</name>
     <filename>command__sender__multicast__source_8c.html</filename>
     <anchor>structcs__provenance__t</anchor>
@@ -7930,10 +7944,10 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
-      <type>void *</type>
+      <type>region_desc_t</type>
       <name>regions</name>
       <anchorfile>data__specification_8h.html</anchorfile>
-      <anchor>a51be45b98a948bbdc9751c9ffe3c2be3</anchor>
+      <anchor>a4fc497472cc7482620fa7454227fbd78</anchor>
       <arglist>[]</arglist>
     </member>
   </compound>
@@ -8409,32 +8423,6 @@
       <anchorfile>spinn__extra_8h.html</anchorfile>
       <anchor>a0b9c17074840e43ecf84141d59624a3f</anchor>
       <arglist></arglist>
-    </member>
-  </compound>
-  <compound kind="struct">
-    <name>dse_header_t</name>
-    <filename>extra__monitor__support_8c.html</filename>
-    <anchor>structdse__header__t</anchor>
-    <member kind="variable">
-      <type>uint</type>
-      <name>magic_number</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a4b30f2faa1733d39bbf0f29c3de0ec1d</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>uint</type>
-      <name>version</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a4015ea844b4fd30b280f7761663d7e14</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="variable">
-      <type>void *</type>
-      <name>regions</name>
-      <anchorfile>extra__monitor__support_8c.html</anchorfile>
-      <anchor>a75018303bb7b01db0de23f1ea66deeb9</anchor>
-      <arglist>[]</arglist>
     </member>
   </compound>
   <compound kind="struct">
@@ -9076,6 +9064,20 @@
       <arglist></arglist>
     </member>
     <member kind="variable">
+      <type>uint32_t</type>
+      <name>core_shift</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>a6731263d1c4f9e85e309a1b67a92b266</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>n_atoms_per_core</name>
+      <anchorfile>filter__info_8h.html</anchorfile>
+      <anchor>afffc8f01676baf610d5804ef203783e1</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
       <type>bit_field_t</type>
       <name>data</name>
       <anchorfile>filter__info_8h.html</anchorfile>
@@ -9491,6 +9493,20 @@
       <name>n_atoms</name>
       <anchorfile>key__atom__map_8h.html</anchorfile>
       <anchor>a9bb3649f029992dd5789b4d973b52453</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>core_shift</name>
+      <anchorfile>key__atom__map_8h.html</anchorfile>
+      <anchor>a7e4411a89382b99eeae9efb1f03d8ed0</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>n_atoms_per_core</name>
+      <anchorfile>key__atom__map_8h.html</anchorfile>
+      <anchor>a5d35b4eec3f8875ba9fd29d8623ce49e</anchor>
       <arglist></arglist>
     </member>
   </compound>
@@ -10084,6 +10100,25 @@
       <anchorfile>compressor__sorter__structs_8h.html</anchorfile>
       <anchor>a83219002046c2cb82a5ed5d03d0c9901</anchor>
       <arglist>[]</arglist>
+    </member>
+  </compound>
+  <compound kind="struct">
+    <name>region_desc_t</name>
+    <filename>data__specification_8h.html</filename>
+    <anchor>structregion__desc__t</anchor>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>checksum</name>
+      <anchorfile>data__specification_8h.html</anchorfile>
+      <anchor>a5fef306eca8ffd3c99dd4db9897be257</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>n_words</name>
+      <anchorfile>data__specification_8h.html</anchorfile>
+      <anchor>a35bdd2ee9a8d60bb81a3c20358a09c97</anchor>
+      <arglist></arglist>
     </member>
   </compound>
   <compound kind="struct">

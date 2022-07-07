@@ -65,8 +65,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulation.simulation_utilities</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_simulation_header_array</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
-    <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">)</span>
+    <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SYSTEM_BYTES_REQUIREMENT</span><span class="p">,</span> <span class="n">SIMULATION_N_BYTES</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
@@ -78,8 +77,7 @@
 
 <span class="k">class</span> <span class="nc">LivePacketGatherMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span>
-        <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
-        <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">):</span>
+        <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Used to gather multicast packets coming from cores and stream them \</span>
 <span class="sd">        out to a receiving application on host. Only ever deployed on chips \</span>
 <span class="sd">        with a working Ethernet connection.</span>
@@ -98,10 +96,9 @@
     <span class="n">KEY_ENTRY_SIZE</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param LivePacketGatherParameters lpg_params:</span>
-<span class="sd">        :param LivePacketGather app_vertex:</span>
 <span class="sd">        :param str label:</span>
 <span class="sd">        :param constraints:</span>
 <span class="sd">        :type constraints:</span>
@@ -114,10 +111,15 @@
 
         <span class="c1"># app specific data items</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span> <span class="o">=</span> <span class="n">lpg_params</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
-<div class="viewcode-block" id="LivePacketGatherMachineVertex.add_incoming_edge"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.add_incoming_edge">[docs]</a>    <span class="k">def</span> <span class="nf">add_incoming_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edge</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span></div>
+<div class="viewcode-block" id="LivePacketGatherMachineVertex.add_incoming_source"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.add_incoming_source">[docs]</a>    <span class="k">def</span> <span class="nf">add_incoming_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Add a machine vertex source incoming into this gatherer</span>
+
+<span class="sd">        :param MachineVertex m_vertex: The source machine vertex</span>
+<span class="sd">        :param str partition_id: The incoming partition id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">))</span></div>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
@@ -132,7 +134,7 @@
     <span class="k">def</span> <span class="nf">_get_key_translation_sdram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">translate_keys</span><span class="p">:</span>
             <span class="k">return</span> <span class="mi">0</span>
-        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">KEY_ENTRY_SIZE</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">KEY_ENTRY_SIZE</span>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
@@ -143,11 +145,6 @@
             <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span> <span class="o">+</span>
                                 <span class="bp">self</span><span class="o">.</span><span class="n">_get_key_translation_sdram</span><span class="p">()),</span>
             <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">get_iptag_resource</span><span class="p">()])</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractSupportsDatabaseInjection</span><span class="o">.</span><span class="n">is_in_injection_mode</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">is_in_injection_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">)</span>
@@ -269,12 +266,13 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">translate_keys</span><span class="p">:</span>
             <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_edges</span><span class="p">:</span>
-                <span class="n">r_info</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_routing_info_for_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="p">:</span>
+                <span class="n">r_info</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_routing_info_from_pre_vertex</span><span class="p">(</span>
+                    <span class="n">vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
                 <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">r_info</span><span class="o">.</span><span class="n">first_key</span><span class="p">)</span>
                 <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">r_info</span><span class="o">.</span><span class="n">first_mask</span><span class="p">)</span>
-                <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">)</span>
+                <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_setup_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write basic info to the system region</span>
@@ -312,6 +310,10 @@
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span>
 </pre></div>
 
             <div class="clearer"></div>

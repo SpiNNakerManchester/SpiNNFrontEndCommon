@@ -70,7 +70,6 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_region_base_address_offset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
@@ -243,8 +242,6 @@
         <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
         <span class="c1"># socket</span>
         <span class="s2">&quot;_connection&quot;</span><span class="p">,</span>
-        <span class="c1"># store of the extra monitors to location. helpful in data in</span>
-        <span class="s2">&quot;_extra_monitors_by_chip&quot;</span><span class="p">,</span>
         <span class="c1"># path for the data in report</span>
         <span class="s2">&quot;_in_report_path&quot;</span><span class="p">,</span>
         <span class="c1"># ipaddress</span>
@@ -284,9 +281,6 @@
     <span class="c1"># throttle on the transmission</span>
     <span class="n">_TRANSMISSION_THROTTLE_TIME</span> <span class="o">=</span> <span class="mf">0.000001</span>
 
-    <span class="c1"># TRAFFIC_TYPE = EdgeTrafficType.MULTICAST</span>
-    <span class="n">TRAFFIC_TYPE</span> <span class="o">=</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">FIXED_ROUTE</span>
-
     <span class="c1">#: report name for tracking used routers</span>
     <span class="n">OUT_REPORT_NAME</span> <span class="o">=</span> <span class="s2">&quot;routers_used_in_speed_up_process.rpt&quot;</span>
     <span class="c1">#: report name for tracking performance gains</span>
@@ -319,15 +313,10 @@
     <span class="c1"># Initial port for the reverse IP tag (to be replaced later)</span>
     <span class="n">_TAG_INITIAL_PORT</span> <span class="o">=</span> <span class="mi">10000</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">extra_monitors_by_chip</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span>
-            <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int x: Where this gatherer is.</span>
 <span class="sd">        :param int y: Where this gatherer is.</span>
-<span class="sd">        :param extra_monitors_by_chip: UNUSED</span>
-<span class="sd">        :type extra_monitors_by_chip:</span>
-<span class="sd">            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)</span>
 <span class="sd">        :param str ip_address:</span>
 <span class="sd">            How to talk directly to the chip where the gatherer is.</span>
 <span class="sd">        :param constraints:</span>
@@ -349,8 +338,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_output</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># store of the extra monitors to location. helpful in data in</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitors_by_chip</span> <span class="o">=</span> <span class="n">extra_monitors_by_chip</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
         <span class="c1"># Create a connection to be used</span>
@@ -418,7 +405,6 @@
         <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span>
-        <span class="s2">&quot;machine_graph&quot;</span><span class="p">:</span> <span class="s2">&quot;MachineGraph&quot;</span><span class="p">,</span>
         <span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">,</span>
         <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastKeyToChipMap&quot;</span><span class="p">,</span>
@@ -429,16 +415,14 @@
     <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
         <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;machine_graph&quot;</span><span class="p">,</span> <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
             <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="s2">&quot;app_id&quot;</span><span class="p">,</span>
             <span class="s2">&quot;router_timeout_key&quot;</span>
         <span class="p">})</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span>
             <span class="n">mc_data_chips_to_keys</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">router_timeout_key</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
-<span class="sd">            (injected)</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)</span>
 <span class="sd">        :param ~pacman.model.tags.Tags tags: (injected)</span>
 <span class="sd">        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)</span>
@@ -456,19 +440,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_memory_regions</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 
         <span class="c1"># the keys for the special cases</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
-            <span class="n">base_key</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_first_key_for_edge</span><span class="p">(</span>
-                <span class="nb">list</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">get_edges_ending_at_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">new_seq_key</span> <span class="o">=</span> <span class="n">base_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">NEW_SEQ_KEY_OFFSET</span>
-            <span class="n">first_data_key</span> <span class="o">=</span> <span class="n">base_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">FIRST_DATA_KEY_OFFSET</span>
-            <span class="n">end_flag_key</span> <span class="o">=</span> <span class="n">base_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">END_FLAG_KEY_OFFSET</span>
-            <span class="n">transaction_id_key</span> <span class="o">=</span> <span class="n">base_key</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY_OFFSET</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">new_seq_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NEW_SEQ_KEY</span>
-            <span class="n">first_data_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FIRST_DATA_KEY</span>
-            <span class="n">end_flag_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">END_FLAG_KEY</span>
-            <span class="n">base_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BASE_KEY</span>
-            <span class="n">transaction_id_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY</span>
+        <span class="n">new_seq_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NEW_SEQ_KEY</span>
+        <span class="n">first_data_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">FIRST_DATA_KEY</span>
+        <span class="n">end_flag_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">END_FLAG_KEY</span>
+        <span class="n">base_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">BASE_KEY</span>
+        <span class="n">transaction_id_key</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY</span>
 
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">new_seq_key</span><span class="p">)</span>

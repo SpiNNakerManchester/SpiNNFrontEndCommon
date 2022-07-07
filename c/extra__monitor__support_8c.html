@@ -85,6 +85,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="common-typedefs_8h_source.html">common-typedefs.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="spinn__extra_8h_source.html">spinn_extra.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="common_8h_source.html">common.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="data__specification_8h_source.html">data_specification.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="wfi_8h_source.html">wfi.h</a>&gt;</code><br />
 </div>
 <p><a href="extra__monitor__support_8c_source.html">Go to the source code of this file.</a></p>
@@ -118,9 +119,6 @@ Data Structures</h2></td></tr>
 <tr class="memitem:structextra__monitor__provenance__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structextra__monitor__provenance__t">extra_monitor_provenance_t</a></td></tr>
 <tr class="memdesc:structextra__monitor__provenance__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">The information in the provenance region.  <a href="extra__monitor__support_8c.html#structextra__monitor__provenance__t">More...</a><br /></td></tr>
 <tr class="separator:structextra__monitor__provenance__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:structdse__header__t"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#structdse__header__t">dse_header_t</a></td></tr>
-<tr class="memdesc:structdse__header__t"><td class="mdescLeft">&#160;</td><td class="mdescRight">DSE metadata.  <a href="extra__monitor__support_8c.html#structdse__header__t">More...</a><br /></td></tr>
-<tr class="separator:structdse__header__t"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
@@ -199,14 +197,6 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#aa0db95a85b8b152145278edb4c80a016">ROUTER_TIMEOUT_MAX</a>&#160;&#160;&#160;0xFF</td></tr>
 <tr class="memdesc:aa0db95a85b8b152145278edb4c80a016"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum router timeout value. <br /></td></tr>
 <tr class="separator:aa0db95a85b8b152145278edb4c80a016"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="memItemLeft" align="right" valign="top"><a id="a65e5cfc85f6e1b3e2ada0229794cb1ca"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca">DSE_MAGIC</a>&#160;&#160;&#160;0xAD130AD6</td></tr>
-<tr class="memdesc:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="mdescLeft">&#160;</td><td class="mdescRight">The magic number that marks a valid DSE metadata descriptor. <br /></td></tr>
-<tr class="separator:a65e5cfc85f6e1b3e2ada0229794cb1ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6451df34fe62a074394822d80b90baa0"><td class="memItemLeft" align="right" valign="top"><a id="a6451df34fe62a074394822d80b90baa0"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0">DSE_VERSION</a>&#160;&#160;&#160;0x00010000</td></tr>
-<tr class="memdesc:a6451df34fe62a074394822d80b90baa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The version of the DSE metadata descriptor. <br /></td></tr>
-<tr class="separator:a6451df34fe62a074394822d80b90baa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -292,10 +282,6 @@ Functions</h2></td></tr>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a6d542339b492b2ad62a803b09b001365">sark_int_han</a> (void)</td></tr>
 <tr class="memdesc:a6d542339b492b2ad62a803b09b001365"><td class="mdescLeft">&#160;</td><td class="mdescRight">The standard SARK CPU interrupt handler. <br /></td></tr>
 <tr class="separator:a6d542339b492b2ad62a803b09b001365"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9da1170f356db7c1f77f0097224738d6"><td class="memItemLeft" align="right" valign="top"><a id="a9da1170f356db7c1f77f0097224738d6"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a9da1170f356db7c1f77f0097224738d6">dse_validate</a> (void)</td></tr>
-<tr class="memdesc:a9da1170f356db7c1f77f0097224738d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks that our region data really is region data. <br /></td></tr>
-<tr class="separator:a9da1170f356db7c1f77f0097224738d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a625c5983a747ef4877038c46bc1691db"><td class="memItemLeft" align="right" valign="top">static void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a625c5983a747ef4877038c46bc1691db">dse_block</a> (<a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a> index)</td></tr>
 <tr class="memdesc:a625c5983a747ef4877038c46bc1691db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the DSG region with the given index.  <a href="extra__monitor__support_8c.html#a625c5983a747ef4877038c46bc1691db">More...</a><br /></td></tr>
 <tr class="separator:a625c5983a747ef4877038c46bc1691db"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -697,6 +683,10 @@ static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static <a class="el" href="extra__monitor__support_8c.html#structextra__monitor__provenance__t">extra_monitor_provenance_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a8e27a2d54802977e972b39ce4d018f60">prov</a></td></tr>
 <tr class="memdesc:a8e27a2d54802977e972b39ce4d018f60"><td class="mdescLeft">&#160;</td><td class="mdescRight">Where we collect provenance in SDRAM. <br /></td></tr>
 <tr class="separator:a8e27a2d54802977e972b39ce4d018f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39f6072f94d2974d3a2c89cdaef7b9e9"><td class="memItemLeft" align="right" valign="top"><a id="a39f6072f94d2974d3a2c89cdaef7b9e9"></a>
+static <a class="el" href="data__specification_8h.html#structdata__specification__metadata__t">data_specification_metadata_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="extra__monitor__support_8c.html#a39f6072f94d2974d3a2c89cdaef7b9e9">dse_regions</a></td></tr>
+<tr class="memdesc:a39f6072f94d2974d3a2c89cdaef7b9e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">The DSE regions structure. <br /></td></tr>
+<tr class="separator:a39f6072f94d2974d3a2c89cdaef7b9e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The implementation of the Extra Monitor. </p>
@@ -718,7 +708,7 @@ static <a class="el" href="extra__monitor__support_8c.html#structextra__monitor_
 </div><div class="memdoc">
 <div class="textblock"><p>dumped packet type </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00178">178</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00179">179</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -756,7 +746,7 @@ Payload word of packet (might be undefined) </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>message payload for the data speed up out SDP messages </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00206">206</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00207">207</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -801,7 +791,7 @@ How much data are we moving. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>router entry positions in sdram </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00220">220</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00221">221</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -839,7 +829,7 @@ The SpiNNaker router route (to use when masked key matches) </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>data positions in sdram for data in config </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00227">227</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00228">228</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -889,7 +879,7 @@ The system (non-app, non-SCAMP) router entries to use for Data In. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>defintion of response packet for reinjector status </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00248">248</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00249">249</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -965,7 +955,7 @@ What packet types are we reinjecting. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>how the reinjection configuration is laid out in memory. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00278">278</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00279">279</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1019,7 +1009,7 @@ reinjection_base_mc_key</td>
 </div><div class="memdoc">
 <div class="textblock"><p>human readable definitions of each element in the transmission region </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00324">324</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00325">325</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1069,7 +1059,7 @@ The key to say that we've finished transmitting data. </td></tr>
 </div><div class="memdoc">
 <div class="textblock"><p>The information in the provenance region. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00338">338</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00339">339</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 </div><table class="fieldtable">
 <tr><th colspan="3">Data Fields</th></tr>
 <tr><td class="fieldtype">
@@ -1100,45 +1090,6 @@ The number of times we've modified the router. </td></tr>
 
 </div>
 </div>
-<a name="structdse__header__t" id="structdse__header__t"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#structdse__header__t">&#9670;&nbsp;</a></span>dse_header_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct dse_header_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<div class="textblock"><p>DSE metadata. </p>
-<p>Must structurally match <a class="el" href="data__specification_8h.html#structdata__specification__metadata__t" title="The central structure that the DSE writes.">data_specification_metadata_t</a> </p>
-
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00557">557</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
-</div><table class="fieldtable">
-<tr><th colspan="3">Data Fields</th></tr>
-<tr><td class="fieldtype">
-<a id="a4b30f2faa1733d39bbf0f29c3de0ec1d"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
-<td class="fieldname">
-magic_number</td>
-<td class="fielddoc">
-Magic number (== <a class="el" href="extra__monitor__support_8c.html#a65e5cfc85f6e1b3e2ada0229794cb1ca" title="The magic number that marks a valid DSE metadata descriptor.">DSE_MAGIC</a>) </td></tr>
-<tr><td class="fieldtype">
-<a id="a4015ea844b4fd30b280f7761663d7e14"></a><a class="elRef" href="http://spinnakermanchester.github.io/spinnaker_tools/spinnaker_8h.html#a91ad9478d81a7aaf2593e8d9c3d06a14">uint</a></td>
-<td class="fieldname">
-version</td>
-<td class="fielddoc">
-Version (== <a class="el" href="extra__monitor__support_8c.html#a6451df34fe62a074394822d80b90baa0" title="The version of the DSE metadata descriptor.">DSE_VERSION</a>) </td></tr>
-<tr><td class="fieldtype">
-<a id="a75018303bb7b01db0de23f1ea66deeb9"></a>void *</td>
-<td class="fieldname">
-regions[]</td>
-<td class="fielddoc">
-Pointers to DSG regions. </td></tr>
-</table>
-
-</div>
-</div>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a1770d428fd0221aabcda7aad57a9b586"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1770d428fd0221aabcda7aad57a9b586">&#9670;&nbsp;</a></span>DMA_BURST_SIZE</h2>
@@ -1155,7 +1106,7 @@ Pointers to DSG regions. </td></tr>
 <p>Use DMA bursts of 16 (2<sup>4</sup>) transfer units (double words) </p>
 <p>See <a href="https://spinnakermanchester.github.io/docs/SpiNN2DataShtV202.pdf">SpiNNaker Data Sheet</a>, Section 7.4, register r3 </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00055">55</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00056">56</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1184,7 +1135,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00070">70</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00071">71</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1212,7 +1163,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00086">86</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00087">87</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1246,7 +1197,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00156">156</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00157">157</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1274,7 +1225,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00193">193</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00194">194</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1298,7 +1249,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00295">295</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00296">296</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1326,7 +1277,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00302">302</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00303">303</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1352,7 +1303,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00314">314</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00315">315</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1378,7 +1329,7 @@ Pointers to DSG regions. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00350">350</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00351">351</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1417,7 +1368,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The address of the region </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00587">587</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00558">558</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1454,7 +1405,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00599">599</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00568">568</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1491,7 +1442,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>a pointer to the block, or <code>NULL</code> if allocation failed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00606">606</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00575">575</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1527,7 +1478,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00613">613</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00582">582</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1558,7 +1509,7 @@ Pointers to DSG regions. </td></tr>
 <p>the maximum SDRAM block size </p>
 <dl class="section return"><dt>Returns</dt><dd>The maximum size of heap memory block that may be allocated in SDRAM </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00620">620</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00589">589</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1589,7 +1540,7 @@ Pointers to DSG regions. </td></tr>
 <p>How to get an SDP message out of the mailbox correctly. </p>
 <dl class="section return"><dt>Returns</dt><dd>The retrieved message, or <code>NULL</code> if message buffer allocation failed. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00627">627</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00596">596</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1643,7 +1594,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00647">647</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00616">616</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1674,7 +1625,7 @@ Pointers to DSG regions. </td></tr>
 <p>Whether the comms hardware can accept packet now. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if the router output stage is empty. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00678">678</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00647">647</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1710,7 +1661,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00711">711</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00680">680</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1746,7 +1697,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00848">848</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00817">817</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1782,7 +1733,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00890">890</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00859">859</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1818,7 +1769,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00897">897</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00866">866</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1856,7 +1807,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00909">909</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00878">878</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1894,7 +1845,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00933">933</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00902">902</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1931,7 +1882,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00954">954</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00923">923</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -1968,7 +1919,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00976">976</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00945">945</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2005,7 +1956,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01011">1011</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00980">980</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2042,7 +1993,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01028">1028</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00997">997</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2079,7 +2030,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The payload size of the response message. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01062">1062</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01031">1031</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2116,7 +2067,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the length of extra data put into the message for return </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01074">1074</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01043">1043</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2152,7 +2103,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01190">1190</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01159">1159</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2188,7 +2139,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01202">1202</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01171">1171</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2227,7 +2178,7 @@ Pointers to DSG regions. </td></tr>
 <li><a class="el" href="extra__monitor__support_8c.html#a787d1adf1616b9a7ed4d2bbc09912f38" title="Resets the state due to reaching the end of a data stream.">data_in_process_boundary()</a> </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01223">1223</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01192">1192</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2274,7 +2225,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01257">1257</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01226">1226</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2310,7 +2261,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01325">1325</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01294">1294</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2341,7 +2292,7 @@ Pointers to DSG regions. </td></tr>
 <p>Sets up application routes on router. </p>
 <p>Required by data in speed up functionality. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01348">1348</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01317">1317</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2378,7 +2329,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>complete code if successful </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01366">1366</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01335">1335</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2426,7 +2377,7 @@ Pointers to DSG regions. </td></tr>
 </dl>
 <p>Whether the comms controller can accept another packet</p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01408">1408</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01377">1377</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2487,7 +2438,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01441">1441</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01410">1410</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2549,7 +2500,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01469">1469</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01438">1438</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2603,7 +2554,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01488">1488</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01457">1457</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2635,7 +2586,7 @@ Pointers to DSG regions. </td></tr>
 <p>Uses a pair of buffers in DTCM so data can be read in from SDRAM while the previous is being transferred over the network.</p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045faf02163dfe7681d77de744cfaad973703">DMA_TAG_READ_FOR_TRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01518">1518</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01487">1487</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2689,7 +2640,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01574">1574</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01543">1543</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2744,7 +2695,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01596">1596</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01565">1565</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2775,7 +2726,7 @@ Pointers to DSG regions. </td></tr>
 <p>reads in missing sequence numbers and sets off the reading of SDRAM for the equivalent data </p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fa942e461c76acb1c5a7401c130ccdd0e8" title="DMA complete tag for retransmission of data sequence numbers.">DMA_TAG_READ_FOR_RETRANSMISSION</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01661">1661</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01630">1630</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2806,7 +2757,7 @@ Pointers to DSG regions. </td></tr>
 <p>DMA complete callback for have read missing sequence number data. </p>
 <p>Callback associated with <a class="el" href="extra__monitor__support_8c.html#ad3f9f1daf2546fa2852c67698784045fae3a1a5680add9bd61574b24599ac9185" title="DMA complete tag for the reading from SDRAM of data to be retransmitted.">DMA_TAG_RETRANSMISSION_READING</a> </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01708">1708</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01677">1677</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2842,7 +2793,7 @@ Pointers to DSG regions. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01736">1736</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01705">1705</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2878,7 +2829,7 @@ Pointers to DSG regions. </td></tr>
 <li><a class="el" href="extra__monitor__support_8c.html#a1bd166af952da491170b5ea6772482b9" title="DMA complete callback for have read missing sequence number data.">data_out_dma_complete_writing_missing_seq_to_sdram()</a> (tag unused?) </li>
 </ul>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01871">1871</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l01840">1840</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2906,7 +2857,7 @@ Pointers to DSG regions. </td></tr>
 <p>The content of the communications controller SAR register. </p>
 <p>Specifically, the P2P source identifier. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00362">362</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00363">363</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2933,7 +2884,7 @@ Pointers to DSG regions. </td></tr>
 <p>The current transaction identifier, identifying the stream of items being moved. </p>
 <p>Also written to the user1 SARK register </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00458">458</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00459">459</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2960,7 +2911,7 @@ Pointers to DSG regions. </td></tr>
 <p>DTCM buffer of sequence numbers to be retransmitted. </p>
 <p>Gets filled from <a class="el" href="extra__monitor__support_8c.html#a6295b0d23630f9f06adc22e6a6a13c58" title="Buffer in SDRAM where the sequence numbers of missing packets are stored.">data_out_missing_seq_num_sdram_address</a> by DMA </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00491">491</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00492">492</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>
@@ -2987,7 +2938,7 @@ Pointers to DSG regions. </td></tr>
 <p>Where are we (as a P2P address)? </p>
 <p>Used for error reporting. </p>
 
-<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00540">540</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="extra__monitor__support_8c_source.html#l00541">541</a> of file <a class="el" href="extra__monitor__support_8c_source.html">extra_monitor_support.c</a>.</p>
 
 </div>
 </div>

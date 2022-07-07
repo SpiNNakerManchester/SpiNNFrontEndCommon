@@ -62,7 +62,6 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_region_base_address_offset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
-<span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">EdgeTrafficType</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">ResourceContainer</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
@@ -163,13 +162,9 @@
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span>
-            <span class="n">reinject_multicast</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reinject_point_to_point</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">reinject_point_to_point</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">reinject_nearest_neighbour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reinject_fixed_route</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param constraints: constraints on this vertex</span>
-<span class="sd">        :type constraints:</span>
-<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
 <span class="sd">        :param bool reinject_multicast:</span>
 <span class="sd">            if we reinject multicast packets; defaults to value of</span>
 <span class="sd">            `enable_reinjection` setting in configuration file</span>
@@ -181,14 +176,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SYSTEM:ExtraMonitor&quot;</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span>
-            <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="s2">&quot;SYSTEM:ExtraMonitor&quot;</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">reinject_multicast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">reinject_multicast</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_multicast</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
+            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_point_to_point</span> <span class="o">=</span> <span class="n">reinject_point_to_point</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_nearest_neighbour</span> <span class="o">=</span> <span class="n">reinject_nearest_neighbour</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reinject_fixed_route</span> <span class="o">=</span> <span class="n">reinject_fixed_route</span>
@@ -298,26 +289,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s2">&quot;extra_monitor_support.aplx&quot;</span></div>
 
-<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;machine_graph&quot;</span><span class="p">:</span> <span class="s2">&quot;MachineGraph&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastRoutingTables&quot;</span><span class="p">,</span>
+<div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastRoutingTables&quot;</span><span class="p">,</span>
                    <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastKeyToChipMap&quot;</span><span class="p">,</span>
                    <span class="s2">&quot;app_id&quot;</span><span class="p">:</span> <span class="s2">&quot;APPID&quot;</span><span class="p">,</span>
                    <span class="s2">&quot;machine&quot;</span><span class="p">:</span> <span class="s2">&quot;ExtendedMachine&quot;</span><span class="p">,</span>
                    <span class="s2">&quot;router_timeout_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;SystemMulticastRouterTimeoutKeys&quot;</span><span class="p">})</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
                <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span>
-                   <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_graph&quot;</span><span class="p">,</span> <span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="s2">&quot;machine&quot;</span><span class="p">,</span>
-                   <span class="s2">&quot;router_timeout_keys&quot;</span><span class="p">})</span>
+                   <span class="s2">&quot;data_in_routing_tables&quot;</span><span class="p">,</span> <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;app_id&quot;</span><span class="p">,</span>
+                   <span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="s2">&quot;router_timeout_keys&quot;</span><span class="p">})</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span>
-            <span class="n">data_in_routing_tables</span><span class="p">,</span> <span class="n">mc_data_chips_to_keys</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
-            <span class="n">machine</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">data_in_routing_tables</span><span class="p">,</span>
+            <span class="n">mc_data_chips_to_keys</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)</span>
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
-<span class="sd">            (injected)</span>
 <span class="sd">        :param data_in_routing_tables: (injected)</span>
 <span class="sd">        :type data_in_routing_tables:</span>
 <span class="sd">            ~pacman.model.routing_tables.MulticastRoutingTables</span>
@@ -334,8 +319,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate_reinjection_config</span><span class="p">(</span>
             <span class="n">spec</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine</span><span class="p">)</span>
         <span class="c1"># write data speed up out config</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_speed_up_out_config</span><span class="p">(</span>
-            <span class="n">spec</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_speed_up_out_config</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="c1"># write data speed up in config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate_data_speed_up_in_config</span><span class="p">(</span>
             <span class="n">spec</span><span class="p">,</span> <span class="n">data_in_routing_tables</span><span class="p">,</span>
@@ -344,33 +328,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_generate_provenance_area</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">_generate_data_speed_up_out_config</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_generate_data_speed_up_out_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
 <span class="sd">        :param ~.RoutingInfo routing_info: the packet routing info</span>
-<span class="sd">        :param ~.MachineGraph machine_graph: The graph containing this vertex</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">reserve_memory_region</span><span class="p">(</span>
             <span class="n">region</span><span class="o">=</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="p">,</span>
             <span class="n">size</span><span class="o">=</span><span class="n">_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES</span><span class="p">,</span>
             <span class="n">label</span><span class="o">=</span><span class="s2">&quot;data speed-up out config region&quot;</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DSG_REGIONS</span><span class="o">.</span><span class="n">DATA_OUT_CONFIG</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">TRAFFIC_TYPE</span> <span class="o">==</span> <span class="n">EdgeTrafficType</span><span class="o">.</span><span class="n">MULTICAST</span><span class="p">:</span>
-            <span class="n">base_key</span> <span class="o">=</span> <span class="n">routing_info</span><span class="o">.</span><span class="n">get_first_key_for_edge</span><span class="p">(</span>
-                <span class="nb">list</span><span class="p">(</span><span class="n">machine_graph</span><span class="o">.</span><span class="n">get_edges_starting_at_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">NEW_SEQ_KEY_OFFSET</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">FIRST_DATA_KEY_OFFSET</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY_OFFSET</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">base_key</span> <span class="o">+</span> <span class="n">Gatherer</span><span class="o">.</span><span class="n">END_FLAG_KEY_OFFSET</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">BASE_KEY</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">NEW_SEQ_KEY</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">FIRST_DATA_KEY</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY</span><span class="p">)</span>
-            <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">END_FLAG_KEY</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">BASE_KEY</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">NEW_SEQ_KEY</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">FIRST_DATA_KEY</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">TRANSACTION_ID_KEY</span><span class="p">)</span>
+        <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">Gatherer</span><span class="o">.</span><span class="n">END_FLAG_KEY</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_generate_reinjection_config</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">router_timeout_keys</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>

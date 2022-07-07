@@ -190,12 +190,12 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.bitfield_compressor_report">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">bitfield_compressor_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">machine_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.bitfield_compressor_report" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">bitfield_compressor_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.bitfield_compressor_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates a report that shows the impact of the compression of     bitfields into the routing table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>machine_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineGraph" title="(in PACMAN v6.0)"><em>MachineGraph</em></a>) – the machine graph</p></li>
+<li><p><strong>app_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – the graph</p></li>
 <li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements</p></li>
 </ul>
 </dd>
@@ -220,6 +220,12 @@
 <dd class="field-even"><p>None</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.drift_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.</span></span><span class="sig-name descname"><span class="pre">drift_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txrx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.drift_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>A report on the clock drift as reported by each chip</p>
 </dd></dl>
 
 <dl class="py function">

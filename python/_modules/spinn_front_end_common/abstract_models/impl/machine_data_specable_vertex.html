@@ -66,18 +66,18 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="MachineDataSpecableVertex.generate_data_specification"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span>
-        <span class="s2">&quot;machine_graph&quot;</span><span class="p">:</span> <span class="s2">&quot;MachineGraph&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;graph&quot;</span><span class="p">:</span> <span class="s2">&quot;ApplicationGraph&quot;</span><span class="p">,</span>
         <span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">,</span>
         <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">})</span>
     <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
         <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;machine_graph&quot;</span><span class="p">,</span> <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;graph&quot;</span><span class="p">,</span> <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
         <span class="p">})</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph graph:</span>
 <span class="sd">            (Injected)</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)</span>
 <span class="sd">        :param ~pacman.model.tags.Tags tags: (Injected)</span>
@@ -86,19 +86,19 @@
         <span class="n">iptags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
         <span class="n">reverse_iptags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">get_reverse_ip_tags_for_vertex</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_machine_data_specification</span><span class="p">(</span>
-            <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">iptags</span><span class="p">,</span>
+            <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">iptags</span><span class="p">,</span>
             <span class="n">reverse_iptags</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="MachineDataSpecableVertex.generate_machine_data_specification"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_machine_data_specification">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">generate_machine_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">iptags</span><span class="p">,</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">graph</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">iptags</span><span class="p">,</span>
             <span class="n">reverse_iptags</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            The data specification to write into.</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            Where this node is on the SpiNNaker machine.</span>
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
+<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph graph:</span>
 <span class="sd">            The graph containing this node.</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info:</span>
 <span class="sd">            The routing info.</span>

@@ -106,24 +106,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__initial_offset</span> <span class="o">=</span> <span class="n">new_value</span></div>
 
-<div class="viewcode-block" id="TDMAAwareApplicationVertex.find_n_phases_for"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.find_n_phases_for">[docs]</a>    <span class="k">def</span> <span class="nf">find_n_phases_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_graph</span><span class="p">,</span> <span class="n">n_keys_map</span><span class="p">):</span>
+<div class="viewcode-block" id="TDMAAwareApplicationVertex.get_n_phases"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_phases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Compute the number of phases needed for this application vertex. \</span>
 <span class="sd">            This is the maximum number of packets any machine vertex created \</span>
-<span class="sd">            by this application vertex can send in one simulation time step.</span>
+<span class="sd">            by this application vertex can send in one simulation time step,</span>
+<span class="sd">            which defaults to the number of atoms in the graph.</span>
 
-<span class="sd">        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:</span>
-<span class="sd">        :param n_keys_map:</span>
-<span class="sd">        :type n_keys_map:</span>
-<span class="sd">            ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span>
-            <span class="nb">sum</span><span class="p">(</span>
-                <span class="n">n_keys_map</span><span class="o">.</span><span class="n">n_keys_for_partition</span><span class="p">(</span><span class="n">outgoing_partition</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">outgoing_partition</span> <span class="ow">in</span>
-                <span class="n">machine_graph</span><span class="o">.</span><span class="n">get_multicast_edge_partitions_starting_at_vertex</span><span class="p">(</span>
-                    <span class="n">machine_vertex</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">machine_vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span></div>
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.generate_tdma_data_specification_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data">[docs]</a>    <span class="k">def</span> <span class="nf">generate_tdma_data_specification_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_index</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Generates the TDMA configuration data needed for the data spec</span>

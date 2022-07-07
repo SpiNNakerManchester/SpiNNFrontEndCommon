@@ -99,7 +99,6 @@
         <span class="s2">&quot;__key_to_atom_id_and_label&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__live_event_callbacks&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__live_packet_gather_label&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__machine_vertices&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__pause_stop_callbacks&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__receive_labels&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__receiver_connection&quot;</span><span class="p">,</span>
@@ -110,12 +109,10 @@
         <span class="s2">&quot;__start_resume_callbacks&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gather_label</span><span class="p">,</span> <span class="n">receive_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">send_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">NOTIFY_PORT</span><span class="p">,</span>
-                 <span class="n">machine_vertices</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                 <span class="n">send_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">NOTIFY_PORT</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str live_packet_gather_label:</span>
-<span class="sd">            The label of the :py:class:`LivePacketGather` vertex to which</span>
-<span class="sd">            received events are being sent</span>
+<span class="sd">            The label of the vertex to which received events are being sent</span>
 <span class="sd">        :param iterable(str) receive_labels:</span>
 <span class="sd">            Labels of vertices from which live events will be received.</span>
 <span class="sd">        :param iterable(str) send_labels:</span>
@@ -140,7 +137,6 @@
             <span class="nb">list</span><span class="p">(</span><span class="n">receive_labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">receive_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__send_labels</span> <span class="o">=</span> <span class="p">(</span>
             <span class="nb">list</span><span class="p">(</span><span class="n">send_labels</span><span class="p">)</span> <span class="k">if</span> <span class="n">send_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span> <span class="o">=</span> <span class="n">machine_vertices</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__send_address_details</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="c1"># Also used by SpynnakerPoissonControlConnection</span>
@@ -298,14 +294,9 @@
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_labels</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__send_address_details</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_live_input_details</span><span class="p">(</span>
                 <span class="n">db</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span><span class="p">:</span>
-                <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_machine_live_input_key</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_atom_id_to_key</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">key</span><span class="p">}</span>
-                <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_atom_id_to_key</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_atom_id_to_key_mapping</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">)</span>
-                <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atom_id_to_key</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_atom_id_to_key</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_atom_id_to_key_mapping</span><span class="p">(</span>
+                <span class="n">label</span><span class="p">)</span>
+            <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atom_id_to_key</span><span class="p">[</span><span class="n">label</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">__init_receivers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">vertex_sizes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -334,16 +325,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span><span class="p">:</span>
-                <span class="n">key</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_machine_live_output_key</span><span class="p">(</span>
-                    <span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_packet_gather_label</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__key_to_atom_id_and_label</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">label_id</span><span class="p">)</span>
-                <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">key_to_atom_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">atom_id</span> <span class="ow">in</span> <span class="n">key_to_atom_id</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__key_to_atom_id_and_label</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">atom_id</span><span class="p">,</span> <span class="n">label_id</span><span class="p">)</span>
-                <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_to_atom_id</span><span class="p">)</span>
+            <span class="n">key_to_atom_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">atom_id</span> <span class="ow">in</span> <span class="n">key_to_atom_id</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__key_to_atom_id_and_label</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">atom_id</span><span class="p">,</span> <span class="n">label_id</span><span class="p">)</span>
+            <span class="n">vertex_sizes</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">key_to_atom_id</span><span class="p">)</span>
 
         <span class="c1"># Last of all, set up the listener for packets</span>
         <span class="c1"># NOTE: Has to be done last as otherwise will receive SCP messages</span>
@@ -360,31 +345,19 @@
 <span class="sd">        :param str send_label:</span>
 <span class="sd">        :rtype: tuple(int,int,int,str or None)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_placement</span><span class="p">(</span><span class="n">send_label</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_placements</span><span class="p">(</span><span class="n">send_label</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_placements</span><span class="p">(</span><span class="n">send_label</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="n">ip_address</span> <span class="o">=</span> <span class="n">db_reader</span><span class="o">.</span><span class="n">get_ip_address</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span>
 
     <span class="k">def</span> <span class="nf">__get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_reader</span><span class="p">,</span> <span class="n">receive_label</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_vertices</span><span class="p">:</span>
-            <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> \
-                <span class="n">db_reader</span><span class="o">.</span><span class="n">get_machine_live_output_details</span><span class="p">(</span>
-                    <span class="n">receive_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_packet_gather_label</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">&quot;no live output tag found for </span><span class="si">{}</span><span class="s2"> in machine graph&quot;</span><span class="o">.</span>
-                    <span class="nb">format</span><span class="p">(</span><span class="n">receive_label</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> \
-                <span class="n">db_reader</span><span class="o">.</span><span class="n">get_live_output_details</span><span class="p">(</span>
-                    <span class="n">receive_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_packet_gather_label</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">&quot;no live output tag found for </span><span class="si">{}</span><span class="s2"> in app graph&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">receive_label</span><span class="p">))</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> \
+            <span class="n">db_reader</span><span class="o">.</span><span class="n">get_live_output_details</span><span class="p">(</span>
+                <span class="n">receive_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_packet_gather_label</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;no live output tag found for </span><span class="si">{}</span><span class="s2"> in app graph&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">receive_label</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">strip_sdp</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Currently, only IP tags which strip the SDP &quot;</span>
                             <span class="s2">&quot;headers are supported&quot;</span><span class="p">)</span>
