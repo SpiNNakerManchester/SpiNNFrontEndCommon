@@ -853,16 +853,26 @@ void check_compressors(UNUSED uint unused0, UNUSED uint unused1) {
     // iterate over the compressors buffer until we have the finished state
     while (!terminated) {
         bool no_new_result = true;
+        bool failed_cpu = false;
 
         // iterate over processors looking for a new result
         for (int processor_id = 0; processor_id < MAX_PROCESSORS; processor_id++) {
             // Check each compressor asked to run or forced
             compressor_states finished_state =
                     comms_sdram[processor_id].compressor_state;
+            uchar state = sv_vcpu[processor_id].cpu_state;
             if (finished_state > COMPRESSING) {
                 no_new_result = false;
                 process_compressor_response(processor_id, finished_state);
+            } else if (state != CPU_STATE_RUN && state != CPU_STATE_PAUSE
+                    && state != CPU_STATE_DEAD) {
+                log_error("CPU %u Failed!", processor_id);
+                failed_cpu = true;
+                no_new_result = false;
             }
+        }
+        if (failed_cpu) {
+            rt_error(RTE_SWERR);
         }
         if (no_new_result) {
             log_debug("no_new_result");

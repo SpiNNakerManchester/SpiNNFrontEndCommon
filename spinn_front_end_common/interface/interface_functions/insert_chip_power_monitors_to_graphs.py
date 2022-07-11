@@ -14,63 +14,36 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-from spinn_front_end_common.utility_models import (
-    ChipPowerMonitor, ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
+from pacman.model.placements import Placement
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 def insert_chip_power_monitors_to_graphs(
-        machine, machine_graph, sampling_frequency, application_graph=None):
-    """ Adds chip power monitor vertices on Ethernet connected chips as\
-        required.
+        machine, sampling_frequency, placements):
+    """ Adds chip power monitors into a given graph.
 
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph
     :param int sampling_frequency:
-    :param application_graph: the application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
+    :param Placements placements:
     """
-    # pylint: disable=too-many-arguments
 
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
 
-    if application_graph.n_vertices > 0:
-        __add_app(
-            application_graph, machine_graph, machine, sampling_frequency,
-            progress)
-    else:
-        __add_mach_only(
-            machine_graph, machine, sampling_frequency, progress)
-
-
-def __add_app(
-        application_graph, machine_graph, machine, sampling_frequency,
-        progress):
-    app_vertex = ChipPowerMonitor(
-        label="ChipPowerMonitor",
-        sampling_frequency=sampling_frequency)
-    application_graph.add_vertex(app_vertex)
     for chip in progress.over(machine.chips):
         if not chip.virtual:
-            machine_graph.add_vertex(app_vertex.create_machine_vertex(
-                vertex_slice=None, resources_required=None,
-                label=_LABEL.format("machine", chip.x, chip.y),
-                constraints=[ChipAndCoreConstraint(chip.x, chip.y)]))
+            vertex = ChipPowerMonitorMachineVertex(
+                f"ChipPowerMonitor on {chip.x}, {chip.y}", [],
+                sampling_frequency=sampling_frequency)
+            cores = __cores(machine, chip.x, chip.y)
+            p = cores[placements.n_placements_on_chip(chip.x, chip.y)]
+            placements.add_placement(Placement(vertex, chip.x, chip.y, p))
 
 
-def __add_mach_only(
-        machine_graph, machine, sampling_frequency, progress):
-    for chip in progress.over(machine.chips):
-        if not chip.virtual:
-            machine_graph.add_vertex(ChipPowerMonitorMachineVertex(
-                label=_LABEL.format("machine", chip.x, chip.y),
-                constraints=[ChipAndCoreConstraint(chip.x, chip.y)],
-                app_vertex=None,
-                sampling_frequency=sampling_frequency))
+def __cores(machine, x, y):
+    return [p.processor_id for p in machine.get_chip_at(x, y).processors
+            if not p.is_monitor]

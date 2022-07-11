@@ -33,6 +33,7 @@
 #include <common-typedefs.h>
 #include <spinn_extra.h>
 #include "common.h"
+#include "data_specification.h"
 #include <wfi.h>
 
 // Debugging control
@@ -545,38 +546,8 @@ static vcpu_t *const _sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
 //! Where we collect provenance in SDRAM.
 static extra_monitor_provenance_t *prov;
 
-//! The magic number that marks a valid DSE metadata descriptor
-#define DSE_MAGIC       0xAD130AD6
-
-//! The version of the DSE metadata descriptor
-#define DSE_VERSION     0x00010000
-
-//! \brief DSE metadata
-//!
-//! Must structurally match data_specification_metadata_t
-typedef struct dse_header_t {
-    uint magic_number;  //!< Magic number (== #DSE_MAGIC)
-    uint version;       //!< Version (== #DSE_VERSION)
-    void *regions[];    //!< Pointers to DSG regions
-} dse_header_t;
-
-//! Checks that our region data really is region data.
-static void dse_validate(void) {
-    dse_header_t *dse_header = (dse_header_t *)
-            _sark_virtual_processor_info[sark.virt_cpu].user0;
-
-    if (dse_header->magic_number != DSE_MAGIC) {
-        // bad magic
-        io_printf(IO_BUF, "[ERROR] Bad magic number in DSE block: %08x\n",
-                dse_header->magic_number);
-        rt_error(RTE_SWERR);
-    }
-    if (dse_header->version != DSE_VERSION) {
-        io_printf(IO_BUF, "[ERROR] Unsupported DSE version: %08x\n",
-                dse_header->version);
-        rt_error(RTE_SWERR);
-    }
-}
+//! The DSE regions structure
+static data_specification_metadata_t *dse_regions;
 
 //! \brief Get the DSG region with the given index.
 //!
@@ -585,9 +556,7 @@ static void dse_validate(void) {
 //! \param[in] index: The index into the region table.
 //! \return The address of the region
 static inline void *dse_block(uint index) {
-    dse_header_t *dse_header = (dse_header_t *)
-            _sark_virtual_processor_info[sark.virt_cpu].user0;
-    return dse_header->regions[index];
+    return data_specification_get_region(index, dse_regions);
 }
 
 //! \brief publishes the current transaction ID to the user1 register.
@@ -2121,7 +2090,10 @@ static void provenance_initialise(void) {
 void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
 
-    dse_validate();
+    dse_regions = data_specification_get_data_address();
+    if (!data_specification_read_header(dse_regions)) {
+        rt_error(RTE_SWERR);
+    }
 
     // Configure
     my_addr = sv->p2p_addr;
