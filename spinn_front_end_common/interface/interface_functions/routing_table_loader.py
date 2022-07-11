@@ -33,8 +33,7 @@ def routing_table_loader(router_tables):
     app_id = FecDataView.get_app_id()
     transceiver = FecDataView.get_transceiver()
     for table in progress.over(router_tables.routing_tables):
-        if (not FecDataView.get_chip_at(table.x, table.y).virtual
-                and table.multicast_routing_entries):
+        if (table.number_of_entries):
             transceiver.load_multicast_routes(
                 table.x, table.y, table.multicast_routing_entries,
                 app_id)

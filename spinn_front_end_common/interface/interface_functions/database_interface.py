@@ -18,90 +18,68 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def database_interface(runtime):
-    """ Writes a database of the graph(s) and other information.
-
-        :param int runtime:
-        :return: Database interface, where the database is located
-        :rtype: tuple(DatabaseInterface, str)
     """
-    interface = _DatabaseInterface()
-    # pylint: disable=protected-access
-    return interface._run(runtime)
-
-
-class _DatabaseInterface(object):
-    """ Writes a database of the graph(s) and other information.
+    :param ~pacman.model.tags.Tags tags:
+    :return: Database interface, where the database is located
+    :rtype: tuple(DatabaseInterface, str)
     """
+    # pylint: disable=too-many-arguments
+    needs_db = DatabaseWriter.auto_detect_database()
+    user_create_database = get_config_bool("Database", "create_database")
+    if user_create_database is not None:
+        if user_create_database != needs_db:
+            logger.warning(f"Database creating changed to "
+                           f"{user_create_database} due to cfg settings")
+            needs_db = user_create_database
 
-    __slots__ = [
-        # the database writer object
-        "_writer",
+    if needs_db:
+        writer = DatabaseWriter()
+        logger.info("Creating live event connection database in {}",
+                    writer.database_path)
+        _write_to_db(writer, runtime)
+        writer.close()
+        return writer.database_path
+    return None
 
-        # True if the network is computed to need the database to be written
-        "_needs_db"
-    ]
 
-    def __init__(self):
-        self._writer = DatabaseWriter()
-        # add database generation if requested
-        self._needs_db = self._writer.auto_detect_database()
+def _write_to_db(
+        writer, runtime):
+    """
+    :param int runtime:
+    """
+    # pylint: disable=too-many-arguments
 
-    def _run(self, runtime):
-        """
-        :param int runtime:
-        :return: Database interface, where the database is located
-        :rtype: tuple(DatabaseInterface, str)
-        """
-        # pylint: disable=too-many-arguments
+    with writer as w, ProgressBar(
+            6, "Creating graph description database") as p:
+        w.add_system_params(runtime)
+        p.update()
+        w.add_machine_objects()
+        p.update()
+        w.add_application_vertices()
+        p.update()
+        w.add_placements()
+        p.update()
+        w.add_tags()
+        p.update()
+        lpg_source_machine_vertices = w.add_lpg_mapping()
+        app_graph = FecDataView.get_runtime_graph()
 
-        user_create_database = get_config_bool("Database", "create_database")
-        if user_create_database is not None:
-            if user_create_database != self._needs_db:
-                logger.warning(f"Database creating changed to "
-                               f"{user_create_database} due to cfg settings")
-                self._needs_db = user_create_database
-
-        if self._needs_db:
-            logger.info("creating live event connection database in {}",
-                        self._writer.database_path)
-            self._write_to_db(runtime)
-
-        if self._needs_db:
-            return self._writer.database_path
-        return None
-
-    def _write_to_db(self, runtime):
-        """
-        :param int runtime:
-        :param ~.MulticastRoutingTables router_tables:
-        """
-        # pylint: disable=too-many-arguments
-
-        with self._writer as w, ProgressBar(
-                9, "Creating graph description database") as p:
-            w.add_system_params(runtime)
-            p.update()
-            w.add_machine_objects()
-            p.update()
-            w.add_application_vertices()
-            p.update()
-            w.add_vertices()
-            p.update()
-            w.add_placements()
-            p.update()
-            w.add_routing_infos()
-            p.update()
-            w.add_routing_tables()
-            p.update()
-            w.add_tags()
-            p.update()
-            if get_config_bool(
-                    "Database",
-                    "create_routing_info_to_neuron_id_mapping"):
-                w.create_atom_to_event_id_mapping()
-            p.update()
+        if get_config_bool(
+                "Database", "create_routing_info_to_neuron_id_mapping"):
+            machine_vertices = [
+                (vertex, vertex.injection_partition_id)
+                for app_vertex in app_graph.vertices
+                for vertex in app_vertex.machine_vertices
+                if isinstance(vertex, AbstractSupportsDatabaseInjection)
+                and vertex.is_in_injection_mode]
+            machine_vertices.extend(lpg_source_machine_vertices)
+            w.create_atom_to_event_id_mapping(machine_vertices)
+        p.update()

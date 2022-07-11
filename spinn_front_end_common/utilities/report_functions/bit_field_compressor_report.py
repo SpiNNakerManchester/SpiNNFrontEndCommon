@@ -24,6 +24,7 @@ from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.provenance import ProvenanceReader
+
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
@@ -128,22 +129,19 @@ def _compute_to_merge_per_chip():
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
-    machine_graph = FecDataView.get_runtime_machine_graph()
-    # pylint: disable=not-an-iterable
-    for placement in FecDataView.iterate_placemements():
-        binary_start_type = None
-        if isinstance(placement.vertex, AbstractHasAssociatedBinary):
-            binary_start_type = placement.vertex.get_binary_start_type()
-
-        if binary_start_type != ExecutableType.SYSTEM:
-            seen_partitions = set()
-            for incoming_partition in machine_graph.\
-                    get_multicast_edge_partitions_ending_at_vertex(
-                        placement.vertex):
-                if incoming_partition not in seen_partitions:
-                    total_to_merge += 1
-                    to_merge_per_chip[placement.x, placement.y] += 1
-                    seen_partitions.add(incoming_partition)
+    app_graph = FecDataView.get_runtime_graph()
+    for partition in app_graph.outgoing_edge_partitions:
+        for edge in partition.edges:
+            splitter = edge.post_vertex.splitter
+            for vertex in splitter.get_source_specific_in_coming_vertices(
+                    partition.pre_vertex, partition.identifier):
+                if not isinstance(vertex, AbstractHasAssociatedBinary):
+                    continue
+                if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
+                    continue
+                place = FecDataView.get_placement_of_vertex(vertex)
+                to_merge_per_chip[place.chip] += 1
+                total_to_merge += 1
 
     return total_to_merge, to_merge_per_chip
 

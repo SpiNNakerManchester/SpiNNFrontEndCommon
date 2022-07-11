@@ -132,6 +132,21 @@ def convert_string_into_chip_and_core_subset(cores):
     return ignored_cores
 
 
+def flood_fill_binary_to_spinnaker(binary):
+    """ Flood fills a binary to spinnaker on a given `app_id` \
+        given the executable targets and binary.
+
+    :return: the number of cores it was loaded onto
+    :rtype: int
+    """
+    executable_targets = FecDataView.get_executable_targets()
+    core_subset = executable_targets.get_cores_for_binary(binary)
+    FecDataView.execute_flood(
+        core_subset, binary, FecDataView.get_app_id(), wait=True,
+        is_filename=True)
+    return len(core_subset)
+
+
 def generate_unique_folder_name(folder, filename, extension):
     """ Generate a unique file name with a given extension in a given folder
 

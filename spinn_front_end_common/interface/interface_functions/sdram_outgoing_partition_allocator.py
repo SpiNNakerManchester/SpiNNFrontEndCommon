@@ -22,7 +22,6 @@ from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
 def sdram_outgoing_partition_allocator():
-    machine_graph = FecDataView.get_runtime_machine_graph()
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None
@@ -31,19 +30,17 @@ def sdram_outgoing_partition_allocator():
         transceiver = None
         virtual_usage = defaultdict(int)
 
+    app_graph = FecDataView.get_runtime_graph()
     progress_bar = ProgressBar(
-        total_number_of_things_to_do=len(machine_graph.vertices),
+        total_number_of_things_to_do=len(app_graph.vertices),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
     # Keep track of SDRAM tags used
     next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
-    for machine_vertex in machine_graph.vertices:
-        sdram_partitions = (
-            machine_graph.get_sdram_edge_partitions_starting_at_vertex(
-                machine_vertex))
-        app_id = FecDataView.get_app_id()
+    for vertex in app_graph.vertices:
+        sdram_partitions = vertex.splitter.get_internal_sdram_partitions()
         for sdram_partition in sdram_partitions:
 
             # get placement, ones where the src is multiple,
@@ -70,7 +67,8 @@ def sdram_outgoing_partition_allocator():
                 tag = next_tag[placement.x, placement.y]
                 next_tag[placement.x, placement.y] = tag + 1
                 sdram_base_address = transceiver.malloc_sdram(
-                    placement.x, placement.y, total_sdram, app_id, tag)
+                    placement.x, placement.y, total_sdram,
+                    FecDataView.get_app_id(), tag)
             else:
                 sdram_base_address = virtual_usage[
                     placement.x, placement.y]

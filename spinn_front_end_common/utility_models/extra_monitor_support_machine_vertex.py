@@ -19,7 +19,8 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_utilities.config_holder import get_config_bool
@@ -119,13 +120,9 @@ class ExtraMonitorSupportMachineVertex(
     )
 
     def __init__(
-            self, constraints, app_vertex,
-            reinject_multicast=None, reinject_point_to_point=False,
+            self, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param constraints: constraints on this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         :param bool reinject_multicast:
             if we reinject multicast packets; defaults to value of
             `enable_reinjection` setting in configuration file
@@ -137,14 +134,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         # pylint: disable=too-many-arguments
         super().__init__(
-            label="SYSTEM:ExtraMonitor", constraints=constraints,
-            app_vertex=app_vertex)
+            label="SYSTEM:ExtraMonitor", constraints=None, app_vertex=None)
 
-        if reinject_multicast is None:
-            self._reinject_multicast = get_config_bool(
-                "Machine", "enable_reinjection")
-        else:
-            self._reinject_multicast = reinject_multicast
+        self._reinject_multicast = get_config_bool(
+            "Machine", "enable_reinjection")
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
@@ -255,7 +248,6 @@ class ExtraMonitorSupportMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-
         # storing for future usage
         self._placement = placement
         self._app_id = FecDataView.get_app_id()
@@ -273,28 +265,16 @@ class ExtraMonitorSupportMachineVertex(
         """
         :param ~.DataSpecificationGenerator spec: spec file
         """
-        machine_graph = FecDataView.get_runtime_machine_graph()
         spec.reserve_memory_region(
             region=_DSG_REGIONS.DATA_OUT_CONFIG,
             size=_CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data speed-up out config region")
         spec.switch_write_focus(_DSG_REGIONS.DATA_OUT_CONFIG)
-
-        routing_info = FecDataView.get_routing_infos()
-        if Gatherer.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_starting_at_vertex(self))[0])
-            spec.write_value(base_key)
-            spec.write_value(base_key + Gatherer.NEW_SEQ_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.FIRST_DATA_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.TRANSACTION_ID_KEY_OFFSET)
-            spec.write_value(base_key + Gatherer.END_FLAG_KEY_OFFSET)
-        else:
-            spec.write_value(Gatherer.BASE_KEY)
-            spec.write_value(Gatherer.NEW_SEQ_KEY)
-            spec.write_value(Gatherer.FIRST_DATA_KEY)
-            spec.write_value(Gatherer.TRANSACTION_ID_KEY)
-            spec.write_value(Gatherer.END_FLAG_KEY)
+        spec.write_value(Gatherer.BASE_KEY)
+        spec.write_value(Gatherer.NEW_SEQ_KEY)
+        spec.write_value(Gatherer.FIRST_DATA_KEY)
+        spec.write_value(Gatherer.TRANSACTION_ID_KEY)
+        spec.write_value(Gatherer.END_FLAG_KEY)
 
     def _generate_reinjection_config(self, spec, placement):
         """

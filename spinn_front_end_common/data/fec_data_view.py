@@ -192,18 +192,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 "currently disabled")
         PacmanDataView.add_vertex(vertex)
 
-    @classmethod
-    @overrides(PacmanDataView.add_machine_vertex)
-    def add_machine_vertex(cls, vertex):
-        # UGLY but needed to avoid circular imports
-        from spinn_front_end_common.utility_models import (
-            CommandSenderMachineVertex)
-        if isinstance(vertex, CommandSenderMachineVertex):
-            raise NotImplementedError(
-                "Please contact spinnker team as adding a CommandSender "
-                "currently disabled")
-        PacmanDataView.add_machine_vertex(vertex)
-
     # current_run_timesteps and first_machine_time_step
 
     @classmethod

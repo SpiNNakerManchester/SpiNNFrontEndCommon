@@ -88,7 +88,6 @@ def local_tdma_builder():
     """
     if FecDataView.get_runtime_graph().n_vertices == 0:
         return
-
     n_keys_map = FecDataView.get_machine_partition_n_keys_map()
     # get config params
     us_per_cycle = FecDataView.get_hardware_time_step_us()
@@ -109,12 +108,10 @@ def local_tdma_builder():
             # check config params for better performance
             (n_at_same_time, local_clocks) = __auto_config_times(
                 app_machine_quantity, clocks_between_cores,
-                clocks_for_sending, app_vertex, n_keys_map,
-                machine_graph, clocks_waiting)
+                clocks_for_sending, app_vertex, clocks_waiting)
             n_phases, n_slots, clocks_between_phases = \
                 __generate_times(
-                    machine_graph, app_vertex, n_at_same_time,
-                    local_clocks, n_keys_map)
+                    app_vertex, n_at_same_time, local_clocks)
 
             # store in tracker
             app_vertex.set_other_timings(
@@ -146,10 +143,10 @@ def local_tdma_builder():
 
 def __auto_config_times(
         app_machine_quantity, clocks_between_cores, clocks_for_sending,
-        app_vertex, n_keys_map, machine_graph, clocks_waiting):
+        app_vertex, clocks_waiting):
 
     n_cores = app_vertex.get_n_cores()
-    n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+    n_phases = app_vertex.get_n_phases()
 
     # If there are no packets sent, pretend there is 1 to avoid division
     # by 0; it won't actually matter anyway
@@ -212,27 +209,21 @@ def __generate_initial_offset(
 
 
 def __generate_times(
-        machine_graph, app_vertex, app_machine_quantity,
-        clocks_between_cores, n_keys_map):
+        app_vertex, app_machine_quantity, clocks_between_cores):
     """ Generates the number of phases needed for this app vertex, as well\
         as the number of slots and the time between spikes for this app\
         vertex, given the number of machine verts to fire at the same time\
         from a given app vertex.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
     :param TDMAAwareApplicationVertex app_vertex: the app vertex
     :param int app_machine_quantity: the pop spike control level
     :param int clocks_between_cores: the clock cycles between cores
-    :param n_keys_map: the partition to n keys map.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
     :return: (n_phases, n_slots, time_between_phases) for this app vertex
     :rtype: tuple(int, int, int)
     """
 
     # Figure total T2s
-    n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+    n_phases = app_vertex.get_n_phases()
 
     # how many hops between T2's
     n_cores = app_vertex.get_n_cores()

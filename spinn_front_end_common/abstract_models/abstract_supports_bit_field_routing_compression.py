@@ -27,17 +27,6 @@ class AbstractSupportsBitFieldRoutingCompression(
     __slots__ = ()
 
     @abstractmethod
-    def key_to_atom_map_region_base_address(self, transceiver, placement):
-        """ Returns the SDRAM address for the region that contains \
-            key-to-atom data.
-
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~pacman.model.placements.Placement placement:
-        :return: the SDRAM address for the key-to-atom data
-        :rtype: int
-        """
-
-    @abstractmethod
     def bit_field_base_address(self, placement):
         """ Returns the SDRAM address for the bit-field table data.
 

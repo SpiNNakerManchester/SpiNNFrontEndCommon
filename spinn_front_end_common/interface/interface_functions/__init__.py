@@ -26,13 +26,11 @@ from .database_interface import database_interface
 from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
 from .dsg_region_reloader import dsg_region_reloader
-from .edge_to_n_keys_mapper import edge_to_n_keys_mapper
 from .energy_provenance_reporter import energy_provenance_reporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
 from .graph_data_specification_writer import (
     graph_data_specification_writer)
-from .graph_measurer import graph_measurer
 from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
 from .hbp_max_machine_generator import hbp_max_machine_generator
@@ -42,14 +40,9 @@ from .host_execute_data_specification import (
     execute_application_data_specs, execute_system_data_specs)
 from .insert_chip_power_monitors_to_graphs import (
     insert_chip_power_monitors_to_graphs)
-from .insert_edges_to_extra_monitor_functionality import (
-    insert_edges_to_extra_monitor_functionality)
-from .insert_edges_to_live_packet_gatherers import (
-    insert_edges_to_live_packet_gatherers)
 from .insert_extra_monitor_vertices_to_graphs import (
     insert_extra_monitor_vertices_to_graphs)
-from .insert_live_packet_gatherers_to_graphs import (
-    insert_live_packet_gatherers_to_graphs)
+from .split_lpg_vertices import split_lpg_vertices
 from .load_executable_images import load_app_images, load_sys_images
 from .load_fixed_routes import load_fixed_routes
 from .local_tdma_builder import local_tdma_builder
@@ -57,15 +50,6 @@ from .locate_executable_start_type import locate_executable_start_type
 from .machine_generator import machine_generator
 from .create_notification_protocol import create_notification_protocol
 from .placements_provenance_gatherer import placements_provenance_gatherer
-from .pre_allocate_for_bit_field_router_compressor import (
-    PreAllocateForBitFieldRouterCompressor)
-from .pre_allocate_resources_for_chip_power_monitor import (
-    preallocate_resources_for_chip_power_monitor)
-from .pre_allocate_resources_for_live_packet_gatherers import (
-    preallocate_resources_for_live_packet_gatherers)
-from .preallocate_resources_for_extra_monitor_support import (
-    pre_allocate_resources_for_extra_monitor_support)
-from .process_partition_constraints import process_partition_constraints
 from .profile_data_gatherer import profile_data_gatherer
 from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_setup import routing_setup
@@ -86,26 +70,21 @@ __all__ = [
     "chip_io_buf_extractor", "chip_provenance_updater",
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
-    "dsg_region_reloader", "edge_to_n_keys_mapper",
+    "dsg_region_reloader",
     "energy_provenance_reporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
-    "graph_measurer", "graph_provenance_gatherer",
+    "graph_provenance_gatherer",
     "hbp_allocator", "host_based_bit_field_router_compressor",
     "hbp_max_machine_generator",
     "insert_chip_power_monitors_to_graphs",
-    "insert_edges_to_extra_monitor_functionality",
-    "insert_edges_to_live_packet_gatherers",
     "insert_extra_monitor_vertices_to_graphs",
-    "insert_live_packet_gatherers_to_graphs",
+    "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "local_tdma_builder", "locate_executable_start_type",
+    "lpg_placement_setter",
     "machine_generator", "placements_provenance_gatherer",
-    "PreAllocateForBitFieldRouterCompressor",
-    "preallocate_resources_for_chip_power_monitor",
-    "pre_allocate_resources_for_extra_monitor_support",
-    "preallocate_resources_for_live_packet_gatherers",
-    "process_partition_constraints", "profile_data_gatherer",
+    "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",

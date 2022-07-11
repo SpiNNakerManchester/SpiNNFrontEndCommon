@@ -21,7 +21,8 @@ from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
 from pacman import exceptions
 from pacman.model.graphs import AbstractSpiNNakerLink, AbstractFPGA
-from pacman.model.graphs.common import EdgeTrafficType
+from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
+    get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.data import FecDataView
 from .router_summary import RouterSummary
@@ -184,57 +185,51 @@ def router_report_from_paths():
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
-    machine_graph = FecDataView.get_runtime_machine_graph()
-    routing_infos = FecDataView.get_routing_infos()
+    partitions = get_app_partitions()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(
-                machine_graph.n_outgoing_edge_partitions,
-                "Generating Routing path report")
+            progress = ProgressBar(len(partitions),
+                                   "Generating Routing path report")
 
             f.write("        Edge Routing Report\n")
             f.write("        ===================\n\n")
             f.write(f"Generated: {time_date_string} "
                     f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
-            for partition in progress.over(
-                    machine_graph.outgoing_edge_partitions):
-                if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                    _write_one_router_partition_report(
-                        f, partition, routing_infos)
+            for partition in progress.over(partitions):
+                _write_one_router_partition_report(f, partition)
     except IOError:
         logger.exception("Generate_routing_reports: Can't open file {} for "
                          "writing.", file_name)
 
 
-def _write_one_router_partition_report(f, partition, routing_infos):
+def _write_one_router_partition_report(f, partition):
     """
     :param ~io.FileIO f:
     :param AbstractSingleSourcePartition partition:
-    :param RoutingInfo routing_infos:
     """
-    routing_tables = FecDataView.get_uncompressed()
-    source_placement = FecDataView.get_placement_of_vertex(
-        partition.pre_vertex)
-    key_and_mask = routing_infos.get_routing_info_from_partition(
-        partition).first_key_and_mask
+    source = partition.pre_vertex
+    outgoing = source.splitter.get_out_going_vertices(partition.identifier)
+    f.write(f"Source Application vertex {source}, partition"
+            f" {partition.identifier}\n")
+
+    routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
-        destination_placement = FecDataView.get_placement_of_vertex(
-            edge.post_vertex)
-        path, number_of_entries = _search_route(
-            source_placement, destination_placement,
-            key_and_mask, routing_tables)
-        text = ("**** Edge '{}', from vertex: '{}' to vertex: '{}'".format(
-            edge.label, edge.pre_vertex.label, edge.post_vertex.label))
-        text += " Takes path \n {}\n".format(path)
-        f.write(text)
-        f.write("Route length: {}\n".format(number_of_entries))
+        for m_vertex in outgoing:
+            source_placement = FecDataView.get_placement_of_vertex(m_vertex)
+            r_info = routing_infos.get_routing_info_from_pre_vertex(
+                m_vertex, partition.identifier)
+            path = _search_route(
+                source_placement, r_info.first_key_and_mask)
+            f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
+                edge.label, edge.pre_vertex.label, edge.post_vertex.label))
+            f.write("{}\n".format(path))
 
-        # End one entry:
-        f.write("\n")
+            # End one entry:
+            f.write("\n")
 
 
-def partitioner_report():
+def partitioner_report(hostname, graph):
     """ Generate report on the placement of vertices onto cores.
 
     """
@@ -244,18 +239,18 @@ def partitioner_report():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
+    graph = FecDataView.get_runtime_graph()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
+            progress = ProgressBar(graph.n_vertices,
                                    "Generating partitioner report")
 
             f.write("        Partitioning Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write(f"Generated: {time_date_string} "
-                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
+            f.write("Generated: {} for target machine '{}'\n\n".format(
+                time_date_string, hostname))
 
-            for vertex in progress.over(
-                    FecDataView.get_runtime_graph().vertices):
+            for vertex in progress.over(graph.vertices):
                 _write_one_vertex_partition(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -297,9 +292,10 @@ def placement_report_with_application_graph_by_vertex():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
+    graph = FecDataView.get_runtime_graph()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(FecDataView.get_runtime_graph().n_vertices,
+            progress = ProgressBar(graph.n_vertices,
                                    "Generating placement report")
 
             f.write("        Placement Information by Vertex\n")
@@ -307,8 +303,7 @@ def placement_report_with_application_graph_by_vertex():
             f.write(f"Generated: {time_date_string} "
                     f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
-            for vertex in progress.over(
-                    FecDataView.get_runtime_graph().vertices):
+            for vertex in progress.over(graph.vertices):
                 _write_one_vertex_application_placement(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -319,7 +314,6 @@ def _write_one_vertex_application_placement(f, vertex):
     """
     :param ~io.FileIO f:
     :param ApplicationVertex vertex:
-    :param Placements placements:
     """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
@@ -338,53 +332,19 @@ def _write_one_vertex_application_placement(f, vertex):
         lo_atom = sv.vertex_slice.lo_atom
         hi_atom = sv.vertex_slice.hi_atom
         num_atoms = sv.vertex_slice.n_atoms
-        cur_placement = FecDataView.get_placement_of_vertex(sv)
-        x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-        f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
-                .format(lo_atom, hi_atom, num_atoms, x, y, p))
+        if isinstance(sv, AbstractSpiNNakerLink):
+            f.write("  Slice {}:{} ({} atoms) on SpiNNaker Link {} \n"
+                    .format(lo_atom, hi_atom, num_atoms, sv.spinnaker_link_id))
+        elif isinstance(sv, AbstractFPGA):
+            f.write("  Slice {}:{} ({} atoms) on FGPA {}, {}) \n"
+                    .format(lo_atom, hi_atom, num_atoms, sv.fpga_id,
+                            sv.fpga_link_id))
+        else:
+            cur_placement = FecDataView.get_placement_of_vertex(sv)
+            x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
+            f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
+                    .format(lo_atom, hi_atom, num_atoms, x, y, p))
     f.write("\n")
-
-
-def placement_report_without_application_graph_by_vertex():
-    """ Generate report on the placement of vertices onto cores by vertex.
-
-    """
-    machine_graph = FecDataView.get_runtime_machine_graph()
-    # Cycle through all vertices, and for each cycle through its vertices.
-    # For each vertex, describe its core mapping.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_VTX_SIMPLE_FILENAME)
-    time_date_string = time.strftime("%c")
-    try:
-        with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(machine_graph.n_vertices,
-                                   "Generating placement report")
-
-            f.write("        Placement Information by Vertex\n")
-            f.write("        ===============================\n\n")
-            f.write(f"Generated: {time_date_string} "
-                    f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
-
-            for vertex in progress.over(machine_graph.vertices):
-                _write_one_vertex_machine_placement(f, vertex)
-    except IOError:
-        logger.exception("Generate_placement_reports: Can't open file {} for"
-                         " writing.", file_name)
-
-
-def _write_one_vertex_machine_placement(f, vertex):
-    """
-    :param ~io.FileIO f:
-    :param MachineVertex vertex:
-    """
-    vertex_name = vertex.label
-    vertex_model = vertex.__class__.__name__
-    f.write("**** Vertex: '{}'\n".format(vertex_name))
-    f.write("Model: {}\n".format(vertex_model))
-
-    cur_placement = FecDataView.get_placement_of_vertex(vertex)
-    x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-    f.write(" Placed on core ({}, {}, {})\n\n".format(x, y, p))
 
 
 def placement_report_with_application_graph_by_core():
@@ -417,13 +377,15 @@ def placement_report_with_application_graph_by_core():
                          "writing.", file_name)
 
 
-def _write_one_chip_application_placement(f, chip, placements):
+def _write_one_chip_application_placement(f, chip):
     """
     :param ~io.FileIO f:
     :param ~spinn_machine.Chip chip:
     :param Placements placements:
     """
     written_header = False
+    total_sdram = None
+    placements = FecDataView.get_placements()
     for processor in chip.processors:
         if placements.is_processor_occupied(
                 chip.x, chip.y, processor.processor_id):
@@ -436,17 +398,36 @@ def _write_one_chip_application_placement(f, chip, placements):
             vertex = placements.get_vertex_on_processor(
                 chip.x, chip.y, processor.processor_id)
             app_vertex = vertex.app_vertex
-            vertex_label = app_vertex.label
-            vertex_model = app_vertex.__class__.__name__
-            vertex_atoms = app_vertex.n_atoms
-            lo_atom = vertex.vertex_slice.lo_atom
-            hi_atom = vertex.vertex_slice.hi_atom
-            num_atoms = vertex.vertex_slice.n_atoms
-            f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
-                pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}:{} ({} atoms)\n"
-                    .format(lo_atom, hi_atom, num_atoms))
-            f.write("              Model: {}\n\n".format(vertex_model))
+            if app_vertex is not None:
+                vertex_label = app_vertex.label
+                vertex_model = app_vertex.__class__.__name__
+                vertex_atoms = app_vertex.n_atoms
+                lo_atom = vertex.vertex_slice.lo_atom
+                hi_atom = vertex.vertex_slice.hi_atom
+                num_atoms = vertex.vertex_slice.n_atoms
+                f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
+                    pro_id, vertex_label, vertex_atoms))
+                f.write("              Slice on this core: {}:{} ({} atoms)\n"
+                        .format(lo_atom, hi_atom, num_atoms))
+                f.write("              Model: {}\n".format(vertex_model))
+            else:
+                f.write("  Processor {}: System Vertex: '{}'\n".format(
+                    pro_id, vertex.label))
+                f.write("              Model: {}\n".format(
+                    vertex.__class__.__name__))
+
+            sdram = vertex.resources_required.sdram
+            f.write("              SDRAM required: {}; {} per timestep\n\n"
+                    .format(sdram.fixed, sdram.per_timestep))
+            if total_sdram is None:
+                total_sdram = sdram
+            else:
+                total_sdram += sdram
+
+    if total_sdram is not None:
+        f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
+                .format(chip.sdram.size, total_sdram.fixed,
+                        total_sdram.per_timestep))
 
 
 def placement_report_without_application_graph_by_core():
@@ -463,7 +444,7 @@ def placement_report_without_application_graph_by_core():
     placements = FecDataView.get_placements()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(machine.n_chips,
+            progress = ProgressBar(machine.chips,
                                    "Generating placement by core report")
 
             f.write("        Placement Information by Core\n")
@@ -580,43 +561,52 @@ def _sdram_usage_report_per_chip_with_timesteps(
             pass
 
 
-def routing_info_report():
+def routing_info_report(extra_allocations):
     """ Generates a report which says which keys is being allocated to each\
         vertex
 
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
-    machine_graph = FecDataView.get_runtime_machine_graph()
+    app_graph = FecDataView.get_runtime_graph()
     routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(machine_graph.n_outgoing_edge_partitions,
+            vertex_partitions = set(
+                (p.pre_vertex, p.identifier)
+                for p in app_graph.outgoing_edge_partitions)
+            vertex_partitions.update(extra_allocations)
+            progress = ProgressBar(len(vertex_partitions),
                                    "Generating Routing info report")
-            for vertex in machine_graph.vertices:
-                _write_vertex_virtual_keys(
-                    f, vertex, machine_graph, routing_infos, progress)
+            for pre_vert, part_id in progress.over(vertex_partitions):
+                _write_vertex_virtual_keys(f, pre_vert, part_id, routing_infos)
             progress.end()
     except IOError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
 
 
-def _write_vertex_virtual_keys(
-        f, vertex, graph, routing_infos, progress):
+def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
     """
     :param ~io.FileIO f:
-    :param MachineVertex vertex:
-    :param MachineGraph graph:
+    :param ApplicationVertex pre_vertex:
+    :param str part_id:
     :param RoutingInfo routing_infos:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
-    f.write("Vertex: {}\n".format(vertex))
-    for partition in progress.over(
-            graph.get_multicast_edge_partitions_starting_at_vertex(vertex),
-            False):
-        rinfo = routing_infos.get_routing_info_from_partition(partition)
+    rinfo = routing_infos.get_routing_info_from_pre_vertex(
+        pre_vertex, part_id)
+    # Might be None if the partition has no outgoing vertices e.g. a Poisson
+    # source replaced by SDRAM comms
+    if rinfo is not None:
+        f.write("Vertex: {}\n".format(pre_vertex))
         f.write("    Partition: {}, Routing Info: {}\n".format(
-            partition.identifier, rinfo.keys_and_masks))
+            part_id, rinfo.keys_and_masks))
+        for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
+            r_info = routing_infos.get_routing_info_from_pre_vertex(
+                m_vertex, part_id)
+            if r_info is not None:
+                f.write("    Machine Vertex: {}, Routing Info: {}\n".format(
+                    m_vertex, r_info.keys_and_masks))
 
 
 def router_report_from_router_tables():
@@ -629,9 +619,9 @@ def router_report_from_router_tables():
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
-    progress = ProgressBar(routing_tables,
+    progress = ProgressBar(routing_tables.routing_tables,
                            "Generating Router table report")
-    for routing_table in progress.over(routing_tables):
+    for routing_table in progress.over(routing_tables.routing_tables):
         if routing_table.number_of_entries:
             generate_routing_table(routing_table, top_level_folder)
 
@@ -759,8 +749,7 @@ def generate_comparison_router_report(compressed_routing_tables):
                          " {} for writing.", file_name)
 
 
-def _search_route(
-        source_placement, dest_placement, key_and_mask, routing_tables):
+def _search_route(source_placement, key_and_mask, routing_tables):
     """
     :param Placement source_placement:
     :param Placement dest_placement:
@@ -769,86 +758,70 @@ def _search_route(
     :rtype: tuple(str, int)
     """
     # Create text for starting point
+    machine = FecDataView.get_machine()
     source_vertex = source_placement.vertex
     text = ""
     if isinstance(source_vertex, AbstractSpiNNakerLink):
-        text += "Virtual SpiNNaker Link "
-    if isinstance(source_vertex, AbstractFPGA):
-        text += "Virtual FPGA Link "
-    text += "{}:{}:{} -> ".format(
-        source_placement.x, source_placement.y, source_placement.p)
-
-    # Start the search
-    number_of_entries = 0
+        text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
+            source_placement.x, source_placement.y, source_placement.p)
+        slink = machine.get_spinnaker_link_with_id(
+            source_vertex.spinnaker_link_id)
+        x = slink.connected_chip_x
+        y = slink.connected_chip_y
+    elif isinstance(source_vertex, AbstractFPGA):
+        text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
+            source_placement.x, source_placement.y, source_placement.p)
+        flink = machine.get_fpga_link_with_id(
+            source_vertex.fpga_id, source_vertex.fpga_link_id)
+        x = flink.connected_chip_x
+        y = flink.connected_chip_y
+    else:
+        x = source_placement.x
+        y = source_placement.y
+        text = "        {}:{}:{} -> ".format(
+            source_placement.x, source_placement.y, source_placement.p)
 
     # If the destination is virtual, replace with the real destination chip
-    extra_text, total_number_of_entries = _recursive_trace_to_destinations(
-        source_placement.x, source_placement.y, key_and_mask,
-        dest_placement.x, dest_placement.y, dest_placement.p,
-        routing_tables, number_of_entries)
-    text += extra_text
-    return text, total_number_of_entries
+    text += _recursive_trace_to_destinations(
+        x, y, key_and_mask, machine, routing_tables, pre_space="        ")
+    return text
 
 
-# locates the next dest position to check
+# Locates the destinations of a route
 def _recursive_trace_to_destinations(
-        chip_x, chip_y, key_and_mask,
-        dest_chip_x, dest_chip_y, dest_p, routing_tables,
-        number_of_entries):
+        chip_x, chip_y, key_and_mask, machine, routing_tables, pre_space):
     """ Recursively search though routing tables till no more entries are\
         registered with this key
 
     :param int chip_x:
     :param int chip_y
     :param BaseKeyAndMask key_and_mask:
-    :param int dest_chip_x:
-    :param int dest_chip_y:
-    :param int dest_chip_p:
+    :param ~spinn_machine.Machine machine:
     :param ~spinn_machine.MulticastRoutingTables routing_tables:
-    :param int number_of_entries:
-    :rtype: tuple(str, int) or tuple(None, None)
+    :rtype: str
     """
 
-    chip = FecDataView.get_chip_at(chip_x, chip_y)
+    chip = machine.get_chip_at(chip_x, chip_y)
 
-    # If reached destination, return the core
-    if (chip_x == dest_chip_x and chip_y == dest_chip_y):
-        text = ""
-        if chip.virtual:
-            text += "Virtual "
-        text += "{}:{}:{}".format(dest_chip_x, dest_chip_y, dest_p)
-        return text, number_of_entries + 1
-
-    link_id = None
-    result = None
-    new_n_entries = None
     if chip.virtual:
-        # If the current chip is virtual, use link out
-        link_id, link = next(iter(chip.router))
-        result, new_n_entries = _recursive_trace_to_destinations(
-            link.destination_x, link.destination_y, key_and_mask,
-            dest_chip_x, dest_chip_y, dest_p,
-            routing_tables, number_of_entries)
-        if result is None:
-            return None, None
-    else:
-        # If the current chip is real, find the link to the destination
-        table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
-        entry = _locate_routing_entry(table, key_and_mask.key)
-        for link_id in entry.link_ids:
-            link = chip.router.get_link(link_id)
-            result, new_n_entries = _recursive_trace_to_destinations(
-                link.destination_x, link.destination_y, key_and_mask,
-                dest_chip_x, dest_chip_y, dest_p,
-                routing_tables, number_of_entries)
-            if result is not None:
-                break
-        else:
-            return None, None
+        return "-> Virtual Chip {}, {}".format(chip_x, chip_y)
 
-    text = "{}:{}:{} -> {}".format(
-        chip_x, chip_y, _LINK_LABELS[link_id], result)
-    return text, new_n_entries + 1
+    text = "-> Chip {}:{}".format(chip_x, chip_y)
+    table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
+    entry = _locate_routing_entry(table, key_and_mask.key)
+    new_pre_space = pre_space + (" " * len(text))
+    first = True
+    for link_id in entry.link_ids:
+        if not first:
+            text += "\n{}".format(pre_space)
+        link = chip.router.get_link(link_id)
+        text += "-> {}".format(link)
+        text += _recursive_trace_to_destinations(
+            link.destination_x, link.destination_y, key_and_mask, machine,
+            routing_tables, new_pre_space)
+        first = False
+
+    return text
 
 
 def _locate_routing_entry(current_router, key):

@@ -16,13 +16,11 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping,
-    AbstractSupportsDatabaseInjection)
-from pacman.model.graphs.machine import MulticastEdgePartition
+    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
+from spinn_front_end_common.utility_models import LivePacketGather
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -74,10 +72,13 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        graph = FecDataView.get_runtime_machine_graph()
-        return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
-                   and vertex.is_in_injection_mode
-                   for vertex in graph.vertices)
+        app_graph = FecDataView.get_runtime_machine_graph()
+        return (any(isinstance(app_vertex, LivePacketGather)
+                    for app_vertex in app_graph.vertices) or
+                any(isinstance(vertex, AbstractSupportsDatabaseInjection)
+                    and vertex.is_in_injection_mode
+                    for app_vertex in app_graph.vertices
+                    for vertex in app_vertex.machine_vertices))
 
     @property
     def database_path(self):
@@ -132,70 +133,43 @@ class DatabaseWriter(SQLiteDB):
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
-            cur.executemany(
-                """
-                INSERT INTO Processor(
-                    chip_x, chip_y, machine_id, available_DTCM,
-                    available_CPU, physical_id)
-                VALUES(?, ?, ?, ?, ?, ?)
-                """, (
-                    (chip.x, chip.y, self._machine_id, proc.dtcm_available,
-                     proc.cpu_cycles_available, proc.processor_id)
-                    for chip in machine.chips
-                    for proc in chip.processors))
 
     def add_application_vertices(self):
         """ Stores the main application graph description (vertices, edges).
 
         """
         application_graph = FecDataView.get_runtime_graph()
-        if application_graph.n_vertices == 0:
-            return
         with self.transaction() as cur:
             # add vertices
             for vertex in application_graph.vertices:
-                self.__vertex_to_id[vertex] = self.__insert(
+                vertex_id = self.__insert(
                     cur,
-                    """
-                    INSERT INTO Application_vertices(
-                        vertex_label, vertex_class, no_atoms,
-                        max_atom_constrant)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    vertex.get_max_atoms_per_core())
+                    "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
+                    vertex.label)
+                self.__vertex_to_id[vertex] = vertex_id
+                for m_vertex in vertex.machine_vertices:
+                    m_vertex_id = self.__add_machine_vertex(cur, m_vertex)
+                    self.__insert(
+                        cur,
+                        """
+                        INSERT INTO graph_mapper_vertex (
+                            application_vertex_id, machine_vertex_id)
+                        VALUES(?, ?)
+                        """,
+                        vertex_id, m_vertex_id)
 
-            # add edges
-            for edge in application_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Application_edges (
-                        pre_vertex, post_vertex, edge_label, edge_class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
-
-            # update graph
-            cur.executemany(
-                """
-                INSERT INTO Application_graph (
-                    vertex_id, edge_id)
-                VALUES(?, ?)
-                """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
-                    for vertex in application_graph.vertices
-                    for edge in application_graph.get_edges_starting_at_vertex(
-                        vertex)))
+    def __add_machine_vertex(self, cur, m_vertex):
+        m_vertex_id = self.__insert(
+            cur, "INSERT INTO Machine_vertices (label)  VALUES(?)",
+            str(m_vertex.label))
+        self.__vertex_to_id[m_vertex] = m_vertex_id
+        return m_vertex_id
 
     def add_system_params(self, runtime):
         """ Write system params into the database
 
         :param int runtime: the amount of time the application is to run for
         """
-        app_id = FecDataView.get_app_id()
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -205,89 +179,23 @@ class DatabaseWriter(SQLiteDB):
                 """, [
                     ("machine_time_step",
                      FecDataView.get_simulation_time_step_us()),
-                    ("time_scale_factor", FecDataView.get_time_scale_factor()),
+                    ("time_scale_factor",
+                     FecDataView.get_time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),
-                    ("app_id", app_id)])
-
-    def add_vertices(self):
-        """ Add the machine graph into the database.
-
-        """
-        application_graph = FecDataView.get_runtime_graph()
-        data_n_timesteps = FecDataView.get_max_run_time_steps()
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                req = vertex.resources_required
-                self.__vertex_to_id[vertex] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_vertices (
-                        label, class, cpu_used, sdram_used, dtcm_used)
-                    VALUES(?, ?, ?, ?, ?)
-                    """,
-                    str(vertex.label), vertex.__class__.__name__,
-                    _extract_int(req.cpu_cycles.get_value()),
-                    _extract_int(req.sdram.get_total_sdram(data_n_timesteps)),
-                    _extract_int(req.dtcm.get_value()))
-
-            # add machine edges
-            for edge in machine_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_edges (
-                        pre_vertex, post_vertex, label, class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
-
-            # add to machine graph
-            cur.executemany(
-                """
-                INSERT INTO Machine_graph (
-                    vertex_id, edge_id)
-                VALUES(?, ?)
-                """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
-                    for vertex in machine_graph.vertices
-                    for edge in machine_graph.get_edges_starting_at_vertex(
-                        vertex)))
-
-            if application_graph.n_vertices > 0:
-                cur.executemany(
-                    """
-                    INSERT INTO graph_mapper_vertex (
-                        application_vertex_id, machine_vertex_id, lo_atom,
-                        hi_atom)
-                    VALUES(?, ?, ?, ?)
-                    """, (
-                        (self.__vertex_to_id[vertex.app_vertex],
-                         self.__vertex_to_id[vertex],
-                         vertex.vertex_slice.lo_atom,
-                         vertex.vertex_slice.hi_atom)
-                        for vertex in machine_graph.vertices))
-
-                # add graph_mapper edges
-                cur.executemany(
-                    """
-                    INSERT INTO graph_mapper_edges (
-                        application_edge_id, machine_edge_id)
-                    VALUES(?, ?)
-                    """, (
-                        (self.__edge_to_id[edge.app_edge],
-                         self.__edge_to_id[edge])
-                        for edge in machine_graph.edges
-                        if edge.app_edge is not None))
+                    ("app_id", FecDataView.get_app_id())])
 
     def add_placements(self):
         """ Adds the placements objects into the database
 
+        :param ~pacman.model.placements.Placements placements:
+            the placements object
         """
         with self.transaction() as cur:
+            # Make sure machine vertices are represented
+            for placement in FecDataView.iterate_placemements():
+                if placement.vertex not in self.__vertex_to_id:
+                    self.__add_machine_vertex(cur, placement.vertex)
             # add records
             cur.executemany(
                 """
@@ -297,111 +205,77 @@ class DatabaseWriter(SQLiteDB):
                 """, (
                     (self.__vertex_to_id[placement.vertex],
                      placement.x, placement.y, placement.p, self._machine_id)
-                    # pylint: disable=not-an-iterable
                     for placement in FecDataView.iterate_placemements()))
-
-    def add_routing_infos(self):
-        """ Adds the routing information (key masks etc) into the database
-
-        """
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        routing_infos = FecDataView.get_routing_infos()
-        # Filter just the MULTICAST partitions first
-        partitions_and_routing_info = (
-            (partition, routing_infos.get_routing_info_from_partition(
-                partition))
-            for partition in machine_graph.outgoing_edge_partitions
-            if partition.traffic_type == EdgeTrafficType.MULTICAST)
-        with self.transaction() as cur:
-            cur.executemany(
-                """
-                INSERT INTO Routing_info(
-                    edge_id, "key", mask)
-                VALUES(?, ?, ?)
-                """, (
-                    (self.__edge_to_id[edge], key_mask.key, key_mask.mask)
-                    for partition, rinfo in partitions_and_routing_info
-                    for edge in partition.edges
-                    for key_mask in rinfo.keys_and_masks))
-
-    def add_routing_tables(self):
-        """ Adds the routing tables into the database
-
-        """
-        routing_tables = FecDataView.get_uncompressed().routing_tables
-        with self.transaction() as cur:
-            cur.executemany(
-                """
-                INSERT INTO Routing_table(
-                    chip_x, chip_y, position, key_combo, mask, route)
-                VALUES(?, ?, ?, ?, ?, ?)
-                """, (
-                    (routing_table.x, routing_table.y, counter,
-                     entry.routing_entry_key, entry.mask,
-                     entry.spinnaker_route)
-                    for routing_table in routing_tables
-                    for counter, entry in
-                    enumerate(routing_table.multicast_routing_entries)))
 
     def add_tags(self):
         """ Adds the tags into the database
 
         """
         tags = FecDataView.get_tags()
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                v_id = self.__vertex_to_id[vertex]
-                cur.executemany(
-                    """
-                    INSERT INTO IP_tags(
-                        vertex_id, tag, board_address, ip_address, port,
-                        strip_sdp)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        (v_id, ipt.tag, ipt.board_address, ipt.ip_address,
-                         ipt.port or 0, 1 if ipt.strip_sdp else 0)
-                        for ipt in tags.get_ip_tags_for_vertex(vertex) or []))
-                cur.executemany(
-                    """
-                    INSERT INTO Reverse_IP_tags(
-                        vertex_id, tag, board_address, port)
-                    VALUES (?, ?, ?, ?)
-                    """, (
-                        (v_id, ript.tag, ript.board_address, ript.port or 0)
-                        for ript in tags.get_reverse_ip_tags_for_vertex(
-                            vertex) or ()))
-
-    def create_atom_to_event_id_mapping(self):
-        application_graph = FecDataView.get_runtime_graph()
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        if application_graph.n_vertices:
-            # We will be asking application vertices for key/atom mappings
-            vertices_and_partitions = (
-                (vertex.app_vertex, partition)
-                for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
-        else:
-            # We will be asking machine vertices for key/atom mappings
-            vertices_and_partitions = (
-                (vertex, partition)
-                for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
-
-        routing_infos = FecDataView.get_routing_infos()
         with self.transaction() as cur:
             cur.executemany(
                 """
-                INSERT INTO event_to_atom_mapping(
-                    vertex_id, event_id, atom_id)
-                VALUES (?, ?, ?)
+                INSERT INTO IP_tags(
+                    vertex_id, tag, board_address, ip_address, port,
+                    strip_sdp)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """, (
-                    (self.__vertex_to_id[vtx], int(key), int(a_id))
-                    for vtx, prtn in vertices_and_partitions
-                    if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
-                    and isinstance(prtn, MulticastEdgePartition)
-                    for a_id, key in vtx.routing_key_partition_atom_mapping(
-                        routing_infos.get_routing_info_from_partition(prtn),
-                        prtn)))
+                    (self.__vertex_to_id[vert], ipt.tag, ipt.board_address,
+                     ipt.ip_address, ipt.port or 0, 1 if ipt.strip_sdp else 0)
+                    for ipt, vert in tags.ip_tags_vertices))
+
+    def create_atom_to_event_id_mapping(self, machine_vertices):
+        """
+        """
+        routing_infos = FecDataView.get_routing_infos()
+        # This could happen if there are no LPGs
+        if machine_vertices is None:
+            return
+        with self.transaction() as cur:
+            for (m_vertex, partition_id) in machine_vertices:
+                atom_keys = list()
+                if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
+                    atom_keys = m_vertex.app_vertex.get_atom_key_map(
+                        m_vertex, partition_id, routing_infos)
+                else:
+                    r_info = routing_infos.get_routing_info_from_pre_vertex(
+                        m_vertex, partition_id)
+                    # r_info could be None if there are no outgoing edges,
+                    # at which point there is nothing to do here anyway
+                    if r_info is not None:
+                        vertex_slice = m_vertex.vertex_slice
+                        keys = r_info.get_keys(vertex_slice.n_atoms)
+                        start = vertex_slice.lo_atom
+                        atom_keys = [(i, k) for i, k in enumerate(keys, start)]
+                m_vertex_id = self.__vertex_to_id[m_vertex]
+                cur.executemany(
+                    """
+                    INSERT INTO event_to_atom_mapping(
+                        vertex_id, event_id, atom_id)
+                    VALUES (?, ?, ?)
+                    """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
+                )
+
+    def add_lpg_mapping(self):
+        """ Add mapping from machine vertex to LPG machine vertex
+
+        :return: A list of (source vertex, partition id)
+        :rtype: list(MachineVertex, str)
+        """
+        targets = [(m_vertex, part_id, lpg_m_vertex)
+                   for vertex in FecDataView.get_runtime_graph().vertices
+                   if isinstance(vertex, LivePacketGather)
+                   for lpg_m_vertex, m_vertex, part_id
+                   in vertex.splitter.targeted_lpgs]
+
+        with self.transaction() as cur:
+            cur.executemany(
+                """
+                INSERT INTO m_vertex_to_lpg_vertex(
+                    pre_vertex_id, partition_id, post_vertex_id)
+                VALUES(?, ?, ?)
+                """, ((self.__vertex_to_id[m_vertex], part_id,
+                       self.__vertex_to_id[lpg_m_vertex])
+                      for m_vertex, part_id, lpg_m_vertex in targets))
+
+        return [(source, part_id) for source, part_id, _target in targets]

@@ -30,7 +30,7 @@ class TestingUtilities(unittest.TestCase):
 
     def test_get_region_base_address_offset(self):
         val = get_region_base_address_offset(48, 7)
-        self.assertEqual(val, 84)
+        self.assertEqual(val, 140)
 
     def test_get_data_spec_and_file_writer_filename(self):
         set_config("Reports", "write_text_specs", "True")

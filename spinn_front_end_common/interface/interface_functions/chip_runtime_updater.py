@@ -27,17 +27,15 @@ def chip_runtime_updater(n_sync_steps):
     """
     core_subsets = FecDataView.get_executable_types()[
         ExecutableType.USES_SIMULATION_INTERFACE]
-
+    n_cores = len(core_subsets)
     ready_progress = ProgressBar(
-        total_number_of_things_to_do=1,
-        string_describing_what_being_progressed=(
-            "Waiting for cores to be either in PAUSED or READY state"))
+        n_cores, "Waiting for cores to be either in PAUSED or READY state")
     FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
         core_subsets, FecDataView.get_app_id(),
         [CPUState.PAUSED, CPUState.READY],
         error_states=frozenset({
             CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
-            CPUState.FINISHED}))
+            CPUState.FINISHED}), progress_bar=ready_progress, timeout=n_cores)
     ready_progress.end()
 
     run_until_timesteps = FecDataView.get_current_run_timesteps()

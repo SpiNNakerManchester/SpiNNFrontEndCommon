@@ -27,12 +27,8 @@ class MachineDataSpecableVertex(
     __slots__ = ()
 
     @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"tags"})
+        AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        """
-        :param ~pacman.model.tags.Tags tags: (Injected)
-        """
         # pylint: disable=too-many-arguments, arguments-differ
         tags = FecDataView.get_tags()
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)

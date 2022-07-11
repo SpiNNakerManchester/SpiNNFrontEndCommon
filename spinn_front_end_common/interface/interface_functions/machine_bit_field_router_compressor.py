@@ -20,6 +20,7 @@ from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
@@ -150,7 +151,7 @@ class _MachineBitFieldRouterCompressor(object):
             text += " capped at {} retries".format(retry_count)
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
-                len(machine_graph.vertices) +
+                len(app_graph.vertices) +
                 (len(routing_tables.routing_tables) *
                  self.TIMES_CYCLED_ROUTING_TABLES)),
             string_describing_what_being_progressed=text)
@@ -190,10 +191,23 @@ class _MachineBitFieldRouterCompressor(object):
         except SpiNNManCoresNotInStateException as e:
             logger.exception(transceiver.get_core_status_string(
                 e.failed_core_states()))
+            try:
+                transceiver.stop_application(routing_table_compressor_app_id)
+            except Exception:
+                logger.warning("Could not stop compressor!")
             raise e
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
+            most_costly_cores = defaultdict(lambda: defaultdict(int))
+            for partition in app_graph.outgoing_edge_partitions:
+                for edge in partition.edges:
+                    sttr = edge.pre_vertex.splitter
+                    for vertex in sttr.get_source_specific_in_coming_vertices(
+                            partition.pre_vertex, partition.identifier):
+                        place = placements.get_placement_of_vertex(vertex)
+                        if place.chip in on_host_chips:
+                            most_costly_cores[place.chip][place.p] += 1
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
             progress_bar = ProgressBar(
                 total_number_of_things_to_do=len(on_host_chips),
@@ -214,6 +228,9 @@ class _MachineBitFieldRouterCompressor(object):
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     report_folder_path=report_folder_path,
+                    transceiver=transceiver,
+                    most_costly_cores=most_costly_cores,
+                    placements=placements, machine=machine,
                     compressed_pacman_router_tables=(
                         compressed_pacman_router_tables),
                     key_atom_map=key_atom_map)
@@ -304,6 +321,7 @@ class _MachineBitFieldRouterCompressor(object):
         transceiver = FecDataView.get_transceiver()
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
+        result = True
         for core_subset in sorter_cores:
             x = core_subset.x
             y = core_subset.y
@@ -319,11 +337,10 @@ class _MachineBitFieldRouterCompressor(object):
                     x, y, user_2_base_address)
 
                 if result != self.SUCCESS:
-                    if (x, y) not in host_chips:
-                        host_chips.append((x, y))
-                    return False
+                    host_chips.add((x, y))
+                    result = False
                 generate_provenance_item(x, y, bit_fields_merged)
-        return True
+        return result
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
@@ -394,7 +411,7 @@ class _MachineBitFieldRouterCompressor(object):
                         bit_field_compressor_executable_path, cores,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
-                    run_by_host.append((table.x, table.y))
+                    run_by_host.add((table.x, table.y))
 
         return run_by_host
 
@@ -690,17 +707,17 @@ class _MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        for vertex in progress_bar.over(
-                machine_graph.vertices, finish_at_end=False):
-            placement = FecDataView.get_placement_of_vertex(vertex)
+        app_graph = FecDataView.get_runtime_graph()
 
-            # locate the interface vertex (maybe app or machine)
-            if isinstance(
-                    vertex, AbstractSupportsBitFieldRoutingCompression):
-                self._add_to_addresses(
-                    vertex, placement, region_addresses,
-                    sdram_block_addresses_and_sizes)
+        for app_vertex in progress_bar.over(
+                app_graph.vertices, finish_at_end=False):
+            for m_vertex in app_vertex.machine_vertices:
+                if isinstance(
+                        m_vertex, AbstractSupportsBitFieldRoutingCompression):
+                    placement = placements.get_placement_of_vertex(m_vertex)
+                    self._add_to_addresses(
+                        m_vertex, placement, transceiver, region_addresses,
+                        sdram_block_addresses_and_sizes)
 
         return region_addresses, sdram_block_addresses_and_sizes
 

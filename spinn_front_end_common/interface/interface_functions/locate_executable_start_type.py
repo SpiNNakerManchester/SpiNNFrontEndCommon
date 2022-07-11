@@ -24,26 +24,22 @@ def locate_executable_start_type():
     """
     Discovers where applications of particular types need to be launched.
 
-    :param ~pacman.model.graphs.machine.MachineGraph graph:
-    :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
-    graph = FecDataView.get_runtime_machine_graph()
-    if not graph.vertices:
-        return {ExecutableType.NO_APPLICATION: None}
-
     binary_start_types = dict()
 
     progress = ProgressBar(
-        graph.n_vertices, "Finding executable start types")
-    for vertex in progress.over(graph.vertices):
-        # try to locate binary type, but possible it doesn't have one
-        if isinstance(vertex, AbstractHasAssociatedBinary):
-            bin_type = vertex.get_binary_start_type()
-            # update core subset with location of the vertex on the machine
+        FecDataView.get_n_placements(), "Finding executable start types")
+    for placement in progress.over(FecDataView.iterate_placemements()):
+
+        if isinstance(placement.vertex, AbstractHasAssociatedBinary):
+            bin_type = placement.vertex.get_binary_start_type()
+            # update core subset with location of the vertex on the
+            # machine
             if bin_type not in binary_start_types:
                 binary_start_types[bin_type] = CoreSubsets()
 
-            __add_vertex_to_subset(vertex, binary_start_types[bin_type])
+            __add_vertex_to_subset(
+                placement, binary_start_types[bin_type])
 
     # only got apps with no binary, such as external devices.
     # return no app
@@ -53,11 +49,10 @@ def locate_executable_start_type():
     return binary_start_types
 
 
-def __add_vertex_to_subset(machine_vertex, core_subsets):
+def __add_vertex_to_subset(placement, core_subsets):
     """
-    :param ~.MachineVertex machine_vertex:
+    :param ~.Placement placement:
     :param ~.CoreSubsets core_subsets:
     """
-    placement = FecDataView.get_placement_of_vertex(machine_vertex)
     core_subsets.add_processor(
         x=placement.x, y=placement.y, processor_id=placement.p)

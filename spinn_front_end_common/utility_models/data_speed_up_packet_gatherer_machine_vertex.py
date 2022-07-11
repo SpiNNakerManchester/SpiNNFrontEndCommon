@@ -27,15 +27,13 @@ from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset, get_region_base_address_offset,
-    n_word_struct)
+    convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
 from spinn_front_end_common.abstract_models import (
@@ -46,6 +44,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
@@ -198,8 +198,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_transaction_id",
         # socket
         "_connection",
-        # store of the extra monitors to location. helpful in data in
-        "_extra_monitors_by_chip",
         # path for the data in report
         "_in_report_path",
         # ipaddress
@@ -239,9 +237,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # throttle on the transmission
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
-    # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
-    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
-
     #: report name for tracking used routers
     OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
     #: report name for tracking performance gains
@@ -274,15 +269,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(
-            self, x, y, extra_monitors_by_chip, ip_address,
-            app_vertex=None, constraints=None):
+    def __init__(self, x, y, ip_address, app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
-        :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip:
-            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
         :param constraints:
@@ -302,10 +292,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
+
         self._transaction_id = 0
 
-        # store of the extra monitors to location. helpful in data in
-        self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
 
         # Create a connection to be used
@@ -371,14 +360,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        # pylint: disable=unsubscriptable-object
-        machine = FecDataView.get_machine()
-        machine_graph = FecDataView.get_runtime_machine_graph()
-        mc_data_chips_to_keys = \
-            FecDataView.get_data_in_multicast_key_to_chip_map()
-        router_timeout_key = \
-            FecDataView.get_system_multicast_router_timeout_keys()
-
         # update my placement for future knowledge
         self._placement = placement
 
@@ -386,20 +367,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
 
         # the keys for the special cases
-        routing_info = FecDataView.get_routing_infos()
-        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_ending_at_vertex(self))[0])
-            new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
-            first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
-            end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
-            transaction_id_key = base_key + self.TRANSACTION_ID_KEY_OFFSET
-        else:
-            new_seq_key = self.NEW_SEQ_KEY
-            first_data_key = self.FIRST_DATA_KEY
-            end_flag_key = self.END_FLAG_KEY
-            base_key = self.BASE_KEY
-            transaction_id_key = self.TRANSACTION_ID_KEY
+        new_seq_key = self.NEW_SEQ_KEY
+        first_data_key = self.FIRST_DATA_KEY
+        end_flag_key = self.END_FLAG_KEY
+        base_key = self.BASE_KEY
+        transaction_id_key = self.TRANSACTION_ID_KEY
 
         spec.switch_write_focus(_DATA_REGIONS.CONFIG)
         spec.write_value(new_seq_key)
@@ -416,6 +388,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._remote_tag = iptag.tag
 
         # write mc chip key map
+        machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chips_on_board = list(machine.get_existing_xys_on_board(
             machine.get_chip_at(placement.x, placement.y)))
@@ -424,9 +397,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(len(chips_on_board))
 
         # write the broad cast keys for timeouts
+        router_timeout_key = (
+            FecDataView.get_system_multicast_router_timeout_keys())
         reinjection_base_key = router_timeout_key[(placement.x, placement.y)]
         spec.write_value(reinjection_base_key)
 
+        mc_data_chips_to_keys = (
+            FecDataView.get_data_in_multicast_key_to_chip_map())
         # write each chip x and y and base key
         for chip_xy in chips_on_board:
             board_chip_x, board_chip_y = machine.get_local_xy(
@@ -562,13 +539,13 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = FecDataView.get_transceiver()
+        transceiver = get_simulator().transceiver
 
         # start time recording
         start = datetime.datetime.now()
         # send data
         self._send_data_via_extra_monitors(
-            x, y, base_address, data[offset:n_bytes + offset])
+            transceiver, x, y, base_address, data[offset:n_bytes + offset])
         # end time recording
         end = datetime.datetime.now()
 
@@ -1002,7 +979,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 fixed_route=self._last_status.is_reinjecting_fixed_route)
         except Exception:  # pylint: disable=broad-except
             log.exception("Error resetting timeouts")
-            log.error("Checking if the cores are OK ...")
+            log.error("Checking if the cores are OK...")
             core_subsets = convert_vertices_to_core_subset(
                 FecDataView.iterate_monitors())
             try:
@@ -1173,7 +1150,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
-        # pylint: disable=unsubscriptable-object
         routers = [(placement.x, placement.y)]
         fixed_routes = FecDataView.get_fixed_routes()
         entry = fixed_routes[placement.x, placement.y]

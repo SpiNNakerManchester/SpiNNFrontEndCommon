@@ -48,23 +48,23 @@ class _GraphBinaryGatherer(object):
 
     def _run(self):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
+        :param ~pacman.model.placements.Placements placements:
         :rtype: ExecutableTargets
         """
-        graph = FecDataView.get_runtime_machine_graph()
-        progress = ProgressBar(graph.n_vertices, "Finding binaries")
-        for vertex in progress.over(graph.vertices):
-            placement = FecDataView.get_placement_of_vertex(vertex)
-            self.__get_binary(placement, vertex)
+
+        progress = ProgressBar(FecDataView.get_n_placements(), "Finding binaries")
+        for placement in progress.over(FecDataView.iterate_placemements()):
+            self.__get_binary(placement)
 
         return self._exe_targets
 
-    def __get_binary(self, placement, vertex):
+    def __get_binary(self, placement):
         """
         :param ~.Placement placement:
         :param ~.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
+        vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
                 msg = (
