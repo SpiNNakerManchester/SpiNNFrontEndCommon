@@ -33,7 +33,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, BYTES_PER_3_WORDS)
+    BYTES_PER_WORD, BYTES_PER_4_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
@@ -47,7 +47,7 @@ _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 def host_based_bit_field_router_compressor(
         router_tables, machine, placements, transceiver,
-        machine_graph, routing_infos):
+        app_graph, routing_infos):
     """
     Entry point when using the PACMANAlgorithmExecutor
 
@@ -57,8 +57,8 @@ def host_based_bit_field_router_compressor(
     :param ~spinn_machine.Machine machine: SpiNNMachine instance
     :param ~pacman.model.placements.Placements placements: placements
     :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        the machine graph level
+    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        the graph
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         routing information
     :return: compressed routing table entries
@@ -79,14 +79,22 @@ def host_based_bit_field_router_compressor(
     # compressed router table
     compressed_pacman_router_tables = MulticastRoutingTables()
 
-    key_atom_map = generate_key_to_atom_map(
-        machine_graph, routing_infos)
+    key_atom_map = generate_key_to_atom_map(app_graph, routing_infos)
+
+    most_costly_cores = defaultdict(lambda: defaultdict(int))
+    for partition in app_graph.outgoing_edge_partitions:
+        for edge in partition.edges:
+            splitter = edge.post_vertex.splitter
+            for vertex, _ in splitter.get_source_specific_in_coming_vertices(
+                    partition.pre_vertex, partition.identifier):
+                place = placements.get_placement_of_vertex(vertex)
+                most_costly_cores[place.xy][place.p] += 1
 
     # start the routing table choice conversion
     for router_table in progress.over(router_tables.routing_tables):
         start_compression_selection_process(
             router_table, report_folder_path,
-            transceiver, machine_graph, placements, machine,
+            transceiver, most_costly_cores, placements, machine,
             compressed_pacman_router_tables, key_atom_map)
 
     # return compressed tables
@@ -104,11 +112,11 @@ def generate_report_path():
     return report_folder_path
 
 
-def generate_key_to_atom_map(machine_graph, routing_infos):
+def generate_key_to_atom_map(app_graph, routing_infos):
     """ THIS IS NEEDED due to the link from key to edge being lost.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
+    :param ~pacman.model.graphs.allication.ApplicationGraph app_graph:
+        The graph
     :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         routing infos
     :return: key to atom map based of key to n atoms
@@ -116,12 +124,11 @@ def generate_key_to_atom_map(machine_graph, routing_infos):
     """
     # build key to n atoms map
     key_to_n_atoms_map = dict()
-    for vertex in machine_graph.vertices:
-        for partition in machine_graph.\
-                get_multicast_edge_partitions_starting_at_vertex(vertex):
+    for partition in app_graph.outgoing_edge_partitions:
+        for vertex in partition.pre_vertex.splitter.get_out_going_vertices(
+                partition.identifier):
             key = routing_infos.get_first_key_from_pre_vertex(
                 vertex, partition.identifier)
-
             key_to_n_atoms_map[key] = (
                 vertex.get_n_keys_for_partition(partition))
     return key_to_n_atoms_map
@@ -129,7 +136,7 @@ def generate_key_to_atom_map(machine_graph, routing_infos):
 
 def start_compression_selection_process(
         router_table, report_folder_path,
-        transceiver, machine_graph, placements, machine,
+        transceiver, most_costly_cores, placements, machine,
         compressed_pacman_router_tables, key_atom_map):
     """ Entrance method for doing on host compression. Can be used as a \
         public method for other compressors.
@@ -141,8 +148,8 @@ def start_compression_selection_process(
     :type report_folder_path: str or None
     :param ~spinnman.transceiver.Transceiver transceiver:
         spinnMan instance
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
+    :param dict(dict(int)) most_costly_cores:
+        Map of chip x, y to processors to count of incoming on processor
     :param ~pacman.model.placements.Placements placements: placements
     :param ~spinn_machine.Machine machine: SpiNNMan instance
     :param compressed_pacman_router_tables:
@@ -155,7 +162,7 @@ def start_compression_selection_process(
     compressor = _HostBasedBitFieldRouterCompressor()
     # pylint: disable=protected-access
     compressor._run(
-        router_table, report_folder_path, transceiver, machine_graph,
+        router_table, report_folder_path, transceiver, most_costly_cores,
         placements, machine, compressed_pacman_router_tables, key_atom_map)
 
 
@@ -173,16 +180,22 @@ class _BitFieldData(object):
         # P cooridnate of processor this applies to
         "processor_id",
         # index of this entry in the "sorted_list"
-        "sort_index"
+        "sort_index",
+        # The shift to get the core id
+        "core_shift",
+        # The number of atoms per core
+        "n_atoms_per_core"
     ]
 
     def __init__(self, processor_id, bit_field, master_pop_key,
-                 n_atoms_address, n_atoms_word):
+                 n_atoms_address, n_atoms_word, core_shift, n_atoms_per_core):
         self.processor_id = processor_id
         self.bit_field = bit_field
         self.master_pop_key = master_pop_key
         self.n_atoms_address = n_atoms_address
         self.n_atoms_word = n_atoms_word
+        self.core_shift = core_shift
+        self.n_atoms_per_core = n_atoms_per_core
         self.sort_index = None
 
     def __str__(self):
@@ -248,7 +261,7 @@ class _HostBasedBitFieldRouterCompressor(object):
     MERGED_SETTER = 0x80000000
 
     # struct for performance requirements.
-    _THREE_WORDS = struct.Struct("<III")
+    _FOUR_WORDS = struct.Struct("<IIII")
 
     # for router report
     _LOWER_16_BITS = 0xFFFF
@@ -281,6 +294,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param ~pacman.model.placements.Placements placements:
         :param ~spinnman.transceiver.Transceiver transceiver:
         """
+        # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
         for p in range(0, Machine.max_cores_per_chip()):
@@ -296,7 +310,7 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _run(
             self, router_table, report_folder_path,
-            transceiver, machine_graph, placements, machine,
+            transceiver, most_costly_cores, placements, machine,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
@@ -308,8 +322,8 @@ class _HostBasedBitFieldRouterCompressor(object):
         :type report_folder_path: str or None
         :param ~spinnman.transceiver.Transceiver transceiver:
             spinnMan instance
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            machine graph
+        :param dict(dict(int)) most_costly_cores:
+            Map of chip x, y to processors to count of incoming on processor
         :param ~pacman.model.placements.Placements placements: placements
         :param ~spinn_machine.Machine machine: SpiNNMan instance
         :param compressed_pacman_router_tables:
@@ -328,7 +342,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         # read in bitfields.
         self._read_in_bit_fields(
             transceiver, router_table.x, router_table.y,
-            bit_field_chip_base_addresses, machine_graph, placements)
+            bit_field_chip_base_addresses, most_costly_cores)
 
         # execute binary search
         self._start_binary_search(router_table, key_atom_map)
@@ -375,12 +389,13 @@ class _HostBasedBitFieldRouterCompressor(object):
         new_table = UnCompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        # go through the bitfields and get the routing table for it
-        for base_key in self._bit_fields_by_key.keys():
+        # go through the routing tables and convert when needed
+        for original_entry in router_table.multicast_routing_entries:
+            base_key = original_entry.routing_entry_key
+            if base_key not in self._bit_fields_by_key:
+                continue
             n_neurons = key_to_n_atoms_map[base_key]
             core_map = dict()
-            original_entry = (
-                router_table.get_entry_by_routing_entry_key(base_key))
             entry_links = original_entry.link_ids
             # Assume all neurons for each processor to be kept
             for processor_id in original_entry.processor_ids:
@@ -420,14 +435,14 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _read_in_bit_fields(
             self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,
-            machine_graph, placements):
+            most_costly_cores):
         """ reads in the bitfields from the cores
 
         :param ~.Transceiver transceiver: SpiNNMan instance
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
-        :param ~.MachineGraph machine_graph: machine graph
-        :param ~.Placements placements: the placements
+        :param dict(dict(int)) most_costly_cores:
+            Map of chip x, y to processors to count of incoming on processor
         :param dict(int,int) bit_field_chip_base_addresses:
             maps core id to base address
         :return: dict of lists of processor id to bitfields.
@@ -452,12 +467,11 @@ class _HostBasedBitFieldRouterCompressor(object):
 
             # read in each bitfield
             for _ in range(0, n_filters):
-                # master pop key, n words and read pointer
-                master_pop_key, n_atoms_word, read_pointer = \
-                    self._THREE_WORDS.unpack(transceiver.read_memory(
-                        chip_x, chip_y, reading_address, BYTES_PER_3_WORDS))
+                master_pop_key, n_atoms_word, n_per_core_word, read_pointer = \
+                    self._FOUR_WORDS.unpack(transceiver.read_memory(
+                        chip_x, chip_y, reading_address, BYTES_PER_4_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
-                reading_address += BYTES_PER_3_WORDS
+                reading_address += BYTES_PER_4_WORDS
 
                 # merged: 1; all_ones: 1; n_atoms: 30;
                 atoms = n_atoms_word & self.N_ATOMS_MASK
@@ -470,8 +484,9 @@ class _HostBasedBitFieldRouterCompressor(object):
                         n_words_to_read * BYTES_PER_WORD))
 
                 # sorted by best coverage of redundant packets
-                data = _BitFieldData(processor_id, bit_field, master_pop_key,
-                                     n_atoms_address, n_atoms_word)
+                data = _BitFieldData(
+                    processor_id, bit_field, master_pop_key, n_atoms_address,
+                    n_atoms_word, n_per_core_word & 0x1F, n_per_core_word >> 5)
                 as_array = data.bit_field_as_bit_array()
                 # Number of fields in the array that are zero instead of one
                 n_redundant_packets = len(as_array) - sum(as_array)
@@ -485,42 +500,32 @@ class _HostBasedBitFieldRouterCompressor(object):
 
         # use the ordered process to find the best ones to do first
         self._order_bit_fields(
-            bit_fields_by_coverage, machine_graph, chip_x, chip_y, placements,
+            bit_fields_by_coverage, most_costly_cores, chip_x, chip_y,
             processor_coverage_by_bitfield)
 
     def _order_bit_fields(
-            self, bit_fields_by_coverage, machine_graph, chip_x, chip_y,
-            placements, processor_coverage_by_bitfield):
+            self, bit_fields_by_coverage, most_costly_cores, chip_x, chip_y,
+            processor_coverage_by_bitfield):
         """
         Orders the bit fields by redundancy setting the sorted index
 
         Also counts the bitfields setting _n_bitfields
 
         :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:
-        :param ~.MachineGraph machine_graph:
+        :param dict(dict(int)) most_costly_cores:
+            Map of chip x, y to processors to count of incoming on processor
         :param int chip_x:
         :param int chip_y:
-        :param ~.Placements placements:
         :param dict(int,list(int)) processor_coverage_by_bitfield:
         """
         sort_index = 0
 
-        # get incoming bandwidth for the cores
-        most_costly_cores = dict()
-        for processor_id in range(0, Machine.max_cores_per_chip()):
-            if placements.is_processor_occupied(chip_x, chip_y, processor_id):
-                vertex = placements.get_vertex_on_processor(
-                    chip_x, chip_y, processor_id)
-
-                if isinstance(
-                        vertex, AbstractSupportsBitFieldRoutingCompression):
-                    most_costly_cores[processor_id] = len(
-                        machine_graph.get_edges_ending_at_vertex(vertex))
-
         # get cores that are the most likely to have the worst time and order
         #  bitfields accordingly
-        cores = list(most_costly_cores.keys())
-        cores = sorted(cores, key=lambda k: most_costly_cores[k], reverse=True)
+        cores = list(most_costly_cores[chip_x, chip_y].keys())
+        cores = sorted(
+            cores, key=lambda k: most_costly_cores[chip_x, chip_y][k],
+            reverse=True)
 
         # only add bit fields from the worst affected cores, which will
         # build as more and more are taken to make the worst a collection
@@ -532,8 +537,8 @@ class _HostBasedBitFieldRouterCompressor(object):
             # next one
             cores_to_add_for.append(cores[worst_core_id])
             diff = (
-                most_costly_cores[cores[worst_core_id]] -
-                most_costly_cores[cores[worst_core_id + 1]])
+                most_costly_cores[chip_x, chip_y][cores[worst_core_id]] -
+                most_costly_cores[chip_x, chip_y][cores[worst_core_id + 1]])
 
             # order over most effective bitfields
             coverage = processor_coverage_by_bitfield[cores[worst_core_id]]

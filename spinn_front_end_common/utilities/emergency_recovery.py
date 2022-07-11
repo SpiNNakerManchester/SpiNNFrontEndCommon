@@ -55,12 +55,16 @@ def _emergency_state_check(txrx, app_id):
                         infos.add_processor(chip.x, chip.y, p, info)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
-        logger.warning(txrx.get_core_status_string(infos))
-        logger.warning("Could not read information from cores {}".format(
-            errors))
+        if len(infos):
+            logger.warning(txrx.get_core_status_string(infos))
+        if len(len(errors) > 10):
+            logger.warning("Could not read information from {} cores".format(
+                len(errors)))
+        else:
+            logger.warning("Could not read information from cores {}".format(
+                errors))
 
 
-# TRICKY POINT: Have to delay the import to here because of import circularity
 def _emergency_iobuf_extract(txrx, executable_targets):
     """
     :param ~.Transceiver txrx:

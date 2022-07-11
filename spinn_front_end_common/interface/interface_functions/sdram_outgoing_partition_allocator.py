@@ -21,10 +21,10 @@ from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
 def sdram_outgoing_partition_allocator(
-        machine_graph, placements, app_id, transceiver=None):
+        app_graph, placements, app_id, transceiver=None):
 
     progress_bar = ProgressBar(
-        total_number_of_things_to_do=len(machine_graph.vertices),
+        total_number_of_things_to_do=len(app_graph.vertices),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
@@ -34,10 +34,8 @@ def sdram_outgoing_partition_allocator(
     # Keep track of SDRAM tags used
     next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
-    for machine_vertex in machine_graph.vertices:
-        sdram_partitions = (
-            machine_graph.get_sdram_edge_partitions_starting_at_vertex(
-                machine_vertex))
+    for vertex in app_graph.vertices:
+        sdram_partitions = vertex.splitter.get_internal_sdram_partitions()
         for sdram_partition in sdram_partitions:
 
             # get placement, ones where the src is multiple,

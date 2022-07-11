@@ -29,6 +29,14 @@
 #include <stdbool.h>
 #include "common-typedefs.h"
 
+typedef struct region_desc_t {
+    void *pointer;
+    //! Simple checksum which is rounded 32-bit unsigned sum of words
+    uint32_t checksum;
+    //! The number of valid words in the region
+    uint32_t n_words;
+} region_desc_t;
+
 //! \brief The central structure that the DSE writes.
 //!
 //! A pointer to this will be placed in user0 before the application launches.
@@ -39,8 +47,8 @@ typedef struct data_specification_metadata_t {
     uint32_t magic_number;
     //! The version of the DSE data layout specification being followed.
     uint32_t version;
-    //! The pointers to the regions; as many as required.
-    void *regions[];
+    //! The regions; as many as required.
+    region_desc_t regions[];
 } data_specification_metadata_t;
 
 data_specification_metadata_t *data_specification_get_data_address(void);
@@ -55,7 +63,7 @@ bool data_specification_read_header(data_specification_metadata_t *ds_regions);
 //! the actual type of the region.
 static inline void *data_specification_get_region(
         uint32_t region, data_specification_metadata_t *ds_regions) {
-    return ds_regions->regions[region];
+    return ds_regions->regions[region].pointer;
 }
 
 #endif
