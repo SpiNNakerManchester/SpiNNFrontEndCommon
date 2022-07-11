@@ -38,6 +38,8 @@ enum {
     VERSION_SHIFT = 16
 };
 
+#define N_REGIONS 32
+
 //! \brief Gets the location of the data for this core using the user0 entry
 //!        of the SARK VCPU structure
 //!
@@ -87,5 +89,30 @@ bool data_specification_read_header(
     log_info("magic = %08x, version = %d.%d", ds_regions->magic_number,
             ds_regions->version >> VERSION_SHIFT,
             ds_regions->version & VERSION_MASK);
+
+    // Check the data in the regions checksums
+    for (uint32_t region = 0; region < N_REGIONS; region++) {
+        uint32_t *data = ds_regions->regions[region].pointer;
+        uint32_t checksum = ds_regions->regions[region].checksum;
+        uint32_t n_words = ds_regions->regions[region].n_words;
+
+        // If the region is not in use, skip
+        if (data == NULL) {
+            continue;
+        }
+
+        // Do simple unsigned 32-bit checksum
+        uint32_t sum = 0;
+        for (uint32_t i = 0; i < n_words; i++) {
+            sum += data[i];
+        }
+        if (sum != checksum) {
+            log_error("Region %u with %u words starting at 0x%08x: "
+                    "checksum %u does not match computed sum %u",
+                    region, n_words, data, checksum, sum);
+            return false;
+        }
+    }
+
     return true;
 }

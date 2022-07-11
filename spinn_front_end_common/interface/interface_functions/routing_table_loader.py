@@ -33,7 +33,7 @@ def routing_table_loader(router_tables, app_id, transceiver, machine):
     # the chips SDRAM
     for table in progress.over(router_tables.routing_tables):
         if (not machine.get_chip_at(table.x, table.y).virtual
-                and table.multicast_routing_entries):
+                and table.number_of_entries):
             transceiver.load_multicast_routes(
                 table.x, table.y, table.multicast_routing_entries,
                 app_id=app_id)

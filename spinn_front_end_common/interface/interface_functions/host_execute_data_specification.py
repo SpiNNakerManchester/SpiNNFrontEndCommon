@@ -132,7 +132,8 @@ class _ExecutionContext(object):
         # We don't have to write this bit now; we can still to the rest
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
-            to_write = numpy.concatenate((header, pointer_table)).tobytes()
+            to_write = numpy.concatenate(
+                (header, pointer_table.view("uint32"))).tobytes()
             self.__txrx.write_memory(x, y, base_address, to_write)
 
         # Write each region
@@ -149,7 +150,7 @@ class _ExecutionContext(object):
             data = region.region_data[:max_pointer]
 
             # Write the data to the position
-            writer_func(x, y, pointer_table[region_id], data)
+            writer_func(x, y, pointer_table[region_id]["pointer"], data)
             bytes_written += len(data)
 
         return base_address, size_allocated, bytes_written
@@ -165,11 +166,11 @@ class _ExecutionContext(object):
                     raise ValueError(
                         "Reference {} requested from {} but not found"
                         .format(ref, core_to_fill))
-                pointer_table[ref_region] = self.__get_reference(
+                pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
                     ref_region)
             to_write = numpy.concatenate(
-                (core_to_fill.header, pointer_table)).tobytes()
+                (core_to_fill.header, pointer_table.view("uint32"))).tobytes()
             self.__txrx.write_memory(core_to_fill.x, core_to_fill.y,
                                      core_to_fill.base_address, to_write)
 
@@ -192,7 +193,7 @@ class _ExecutionContext(object):
                     "Reference {} used previously as {} so cannot be used by"
                     " {}, {}, {}, {}".format(
                         ref, ref_to_use, x, y, p, ref_region))
-            ptr = pointer_table[ref_region]
+            ptr = pointer_table[ref_region]["pointer"]
             self.__references_to_use[ref] = _RegionToRef(
                 x, y, p, ref_region, ptr)
 
@@ -217,7 +218,7 @@ class _ExecutionContext(object):
             ref = executor.get_region(ref_region).ref
             # If already been created, use directly
             if ref in self.__references_to_use:
-                pointer_table[ref_region] = self.__get_reference(
+                pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, x, y, p, ref_region)
             else:
                 coreToFill.regions.append((ref_region, ref))
@@ -337,22 +338,6 @@ class _HostExecuteDataSpecification(object):
         self._placements = None
         self._txrx = transceiver
 
-    def __java_all(self, dsg_targets):
-        """ Does the Data Specification Execution and loading using Java
-
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
-        """
-        # create a progress bar for end users
-        progress = ProgressBar(
-            2, "Executing data specifications and loading data using Java")
-
-        self._java.set_machine(self._machine)
-        progress.update()
-        self._java.execute_data_specification()
-
-        progress.end()
-
     def execute_application_data_specs(
             self, dsg_targets, executable_targets,
             placements=None, extra_monitor_cores=None,
@@ -387,10 +372,11 @@ class _HostExecuteDataSpecification(object):
         if get_config_bool(
                 "Machine", "disable_advanced_monitor_usage_for_data_in"):
             uses_advanced_monitors = False
-
-        impl_method = self.__java_app if self._java else self.__python_app
         try:
-            impl_method(dsg_targets, uses_advanced_monitors)
+            if self._java:
+                self.__java_app(uses_advanced_monitors)
+            else:
+                self.__python_app(dsg_targets, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure(
@@ -455,9 +441,8 @@ class _HostExecuteDataSpecification(object):
         if use_monitors:
             self.__reset_router_timeouts()
 
-    def __java_app(self, dsg_targets, use_monitors):
+    def __java_app(self, use_monitors):
         """
-        :param DataSpecificationTargets dsg_targets:
         :param bool use_monitors:
         """
         # create a progress bar for end users
@@ -487,14 +472,14 @@ class _HostExecuteDataSpecification(object):
         # pylint: disable=too-many-arguments
 
         dsg_targets.mark_system_cores(system_cores(executable_targets))
-        impl_method = self.__java_sys if self._java else self.__python_sys
-        impl_method(dsg_targets)
+        if self._java:
+            self.__java_sys()
+        else:
+            self.__python_sys(dsg_targets)
 
-    def __java_sys(self, dsg_targets):
+    def __java_sys(self):
         """ Does the Data Specification Execution and loading using Java
 
-        :param DataSpecificationTargets dsg_targets:
-            map of placement to file path
         """
         # create a progress bar for end users
         progress = ProgressBar(
