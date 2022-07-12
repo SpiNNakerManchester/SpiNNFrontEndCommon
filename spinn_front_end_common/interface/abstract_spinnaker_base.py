@@ -609,6 +609,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def _add_commands_to_command_sender(self):
+        command_sender = None
         graph = self._data_writer.get_runtime_graph()
         vertices = graph.vertices
         for vertex in vertices:
@@ -943,7 +944,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             # inserter checks for None app graph not an empty one
-        gather_map, monitor_map = insert_extra_monitor_vertices_to_graphs()
+        gather_map, monitor_map = insert_extra_monitor_vertices_to_graphs(
+            system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
         """
@@ -2468,6 +2470,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         return changed, data_changed
 
+    @property
     def n_loops(self):
         """
         The number for this or the net loop within an end_user run

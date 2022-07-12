@@ -229,7 +229,7 @@ def _write_one_router_partition_report(f, partition):
             f.write("\n")
 
 
-def partitioner_report(hostname, graph):
+def partitioner_report():
     """ Generate report on the placement of vertices onto cores.
 
     """
@@ -247,8 +247,8 @@ def partitioner_report(hostname, graph):
 
             f.write("        Partitioning Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write("Generated: {} for target machine '{}'\n\n".format(
-                time_date_string, hostname))
+            f.write(f"Generated: {time_date_string} for target machine "
+                    f"'{FecDataView.get_ipaddress()}'\n\n")
 
             for vertex in progress.over(graph.vertices):
                 _write_one_vertex_partition(f, vertex)
@@ -357,7 +357,6 @@ def placement_report_with_application_graph_by_core():
     # For each core, display what is held on it.
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_CORE_GRAPH_FILENAME)
-    placements = FecDataView.get_placements()
     time_date_string = time.strftime("%c")
     try:
         machine = FecDataView.get_machine()
@@ -371,7 +370,7 @@ def placement_report_with_application_graph_by_core():
                     f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
             for chip in progress.over(machine.chips):
-                _write_one_chip_application_placement(f, chip, placements)
+                _write_one_chip_application_placement(f, chip)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for "
                          "writing.", file_name)
@@ -619,9 +618,8 @@ def router_report_from_router_tables():
     routing_tables = FecDataView.get_uncompressed().routing_tables
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
-    progress = ProgressBar(routing_tables.routing_tables,
-                           "Generating Router table report")
-    for routing_table in progress.over(routing_tables.routing_tables):
+    progress = ProgressBar(routing_tables, "Generating Router table report")
+    for routing_table in progress.over(routing_tables):
         if routing_table.number_of_entries:
             generate_routing_table(routing_table, top_level_folder)
 

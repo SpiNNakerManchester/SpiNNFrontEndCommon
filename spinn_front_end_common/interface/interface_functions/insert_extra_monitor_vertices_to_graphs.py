@@ -20,7 +20,7 @@ from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 
 
-def insert_extra_monitor_vertices_to_graphs():
+def insert_extra_monitor_vertices_to_graphs(placements):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
 
@@ -36,7 +36,6 @@ def insert_extra_monitor_vertices_to_graphs():
     chip_to_gatherer_map = dict()
     vertex_to_chip_map = dict()
     machine = FecDataView.get_machine()
-    placements = FecDataView.get_placements()
     ethernet_chips = list(machine.ethernet_connected_chips)
     progress = ProgressBar(
         len(ethernet_chips), "Inserting extra monitors into graphs")

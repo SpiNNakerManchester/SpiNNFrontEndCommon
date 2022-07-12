@@ -130,6 +130,7 @@ class ProvenanceWriter(SQLiteDB):
             it was not skipped
         :tpye skip_reason: str or None
         """
+        a =  FecDataView.get_run_number()
         with self.transaction() as cur:
             cur.execute(
                 """

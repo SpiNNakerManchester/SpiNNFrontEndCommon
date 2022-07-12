@@ -88,7 +88,6 @@ def local_tdma_builder():
     """
     if FecDataView.get_runtime_graph().n_vertices == 0:
         return
-    n_keys_map = FecDataView.get_machine_partition_n_keys_map()
     # get config params
     us_per_cycle = FecDataView.get_hardware_time_step_us()
     clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
@@ -98,7 +97,6 @@ def local_tdma_builder():
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    machine_graph = FecDataView.get_runtime_machine_graph()
     for app_vertex in FecDataView.get_runtime_graph().vertices:
         if isinstance(app_vertex, TDMAAwareApplicationVertex):
             app_verts.append(app_vertex)

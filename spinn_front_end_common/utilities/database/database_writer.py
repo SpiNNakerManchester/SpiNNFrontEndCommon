@@ -72,7 +72,7 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        app_graph = FecDataView.get_runtime_machine_graph()
+        app_graph = FecDataView.get_runtime_graph()
         return (any(isinstance(app_vertex, LivePacketGather)
                     for app_vertex in app_graph.vertices) or
                 any(isinstance(vertex, AbstractSupportsDatabaseInjection)
