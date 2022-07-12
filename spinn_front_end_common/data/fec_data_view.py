@@ -78,7 +78,6 @@ class _FecDataModel(object):
         "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
-        "_report_dir_path",
         "_run_number",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
@@ -120,7 +119,6 @@ class _FecDataModel(object):
         self._simulation_time_step_per_s = None
         self._simulation_time_step_s = None
         self._simulation_time_step_us = None
-        self._report_dir_path = None
         self._time_scale_factor = None
         self._timestamp_dir_path = None
         self._hard_reset()
@@ -515,24 +513,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._n_chips_required is not None:
             return True
         return cls.__fec_data._n_chips_in_graph is not None
-
-    @classmethod
-    def get_report_dir_path(cls):
-        """
-        Returns path to existing reports directory
-
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
-
-        :rtpye: str
-        :raises SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls.__fec_data._report_dir_path:
-            return cls.__fec_data._report_dir_path
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        raise cls._exception("report_dir_path")
 
     @classmethod
     def get_timestamp_dir_path(cls):

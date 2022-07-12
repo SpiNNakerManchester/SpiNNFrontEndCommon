@@ -109,10 +109,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             directory = os.getcwd()
 
             # global reports folder
-            self.__fec_data._report_dir_path = self._child_folder(
+            self.set_report_dir_path = self._child_folder(
                 directory, REPORTS_DIRNAME)
         else:
-            self.__fec_data._report_dir_path = self._child_folder(
+            self.set_report_dir_path = self._child_folder(
                 default_report_file_path, REPORTS_DIRNAME)
 
     @classmethod
