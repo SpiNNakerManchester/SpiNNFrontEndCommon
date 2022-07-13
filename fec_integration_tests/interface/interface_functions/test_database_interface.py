@@ -15,7 +15,7 @@
 from spinn_utilities.config_holder import set_config
 from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationVertex, ApplicationEdge)
+    ApplicationVertex, ApplicationEdge)
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement

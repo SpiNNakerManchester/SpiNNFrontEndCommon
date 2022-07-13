@@ -134,7 +134,7 @@ class _MachineBitFieldRouterCompressor(object):
         """
         view = FecDataView()
         app_id = FecDataView.get_app_id()
-        machine_graph = FecDataView.get_runtime_machine_graph()
+        app_graph = FecDataView.get_runtime_graph()
         routing_tables = FecDataView.get_uncompressed()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
@@ -205,7 +205,7 @@ class _MachineBitFieldRouterCompressor(object):
                     sttr = edge.pre_vertex.splitter
                     for vertex in sttr.get_source_specific_in_coming_vertices(
                             partition.pre_vertex, partition.identifier):
-                        place = placements.get_placement_of_vertex(vertex)
+                        place = FecDataView.get_placement_of_vertex(vertex)
                         if place.chip in on_host_chips:
                             most_costly_cores[place.chip][place.p] += 1
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
@@ -228,9 +228,7 @@ class _MachineBitFieldRouterCompressor(object):
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     report_folder_path=report_folder_path,
-                    transceiver=transceiver,
                     most_costly_cores=most_costly_cores,
-                    placements=placements, machine=machine,
                     compressed_pacman_router_tables=(
                         compressed_pacman_router_tables),
                     key_atom_map=key_atom_map)

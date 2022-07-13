@@ -83,8 +83,7 @@ def host_based_bit_field_router_compressor():
     for router_table in progress.over(routing_tables.routing_tables):
         start_compression_selection_process(
             router_table, report_folder_path,
-            transceiver, most_costly_cores, placements, machine,
-            compressed_pacman_router_tables, key_atom_map)
+            most_costly_cores, compressed_pacman_router_tables, key_atom_map)
 
     # return compressed tables
     return compressed_pacman_router_tables

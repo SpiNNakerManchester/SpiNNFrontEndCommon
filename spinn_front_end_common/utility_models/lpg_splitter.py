@@ -54,7 +54,8 @@ class LPGSplitter(AbstractSplitterCommon):
             self.__m_vertices_by_ethernet[eth.x, eth.y] = lpg_vtx
 
     def __cores(self, x, y):
-        return [p.processor_id for p in FecDataView.get_chip_at(x, y).processors
+        return [p.processor_id
+                for p in FecDataView.get_chip_at(x, y).processors
                 if not p.is_monitor]
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)

@@ -117,12 +117,6 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
-from spinn_front_end_common.utility_models import (
-    CommandSender, CommandSenderMachineVertex,
-    DataSpeedUpPacketGatherMachineVertex)
-from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
@@ -984,7 +978,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             write_json_partition_n_keys_map()
             # Output ignored as never used
-
 
     def _execute_application_placer(self, system_placements):
         """
@@ -2254,7 +2247,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                         self._data_writer.get_simulation_time_step_ms())
             self._data_writer.increment_current_run_timesteps(
                 n_machine_time_steps)
-
 
         self._execute_sdram_usage_report_per_chip()
         self._report_drift(start=True)

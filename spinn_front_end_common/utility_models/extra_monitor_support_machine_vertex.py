@@ -19,8 +19,6 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
-from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, ResourceContainer
 from spinn_utilities.config_holder import get_config_bool

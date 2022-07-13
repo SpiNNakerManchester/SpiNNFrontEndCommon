@@ -82,14 +82,6 @@ def placer_reports_with_application_graph():
     placement_report_with_application_graph_by_core()
 
 
-def placer_reports_without_application_graph():
-    """
-    :rtype: None
-    """
-    placement_report_without_application_graph_by_vertex()
-    placement_report_without_application_graph_by_core()
-
-
 def router_summary_report():
     """ Generates a text file of routing summaries
 
@@ -427,36 +419,6 @@ def _write_one_chip_application_placement(f, chip):
         f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
                 .format(chip.sdram.size, total_sdram.fixed,
                         total_sdram.per_timestep))
-
-
-def placement_report_without_application_graph_by_core():
-    """ Generate report on the placement of vertices onto cores by core.
-
-    """
-    # File 2: Placement by core.
-    # Cycle through all chips and by all cores within each chip.
-    # For each core, display what is held on it.
-    file_name = os.path.join(
-        FecDataView.get_run_dir_path(), _PLACEMENT_CORE_SIMPLE_FILENAME)
-    time_date_string = time.strftime("%c")
-    machine = FecDataView.get_machine()
-    placements = FecDataView.get_placements()
-    try:
-        with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(machine.chips,
-                                   "Generating placement by core report")
-
-            f.write("        Placement Information by Core\n")
-            f.write("        =============================\n\n")
-            f.write("Generated: {}".format(time_date_string))
-            f.write(f" for target machine '{FecDataView.get_ipaddress()}'")
-            f.write("\n\n")
-
-            for chip in progress.over(machine.chips):
-                _write_one_chip_machine_placement(f, chip, placements)
-    except IOError:
-        logger.exception("Generate_placement_reports: Can't open file {} for "
-                         "writing.", file_name)
 
 
 def _write_one_chip_machine_placement(f, c, placements):

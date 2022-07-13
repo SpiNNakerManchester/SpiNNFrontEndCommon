@@ -52,7 +52,8 @@ class _GraphBinaryGatherer(object):
         :rtype: ExecutableTargets
         """
 
-        progress = ProgressBar(FecDataView.get_n_placements(), "Finding binaries")
+        progress = ProgressBar(
+            FecDataView.get_n_placements(), "Finding binaries")
         for placement in progress.over(FecDataView.iterate_placemements()):
             self.__get_binary(placement)
 

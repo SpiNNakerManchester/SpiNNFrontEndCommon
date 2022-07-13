@@ -539,7 +539,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView.get_transceiver()
 
         # start time recording
         start = datetime.datetime.now()
