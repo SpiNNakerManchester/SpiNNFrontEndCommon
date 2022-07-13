@@ -212,7 +212,7 @@ def _write_one_router_partition_report(f, partition):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(
-                source_placement, r_info.first_key_and_mask, )
+                source_placement, r_info.first_key_and_mask)
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
             f.write("{}\n".format(path))
@@ -742,25 +742,23 @@ def _search_route(source_placement, key_and_mask):
 
     # If the destination is virtual, replace with the real destination chip
     text += _recursive_trace_to_destinations(
-        x, y, key_and_mask, machine, pre_space="        ")
+        x, y, key_and_mask, pre_space="        ")
     return text
 
 
 # Locates the destinations of a route
 def _recursive_trace_to_destinations(
-        chip_x, chip_y, key_and_mask, machine, pre_space):
+        chip_x, chip_y, key_and_mask, pre_space):
     """ Recursively search though routing tables till no more entries are\
         registered with this key
 
     :param int chip_x:
     :param int chip_y
     :param BaseKeyAndMask key_and_mask:
-    :param ~spinn_machine.Machine machine:
-    :param ~spinn_machine.MulticastRoutingTables routing_tables:
     :rtype: str
     """
 
-    chip = machine.get_chip_at(chip_x, chip_y)
+    chip = FecDataView.get_chip_at(chip_x, chip_y)
 
     if chip.virtual:
         return "-> Virtual Chip {}, {}".format(chip_x, chip_y)
@@ -777,8 +775,8 @@ def _recursive_trace_to_destinations(
         link = chip.router.get_link(link_id)
         text += "-> {}".format(link)
         text += _recursive_trace_to_destinations(
-            link.destination_x, link.destination_y, key_and_mask, machine,
-            routing_tables, new_pre_space)
+            link.destination_x, link.destination_y, key_and_mask,
+            new_pre_space)
         first = False
 
     return text
