@@ -1978,6 +1978,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressor, pre_compress = self._compressor_name()
         self._execute_pre_compression(pre_compress)
         compressed = self._do_early_compression(compressor)
+
+        self._do_data_generation()
+
+        self._execute_control_sync(False)
         if graph_changed or not self._data_writer.is_ran_ever():
             self._execute_load_fixed_routes()
         self._execute_system_data_specification()
