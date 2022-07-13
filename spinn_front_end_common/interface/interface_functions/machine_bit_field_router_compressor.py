@@ -20,7 +20,6 @@ from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.ordered_set import OrderedSet
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
@@ -712,11 +711,10 @@ class _MachineBitFieldRouterCompressor(object):
             for m_vertex in app_vertex.machine_vertices:
                 if isinstance(
                         m_vertex, AbstractSupportsBitFieldRoutingCompression):
-                    placement = placements.get_placement_of_vertex(m_vertex)
+                    placement = FecDataView.get_placement_of_vertex(m_vertex)
                     self._add_to_addresses(
-                        m_vertex, placement, transceiver, region_addresses,
+                        m_vertex, placement, region_addresses,
                         sdram_block_addresses_and_sizes)
-
         return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(
