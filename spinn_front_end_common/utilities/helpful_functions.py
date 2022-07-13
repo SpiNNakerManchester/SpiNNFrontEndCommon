@@ -143,7 +143,7 @@ def flood_fill_binary_to_spinnaker(binary):
     """
     executable_targets = FecDataView.get_executable_targets()
     core_subset = executable_targets.get_cores_for_binary(binary)
-    FecDataView.execute_flood(
+    FecDataView.get_transceiver().execute_flood(
         core_subset, binary, FecDataView.get_app_id(), wait=True,
         is_filename=True)
     return len(core_subset)

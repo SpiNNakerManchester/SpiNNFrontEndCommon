@@ -68,7 +68,7 @@ def __load_images(filt, label):
         for binary in binaries:
             progress.update(flood_fill_binary_to_spinnaker(binary))
 
-        __start_simulation()
+        __start_simulation(FecDataView.get_app_id())
         progress.update()
         progress.end()
     except Exception as e:
@@ -81,7 +81,7 @@ def __load_images(filt, label):
         raise e
 
 
-def filter_targets(targets, filt):
+def filter_targets(filt):
     """
     :param ~spinnman.model.ExecutableTargets executable_targets:
     :param callable(ExecutableType,bool) filt:
@@ -89,6 +89,7 @@ def filter_targets(targets, filt):
     """
     binaries = []
     cores = FecDataView.get_executable_targets()
+    targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
         if filt(exe_type):
             for aplx in targets.get_binaries_of_executable_type(exe_type):
