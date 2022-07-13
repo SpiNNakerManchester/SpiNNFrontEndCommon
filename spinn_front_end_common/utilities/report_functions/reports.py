@@ -220,7 +220,7 @@ def _write_one_router_partition_report(f, partition):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(
-                source_placement, r_info.first_key_and_mask)
+                source_placement, r_info.first_key_and_mask, )
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
             f.write("{}\n".format(path))
@@ -747,12 +747,11 @@ def generate_comparison_router_report(compressed_routing_tables):
                          " {} for writing.", file_name)
 
 
-def _search_route(source_placement, key_and_mask, routing_tables):
+def _search_route(source_placement, key_and_mask):
     """
     :param Placement source_placement:
     :param Placement dest_placement:
     :param BaseKeyAndMask key_and_mask:
-    :param ~spinn_machine.MulticastRoutingTables routing_tables:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
@@ -781,13 +780,13 @@ def _search_route(source_placement, key_and_mask, routing_tables):
 
     # If the destination is virtual, replace with the real destination chip
     text += _recursive_trace_to_destinations(
-        x, y, key_and_mask, machine, routing_tables, pre_space="        ")
+        x, y, key_and_mask, machine, pre_space="        ")
     return text
 
 
 # Locates the destinations of a route
 def _recursive_trace_to_destinations(
-        chip_x, chip_y, key_and_mask, machine, routing_tables, pre_space):
+        chip_x, chip_y, key_and_mask, machine, pre_space):
     """ Recursively search though routing tables till no more entries are\
         registered with this key
 
@@ -805,6 +804,7 @@ def _recursive_trace_to_destinations(
         return "-> Virtual Chip {}, {}".format(chip_x, chip_y)
 
     text = "-> Chip {}:{}".format(chip_x, chip_y)
+    routing_tables = FecDataView.get_uncompressed()
     table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
     entry = _locate_routing_entry(table, key_and_mask.key)
     new_pre_space = pre_space + (" " * len(text))
