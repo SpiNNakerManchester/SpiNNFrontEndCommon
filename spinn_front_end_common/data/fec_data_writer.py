@@ -109,11 +109,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             directory = os.getcwd()
 
             # global reports folder
-            self.set_report_dir_path = self._child_folder(
-                directory, REPORTS_DIRNAME)
+            self.set_report_dir_path(
+                self._child_folder(directory, REPORTS_DIRNAME))
         else:
-            self.set_report_dir_path = self._child_folder(
-                default_report_file_path, REPORTS_DIRNAME)
+            self.set_report_dir_path(
+                self._child_folder(default_report_file_path, REPORTS_DIRNAME))
 
     @classmethod
     def __create_timestamp_directory(cls):
