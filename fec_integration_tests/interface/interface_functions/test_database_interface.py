@@ -127,7 +127,7 @@ def test_database_interface():
     app_graph.add_vertex(lpg_vertex)
     app_graph.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_vertices(machine, placements)
+    lpg_vertex.splitter.create_vertices(placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
 
