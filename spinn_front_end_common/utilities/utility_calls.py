@@ -61,8 +61,8 @@ def get_region_base_address_offset(app_data_base_address, region):
             (region * APP_PTR_TABLE_REGION_BYTE_SIZE))
 
 
-_DAT_TMPL = "{}_dataSpec_{}_{}_{}.dat"
-_RPT_TMPL = "{}_dataSpec_{}_{}_{}.txt"
+_DAT_TMPL = "dataSpec_{}_{}_{}.dat"
+_RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"
 
 

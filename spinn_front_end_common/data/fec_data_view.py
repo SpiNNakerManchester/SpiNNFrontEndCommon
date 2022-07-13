@@ -595,6 +595,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the ipaddress is currently unavailable
         """
         if cls.__fec_data._ipaddress is None:
+            if cls._is_mocked():
+                return "127.0.0.1"
             raise cls._exception("ipaddress")
         return cls.__fec_data._ipaddress
 
@@ -835,17 +837,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :param iterable(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
-        if cls.has_application_vertices():
-            if not isinstance(vertex_to_record_from, ApplicationVertex):
-                raise ConfigurationException(
-                    "vertex_to_record_from must be an ApplicationVertex when "
-                    "Application level used")
-        elif cls.has_machine_vertices():
-            if not isinstance(vertex_to_record_from, MachineVertex):
-                raise ConfigurationException(
-                    "vertex_to_record_from must be an MachineVertex when"
-                    "only Machine Level used")
-        else:
+        if not cls.has_application_vertices():
             raise ConfigurationException(
                 "Please add vertices to the Graph before calling this method")
 

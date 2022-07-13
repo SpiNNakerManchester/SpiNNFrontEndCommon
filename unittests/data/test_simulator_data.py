@@ -25,7 +25,6 @@ from spinn_utilities.exceptions import (
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
-from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.data import FecDataView
@@ -520,15 +519,14 @@ class TestSimulatorData(unittest.TestCase):
         lpg1 = LivePacketGatherParameters(1)
         lpg2 = LivePacketGatherParameters(2)
         lpg3 = LivePacketGatherParameters(3)
-        vertex1 = SimpleMachineVertex(None)
-        vertex2 = SimpleMachineVertex(None)
-        vertex3 = SimpleMachineVertex(None)
-        vertex4 = SimpleTestVertex(12, "app1")
+        vertex1 = SimpleTestVertex(1, "1")
+        vertex2 = SimpleTestVertex(2, "2")
+        vertex3 = SimpleTestVertex(3, "3")
+        vertex4 = SimpleTestVertex(12, "4")
         writer.create_graphs("test")
-        FecDataView.add_machine_vertex(vertex1)
-        FecDataView.add_machine_vertex(vertex2)
-        FecDataView.add_machine_vertex(vertex3)
-        # Critically NO app vertex in graph!
+        FecDataView.add_vertex(vertex1)
+        FecDataView.add_vertex(vertex2)
+        FecDataView.add_vertex(vertex3)
         partition_ids1 = ["a"]
         partition_ids2 = ["a", "b"]
         partition_ids3 = ["c"]
@@ -544,11 +542,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn(lpg1, params)
         self.assertIn(lpg2, params)
         self.assertEqual(2, len(params[lpg1]))
-        with self.assertRaises(ConfigurationException):
-            FecDataView.add_live_packet_gatherer_parameters(
-                lpg3, vertex4, partition_ids2)
-        params = FecDataView.get_live_packet_recorder_params()
-        self.assertEqual(2, len(params))
 
     def test_database_file_path(self):
         writer = FecDataWriter.setup()

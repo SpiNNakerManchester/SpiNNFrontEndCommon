@@ -19,7 +19,8 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
-from data_specification.constants import APP_PTR_TABLE_HEADER_BYTE_SIZE
+from data_specification.constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -90,7 +91,8 @@ def get_region_base_address_offset(app_data_base_address, region):
     :param int region: the region ID we're looking for
     """
     return (app_data_base_address +
-            APP_PTR_TABLE_HEADER_BYTE_SIZE + (region * 4))
+            APP_PTR_TABLE_HEADER_BYTE_SIZE +
+            (region * APP_PTR_TABLE_REGION_BYTE_SIZE))
 
 
 def locate_memory_region_for_placement(placement, region):
