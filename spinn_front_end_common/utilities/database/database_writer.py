@@ -45,7 +45,7 @@ class DatabaseWriter(SQLiteDB):
         "_machine_id",
 
         # Mappings used to accelerate inserts
-        "__machine_to_id", "__vertex_to_id", "__edge_to_id"
+        "__machine_to_id", "__vertex_to_id"
     ]
 
     def __init__(self):
@@ -60,7 +60,6 @@ class DatabaseWriter(SQLiteDB):
         super().__init__(self._database_path, ddl_file=init_sql_path)
         self.__machine_to_id = dict()
         self.__vertex_to_id = dict()
-        self.__edge_to_id = dict()
 
         # set up checks
         self._machine_id = 0
