@@ -43,7 +43,7 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
-            translate_keys=False, map_incoming_keys=True):
+            translate_keys=False):
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
