@@ -539,18 +539,18 @@ class DataSpeedUpPacketGatherMachineVertex(
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = FecDataView.get_transceiver()
 
         # start time recording
         start = datetime.datetime.now()
         # send data
         self._send_data_via_extra_monitors(
-            transceiver, x, y, base_address, data[offset:n_bytes + offset])
+            x, y, base_address, data[offset:n_bytes + offset])
         # end time recording
         end = datetime.datetime.now()
 
         if VERIFY_SENT_DATA:
             original_data = bytes(data[offset:n_bytes + offset])
+            transceiver = FecDataView.get_transceiver()
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
             self.__verify_sent_data(

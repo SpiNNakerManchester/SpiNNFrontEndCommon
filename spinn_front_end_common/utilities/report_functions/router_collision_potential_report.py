@@ -69,7 +69,7 @@ def _generate_data():
 
                     collisions[(x, y)][link] = collision_potential
 
-                n_packets = n_keys_map.n_keys_for_partition(partition)
+                n_packets = 0  # n_keys_map.n_keys_for_partition(partition)
                 collisions[(x, y)][link] += n_packets
     return collisions
 

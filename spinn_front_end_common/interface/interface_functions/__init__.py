@@ -82,7 +82,6 @@ __all__ = [
     "split_lpg_vertices",
     "load_app_images", "load_fixed_routes", "load_sys_images",
     "local_tdma_builder", "locate_executable_start_type",
-    "lpg_placement_setter",
     "machine_generator", "placements_provenance_gatherer",
     "profile_data_gatherer",
     "read_routing_tables_from_machine", "router_provenance_gatherer",

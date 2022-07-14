@@ -192,7 +192,7 @@ class _MachineBitFieldRouterCompressor(object):
                 e.failed_core_states()))
             try:
                 transceiver.stop_application(routing_table_compressor_app_id)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning("Could not stop compressor!")
             raise e
 
@@ -408,7 +408,7 @@ class _MachineBitFieldRouterCompressor(object):
                         bit_field_compressor_executable_path, cores,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
-                    run_by_host.add((table.x, table.y))
+                    run_by_host.append((table.x, table.y))
 
         return run_by_host
 

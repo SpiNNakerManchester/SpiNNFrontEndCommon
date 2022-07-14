@@ -74,7 +74,7 @@ def __load_images(filt, label):
         try:
             FecDataView.get_transceiver().stop_application(
                 FecDataView.get_app_id())
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # Ignore this, this was just an attempt at recovery
             pass
         raise e

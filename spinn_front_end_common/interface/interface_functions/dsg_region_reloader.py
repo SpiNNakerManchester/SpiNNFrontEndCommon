@@ -44,6 +44,7 @@ class _DSGRegionReloader(object):
 
     def __init__(self):
         self._txrx = FecDataView.get_transceiver()
+        self._data_dir = None
 
     def _run(self):
         """

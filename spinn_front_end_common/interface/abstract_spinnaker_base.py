@@ -203,6 +203,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Will search these locations for binaries: {}",
             self._data_writer.get_executable_finder().binary_paths)
 
+        # store for Live Packet Gatherers
+        self._lpg_vertices = dict()
+
         self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._hard_reset()
