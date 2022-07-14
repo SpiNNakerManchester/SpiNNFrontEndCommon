@@ -15,16 +15,15 @@
 
 import logging
 import os
+import numpy
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.common import EdgeTrafficType
+from pacman.model.graphs.machine import MulticastEdgePartition
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping,
-    AbstractSupportsDatabaseInjection)
+    AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinn_front_end_common.utilities.globals_variables import (
     machine_time_step, report_default_directory, time_scale_factor)
-from pacman.model.graphs.machine import MulticastEdgePartition
-import numpy
+from spinn_front_end_common.utility_models import LivePacketGather
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -69,17 +68,20 @@ class DatabaseWriter(SQLiteDB):
         self._machine_id = 0
 
     @staticmethod
-    def auto_detect_database(machine_graph):
+    def auto_detect_database(app_graph):
         """ Auto detects if there is a need to activate the database system
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph of the application problem space.
+        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+            the graph of the application problem space.
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
-                   and vertex.is_in_injection_mode
-                   for vertex in machine_graph.vertices)
+        return (any(isinstance(app_vertex, LivePacketGather)
+                    for app_vertex in app_graph.vertices) or
+                any(isinstance(vertex, AbstractSupportsDatabaseInjection)
+                    and vertex.is_in_injection_mode
+                    for app_vertex in app_graph.vertices
+                    for vertex in app_vertex.machine_vertices))
 
     @property
     def database_path(self):
@@ -134,17 +136,6 @@ class DatabaseWriter(SQLiteDB):
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
-            cur.executemany(
-                """
-                INSERT INTO Processor(
-                    chip_x, chip_y, machine_id, available_DTCM,
-                    available_CPU, physical_id)
-                VALUES(?, ?, ?, ?, ?, ?)
-                """, (
-                    (chip.x, chip.y, self._machine_id, proc.dtcm_available,
-                     proc.cpu_cycles_available, proc.processor_id)
-                    for chip in machine.chips
-                    for proc in chip.processors))
 
     def add_application_vertices(self, application_graph):
         """ Stores the main application graph description (vertices, edges).
@@ -159,41 +150,34 @@ class DatabaseWriter(SQLiteDB):
                 max_atoms = vertex.get_max_atoms_per_core()
                 if not isinstance(max_atoms, int):
                     max_atoms = int(numpy.prod(max_atoms))
-                self.__vertex_to_id[vertex] = self.__insert(
+                vertex_id = self.__insert(
                     cur,
                     """
                     INSERT INTO Application_vertices(
                         vertex_label, vertex_class, no_atoms,
-                        max_atom_constrant)
+                        max_atom_constraint)
                     VALUES(?, ?, ?, ?)
                     """,
                     vertex.label, vertex.__class__.__name__, vertex.n_atoms,
                     max_atoms)
+                self.__vertex_to_id[vertex] = vertex_id
+                for m_vertex in vertex.machine_vertices:
+                    m_vertex_id = self.__add_machine_vertex(cur, m_vertex)
+                    self.__insert(
+                        cur,
+                        """
+                        INSERT INTO graph_mapper_vertex (
+                            application_vertex_id, machine_vertex_id)
+                        VALUES(?, ?)
+                        """,
+                        vertex_id, m_vertex_id)
 
-            # add edges
-            for edge in application_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Application_edges (
-                        pre_vertex, post_vertex, edge_label, edge_class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
-
-            # update graph
-            cur.executemany(
-                """
-                INSERT INTO Application_graph (
-                    vertex_id, edge_id)
-                VALUES(?, ?)
-                """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
-                    for vertex in application_graph.vertices
-                    for edge in application_graph.get_edges_starting_at_vertex(
-                        vertex)))
+    def __add_machine_vertex(self, cur, m_vertex):
+        m_vertex_id = self.__insert(
+            cur, "INSERT INTO Machine_vertices (label)  VALUES(?)",
+            str(m_vertex.label))
+        self.__vertex_to_id[m_vertex] = m_vertex_id
+        return m_vertex_id
 
     def add_system_params(self, runtime, app_id):
         """ Write system params into the database
@@ -213,83 +197,6 @@ class DatabaseWriter(SQLiteDB):
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", app_id)])
 
-    def add_vertices(self, machine_graph, data_n_timesteps, application_graph):
-        """ Add the machine graph into the database.
-
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            The machine graph object
-        :param int data_n_timesteps:
-            The number of timesteps for which data space will been reserved
-        :param application_graph: The application graph object
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        """
-        with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                req = vertex.resources_required
-                self.__vertex_to_id[vertex] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_vertices (
-                        label, class, cpu_used, sdram_used, dtcm_used)
-                    VALUES(?, ?, ?, ?, ?)
-                    """,
-                    str(vertex.label), vertex.__class__.__name__,
-                    _extract_int(req.cpu_cycles.get_value()),
-                    _extract_int(req.sdram.get_total_sdram(data_n_timesteps)),
-                    _extract_int(req.dtcm.get_value()))
-
-            # add machine edges
-            for edge in machine_graph.edges:
-                self.__edge_to_id[edge] = self.__insert(
-                    cur,
-                    """
-                    INSERT INTO Machine_edges (
-                        pre_vertex, post_vertex, label, class)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    self.__vertex_to_id[edge.pre_vertex],
-                    self.__vertex_to_id[edge.post_vertex],
-                    edge.label, edge.__class__.__name__)
-
-            # add to machine graph
-            cur.executemany(
-                """
-                INSERT INTO Machine_graph (
-                    vertex_id, edge_id)
-                VALUES(?, ?)
-                """, (
-                    (self.__vertex_to_id[vertex], self.__edge_to_id[edge])
-                    for vertex in machine_graph.vertices
-                    for edge in machine_graph.get_edges_starting_at_vertex(
-                        vertex)))
-
-            if application_graph.n_vertices > 0:
-                cur.executemany(
-                    """
-                    INSERT INTO graph_mapper_vertex (
-                        application_vertex_id, machine_vertex_id, lo_atom,
-                        hi_atom)
-                    VALUES(?, ?, ?, ?)
-                    """, (
-                        (self.__vertex_to_id[vertex.app_vertex],
-                         self.__vertex_to_id[vertex],
-                         vertex.vertex_slice.lo_atom,
-                         vertex.vertex_slice.hi_atom)
-                        for vertex in machine_graph.vertices))
-
-                # add graph_mapper edges
-                cur.executemany(
-                    """
-                    INSERT INTO graph_mapper_edges (
-                        application_edge_id, machine_edge_id)
-                    VALUES(?, ?)
-                    """, (
-                        (self.__edge_to_id[edge.app_edge],
-                         self.__edge_to_id[edge])
-                        for edge in machine_graph.edges
-                        if edge.app_edge is not None))
-
     def add_placements(self, placements):
         """ Adds the placements objects into the database
 
@@ -297,6 +204,10 @@ class DatabaseWriter(SQLiteDB):
             the placements object
         """
         with self.transaction() as cur:
+            # Make sure machine vertices are represented
+            for placement in placements.placements:
+                if placement.vertex not in self.__vertex_to_id:
+                    self.__add_machine_vertex(cur, placement.vertex)
             # add records
             cur.executemany(
                 """
@@ -308,118 +219,83 @@ class DatabaseWriter(SQLiteDB):
                      placement.x, placement.y, placement.p, self._machine_id)
                     for placement in placements.placements))
 
-    def add_routing_infos(self, routing_infos, machine_graph):
-        """ Adds the routing information (key masks etc) into the database
-
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            the routing information object
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph object
-        """
-        # Filter just the MULTICAST partitions first
-        partitions_and_routing_info = (
-            (partition, routing_infos.get_routing_info_from_partition(
-                partition))
-            for partition in machine_graph.outgoing_edge_partitions
-            if partition.traffic_type == EdgeTrafficType.MULTICAST)
-        with self.transaction() as cur:
-            cur.executemany(
-                """
-                INSERT INTO Routing_info(
-                    edge_id, "key", mask)
-                VALUES(?, ?, ?)
-                """, (
-                    (self.__edge_to_id[edge], key_mask.key, key_mask.mask)
-                    for partition, rinfo in partitions_and_routing_info
-                    for edge in partition.edges
-                    for key_mask in rinfo.keys_and_masks))
-
-    def add_routing_tables(self, routing_tables):
-        """ Adds the routing tables into the database
-
-        :param routing_tables: the routing tables object
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        """
-        with self.transaction() as cur:
-            cur.executemany(
-                """
-                INSERT INTO Routing_table(
-                    chip_x, chip_y, position, key_combo, mask, route)
-                VALUES(?, ?, ?, ?, ?, ?)
-                """, (
-                    (routing_table.x, routing_table.y, counter,
-                     entry.routing_entry_key, entry.mask,
-                     entry.spinnaker_route)
-                    for routing_table in routing_tables.routing_tables
-                    for counter, entry in
-                    enumerate(routing_table.multicast_routing_entries)))
-
-    def add_tags(self, machine_graph, tags):
+    def add_tags(self, tags):
         """ Adds the tags into the database
 
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            the machine graph object
+        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+            the graph object
         :param ~pacman.model.tags.Tags tags: the tags object
         """
         with self.transaction() as cur:
-            for vertex in machine_graph.vertices:
-                v_id = self.__vertex_to_id[vertex]
-                cur.executemany(
-                    """
-                    INSERT INTO IP_tags(
-                        vertex_id, tag, board_address, ip_address, port,
-                        strip_sdp)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        (v_id, ipt.tag, ipt.board_address, ipt.ip_address,
-                         ipt.port or 0, 1 if ipt.strip_sdp else 0)
-                        for ipt in tags.get_ip_tags_for_vertex(vertex) or []))
-                cur.executemany(
-                    """
-                    INSERT INTO Reverse_IP_tags(
-                        vertex_id, tag, board_address, port)
-                    VALUES (?, ?, ?, ?)
-                    """, (
-                        (v_id, ript.tag, ript.board_address, ript.port or 0)
-                        for ript in tags.get_reverse_ip_tags_for_vertex(
-                            vertex) or ()))
+            cur.executemany(
+                """
+                INSERT INTO IP_tags(
+                    vertex_id, tag, board_address, ip_address, port,
+                    strip_sdp)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    (self.__vertex_to_id[vert], ipt.tag, ipt.board_address,
+                     ipt.ip_address, ipt.port or 0, 1 if ipt.strip_sdp else 0)
+                    for ipt, vert in tags.ip_tags_vertices))
 
     def create_atom_to_event_id_mapping(
-            self, application_graph, machine_graph, routing_infos):
+            self, machine_vertices, routing_infos):
         """
-        :param application_graph:
-        :type application_graph:
+        :param app_graph:
+        :type app_graph:
             ~pacman.model.graphs.application.ApplicationGraph
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
-        if application_graph.n_vertices:
-            # We will be asking application vertices for key/atom mappings
-            vertices_and_partitions = (
-                (vertex.app_vertex, partition)
-                for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
-        else:
-            # We will be asking machine vertices for key/atom mappings
-            vertices_and_partitions = (
-                (vertex, partition)
-                for vertex in machine_graph.vertices
-                for partition in machine_graph.
-                get_outgoing_edge_partitions_starting_at_vertex(vertex))
+        # This could happen if there are no LPGs
+        if machine_vertices is None:
+            return
+        with self.transaction() as cur:
+            for (m_vertex, partition_id) in machine_vertices:
+                atom_keys = list()
+                if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
+                    atom_keys = m_vertex.app_vertex.get_atom_key_map(
+                        m_vertex, partition_id, routing_infos)
+                else:
+                    r_info = routing_infos.get_routing_info_from_pre_vertex(
+                        m_vertex, partition_id)
+                    # r_info could be None if there are no outgoing edges,
+                    # at which point there is nothing to do here anyway
+                    if r_info is not None:
+                        vertex_slice = m_vertex.vertex_slice
+                        keys = r_info.get_keys(vertex_slice.n_atoms)
+                        start = vertex_slice.lo_atom
+                        atom_keys = [(i, k) for i, k in enumerate(keys, start)]
+                m_vertex_id = self.__vertex_to_id[m_vertex]
+                cur.executemany(
+                    """
+                    INSERT INTO event_to_atom_mapping(
+                        vertex_id, event_id, atom_id)
+                    VALUES (?, ?, ?)
+                    """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
+                )
+
+    def add_lpg_mapping(self, app_graph):
+        """ Add mapping from machine vertex to LPG machine vertex
+
+        :param ApplicationGraph app_graph:
+            The application graph to get the LPG vertices from
+        :return: A list of (source vertex, partition id)
+        :rtype: list(MachineVertex, str)
+        """
+        targets = [(m_vertex, part_id, lpg_m_vertex)
+                   for vertex in app_graph.vertices
+                   if isinstance(vertex, LivePacketGather)
+                   for lpg_m_vertex, m_vertex, part_id
+                   in vertex.splitter.targeted_lpgs]
 
         with self.transaction() as cur:
             cur.executemany(
                 """
-                INSERT INTO event_to_atom_mapping(
-                    vertex_id, event_id, atom_id)
-                VALUES (?, ?, ?)
-                """, (
-                    (self.__vertex_to_id[vtx], int(key), int(a_id))
-                    for vtx, prtn in vertices_and_partitions
-                    if isinstance(vtx, AbstractProvidesKeyToAtomMapping)
-                    and isinstance(prtn, MulticastEdgePartition)
-                    for a_id, key in vtx.routing_key_partition_atom_mapping(
-                        routing_infos.get_routing_info_from_partition(prtn),
-                        prtn)))
+                INSERT INTO m_vertex_to_lpg_vertex(
+                    pre_vertex_id, partition_id, post_vertex_id)
+                VALUES(?, ?, ?)
+                """, ((self.__vertex_to_id[m_vertex], part_id,
+                       self.__vertex_to_id[lpg_m_vertex])
+                      for m_vertex, part_id, lpg_m_vertex in targets))
+
+        return [(source, part_id) for source, part_id, _target in targets]

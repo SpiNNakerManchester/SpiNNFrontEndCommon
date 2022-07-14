@@ -22,11 +22,6 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
     ReverseIPtagResource)
-from pacman.model.constraints.placer_constraints import BoardConstraint
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesOutgoingPartitionConstraints)
-from spinn_front_end_common.abstract_models.impl import (
-    ProvidesKeyToAtomMappingImpl)
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
@@ -34,9 +29,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class ReverseIpTagMultiCastSource(
-        ApplicationVertex, LegacyPartitionerAPI,
-        AbstractProvidesOutgoingPartitionConstraints,
-        ProvidesKeyToAtomMappingImpl):
+        ApplicationVertex, LegacyPartitionerAPI):
     """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
     """
@@ -44,9 +37,6 @@ class ReverseIpTagMultiCastSource(
     def __init__(
             self, n_keys, label=None, constraints=None,
             max_atoms_per_core=sys.maxsize,
-
-            # General parameters
-            board_address=None,
 
             # Live input parameters
             receive_port=None,
@@ -65,8 +55,8 @@ class ReverseIpTagMultiCastSource(
             # Extra flag for input without a reserved port
             reserve_reverse_ip_tag=False,
 
-            # Flag to indicate that data will be received to inject
-            enable_injection=False,
+            # Name of partition to inject keys with
+            injection_partition_id=None,
 
             # splitter object
             splitter=None):
@@ -116,8 +106,9 @@ class ReverseIpTagMultiCastSource(
         :type send_buffer_partition_id: str or None
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
-        :param bool enable_injection:
-            Flag to indicate that data will be received to inject
+        :param str injection_partition:
+            If not None, will enable injection and specify the partition to
+            send injected keys with
         :param splitter: the splitter object needed for this vertex
         :type splitter: None or AbstractSplitterCommon
         """
@@ -129,7 +120,6 @@ class ReverseIpTagMultiCastSource(
         self._n_atoms = self.round_n_atoms(n_keys, "n_keys")
 
         # Store the parameters for EIEIO
-        self._board_address = board_address
         self._receive_port = receive_port
         self._receive_sdp_port = receive_sdp_port
         self._receive_tag = receive_tag
@@ -144,8 +134,6 @@ class ReverseIpTagMultiCastSource(
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
-            if board_address is not None:
-                self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
         self._send_buffer_times = self._validate_send_buffer_times(
@@ -154,7 +142,7 @@ class ReverseIpTagMultiCastSource(
 
         # Store the buffering details
         self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
-        self._enable_injection = enable_injection
+        self._injection_partition_id = injection_partition_id
 
         # Store recording parameters
         self._is_recording = False
@@ -214,12 +202,6 @@ class ReverseIpTagMultiCastSource(
     def enable_recording(self, new_state=True):
         self._is_recording = new_state
 
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        return partition.pre_vertex.get_outgoing_partition_constraints(
-            partition)
-
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice,
@@ -229,7 +211,6 @@ class ReverseIpTagMultiCastSource(
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,
-            board_address=self._board_address,
             receive_port=self._receive_port,
             receive_sdp_port=self._receive_sdp_port,
             receive_tag=self._receive_tag,
@@ -239,7 +220,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_times=send_buffer_times,
             send_buffer_partition_id=self._send_buffer_partition_id,
             reserve_reverse_ip_tag=self._reserve_reverse_ip_tag,
-            enable_injection=self._enable_injection)
+            injection_partition_id=self._injection_partition_id)
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
         if resources_required:

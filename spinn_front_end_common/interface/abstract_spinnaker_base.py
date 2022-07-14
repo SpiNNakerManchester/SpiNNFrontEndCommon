@@ -12,11 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 """
 main interface for the SpiNNaker tools
 """
-from collections import defaultdict
 import logging
 import math
 import signal
@@ -50,32 +48,24 @@ from pacman.executor.injection_decorator import (
 from pacman.model.graphs.application import (
     ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex,
     ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
-from pacman.model.graphs.machine import (
-    MachineGraph, MachineGraphView, MachineVertex)
 from pacman.model.graphs import (
     AbstractVirtual, AbstractFPGA, AbstractSpiNNakerLink)
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
-from pacman.model.resources import (
-    ConstantSDRAM, PreAllocatedResourceContainer)
-from pacman.operations.chip_id_allocator_algorithms import (
-    malloc_based_chip_id_allocator)
 from pacman.operations.fixed_route_router import fixed_route_router
 from pacman.operations.partition_algorithms import splitter_partitioner
-from pacman.operations.placer_algorithms import (
-    connective_based_placer, one_to_one_placer, radial_placer, spreader_placer)
+from pacman.operations.placer_algorithms import place_application_graph
 from pacman.operations.router_algorithms import (
-    basic_dijkstra_routing, ner_route, ner_route_traffic_aware)
+    basic_dijkstra_routing, ner_route, ner_route_traffic_aware,
+    route_application_graph)
 from pacman.operations.router_compressors import (
     pair_compressor, range_compressor)
 from pacman.operations.router_compressors.ordered_covering_router_compressor \
     import ordered_covering_compressor
 from pacman.operations.routing_info_allocator_algorithms.\
-    malloc_based_routing_allocator import malloc_based_routing_info_allocator
-from pacman.operations.routing_info_allocator_algorithms.\
     zoned_routing_info_allocator import (flexible_allocate, global_allocate)
 from pacman.operations.routing_table_generators import (
-    basic_routing_table_generator)
+    basic_routing_table_generator, merged_routing_table_generator)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 
@@ -91,26 +81,20 @@ from spinn_front_end_common.interface.interface_functions import (
     buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
-    dsg_region_reloader, edge_to_n_keys_mapper, energy_provenance_reporter,
+    dsg_region_reloader, energy_provenance_reporter,
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
-    graph_measurer, graph_provenance_gatherer,
+    graph_provenance_gatherer,
     host_based_bit_field_router_compressor,
     hbp_allocator, hbp_max_machine_generator,
     insert_chip_power_monitors_to_graphs,
-    insert_edges_to_extra_monitor_functionality,
-    insert_edges_to_live_packet_gatherers,
-    insert_extra_monitor_vertices_to_graphs,
-    insert_live_packet_gatherers_to_graphs,
+    insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
-    local_tdma_builder, locate_executable_start_type, machine_generator,
-    preallocate_resources_for_chip_power_monitor,
-    preallocate_resources_for_live_packet_gatherers,
-    pre_allocate_resources_for_extra_monitor_support,
-    placements_provenance_gatherer,
-    profile_data_gatherer, process_partition_constraints,
-    read_routing_tables_from_machine,
-    router_provenance_gatherer, routing_setup, routing_table_loader,
+    local_tdma_builder, locate_executable_start_type,
+    lpg_placement_setter, machine_generator,
+    placements_provenance_gatherer, profile_data_gatherer,
+    read_routing_tables_from_machine, router_provenance_gatherer,
+    routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     spalloc_max_machine_generator,
     system_multicast_routing_generator,
@@ -131,8 +115,6 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulator_status import (
     RUNNING_STATUS, SHUTDOWN_STATUS, Simulator_Status)
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
@@ -141,18 +123,15 @@ from spinn_front_end_common.utilities.report_functions import (
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_partition_n_keys_map, write_json_placements,
-    write_json_routing_tables)
+    write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, CommandSenderMachineVertex,
-    DataSpeedUpPacketGatherMachineVertex)
+    CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
 from spinn_front_end_common.utilities import FecTimer
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
-    placer_reports_without_application_graph,
     router_compressed_summary_report, routing_info_report,
     router_report_from_compressed_router_tables,
     router_report_from_paths,
@@ -205,14 +184,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # be split to core sizes
         # Object created by init. Added to but never new object
         "_original_application_graph",
-
-        # the pacman machine graph, used to hold vertices which represent cores
-        "_machine_graph",
-
-        # the end user pacman machine graph, used to hold vertices which
-        # represent cores.
-        # Object created by init. Added to but never new object
-        "_original_machine_graph",
 
         # The holder for where machine graph vertices are placed.
         "_placements",
@@ -309,14 +280,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # dict of exucutable types to cores
         "_executable_types",
 
-        # mapping between parameters and the vertices which need to talk to
-        # them
-        # Created during init. Added to but never new object
-        "_live_packet_recorder_params",
-
-        # place holder for checking the vertices being added to the recorders
-        # tracker are all of the same vertex type.
-        "_live_packet_recorders_associated_vertex_type",
+        # A dict of live packet gather params to Application LGP vertices
+        "_lpg_vertices",
 
         # mapping of live packet recorder parameters to vertex
         "_live_packet_recorder_parameters_mapping",
@@ -393,7 +358,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_n_chips_needed",
 
         # Notification interface if needed
-        "_notification_interface",
+        "_notification_interface"
     ]
 
     def __init__(
@@ -432,8 +397,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "n_boards_required")
 
         # store for Live Packet Gatherers
-        self._live_packet_recorder_params = defaultdict(list)
-        self._live_packet_recorders_associated_vertex_type = None
+        self._lpg_vertices = dict()
 
         # update graph label if needed
         if graph_label is None:
@@ -441,9 +405,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # pacman objects
         self._original_application_graph = ApplicationGraph(label=graph_label)
-        self._original_machine_graph = MachineGraph(
-            label=graph_label,
-            application_graph=self._original_application_graph)
 
         self._machine_allocation_controller = None
         self._txrx = None
@@ -511,7 +472,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._fixed_routes = None
         self._java_caller = None
         self._live_packet_recorder_parameters_mapping = None
-        self._machine_graph = None
         self._machine_partition_n_keys_map = None
         self._max_machine = False
         self._max_run_time_steps = None
@@ -588,8 +548,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         results = []
         for key in ["APPID", "ApplicationGraph", "DataInMulticastKeyToChipMap",
                     "DataInMulticastRoutingTables", "DataNTimeSteps",
-                    "ExtendedMachine", "FirstMachineTimeStep", "MachineGraph",
-                    "MachinePartitionNKeysMap", "Placements", "RoutingInfos",
+                    "ExtendedMachine", "FirstMachineTimeStep",
+                    "Placements", "RoutingInfos",
                     "RunUntilTimeSteps", "SystemMulticastRouterTimeoutKeys",
                     "Tags"]:
             item = self._unchecked_gettiem(key)
@@ -624,8 +584,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._machine
         if item == "FirstMachineTimeStep":
             return self._first_machine_time_step
-        if item == "MachineGraph":
-            return self.machine_graph
         if item == "MachinePartitionNKeysMap":
             return self._machine_partition_n_keys_map
         if item == "Placements":
@@ -678,23 +636,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param list(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
-        self._live_packet_recorder_params[live_packet_gatherer_params].append(
-            (vertex_to_record_from, partition_ids))
-
-        # verify that the vertices being added are of one vertex type.
-        if self._live_packet_recorders_associated_vertex_type is None:
-            if isinstance(vertex_to_record_from, ApplicationVertex):
-                self._live_packet_recorders_associated_vertex_type = \
-                    ApplicationVertex
-            else:
-                self._live_packet_recorders_associated_vertex_type = \
-                    MachineVertex
-        elif not isinstance(
-                vertex_to_record_from,
-                self._live_packet_recorders_associated_vertex_type):
-            raise ConfigurationException(
-                "Only one type of graph can be used during live output. "
-                "Please fix and try again")
+        lpg_vertex = self._lpg_vertices.get(live_packet_gatherer_params)
+        if lpg_vertex is None:
+            lpg_vertex = LivePacketGather(
+                live_packet_gatherer_params, live_packet_gatherer_params.label)
+            self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
+            self._original_application_graph.add_vertex(lpg_vertex)
+        for part_id in partition_ids:
+            self._original_application_graph.add_edge(
+                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
@@ -788,8 +738,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if self._original_application_graph.n_vertices:
             return True
-        if self._original_machine_graph.n_vertices:
-            return True
         logger.warning(
             "Your graph has no vertices in it. "
             "Therefor the run call will exit immediately.")
@@ -820,14 +768,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._run(run_time, sync_time)
 
     def _build_graphs_for_usage(self):
-        if self._original_application_graph.n_vertices:
-            if self._original_machine_graph.n_vertices:
-                raise ConfigurationException(
-                    "Illegal state where both original_application and "
-                    "original machine graph have vertices in them")
-
+        self._original_application_graph.reset()
         self._application_graph = self._original_application_graph.clone()
-        self._machine_graph = self._original_machine_graph.clone()
 
     def __timesteps(self, time_in_ms):
         """ Get a number of timesteps for a given time in milliseconds.
@@ -984,8 +926,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Work out the maximum run duration given all recordings
         if self._max_run_time_steps is None:
-            self._max_run_time_steps = self._deduce_data_n_timesteps(
-                self._machine_graph)
+            self._max_run_time_steps = self._deduce_data_n_timesteps()
         clear_injectables()
 
         # Work out an array of timesteps to perform
@@ -1015,7 +956,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # If we have never run before, or the graph has changed, or data has
         # been changed, generate and load the data
         if not self._has_ran or graph_changed or data_changed:
-            self._do_data_generation()
 
             self._do_load(graph_changed)
 
@@ -1069,10 +1009,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _add_commands_to_command_sender(self):
         vertices = self._application_graph.vertices
-        is_app_graph = True
-        if len(vertices) == 0:
-            vertices = self._machine_graph.vertices
-            is_app_graph = False
+        graph = self._application_graph
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 constraints = []
@@ -1109,24 +1046,18 @@ class AbstractSpinnakerBase(ConfigHandler):
 
                 # Add a command sender
                 label = f"CommandSender for {vertex.label}"
-                command_sender_app = None
-                if is_app_graph:
-                    command_sender_app = CommandSender(label, constraints)
-                    self._application_graph.add_vertex(command_sender_app)
-                    app_edge = ApplicationEdge(command_sender_app, vertex)
-                    self._application_graph.add_edge(app_edge, "Commands")
-                    app_partition = self._application_graph.\
-                        get_outgoing_edge_partition_starting_at_vertex(
-                            vertex, "Commands")
-                    command_sender = command_sender_app.machine_vertex
-                    post_vertex = next(iter(
-                        vertex.splitter.get_in_coming_vertices(
-                            app_edge, app_partition, command_sender).keys()))
-                else:
-                    command_sender = CommandSenderMachineVertex(
-                        label, constraints)
-                    post_vertex = vertex
-                self._machine_graph.add_vertex(command_sender)
+                command_sender_app = CommandSender(label, constraints)
+                self._application_graph.add_vertex(command_sender_app)
+                app_edge = ApplicationEdge(command_sender_app, vertex)
+                self._application_graph.add_edge(app_edge, "Commands")
+                app_partition = self._application_graph.\
+                    get_outgoing_edge_partition_starting_at_vertex(
+                        vertex, "Commands")
+                command_sender = command_sender_app.machine_vertex
+                post_vertex = next(iter(
+                    vertex.splitter.get_in_coming_vertices(
+                        app_edge, app_partition, command_sender).keys()))
+                graph.add_vertex(command_sender)
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
@@ -1155,45 +1086,35 @@ class AbstractSpinnakerBase(ConfigHandler):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_data_n_timesteps(self, machine_graph):
+    def _deduce_data_n_timesteps(self):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
-        :param ~.MachineGraph machine_graph:
         :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
         usage_by_chip = dict()
-        seen_partitions = set()
 
-        for placement in self._placements.placements:
-            if isinstance(placement.vertex, AbstractVirtual):
+        for place in self._placements:
+            if isinstance(place.vertex, AbstractVirtual):
                 continue
-            sdram_required = placement.vertex.resources_required.sdram
-            if (placement.x, placement.y) in usage_by_chip:
-                usage_by_chip[placement.x, placement.y] += sdram_required
+            sdram = place.vertex.resources_required.sdram
+            if (place.x, place.y) in usage_by_chip:
+                usage_by_chip[place.x, place.y] += sdram
             else:
-                usage_by_chip[placement.x, placement.y] = sdram_required
-
-            # add sdram partitions
-            sdram_partitions = (
-                machine_graph.get_sdram_edge_partitions_starting_at_vertex(
-                    placement.vertex))
-            for partition in sdram_partitions:
-                if partition not in seen_partitions:
-                    usage_by_chip[placement.x, placement.y] += (
-                        ConstantSDRAM(
-                            partition.total_sdram_requirements() +
-                            SARK_PER_MALLOC_SDRAM_USAGE))
-                    seen_partitions.add(partition)
+                usage_by_chip[place.x, place.y] = sdram
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
+            if sdram.fixed > size:
+                raise Exception(
+                    f"Too much SDRAM has been allocated on chip {x}, {y}: "
+                    f" {sdram.fixed} of {size}")
             if sdram.per_timestep:
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
@@ -1408,34 +1329,15 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
-            if self._application_graph.n_vertices == 0:
-                graph = self._machine_graph
-            else:
-                graph = self._application_graph
-            network_specification(graph)
+            network_specification(self._application_graph)
 
-    def _execute_chip_id_allocator(self):
+    def _execute_split_lpg_vertices(self, system_placements):
         """
-        Runs, times and logs the ChipIdAllocator
-
+        Runs, times and logs the SplitLPGVertices if required
         """
-        with FecTimer(MAPPING, "Chip ID allocator"):
-            malloc_based_chip_id_allocator(self._machine, self._machine_graph)
-            # return ignored as changes done inside original machine object
-
-    def _execute_insert_live_packet_gatherers_to_graphs(self):
-        """
-        Runs, times and logs the InsertLivePacketGatherersToGraphs if required
-        """
-        with FecTimer(
-                MAPPING, "Insert live packet gatherers to graphs") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            self._live_packet_recorder_parameters_mapping = \
-                insert_live_packet_gatherers_to_graphs(
-                    self._live_packet_recorder_params, self._machine,
-                    self._machine_graph, self._application_graph)
+        with FecTimer(MAPPING, "Split Live Gather Vertices"):
+            split_lpg_vertices(
+                self._application_graph, self._machine, system_placements)
 
     def _report_board_chip(self):
         """
@@ -1469,95 +1371,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         Stub to allow spynakker to add delay supports
         """
 
-    def _execute_preallocate_for_live_packet_gatherer(
-            self, pre_allocated_resources):
-        """
-        Runs, times and logs the PreAllocateResourcesForLivePacketGatherers if\
-        required
-
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
-        """
-        with FecTimer(
-                MAPPING, "Preallocate for live packet gatherer") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            preallocate_resources_for_live_packet_gatherers(
-                self._live_packet_recorder_params, pre_allocated_resources)
-
-    def _execute_preallocate_for_chip_power_monitor(
-            self, pre_allocated_resources):
-        """
-        Runs, times and logs the PreAllocateResourcesForChipPowerMonitor if\
-        required
-
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
-        """
-        with FecTimer(MAPPING, "Preallocate for chip power monitor") as timer:
-            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
-                return
-            preallocate_resources_for_chip_power_monitor(
-                pre_allocated_resources)
-
-    def _execute_preallocate_for_extra_monitor_support(
-            self, pre_allocated_resources):
-        """
-        Runs, times and logs the PreAllocateResourcesForExtraMonitorSupport if\
-        required
-
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
-        """
-        with FecTimer(MAPPING, "Preallocate for extra monitor support") \
-                as timer:
-            if timer.skip_if_cfgs_false(
-                    "Machine", "enable_advanced_monitor_support",
-                    "enable_reinjection"):
-                return
-            pre_allocate_resources_for_extra_monitor_support(
-                pre_allocated_resources)
-
     # Overriden by spynaker to choose a different algorithm
-    def _execute_splitter_partitioner(self, pre_allocated_resources):
+    def _execute_splitter_partitioner(self):
         """
-        Runs, times and logs the SplitterPartitioner if\
-        required
-
-        :param pre_allocated_resources: other preallocated resources
-        :type pre_allocated_resources:
-            ~pacman.model.resources.PreAllocatedResourceContainer
+        Runs, times and logs the SplitterPartitioner if required
         """
         if not self._application_graph.n_vertices:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
-            self._machine_graph, self._n_chips_needed = splitter_partitioner(
-                self._application_graph, self._machine, self._plan_n_timesteps,
-                pre_allocated_resources)
+            self._n_chips_needed = splitter_partitioner(
+                self._application_graph, self._plan_n_timesteps)
 
-    def _execute_graph_measurer(self):
-        """
-        Runs, times and logs GraphMeasurer is required
-
-        Sets self._n_chips_needed if no machine exists
-
-        Warning if the users has specified a machine size he gets what he
-        asks for and if it is too small the placer will tell him.
-
-        :return:
-        """
-        if not self._max_machine:
-            if self._machine:
-                return
-        with FecTimer(MAPPING, "Graph measurer"):
-            self._n_chips_needed = graph_measurer(
-                self._machine_graph, self._machine, self._plan_n_timesteps)
-
-    def _execute_insert_chip_power_monitors(self):
+    def _execute_insert_chip_power_monitors(self, system_placements):
         """
         Run, time and log the InsertChipPowerMonitorsToGraphs if required
 
@@ -1566,11 +1391,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
             insert_chip_power_monitors_to_graphs(
-                self._machine, self._machine_graph,
+                self._machine,
                 get_config_int("EnergyMonitor", "sampling_frequency"),
-                self._application_graph)
+                system_placements)
 
-    def _execute_insert_extra_monitor_vertices(self):
+    def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
         Run, time and log the InsertExtraMonitorVerticesToGraphs if required
 
@@ -1581,10 +1406,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "enable_reinjection"):
                 return
             # inserter checks for None app graph not an empty one
-        (self._vertex_to_ethernet_connected_chip_mapping,
-         self._extra_monitor_to_chip_mapping) = \
-            insert_extra_monitor_vertices_to_graphs(
-                self._machine, self._machine_graph, self._application_graph)
+            (self._vertex_to_ethernet_connected_chip_mapping,
+             self._extra_monitor_to_chip_mapping) = \
+                insert_extra_monitor_vertices_to_graphs(
+                    self._machine, self._application_graph,
+                    system_placements)
 
     def _execute_partitioner_report(self):
         """
@@ -1597,24 +1423,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             partitioner_report(self._ipaddress, self._application_graph)
 
-    def _execute_edge_to_n_keys_mapper(self):
-        """
-        Runs, times and logs the EdgeToNKeysMapper
-
-        Sets the "machine_partition_n_keys_map" data
-        """
-        with FecTimer(MAPPING, "Edge to n keys mapper"):
-            self._machine_partition_n_keys_map = edge_to_n_keys_mapper(
-                self._machine_graph)
-
     def _execute_local_tdma_builder(self):
         """
         Runs times and logs the LocalTDMABuilder
         """
         with FecTimer(MAPPING, "Local TDMA builder"):
-            local_tdma_builder(
-                self._machine_graph, self._machine_partition_n_keys_map,
-                self._application_graph)
+            local_tdma_builder(self._application_graph)
 
     def _json_partition_n_keys_map(self):
         """
@@ -1628,9 +1442,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._machine_partition_n_keys_map, self._json_folder)
             # Output ignored as never used
 
-    def _execute_connective_based_placer(self):
+    def _execute_application_placer(self, system_placements):
         """
-        Runs, times and logs the ConnectiveBasedPlacer
+        Runs, times and logs the Application Placer
 
         Sets the "placements" data
 
@@ -1638,54 +1452,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg placer value
 
         """
-        with FecTimer(MAPPING, "Connective based placer"):
-            self._placements = connective_based_placer(
-                self._machine_graph, self._machine, self._plan_n_timesteps)
+        with FecTimer(MAPPING, "Application Placer"):
+            self._placements = place_application_graph(
+                self._machine, self._application_graph, self._plan_n_timesteps,
+                system_placements, self._report_default_directory)
 
-    def _execute_one_to_one_placer(self):
-        """
-        Runs, times and logs the OneToOnePlacer
-
-        Sets the "placements" data
-
-        .. note::
-            Calling of this method is based on the cfg placer value
-
-        """
-        with FecTimer(MAPPING, "One to one placer"):
-            self._placements = one_to_one_placer(
-                self._machine_graph, self._machine, self._plan_n_timesteps)
-
-    def _execute_radial_placer(self):
-        """
-        Runs, times and logs the RadialPlacer
-
-        Sets the "placements" data
-
-        .. note::
-            Calling of this method is based on the cfg placer value
-
-        """
-        with FecTimer(MAPPING, "Radial placer"):
-            self._placements = radial_placer(
-                self._machine_graph, self._machine, self._plan_n_timesteps)
-
-    def _execute_speader_placer(self):
-        """
-        Runs, times and logs the SpreaderPlacer
-
-        Sets the "placements" data
-
-        .. note::
-            Calling of this method is based on the cfg placer value
-
-        """
-        with FecTimer(MAPPING, "Spreader placer"):
-            self._placements = spreader_placer(
-                self._machine_graph, self._machine,
-                self._machine_partition_n_keys_map, self._plan_n_timesteps)
-
-    def _do_placer(self):
+    def _do_placer(self, system_placements):
         """
         Runs, times and logs one of the placers
 
@@ -1698,48 +1470,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raise ConfigurationException: if the cfg place value is unexpected
         """
         name = get_config_str("Mapping", "placer")
-        if name == "ConnectiveBasedPlacer":
-            return self._execute_connective_based_placer()
-        if name == "OneToOnePlacer":
-            return self._execute_one_to_one_placer()
-        if name == "RadialPlacer":
-            return self._execute_radial_placer()
-        if name == "SpreaderPlacer":
-            return self._execute_speader_placer()
+        if name == "ApplicationPlacer":
+            return self._execute_application_placer(system_placements)
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_insert_edges_to_live_packet_gatherers(self):
+    def _exectute_lpg_placement_setter(self):
         """
-        Runs, times and logs the InsertEdgesToLivePacketGatherers if required
+        Runs, times and logs lpg_placement_setter
         """
-        with FecTimer(
-                MAPPING, "Insert edges to live packet gatherers") as timer:
-            if timer.skip_if_empty(self._live_packet_recorder_params,
-                                   "live_packet_recorder_params"):
-                return
-            insert_edges_to_live_packet_gatherers(
-                self._live_packet_recorder_params, self._placements,
-                self._live_packet_recorder_parameters_mapping, self._machine,
-                self._machine_graph, self._application_graph,
-                self._machine_partition_n_keys_map)
-
-    def _execute_insert_edges_to_extra_monitor(self):
-        """
-        Runs times and logs the InsertEdgesToExtraMonitor is required
-        """
-        with FecTimer(MAPPING, "Insert Edges To Extra Monitor") as timer:
-            if timer.skip_if_cfgs_false(
-                    "Machine", "enable_advanced_monitor_support",
-                    "enable_reinjection"):
-                return
-            insert_edges_to_extra_monitor_functionality(
-                self._machine_graph, self._placements, self._machine,
-                self._vertex_to_ethernet_connected_chip_mapping,
-                self._application_graph)
+        with FecTimer(MAPPING, "LPG Placement setter"):
+            lpg_placement_setter(self._application_graph, self._placements)
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -1791,19 +1535,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._ipaddress, self._application_graph, self._placements,
                 self._machine)
 
-    def _report_placements_with_machine_graph(self):
-        """
-        Writes, times and logs the machine graph placer report if
-        requested
-        """
-        with FecTimer(MAPPING, "Placements wthout machine graaph") as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_machine_graph_placer_report"):
-                return
-            placer_reports_without_application_graph(
-                self._ipaddress, self._machine_graph, self._placements,
-                self._machine)
-
     def _json_placements(self):
         """
         Does, times and logs the writing of placements as json if requested
@@ -1827,7 +1558,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route traffic aware"):
             self._routing_table_by_partition = ner_route_traffic_aware(
-                self._machine_graph, self._machine, self._placements)
+                self._machine, self._application_graph, self._placements)
 
     def _execute_ner_route(self):
         """
@@ -1840,7 +1571,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Ner route"):
             self._routing_table_by_partition = ner_route(
-                self._machine_graph, self._machine, self._placements)
+                self._machine, self._application_graph, self._placements)
 
     def _execute_basic_dijkstra_routing(self):
         """
@@ -1853,7 +1584,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic dijkstra routing"):
             self._routing_table_by_partition = basic_dijkstra_routing(
-                self._machine_graph, self._machine, self._placements)
+                self._machine, self._application_graph, self._placements)
+
+    def _execute_application_router(self):
+        """
+        Runs, times and logs the ApplicationRouter
+
+        Sets the "routing_table_by_partition" data if called
+
+        .. note::
+            Calling of this method is based on the cfg router value
+        """
+        with FecTimer(MAPPING, "Application Router"):
+            self._routing_table_by_partition = route_application_graph(
+                self._machine, self._application_graph, self._placements)
 
     def _do_routing(self):
         """
@@ -1874,6 +1618,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return self._execute_ner_route()
         if name == "NerRouteTrafficAware":
             return self._execute_ner_route_traffic_aware()
+        if name == "ApplicationRouter":
+            return self._execute_application_router()
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for router")
@@ -1887,8 +1633,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "tag" data
         """
         with FecTimer(MAPPING, "Basic tag allocator"):
-            self._tags = basic_tag_allocator(
-                self._machine, self._plan_n_timesteps, self._placements)
+            self._tags = basic_tag_allocator(self._machine, self._placements)
 
     def _report_tag_allocations(self):
         """
@@ -1900,14 +1645,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             tag_allocator_report(self._tags)
 
-    def _execute_process_partition_constraints(self):
-        """
-        Runs, times and logs the ProcessPartitionConstraints
-        """
-        with FecTimer(MAPPING, "Process partition constraints"):
-            process_partition_constraints(self._machine_graph)
-
-    def _execute_global_allocate(self):
+    def _execute_global_allocate(self, extra_allocations):
         """
         Runs, times and logs the Global Zoned Routing Info Allocator
 
@@ -1920,9 +1658,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Global allocate"):
             self._routing_infos = global_allocate(
-                self._machine_graph, self._machine_partition_n_keys_map)
+                self._application_graph, extra_allocations)
 
-    def _execute_flexible_allocate(self):
+    def _execute_flexible_allocate(self, extra_allocations):
         """
         Runs, times and logs the Zoned Routing Info Allocator
 
@@ -1935,22 +1673,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Zoned routing info allocator"):
             self._routing_infos = flexible_allocate(
-                self._machine_graph, self._machine_partition_n_keys_map)
-
-    def _execute_malloc_based_routing_info_allocator(self):
-        """
-        Runs, times and logs the Malloc Based Routing Info Allocator
-
-        Sets "routing_info" is called
-
-        .. note::
-            Calling of this method is based on the cfg info_allocator value
-
-        :return:
-        """
-        with FecTimer(MAPPING, "Malloc based routing info allocator"):
-            self._routing_infos = malloc_based_routing_info_allocator(
-                self._machine_graph, self._machine_partition_n_keys_map)
+                self._application_graph, extra_allocations)
 
     def do_info_allocator(self):
         """
@@ -1966,12 +1689,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             unexpected
         """
         name = get_config_str("Mapping", "info_allocator")
-        if name == "GlobalZonedRoutingInfoAllocator ":
-            return self._execute_global_allocate()
-        if name == "MallocBasedRoutingInfoAllocator":
-            return self._execute_malloc_based_routing_info_allocator()
+        if name == "GlobalZonedRoutingInfoAllocator":
+            return self._execute_global_allocate([])
         if name == "ZonedRoutingInfoAllocator":
-            return self._execute_flexible_allocate()
+            return self._execute_flexible_allocate([])
         if "," in name:
             raise ConfigurationException(
                 "Only a single algorithm is supported for info_allocator")
@@ -1980,13 +1701,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _report_router_info(self):
         """
-        Writes, times and logs the router iinfo report if requested
+        Writes, times and logs the router info report if requested
         """
         with FecTimer(MAPPING, "Router info report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_info_report"):
                 return
-            routing_info_report(self._machine_graph, self._routing_infos)
+            routing_info_report(
+                self._application_graph, [], self._routing_infos)
 
     def _execute_basic_routing_table_generator(self):
         """
@@ -1998,9 +1720,45 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Basic routing table generator"):
             self._router_tables = basic_routing_table_generator(
-                self._routing_infos, self._routing_table_by_partition,
-                self._machine)
+                self._routing_infos, self._routing_table_by_partition)
+
+    def _execute_merged_routing_table_generator(self):
+        """
+        Runs, times and logs the Routing Table Generator
+
+        .. note::
+            Currently no other Routing Table Generator supported.
+            To add an additional Generator copy the pattern of do_placer
+        """
+        with FecTimer(MAPPING, "Merged routing table generator"):
+            self._router_tables = merged_routing_table_generator(
+                self._routing_infos, self._routing_table_by_partition)
         # TODO Nuke ZonedRoutingTableGenerator
+
+    def _do_routing_table_generator(self):
+        """
+        Runs, times and logs one of the routing table generators
+
+        Sets the "routing_info" data
+
+        Which alloactor is run depends on the cfg info_allocator value
+
+        This method is the entry point for adding a new Info Allocator
+
+        :raise ConfigurationException: if the cfg info_allocator value is
+            unexpected
+        """
+        name = get_config_str("Mapping", "routing_table_generator")
+        if name == "BasicRoutingTableGenerator":
+            return self._execute_basic_routing_table_generator()
+        if name == "MergedRoutingTableGenerator":
+            return self._execute_merged_routing_table_generator()
+        if "," in name:
+            raise ConfigurationException(
+                "Only a single algorithm is supported for"
+                " routing_table_generator")
+        raise ConfigurationException(
+            f"Unexpected cfg setting routing_table_generator: {name}")
 
     def _report_routers(self):
         """
@@ -2012,7 +1770,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
         router_report_from_paths(
             self._router_tables, self._routing_infos, self._ipaddress,
-            self._machine_graph, self._placements, self._machine)
+            self._application_graph, self._placements, self._machine)
 
     def _report_router_summary(self):
         """
@@ -2048,6 +1806,22 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._routing_table_by_partition,
                 self._machine_partition_n_keys_map, self._machine)
 
+    def _report_drift(self, start):
+        """ Write, time and log the drift
+
+        :param bool start: Is this the start or the end
+        """
+        with FecTimer(MAPPING, "Drift report") as timer:
+            if timer.skip_if_virtual_board():
+                return
+            if start and timer.skip_if_cfg_false(
+                    "Reports", "write_drift_report_start"):
+                return
+            if not start and timer.skip_if_cfg_false(
+                    "Reports", "write_drift_report_end"):
+                return
+            drift_report(self._txrx)
+
     def _execute_locate_executable_start_type(self):
         """
         Runs, times and logs LocateExecutableStartType if required
@@ -2059,7 +1833,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             self._executable_types = locate_executable_start_type(
-                self._machine_graph, self._placements)
+                self._placements)
 
     def _execute_buffer_manager_creator(self):
         """
@@ -2086,8 +1860,18 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "SDRAM outgoing partition allocator"):
             # Ok if transceiver = None
             sdram_outgoing_partition_allocator(
-                self._machine_graph, self._placements, self._app_id,
+                self._application_graph, self._placements, self._app_id,
                 self._txrx)
+
+    def _execute_control_sync(self, do_sync):
+        """ Control synchronization on board
+
+        :param bool do_sync: Whether to enable synchronization
+        """
+        with FecTimer(MAPPING, "Control Sync") as timer:
+            if timer.skip_if_virtual_board():
+                return
+            self._txrx.control_sync(do_sync)
 
     def _do_mapping(self, total_run_time):
         """
@@ -2103,18 +1887,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._setup_java_caller()
         self._do_extra_mapping_algorithms()
         self._report_network_specification()
+
         self._execute_splitter_reset()
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
-        pre_allocated_resources = PreAllocatedResourceContainer()
-        self._execute_preallocate_for_live_packet_gatherer(
-            pre_allocated_resources)
-        self._execute_preallocate_for_chip_power_monitor(
-            pre_allocated_resources)
-        self._execute_preallocate_for_extra_monitor_support(
-            pre_allocated_resources)
-        self._execute_splitter_partitioner(pre_allocated_resources)
-        self._execute_graph_measurer()
+
+        self._execute_splitter_partitioner()
         if self._max_machine:
             self._max_machine = False
             self._machine = None
@@ -2122,31 +1900,32 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_machine_generator(MAPPING, allocator_data)
         assert(self._machine)
         self._json_machine()
-        self._execute_chip_id_allocator()
         self._add_commands_to_command_sender()
-        self._execute_insert_live_packet_gatherers_to_graphs()
         self._report_board_chip()
-        self._execute_insert_chip_power_monitors()
-        self._execute_insert_extra_monitor_vertices()
+
+        system_placements = Placements()
+        self._execute_split_lpg_vertices(system_placements)
+        self._execute_insert_chip_power_monitors(system_placements)
+        self._execute_insert_extra_monitor_vertices(system_placements)
+
         self._execute_partitioner_report()
-        self._execute_edge_to_n_keys_mapper()
         self._execute_local_tdma_builder()
-        self._json_partition_n_keys_map()
-        self._do_placer()
-        self._execute_insert_edges_to_live_packet_gatherers()
-        self._execute_insert_edges_to_extra_monitor()
+        self._do_placer(system_placements)
+        self._report_placements_with_application_graph()
+        self._json_placements()
+
+        self._exectute_lpg_placement_setter()
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
-        self._report_placements_with_application_graph()
-        self._report_placements_with_machine_graph()
-        self._json_placements()
         self._do_routing()
+
         self._execute_basic_tag_allocator()
         self._report_tag_allocations()
-        self._execute_process_partition_constraints()
+
         self.do_info_allocator()
         self._report_router_info()
-        self._execute_basic_routing_table_generator()
+        self._do_routing_table_generator()
+        self._report_uncompressed_routing_table()
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
@@ -2214,8 +1993,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(LOADING, "Graph binary gatherer") as timer:
             try:
                 self._executable_targets = graph_binary_gatherer(
-                    self._placements, self._machine_graph,
-                    self._executable_finder)
+                    self._placements, self._executable_finder)
             except KeyError:
                 if self.use_virtual_board:
                     logger.warning(
@@ -2242,7 +2020,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = False
             compressed = host_based_bit_field_router_compressor(
                 self._router_tables, self._machine, self._placements,
-                self._txrx, self._machine_graph, self._routing_infos)
+                self._txrx, self._application_graph, self._routing_infos)
             return compressed
 
     def _execute_machine_bitfield_ordered_covering_compressor(self):
@@ -2263,8 +2041,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return None
             machine_bit_field_ordered_covering_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
-                self._machine_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._application_graph, self._placements,
+                self._executable_finder, self._routing_infos,
+                self._executable_targets)
             self._multicast_routes_loaded = True
             return None
 
@@ -2286,8 +2065,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._multicast_routes_loaded = True
             machine_bit_field_pair_router_compressor(
                 self._router_tables, self._txrx, self._machine, self._app_id,
-                self._machine_graph, self._placements, self._executable_finder,
-                self._routing_infos, self._executable_targets)
+                self._application_graph, self._placements,
+                self._executable_finder, self._routing_infos,
+                self._executable_targets)
             return None
 
     def _execute_ordered_covering_compressor(self):
@@ -2513,7 +2293,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the router report from router tables if requested
         """
-        # TODO why not during mapping?
         with FecTimer(LOADING, "Uncompressed routing table report") as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
@@ -2529,7 +2308,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports",  "write_bit_field_compressor_report"):
                 return
             # BitFieldSummary output ignored as never used
-            bitfield_compressor_report(self._machine_graph, self._placements)
+            bitfield_compressor_report(
+                self._application_graph, self._placements)
 
     def _execute_load_fixed_routes(self):
         """
@@ -2709,10 +2489,13 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_routing_setup()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
-        self._report_uncompressed_routing_table()
         compressor, pre_compress = self._compressor_name()
         self._execute_pre_compression(pre_compress)
         compressed = self._do_early_compression(compressor)
+
+        self._do_data_generation()
+
+        self._execute_control_sync(False)
         if graph_changed or not self._has_ran:
             self._execute_load_fixed_routes()
         self._execute_system_data_specification()
@@ -2774,8 +2557,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Graph provenance gatherer") as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
-            graph_provenance_gatherer(
-                self._machine_graph, self._application_graph)
+            graph_provenance_gatherer(self._application_graph)
 
     def _execute_placements_provenance_gatherer(self):
         """
@@ -2901,10 +2683,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Used to used compressed routing tables if available on host
             # TODO consider not saving router tabes.
             self._database_file_path = database_interface(
-                self._machine_graph, self._tags, run_time, self._machine,
-                self._max_run_time_steps, self._placements,
-                self._routing_infos, self._router_tables,
-                self._app_id, self._application_graph)
+                self._tags, run_time, self._machine, self._placements,
+                self._routing_infos, self._app_id, self._application_graph)
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -2962,7 +2742,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             buffer_extractor(
-                self._machine_graph, self._placements,
+                self._application_graph, self._placements,
                 self._buffer_manager)
 
     def _do_extract_from_machine(self, run_time):
@@ -3007,8 +2787,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._calculate_number_of_machine_time_steps(n_machine_time_steps)
 
         provide_injectables(self)
+        self._execute_control_sync(False)
 
         self._execute_sdram_usage_report_per_chip()
+        self._report_drift(start=True)
         if not self._has_ran or graph_changed:
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
@@ -3022,6 +2804,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._has_ran = True
         # reset at the end of each do_run cycle
         self._first_machine_time_step = None
+        self._report_drift(start=False)
+        self._execute_control_sync(True)
         clear_injectables()
 
     def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
@@ -3140,7 +2924,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = IOBufExtractor(
-            self._txrx, self._executable_targets, self._executable_finder)
+            self._txrx, self._executable_targets, self._executable_finder,
+            recovery_mode=True)
         try:
             errors, warnings = iobuf.extract_iobuf()
         except Exception:
@@ -3216,6 +3001,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                         data_changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
+                for machine_vertex in vertex.machine_vertices:
+                    if isinstance(machine_vertex, AbstractChangableAfterRun):
+                        if machine_vertex.requires_mapping:
+                            changed = True
+                        if machine_vertex.requires_data_generation:
+                            data_changed = True
+                        if reset_flags:
+                            machine_vertex.mark_no_changes()
             for partition in \
                     self._original_application_graph.outgoing_edge_partitions:
                 for edge in partition.edges:
@@ -3227,26 +3020,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                         if reset_flags:
                             edge.mark_no_changes()
 
-        # if no application, but a machine graph, check for changes there
-        elif self._original_machine_graph.n_vertices:
-            for machine_vertex in self._original_machine_graph.vertices:
-                if isinstance(machine_vertex, AbstractChangableAfterRun):
-                    if machine_vertex.requires_mapping:
-                        changed = True
-                    if machine_vertex.requires_data_generation:
-                        data_changed = True
-                    if reset_flags:
-                        machine_vertex.mark_no_changes()
-            for partition in \
-                    self._original_machine_graph.outgoing_edge_partitions:
-                for machine_edge in partition.edges:
-                    if isinstance(machine_edge, AbstractChangableAfterRun):
-                        if machine_edge.requires_mapping:
-                            changed = True
-                        if machine_edge.requires_data_generation:
-                            data_changed = True
-                        if reset_flags:
-                            machine_edge.mark_no_changes()
         return changed, data_changed
 
     @property
@@ -3273,21 +3046,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: int
         """
         return self._current_run_timesteps
-
-    @property
-    def machine_graph(self):
-        """
-        Returns a protected view of the machine_graph
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return MachineGraphView(self._machine_graph)
-
-    @property
-    def original_machine_graph(self):
-        """
-        :rtype: ~pacman.model.graphs.machine.MachineGraph
-        """
-        return self._original_machine_graph
 
     @property
     def original_application_graph(self):
@@ -3410,27 +3168,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises PacmanConfigurationException:
             If there is an attempt to add the same vertex more than once
         """
-        if self._original_machine_graph.n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
         self._original_application_graph.add_vertex(vertex)
-        self._vertices_or_edges_added = True
-
-    def add_machine_vertex(self, vertex):
-        """
-        :param ~pacman.model.graphs.machine.MachineVertex vertex:
-            the vertex to add to the graph
-        :raises ConfigurationException: when both graphs contain vertices
-        :raises PacmanConfigurationException:
-            If there is an attempt to add the same vertex more than once
-        """
-        # check that there's no application vertices added so far
-        if self._original_application_graph.n_vertices:
-            raise ConfigurationException(
-                "Cannot add vertices to both the machine and application"
-                " graphs")
-        self._original_machine_graph.add_vertex(vertex)
         self._vertices_or_edges_added = True
 
     def add_application_edge(self, edge_to_add, partition_identifier):
@@ -3442,16 +3180,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
-        self._vertices_or_edges_added = True
-
-    def add_machine_edge(self, edge, partition_id):
-        """
-        :param ~pacman.model.graphs.machine.MachineEdge edge:
-            the edge to add to the graph
-        :param str partition_id:
-            the partition identifier for the outgoing edge partition
-        """
-        self._original_machine_graph.add_edge(edge, partition_id)
         self._vertices_or_edges_added = True
 
     def _shutdown(self):
@@ -3528,6 +3256,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                     not self._use_virtual_board and
                     not self._run_until_complete):
                 self._do_stop_workflow()
+            elif (get_config_bool("Reports", "read_provenance_data_on_end") and
+                  not get_config_bool("Reports", "read_provenance_data")):
+                set_config("Reports", "read_provenance_data", "True")
+                self._do_read_provenance()
+
         except Exception as e:
             self._recover_from_error(e)
             self.write_errored_file()
@@ -3624,9 +3357,3 @@ class AbstractSpinnakerBase(ConfigHandler):
             for p in self._original_application_graph.outgoing_edge_partitions:
                 for edge in p.edges:
                     self.__reset_object(edge)
-        elif self._original_machine_graph.n_vertices:
-            for machine_vertex in self._original_machine_graph.vertices:
-                self.__reset_object(machine_vertex)
-            for p in self._original_machine_graph.outgoing_edge_partitions:
-                for machine_edge in p.edges:
-                    self.__reset_object(machine_edge)

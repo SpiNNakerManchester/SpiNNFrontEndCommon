@@ -84,98 +84,6 @@ class DatabaseReader(SQLiteDB):
                 """, label, str(receiver_label) + "%"),
             "ip_address", "port", "strip_sdp", "board_address", "tag")
 
-    def get_live_input_details(self, label):
-        """ Get the IP address and port where live input should be sent\
-            for a given vertex
-
-        :param str label: The label of the vertex
-        :return: tuple of (IP address, port)
-        :rtype: tuple(str, int)
-        """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM app_input_tag_view
-                WHERE application_label = ?
-                """, label),
-            "board_address", "port")
-
-    def get_machine_live_output_details(self, label, receiver_label):
-        """ Get the IP address, port and whether the SDP headers are to be\
-            stripped from the output from a machine vertex
-
-        :param str label: The label of the vertex
-        :param str receiver_label:
-        :return: tuple of (IP address, port, strip SDP, board address, tag)
-        :rtype: tuple(str, int, bool, str, int)
-        """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM machine_output_tag_view
-                WHERE pre_vertex_label = ?
-                    AND post_vertex_label LIKE ?
-                """, label, str(receiver_label) + "%"),
-            "ip_address", "port", "strip_sdp", "board_address", "tag")
-
-    def get_machine_live_input_details(self, label):
-        """ Get the IP address and port where live input should be sent\
-            for a given machine vertex
-
-        :param str label: The label of the vertex
-        :return: tuple of (IP address, port)
-        :rtype: tuple(str, int)
-        """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM machine_input_tag_view
-                WHERE machine_label = ?
-                """, label),
-            "board_address", "port")
-
-    def get_machine_live_output_key(self, label, receiver_label):
-        """
-        :param str label: The label of the vertex
-        :param str receiver_label:
-        :rtype: tuple(int,int)
-        """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM machine_edge_key_view
-                WHERE pre_vertex_label = ?
-                    AND post_vertex_label LIKE ?
-                """, label, str(receiver_label) + "%"),
-            "key", "mask")
-
-    def get_machine_live_input_key(self, label):
-        """
-        :param str label: The label of the vertex
-        :rtype: tuple(int,int)
-        """
-        return self.__r2t(
-            self.__exec_one(
-                """
-                SELECT * FROM machine_edge_key_view
-                WHERE pre_vertex_label = ?
-                """, label),
-            "key", "mask")
-
-    def get_n_atoms(self, label):
-        """ Get the number of atoms in a given vertex
-
-        :param str label: The label of the vertex
-        :return: The number of atoms
-        :rtype: int
-        """
-        row = self.__exec_one(
-            """
-            SELECT no_atoms FROM Application_vertices
-            WHERE vertex_label = ?
-            """, label)
-        return 0 if row is None else row["no_atoms"]
-
     def get_configuration_parameter_value(self, parameter_name):
         """ Get the value of a configuration parameter
 
@@ -193,20 +101,6 @@ class DatabaseReader(SQLiteDB):
     @staticmethod
     def __xyp(row):
         return int(row["x"]), int(row["y"]), int(row["p"])
-
-    def get_placement(self, label):
-        """ Get the placement of a machine vertex with a given label
-
-        :param str label: The label of the vertex
-        :return: The x, y, p coordinates of the vertex
-        :rtype: tuple(int, int, int)
-        """
-        row = self.__exec_one(
-            """
-            SELECT x, y, p FROM machine_vertex_placement
-            WHERE vertex_label = ?
-            """, label)
-        return (None, None, None) if row is None else self.__xyp(row)
 
     def get_placements(self, label):
         """ Get the placements of an application vertex with a given label

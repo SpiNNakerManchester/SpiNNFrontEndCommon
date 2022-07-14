@@ -25,13 +25,10 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
     """
     __slots__ = []
 
-    def __init__(
-            self, x, y, ip_address, extra_monitors_by_chip, constraints=None):
+    def __init__(self, x, y, ip_address, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
-        :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip:
             dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
@@ -42,7 +39,6 @@ class DataSpeedUpPacketGather(AbstractOneAppOneMachineVertex):
         super().__init__(
             DataSpeedUpPacketGatherMachineVertex(
                 app_vertex=self,
-                x=x, y=y, ip_address=ip_address, constraints=constraints,
-                extra_monitors_by_chip=extra_monitors_by_chip),
+                x=x, y=y, ip_address=ip_address, constraints=constraints),
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints)
