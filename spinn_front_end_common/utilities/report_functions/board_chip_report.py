@@ -86,11 +86,3 @@ def _write_report(writer, machine, progress_bar):
     writer.write(f"Down chips: {down_chips_out}\n")
     writer.write(f"Down cores: {down_cores_out}\n")
     writer.write(f"Down Links: {down_links_out}\n")
-
-
-def _get_local_xy(self, chip):
-    local_x = ((chip.x - chip.nearest_ethernet_x + self._width)
-               % self._width)
-    local_y = ((chip.y - chip.nearest_ethernet_y + self._height)
-               % self._height)
-    return local_x, local_y

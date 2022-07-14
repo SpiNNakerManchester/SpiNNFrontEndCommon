@@ -853,7 +853,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                     "partition_ids must be a iterable of str")
 
         if cls.__fec_data._live_packet_recorder_params is None:
-            # pylint: disable=defined-outside-init
+            # pylint: disable=attribute-defined-outside-init
             cls.__fec_data._live_packet_recorder_params = dict()
         if live_packet_gatherer_params in \
                 cls.__fec_data._live_packet_recorder_params:

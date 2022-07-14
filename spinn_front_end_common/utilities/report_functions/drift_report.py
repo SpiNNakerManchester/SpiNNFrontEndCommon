@@ -44,7 +44,7 @@ def drift_report():
 
     # If the file is new, write a header
     if not os.path.exists(directory_name):
-        with open(directory_name, "w") as writer:
+        with open(directory_name, "w", encoding="utf-8") as writer:
             for eth_chip in eth_chips:
                 if ethernet_only:
                     writer.write(f'"{eth_chip.x} {eth_chip.y}",')
@@ -59,7 +59,7 @@ def drift_report():
 
     # iterate over ethernet chips and then the chips on that board
     txrx = FecDataView.get_transceiver()
-    with open(directory_name, "a") as writer:
+    with open(directory_name, "a", encoding="utf-8") as writer:
         for eth_chip in eth_chips:
             if ethernet_only:
                 __write_drift(txrx, eth_chip, writer)
@@ -72,15 +72,17 @@ def drift_report():
                     if last_drift is None:
                         last_drift = drift
                     elif last_drift != drift:
-                        logger.warn("On board {}, chip {}, {} is not in sync"
-                                    " ({} vs {})".format(
-                                        eth_chip.ip_address, chip.x, chip.y,
-                                        drift, last_drift))
+                        logger.warning(
+                            "On board {}, chip {}, {} is not in sync"
+                            " ({} vs {})".format(
+                                eth_chip.ip_address, chip.x, chip.y,
+                                drift, last_drift))
                     progress.update()
         writer.write("\n")
 
 
 def __write_drift(txrx, chip, writer):
+    # pylint: disable=protected-access
     drift = txrx._get_sv_data(
         chip.x, chip.y, SystemVariableDefinition.clock_drift)
     drift = struct.unpack("<i", struct.pack("<I", drift))[0]

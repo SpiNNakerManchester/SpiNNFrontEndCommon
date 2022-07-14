@@ -23,9 +23,10 @@ from spinn_front_end_common.utility_models import (
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
-def insert_chip_power_monitors_to_graphs():
+def insert_chip_power_monitors_to_graphs(placements):
     """ Adds chip power monitors into a given graph.
 
+    param Placements placements:
     """
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()

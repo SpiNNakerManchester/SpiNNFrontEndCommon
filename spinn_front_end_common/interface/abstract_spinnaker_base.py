@@ -162,6 +162,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # The loop number for the this/next loop in the end_user run
         "_n_loops",
 
+        # A dict of live packet gather params to Application LGP vertices
+        "_lpg_vertices",
+
         # the timer used to log the execute time
         # TODO energy report cleanup
         "_run_timer",
@@ -265,9 +268,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             lpg_vertex = LivePacketGather(
                 live_packet_gatherer_params, live_packet_gatherer_params.label)
             self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
-            self._original_application_graph.add_vertex(lpg_vertex)
+            self._data_writer.add_vertex(lpg_vertex)
         for part_id in partition_ids:
-            self._original_application_graph.add_edge(
+            self._data_writer.add_edge(
                 ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     def check_machine_specifics(self):
@@ -458,6 +461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
+        # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
@@ -589,6 +593,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
+        # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
@@ -925,7 +930,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Insert chip power monitors") as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            insert_chip_power_monitors_to_graphs()
+            insert_chip_power_monitors_to_graphs(system_placements)
 
     def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
@@ -942,13 +947,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
-        """
-            (self._vertex_to_ethernet_connected_chip_mapping,
-             self._extra_monitor_to_chip_mapping) = \
-                insert_extra_monitor_vertices_to_graphs(
-                    self._machine, self._application_graph,
-                    system_placements)
-        """
 
     def _execute_partitioner_report(self):
         """
@@ -1336,7 +1334,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if not start and timer.skip_if_cfg_false(
                     "Reports", "write_drift_report_end"):
                 return
-            drift_report(self._txrx)
+            drift_report()
 
     def _execute_locate_executable_start_type(self):
         """
@@ -1378,7 +1376,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(MAPPING, "Control Sync") as timer:
             if timer.skip_if_virtual_board():
                 return
-            self._txrx.control_sync(do_sync)
+            self._data_writer.get_transceiver().control_sync(do_sync)
 
     def _do_mapping(self, total_run_time):
         """
@@ -1873,7 +1871,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs any extra load algorithms
 
         """
-        pass
 
     def _report_memory_on_host(self):
         """
@@ -2109,7 +2106,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs any reports based on provenance
 
         """
-        pass
 
     def _execute_clear_io_buf(self):
         """
