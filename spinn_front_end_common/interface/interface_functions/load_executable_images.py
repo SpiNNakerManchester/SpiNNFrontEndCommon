@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
+from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -67,7 +68,7 @@ def __load_images(filt, label):
         for binary in binaries:
             progress.update(flood_fill_binary_to_spinnaker(binary))
 
-        __start_simulation(FecDataView.get_app_id())
+        __start_simulation(cores, FecDataView.get_app_id())
         progress.update()
         progress.end()
     except Exception as e:
@@ -87,7 +88,7 @@ def filter_targets(filt):
     :rtype: tuple(list(str), ExecutableTargets)
     """
     binaries = []
-    cores = FecDataView.get_executable_targets()
+    cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
         if filt(exe_type):
@@ -98,15 +99,14 @@ def filter_targets(filt):
     return binaries, cores
 
 
-def __start_simulation(app_id):
+def __start_simulation(cores, app_id):
     """
-    :param ~.ExecutableTargets executable_targets:
-    :param ~.Transceiver txrx:
+    :param ~.ExecutableTargets cores:
+        Possible subset of all ExecutableTargets to start
     :param int app_id:
     """
     txrx = FecDataView.get_transceiver()
-    executable_targets = FecDataView.get_executable_targets()
     txrx.wait_for_cores_to_be_in_state(
-        executable_targets.all_core_subsets, app_id, [CPUState.READY],
+        cores.all_core_subsets, app_id, [CPUState.READY],
         timeout=_APP_READY_TIMEOUT)
     txrx.send_signal(app_id, Signal.START)

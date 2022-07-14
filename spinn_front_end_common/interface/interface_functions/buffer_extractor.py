@@ -17,6 +17,8 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -48,4 +50,10 @@ def _count_regions():
     # Count the regions to be read
     n_regions_to_read = 0
     recording_placements = list()
+    for app_vertex in FecDataView.get_runtime_graph().vertices:
+        for vertex in app_vertex.machine_vertices:
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
+                n_regions_to_read += len(vertex.get_recorded_region_ids())
+                placement = FecDataView.get_placement_of_vertex(vertex)
+                recording_placements.append(placement)
     return n_regions_to_read, recording_placements
