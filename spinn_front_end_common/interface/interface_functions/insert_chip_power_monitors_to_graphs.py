@@ -30,7 +30,6 @@ def insert_chip_power_monitors_to_graphs(placements):
     """
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()
-    placements = FecDataView.get_placements()
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
