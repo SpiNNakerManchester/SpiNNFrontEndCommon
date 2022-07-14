@@ -114,7 +114,7 @@ from spinn_front_end_common.utilities.report_functions import (
     memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
-    write_json_machine, write_json_partition_n_keys_map, write_json_placements,
+    write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -965,17 +965,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         with FecTimer(MAPPING, "Local TDMA builder"):
             local_tdma_builder()
-
-    def _json_partition_n_keys_map(self):
-        """
-        Writes, times and logs the machine_partition_n_keys_map if required
-        """
-        with FecTimer(MAPPING, "Json partition n keys map") as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_json_partition_n_keys_map"):
-                return
-            write_json_partition_n_keys_map()
-            # Output ignored as never used
 
     def _execute_application_placer(self, system_placements):
         """

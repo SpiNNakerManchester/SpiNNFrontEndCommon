@@ -46,7 +46,9 @@ def _write_report(collision_counts, writer):
 def _generate_data():
     router_tables_by_partition = FecDataView.get_routing_table_by_partition()
     collisions = defaultdict(lambda: defaultdict(int))
-    n_keys_map = FecDataView.get_machine_partition_n_keys_map()
+    n_keys_map = dict()
+    # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/891
+    # use machine_vertex.get_n_keys_for_partition(identifier)
     for (x, y) in router_tables_by_partition.get_routers():
         for partition in \
                 router_tables_by_partition.get_entries_for_router(x, y):
