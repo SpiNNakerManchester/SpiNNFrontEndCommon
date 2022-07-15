@@ -152,14 +152,8 @@ class DatabaseWriter(SQLiteDB):
                     max_atoms = int(numpy.prod(max_atoms))
                 vertex_id = self.__insert(
                     cur,
-                    """
-                    INSERT INTO Application_vertices(
-                        vertex_label, vertex_class, no_atoms,
-                        max_atom_constraint)
-                    VALUES(?, ?, ?, ?)
-                    """,
-                    vertex.label, vertex.__class__.__name__, vertex.n_atoms,
-                    max_atoms)
+                    "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
+                    vertex.label)
                 self.__vertex_to_id[vertex] = vertex_id
                 for m_vertex in vertex.machine_vertices:
                     m_vertex_id = self.__add_machine_vertex(cur, m_vertex)
