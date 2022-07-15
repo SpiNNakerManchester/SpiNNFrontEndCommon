@@ -539,7 +539,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(2, len(params))
         self.assertIn(lpg1, params)
         self.assertIn(lpg2, params)
-        self.assertEqual(2, len(params[lpg1]))
 
     def test_database_file_path(self):
         writer = FecDataWriter.setup()
