@@ -347,8 +347,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_application_vertices():
             return True
-        if self._data_writer.has_machine_vertices():
-            return True
         logger.warning(
             "Your graph has no vertices in it. "
             "Therefor the run call will exit immediately.")
