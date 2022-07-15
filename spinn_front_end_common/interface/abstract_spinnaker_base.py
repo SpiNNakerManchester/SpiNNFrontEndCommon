@@ -46,7 +46,7 @@ from pacman import __version__ as pacman_version
 from pacman.executor.injection_decorator import (
     clear_injectables, provide_injectables)
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationGraphView, ApplicationEdge, ApplicationVertex,
+    ApplicationGraph, ApplicationGraphView, ApplicationEdge,
     ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
 from pacman.model.graphs import (
     AbstractVirtual, AbstractFPGA, AbstractSpiNNakerLink)

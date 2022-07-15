@@ -430,9 +430,6 @@ def _write_one_chip_application_placement(f, chip, placements):
                 vertex_label = app_vertex.label
                 vertex_model = app_vertex.__class__.__name__
                 vertex_atoms = app_vertex.n_atoms
-                lo_atom = vertex.vertex_slice.lo_atom
-                hi_atom = vertex.vertex_slice.hi_atom
-                num_atoms = vertex.vertex_slice.n_atoms
                 f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                     pro_id, vertex_label, vertex_atoms))
                 f.write("              Slice on this core: {}\n"

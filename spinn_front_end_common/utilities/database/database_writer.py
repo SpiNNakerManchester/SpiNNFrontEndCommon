@@ -17,7 +17,6 @@ import logging
 import os
 import numpy
 from spinn_utilities.log import FormatAdapter
-from pacman.model.graphs.machine import MulticastEdgePartition
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
