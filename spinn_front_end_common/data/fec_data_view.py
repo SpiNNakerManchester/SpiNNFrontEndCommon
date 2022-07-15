@@ -22,10 +22,11 @@ from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
+from pacman.model.graphs.application import ApplicationEdge
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 # in code to avoid circular import
+# from spinn_front_end_common.utility_models import LivePacketGather
 # from spinn_front_end_common.utility_models import CommandSender
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -835,35 +836,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :param iterable(str) partition_ids:
             the IDs of the partitions to connect from the vertex
         """
-        if not cls.has_application_vertices():
-            raise ConfigurationException(
-                "Please add vertices to the Graph before calling this method")
-
-        if not isinstance(
-                live_packet_gatherer_params, LivePacketGatherParameters):
-            raise ConfigurationException(
-                "live_packet_gatherer_params must be a "
-                "LivePacketGatherParameters")
-
-        # As partition_ids may come in as an iterable such as dict_keys
-        partition_ids = list(partition_ids)
-        for partition_id in partition_ids:
-            if not isinstance(partition_id, str):
-                raise ConfigurationException(
-                    "partition_ids must be a iterable of str")
-
         if cls.__fec_data._live_packet_recorder_params is None:
             # pylint: disable=attribute-defined-outside-init
             cls.__fec_data._live_packet_recorder_params = dict()
-        if live_packet_gatherer_params in \
-                cls.__fec_data._live_packet_recorder_params:
+        lpg_vertex = cls.__fec_data._live_packet_recorder_params.get(
+            live_packet_gatherer_params)
+        if lpg_vertex is None:
+            # UGLY import due to circular reference
+            from spinn_front_end_common.utility_models import LivePacketGather
+            lpg_vertex = LivePacketGather(
+                live_packet_gatherer_params, live_packet_gatherer_params.label)
             cls.__fec_data._live_packet_recorder_params[
-                live_packet_gatherer_params].append(
-                (vertex_to_record_from, partition_ids))
-        else:
-            cls.__fec_data._live_packet_recorder_params[
-                live_packet_gatherer_params] = [
-                (vertex_to_record_from, partition_ids)]
+                live_packet_gatherer_params] = lpg_vertex
+            cls.add_vertex(lpg_vertex)
+        for part_id in partition_ids:
+            cls.add_edge(
+                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     @classmethod
     def get_database_file_path(cls):
