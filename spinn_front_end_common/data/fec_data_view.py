@@ -23,8 +23,6 @@ from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge
-from spinn_front_end_common.utilities.utility_objs import (
-    LivePacketGatherParameters)
 # in code to avoid circular import
 # from spinn_front_end_common.utility_models import LivePacketGather
 # from spinn_front_end_common.utility_models import CommandSender
