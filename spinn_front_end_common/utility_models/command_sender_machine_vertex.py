@@ -71,9 +71,9 @@ class CommandSenderMachineVertex(
 
     _NOT_GOT_KEY_ERROR_MESSAGE = (
         "The command sender {} has requested key {} for outgoing "
-        "partition {}, but the keys allocated to it do not match. this will "
-        "cause errors in the external devices support and therefore needs "
-        "fixing")
+        "partition {}, but the keys allocated to it ({}) do not match. this "
+        "will cause errors in the external devices support and therefore "
+        "needs fixing")
 
     def __init__(self, label, constraints, app_vertex=None):
         """
@@ -172,12 +172,13 @@ class CommandSenderMachineVertex(
         # pylint: disable=arguments-differ
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
-                self, self._keys_to_partition_id[mc_key])
+                self.app_vertex, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
                 raise ConfigurationException(
                     self._NOT_GOT_KEY_ERROR_MESSAGE.format(
                         self._label, mc_key,
-                        self._keys_to_partition_id[mc_key]))
+                        self._keys_to_partition_id[mc_key],
+                        allocated_mc_key))
 
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \

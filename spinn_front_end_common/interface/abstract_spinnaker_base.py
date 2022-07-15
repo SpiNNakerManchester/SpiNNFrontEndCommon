@@ -50,6 +50,7 @@ from pacman.model.graphs.application import (
     ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
 from pacman.model.graphs import (
     AbstractVirtual, AbstractFPGA, AbstractSpiNNakerLink)
+from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.operations.fixed_route_router import fixed_route_router
@@ -1008,6 +1009,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def _add_commands_to_command_sender(self):
+        command_sender = None
         vertices = self._application_graph.vertices
         graph = self._application_graph
         for vertex in vertices:
@@ -1044,32 +1046,32 @@ class AbstractSpinnakerBase(ConfigHandler):
                         link_data.connected_chip_x,
                         link_data.connected_chip_y))
 
+                # if command_sender is None:
                 # Add a command sender
                 label = f"CommandSender for {vertex.label}"
-                command_sender_app = CommandSender(label, constraints)
-                self._application_graph.add_vertex(command_sender_app)
-                app_edge = ApplicationEdge(command_sender_app, vertex)
-                self._application_graph.add_edge(app_edge, "Commands")
-                app_partition = self._application_graph.\
-                    get_outgoing_edge_partition_starting_at_vertex(
-                        vertex, "Commands")
-                command_sender = command_sender_app.machine_vertex
-                post_vertex = next(iter(
-                    vertex.splitter.get_in_coming_vertices(
-                        app_edge, app_partition, command_sender).keys()))
+                command_sender = CommandSender(label, constraints)
+                command_sender.splitter = SplitterOneAppOneMachine()
                 graph.add_vertex(command_sender)
+
+                app_edge = ApplicationEdge(command_sender, vertex)
+                graph.add_edge(app_edge, "Commands")
+                # app_partition = graph.\
+                #     get_outgoing_edge_partitions_starting_at_vertex(vertex)
+                # post_vertex = next(iter(
+                #     vertex.splitter.get_in_coming_vertices(
+                #         app_partition).keys()))
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
-                    vertex.timed_commands, post_vertex)
+                    vertex.timed_commands, vertex)
 
                 # add the edges from the command sender to the dependent
                 # vertices
                 edges, partition_ids = command_sender.edges_and_partitions()
                 for edge, partition_id in zip(edges, partition_ids):
-                    self._machine_graph.add_edge(edge, partition_id)
+                    graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:

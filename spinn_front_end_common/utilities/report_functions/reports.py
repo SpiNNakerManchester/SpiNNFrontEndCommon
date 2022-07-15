@@ -358,8 +358,6 @@ def _write_one_vertex_application_placement(f, vertex, placements):
     machine_vertices = sorted(machine_vertices,
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        cur_placement = placements.get_placement_of_vertex(sv)
-        x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
         if isinstance(sv, AbstractSpiNNakerLink):
             f.write("  Slice {} on SpiNNaker Link {} \n"
                     .format(sv.vertex_slice, sv.spinnaker_link_id))
