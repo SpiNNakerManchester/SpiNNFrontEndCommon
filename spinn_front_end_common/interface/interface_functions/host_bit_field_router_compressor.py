@@ -55,7 +55,7 @@ def host_based_bit_field_router_compressor():
     app_graph = FecDataView.get_runtime_graph()
     # create progress bar
     progress = ProgressBar(
-        len(routing_tables.routing_tables) * 2,
+        len(routing_tables) * 2,
         "Compressing routing Tables with bitfields in host")
 
     # create report
@@ -77,10 +77,10 @@ def host_based_bit_field_router_compressor():
             for vertex, _ in splitter.get_source_specific_in_coming_vertices(
                     partition.pre_vertex, partition.identifier):
                 place = FecDataView.get_placement_of_vertex(vertex)
-                most_costly_cores[place.chip][place.p] += 1
+                most_costly_cores[place.xy][place.p] += 1
 
     # start the routing table choice conversion
-    for router_table in progress.over(routing_tables.routing_tables):
+    for router_table in progress.over(routing_tables):
         start_compression_selection_process(
             router_table, report_folder_path,
             most_costly_cores, compressed_pacman_router_tables, key_atom_map)
