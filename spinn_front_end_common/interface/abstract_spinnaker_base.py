@@ -345,7 +345,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :raises ConfigurationException: If the current state does not
             support a new run call
         """
-        if self._data_writer.has_application_vertices():
+        if self._data_writer.get_n_vertices() > 0:
             return True
         logger.warning(
             "Your graph has no vertices in it. "
