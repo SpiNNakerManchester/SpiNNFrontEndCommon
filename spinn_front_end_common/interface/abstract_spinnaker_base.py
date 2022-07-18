@@ -2231,8 +2231,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if n_machine_time_steps is not None:
             run_time = (n_machine_time_steps *
                         self._data_writer.get_simulation_time_step_ms())
-            self._data_writer.increment_current_run_timesteps(
-                n_machine_time_steps)
+        self._data_writer.increment_current_run_timesteps(
+            n_machine_time_steps)
 
         self._execute_sdram_usage_report_per_chip()
         self._report_drift(start=True)
