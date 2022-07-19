@@ -827,7 +827,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Make the reset hard
             logger.warning(
                 "Calling Get machine after a reset force a hard reset and "
-                "therefor generate a new machine")
+                "therefore generate a new machine")
             self._hard_reset()
         self._get_known_machine()
         if not self._data_writer.has_machine():
@@ -2403,7 +2403,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
                 "A reset after a get machine call is always hard and "
-                "therefor the previous machine is no longer valid")
+                "therefore the previous machine is no longer valid")
             self._hard_reset()
         else:
             self._data_writer.soft_reset()

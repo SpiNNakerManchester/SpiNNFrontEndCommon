@@ -50,7 +50,7 @@ class ConfigHandler(object):
 
     __slots__ = [
 
-        # The writer and therefor view of the global data
+        # The writer and therefore view of the global data
         "_data_writer"
 
     ]
@@ -224,12 +224,3 @@ class ConfigHandler(object):
         :rtype:
         """
         self.__write_named_file(ERRORED_FILENAME)
-
-    @staticmethod
-    def _make_dirs(path):
-        # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
-        try:
-            os.makedirs(path)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise

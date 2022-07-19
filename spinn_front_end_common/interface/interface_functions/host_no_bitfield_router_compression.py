@@ -172,7 +172,7 @@ class Compression(object):
             for p in core_subset.processor_ids:
                 # Read the result from specified register
                 if self.__result_register == 0:
-                    result = transceiver().read_user_0(x, y, p)
+                    result = transceiver.read_user_0(x, y, p)
                 elif self.__result_register == 1:
                     result = transceiver.read_user_1(x, y, p)
                 elif self.__result_register == 2:

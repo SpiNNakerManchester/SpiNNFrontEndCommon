@@ -266,7 +266,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Returns the calculated longest time this or a future run loop could be
 
         Mainly ued to indicate the number of timesteps the vertex can and
-        therefor should reserve memry for
+        therefore should reserve memry for
 
         Guaranteed to be positive int if available
 
@@ -347,7 +347,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_per_ms(cls):
-        """ The simulation time step in a milliseconds
+        """ The number of simulation time steps in a millisecond
 
         Semantic sugar for 1000 / simulation_time_step_us
 
@@ -361,7 +361,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_simulation_time_step_per_s(cls):
-        """ The simulation time step in a seconds
+        """ The number of simulation time steps in a seconds
 
         Semantic sugar for 1,000,000 / simulation_time_step_us
 
@@ -389,7 +389,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_hardware_time_step_us(cls):
-        """ The hardware timestep, in microeconds
+        """ The hardware timestep, in microseconds
 
         Semantic sugar for simulation_time_step_us * time_scale_factor
 
@@ -444,14 +444,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # Report directories
     # There are NO has or get methods for directories
-    # This allow directories to be created on the fly
+    # This allows directories to be created on the fly
 
     # n_boards/chips required
 
     @classmethod
     def has_n_boards_required(cls):
         """
-        Reports is a user has sets the number of boards requested during setup
+        Reports if a user has sets the number of boards requested during setup
 
         :rtype: bool
         :raises SpiNNUtilsException:
@@ -462,7 +462,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_boards_required(cls):
         """
-        Gets the number of boards requested by the user during setup is known.
+        Gets the number of boards requested by the user during setup if known.
 
         Guaranteed to be positive
 
@@ -560,7 +560,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_system_multicast_router_timeout_keys(cls):
         """
-        Retreive the system_multicast_router_timeout_keys is known
+        Retreive the system_multicast_router_timeout_keys if known
 
         :rtype: dict
         :raises SpiNNUtilsException:
@@ -576,7 +576,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_ipaddress(cls):
         """
-        Detects if the ipaddress of the board with chip 0,0 is known
+        Detects if the ipaddress of the board with chip 0,0 if known
 
         :return:
         """
@@ -740,17 +740,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             # directory exists.
             os.makedirs(child)
         elif not os.path.exists(child):
-            cls._make_dirs(child)
+            os.makedirs(child, exist_ok=True)
         return child
-
-    @staticmethod
-    def _make_dirs(path):
-        # Workaround for Python 2/3 Compatibility (Python 3 raises on exists)
-        try:
-            os.makedirs(path)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
 
     @classmethod
     def get_next_none_labelled_edge_number(cls):

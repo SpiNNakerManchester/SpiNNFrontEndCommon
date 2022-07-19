@@ -20,7 +20,7 @@ from spinn_front_end_common.interface.config_setup import add_spinnaker_cfg
 from spinn_utilities.config_holder import clear_cfg_files
 
 # This can not be a unittest as the unitest suite would use the same
-# python console and therefor the same singleton multiple times
+# python console and therefore the same singleton multiple times
 
 # It can be run multiple time as each run is a new python console
 

@@ -266,9 +266,6 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         :param int chip_x:
         :param int chip_y:
-        :param ~spinn_machine.Machine machine:
-        :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         """
         # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
@@ -619,7 +616,6 @@ class _HostBasedBitFieldRouterCompressor(object):
 
         :param int chip_x: the chip x coord from which this happened
         :param int chip_y: the chip y coord from which this happened
-        :param ~.Transceiver transceiver: spinnman instance
         """
         for entries in self._bit_fields_by_key.values():
             for entry in entries:

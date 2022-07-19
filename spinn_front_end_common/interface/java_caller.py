@@ -188,9 +188,6 @@ class JavaCaller(object):
         """ Passes in the placements leaving this class to decide pass it to
             Java.
 
-        This method may obtain extra information about he placements which is
-        why it also accesses the transceiver.
-
         Currently the extra information extracted is recording region base
         address but this could change if recording region saved in the
         database.
