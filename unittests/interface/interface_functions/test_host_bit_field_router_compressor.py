@@ -26,7 +26,7 @@ class TestHostBasedBitFieldRouterCompressorr(unittest.TestCase):
 
     def test_bit_field_as_bit_array(self):
         data = _BitFieldData(
-            1, [1], None, None, None)
+            1, [1], None, None, None, None, None)
         as_array = data.bit_field_as_bit_array()
         self.assertListEqual(
             [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
