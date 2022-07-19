@@ -503,7 +503,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._hard_reset()
             FecTimer.setup(self)
 
-            self._data_writer.clone_graphs()
+            #self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
@@ -612,6 +612,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         command_sender = None
         graph = self._data_writer.get_runtime_graph()
         vertices = graph.vertices
+        for vertex in vertices:
+            if isinstance(vertex, CommandSender):
+                command_sender = vertex
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
