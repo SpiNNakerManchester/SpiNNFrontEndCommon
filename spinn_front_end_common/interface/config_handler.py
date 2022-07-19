@@ -16,7 +16,6 @@
 from configparser import NoOptionError
 import logging
 import os
-import errno
 import shutil
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
