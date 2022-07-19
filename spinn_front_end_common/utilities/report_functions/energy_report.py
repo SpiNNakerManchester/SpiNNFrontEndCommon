@@ -50,17 +50,15 @@ class EnergyReport(object):
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
     def write_energy_report(
-            self, placements, machine, runtime, buffer_manager, power_used):
+            self, placements, runtime, buffer_manager, power_used):
         """ Writes the report.
 
         :param ~pacman.model.placements.Placements placements: the placements
-        :param ~spinn_machine.Machine machine: the machine
-        :param int runtime:
         :param BufferManager buffer_manager:
         :param PowerUsed power_used:
         :rtype: None
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
@@ -73,15 +71,15 @@ class EnergyReport(object):
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
         # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = time_scale_factor()
+        runtime_total_ms = runtime * time_scale_factor()
 
         # create detailed report
-        with open(detailed_report, "w") as f:
+        with open(detailed_report, "w", encoding="utf-8") as f:
             self._write_detailed_report(
-                placements, machine, power_used, f, runtime_total_ms)
+                placements, power_used, f, runtime_total_ms)
 
         # create summary report
-        with open(summary_report, "w") as f:
+        with open(summary_report, "w", encoding="utf-8") as f:
             self._write_summary_report(runtime_total_ms, f, power_used)
 
     @classmethod
@@ -93,8 +91,6 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
         f.write(
@@ -158,17 +154,16 @@ class EnergyReport(object):
             return "(over {} seconds)".format(time)
 
     def _write_detailed_report(
-            self, placements, machine, power_used, f, runtime_total_ms):
+            self, placements, power_used, f, runtime_total_ms):
         """ Write detailed report and calculate costs
 
         :param ~.Placements placements: placements
-        :param ~.Machine machine: machine representation
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         :param float runtime_total_ms:
             total runtime with time scale factor taken into account
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
 
         # write warning about accuracy etc
         self._write_warning(f)

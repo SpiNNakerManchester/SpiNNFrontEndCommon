@@ -30,7 +30,6 @@ from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset)
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
@@ -203,8 +202,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_app_id",
         # socket
         "_connection",
-        # store of the extra monitors to location. helpful in data in
-        "_extra_monitors_by_chip",
         # path for the data in report
         "_in_report_path",
         # ipaddress
@@ -244,9 +241,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # throttle on the transmission
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
-    # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
-    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
-
     #: report name for tracking used routers
     OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
     #: report name for tracking performance gains
@@ -279,15 +273,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(
-            self, x, y, extra_monitors_by_chip, ip_address,
-            app_vertex=None, constraints=None):
+    def __init__(self, x, y, ip_address, app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
-        :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip:
-            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
         :param constraints:
@@ -309,8 +298,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._output = None
         self._transaction_id = 0
 
-        # store of the extra monitors to location. helpful in data in
-        self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
 
         # Create a connection to be used
@@ -378,7 +365,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @inject_items({
-        "machine_graph": "MachineGraph",
         "routing_info": "RoutingInfos",
         "tags": "Tags",
         "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
@@ -389,16 +375,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "tags",
+            "routing_info", "tags",
             "mc_data_chips_to_keys", "machine", "app_id",
             "router_timeout_key"
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
+            self, spec, placement, routing_info, tags,
             mc_data_chips_to_keys, machine, app_id, router_timeout_key):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (injected)
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
         :param ~pacman.model.tags.Tags tags: (injected)
         :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
@@ -416,19 +400,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._reserve_memory_regions(spec)
 
         # the keys for the special cases
-        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_ending_at_vertex(self))[0])
-            new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
-            first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
-            end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
-            transaction_id_key = base_key + self.TRANSACTION_ID_KEY_OFFSET
-        else:
-            new_seq_key = self.NEW_SEQ_KEY
-            first_data_key = self.FIRST_DATA_KEY
-            end_flag_key = self.END_FLAG_KEY
-            base_key = self.BASE_KEY
-            transaction_id_key = self.TRANSACTION_ID_KEY
+        new_seq_key = self.NEW_SEQ_KEY
+        first_data_key = self.FIRST_DATA_KEY
+        end_flag_key = self.END_FLAG_KEY
+        base_key = self.BASE_KEY
+        transaction_id_key = self.TRANSACTION_ID_KEY
 
         spec.switch_write_focus(_DATA_REGIONS.CONFIG)
         spec.write_value(new_seq_key)
@@ -540,7 +516,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w") as writer:
+            with open(self._in_report_path, "w", encoding="utf-8") as writer:
                 writer.write(
                     "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
                     " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
@@ -557,7 +533,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a") as writer:
+        with open(self._in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took_ms,
@@ -587,7 +563,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             with open(data, "rb") as reader:
                 # n_bytes=None already means 'read everything'
-                data = reader.read(n_bytes)  # pylint: disable=no-member
+                data = reader.read(n_bytes)
             # Number of bytes to write is now length of buffer we have
             n_bytes = len(data)
         elif n_bytes is None:
@@ -1089,7 +1065,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
             core_subsets = convert_vertices_to_core_subset(
-                extra_monitor_cores, placements)
+                extra_monitor_cores.values(), placements)
             try:
                 error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
@@ -1293,7 +1269,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if os.path.isfile(report_path):
             writer_behaviour = "a"
 
-        with open(report_path, writer_behaviour) as writer:
+        with open(report_path, writer_behaviour, encoding="utf-8") as writer:
             writer.write("[{}:{}:{}] = {}\n".format(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 
@@ -1321,8 +1297,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: whether all packets are transmitted
         :rtype: bool
         """
-        # pylint: disable=too-many-locals
-
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
 

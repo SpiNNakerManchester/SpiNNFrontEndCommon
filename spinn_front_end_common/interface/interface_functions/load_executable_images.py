@@ -19,6 +19,12 @@ from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinnman.exceptions import SpiNNManCoresNotInStateException
+from spinn_front_end_common.utilities.emergency_recovery import (
+    emergency_recover_states_from_failure)
+
+# 10 seconds is lots of time to wait for the application to become ready!
+_APP_READY_TIMEOUT = 10.0
 
 
 def load_app_images(executable_targets, app_id, transceiver):
@@ -45,6 +51,15 @@ def load_sys_images(executable_targets, app_id, transceiver):
     __load_images(executable_targets, app_id, transceiver,
                   lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
+    try:
+        _, cores = filter_targets(executable_targets,
+                                  lambda ty: ty is ExecutableType.SYSTEM)
+        transceiver.wait_for_cores_to_be_in_state(
+            cores.all_core_subsets, app_id, [CPUState.RUNNING], timeout=10)
+    except SpiNNManCoresNotInStateException as e:
+        emergency_recover_states_from_failure(
+            transceiver, app_id, executable_targets)
+        raise e
 
 
 def __load_images(executable_targets, app_id, txrx, filt, label):
@@ -58,15 +73,23 @@ def __load_images(executable_targets, app_id, txrx, filt, label):
     # Compute what work is to be done here
     binaries, cores = filter_targets(executable_targets, filt)
 
-    # ISSUE: Loading order may be non-constant on older Python
-    progress = ProgressBar(cores.total_processors + 1, label)
-    for binary in binaries:
-        progress.update(flood_fill_binary_to_spinnaker(
-            executable_targets, binary, txrx, app_id))
+    try:
+        # ISSUE: Loading order may be non-constant on older Python
+        progress = ProgressBar(cores.total_processors + 1, label)
+        for binary in binaries:
+            progress.update(flood_fill_binary_to_spinnaker(
+                executable_targets, binary, txrx, app_id))
 
-    __start_simulation(cores, txrx, app_id)
-    progress.update()
-    progress.end()
+        __start_simulation(cores, txrx, app_id)
+        progress.update()
+        progress.end()
+    except Exception as e:
+        try:
+            txrx.stop_application(app_id)
+        except Exception:
+            # Ignore this, this was just an attempt at recovery
+            pass
+        raise e
 
 
 def filter_targets(targets, filt):
@@ -93,5 +116,6 @@ def __start_simulation(executable_targets, txrx, app_id):
     :param int app_id:
     """
     txrx.wait_for_cores_to_be_in_state(
-        executable_targets.all_core_subsets, app_id, [CPUState.READY])
+        executable_targets.all_core_subsets, app_id, [CPUState.READY],
+        timeout=_APP_READY_TIMEOUT)
     txrx.send_signal(app_id, Signal.START)

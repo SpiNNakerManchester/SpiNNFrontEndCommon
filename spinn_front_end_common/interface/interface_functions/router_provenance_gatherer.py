@@ -42,6 +42,7 @@ def router_provenance_gatherer(transceiver, machine, router_tables,
     gather = _RouterProvenanceGatherer(
         transceiver, machine, router_tables, extra_monitor_vertices,
         placements)
+    # pylint: disable=protected-access
     gather._add_router_provenance_data()
 
 
@@ -80,7 +81,6 @@ class _RouterProvenanceGatherer(object):
             the placements object
         """
         # pylint: disable=too-many-arguments
-        # pylint: disable=attribute-defined-outside-init
         self._extra_monitor_vertices = extra_monitor_vertices
         self._txrx = transceiver
         self._machine = machine
@@ -121,7 +121,6 @@ class _RouterProvenanceGatherer(object):
         :param ~.MulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=too-many-arguments, bare-except
         x = table.x
         y = table.y
         if not self._machine.get_chip_at(x, y).virtual:
@@ -141,7 +140,6 @@ class _RouterProvenanceGatherer(object):
         :param ~.Chip chip:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=bare-except
         try:
             diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:

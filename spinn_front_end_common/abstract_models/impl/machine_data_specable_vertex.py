@@ -27,18 +27,18 @@ class MachineDataSpecableVertex(
     __slots__ = ()
 
     @inject_items({
-        "machine_graph": "MachineGraph",
+        "graph": "ApplicationGraph",
         "routing_info": "RoutingInfos",
         "tags": "Tags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_graph", "routing_info", "tags",
+            "graph", "routing_info", "tags",
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags):
+            self, spec, placement, graph, routing_info, tags):
         """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph graph:
             (Injected)
         :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)
         :param ~pacman.model.tags.Tags tags: (Injected)
@@ -47,19 +47,19 @@ class MachineDataSpecableVertex(
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
-            spec, placement, machine_graph, routing_info, iptags,
+            spec, placement, graph, routing_info, iptags,
             reverse_iptags)
 
     @abstractmethod
     def generate_machine_data_specification(
-            self, spec, placement, machine_graph, routing_info, iptags,
+            self, spec, placement, graph, routing_info, iptags,
             reverse_iptags):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write into.
         :param ~pacman.model.placements.Placement placement:
             Where this node is on the SpiNNaker machine.
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
+        :param ~pacman.model.graphs.application.ApplicationGraph graph:
             The graph containing this node.
         :param ~pacman.model.routing_info.RoutingInfo routing_info:
             The routing info.

@@ -43,12 +43,12 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
-            translate_keys=False):
+            translate_keys=False, map_incoming_keys=True):
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        # pylint: disable=too-many-arguments
 
         # Sanity checks
         if (message_type in _HAS_PAYLOAD and use_payload_prefix and

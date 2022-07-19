@@ -99,13 +99,14 @@ class _MockTransceiver(object):
 
     @overrides(Transceiver.read_memory)
     def read_memory(self, x, y, base_address, length, cpu=0):
-        addresses = [i + base_address for i in range(MAX_MEM_REGIONS)]
-        return n_word_struct(MAX_MEM_REGIONS).pack(*addresses)
+        addresses = [(i + base_address, 0, 0) for i in range(MAX_MEM_REGIONS)]
+        addresses = [j for lst in addresses for j in lst]
+        return n_word_struct(MAX_MEM_REGIONS * 3).pack(*addresses)
 
     @overrides(Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False, get_sum=False):
         self._regions_rewritten.append((base_address, data))
 
 

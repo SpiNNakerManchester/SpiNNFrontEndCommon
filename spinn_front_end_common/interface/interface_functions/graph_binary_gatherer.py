@@ -25,19 +25,19 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_binary_gatherer(placements, graph, executable_finder):
+def graph_binary_gatherer(placements, executable_finder):
     """
     Extracts binaries to be executed.
 
     :param ~pacman.model.placements.Placements placements:
-    :param ~pacman.model.graphs.machine.MachineGraph graph:
     :param executable_finder:
     :type executable_finder:
         ~spinn_utilities.executable_finder.ExecutableFinder
     :rtype: ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer(executable_finder)
-    return gatherer._run(placements, graph)
+    # pylint: disable=protected-access
+    return gatherer._run(placements)
 
 
 class _GraphBinaryGatherer(object):
@@ -56,25 +56,24 @@ class _GraphBinaryGatherer(object):
         self._exe_finder = executable_finder
         self._exe_targets = ExecutableTargets()
 
-    def _run(self, placements, graph):
+    def _run(self, placements):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
         :rtype: ExecutableTargets
         """
-        progress = ProgressBar(graph.n_vertices, "Finding binaries")
-        for vertex in progress.over(graph.vertices):
-            placement = placements.get_placement_of_vertex(vertex)
-            self.__get_binary(placement, vertex)
+        progress = ProgressBar(placements.n_placements, "Finding binaries")
+        for placement in progress.over(placements.placements):
+            self.__get_binary(placement)
 
         return self._exe_targets
 
-    def __get_binary(self, placement, vertex):
+    def __get_binary(self, placement):
         """
         :param ~.Placement placement:
         :param ~.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
+        vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
                 msg = (

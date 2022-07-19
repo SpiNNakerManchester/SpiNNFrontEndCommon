@@ -25,8 +25,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.abstract_models import (
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-    AbstractSupportsDatabaseInjection)
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
@@ -38,8 +37,7 @@ _TWO_BYTES = struct.Struct("<BB")
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        AbstractSupportsDatabaseInjection):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
     """ Used to gather multicast packets coming from cores and stream them \
         out to a receiving application on host. Only ever deployed on chips \
         with a working Ethernet connection.
@@ -55,13 +53,12 @@ class LivePacketGatherMachineVertex(
     _N_ADDITIONAL_PROVENANCE_ITEMS = 4
     _CONFIG_SIZE = 13 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
-    _KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
+    KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
     def __init__(
-            self, lpg_params, constraints=None, app_vertex=None, label=None):
+            self, lpg_params, app_vertex=None, constraints=None, label=None):
         """
         :param LivePacketGatherParameters lpg_params:
-        :param LivePacketGather app_vertex:
         :param str label:
         :param constraints:
         :type constraints:
@@ -74,10 +71,15 @@ class LivePacketGatherMachineVertex(
 
         # app specific data items
         self._lpg_params = lpg_params
-        self._incoming_edges = list()
+        self._incoming_sources = list()
 
-    def add_incoming_edge(self, edge):
-        self._incoming_edges.append(edge)
+    def add_incoming_source(self, m_vertex, partition_id):
+        """ Add a machine vertex source incoming into this gatherer
+
+        :param MachineVertex m_vertex: The source machine vertex
+        :param str partition_id: The incoming partition id
+        """
+        self._incoming_sources.append((m_vertex, partition_id))
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -92,7 +94,7 @@ class LivePacketGatherMachineVertex(
     def _get_key_translation_sdram(self):
         if not self._lpg_params.translate_keys:
             return 0
-        return len(self._incoming_edges) * self._KEY_ENTRY_SIZE
+        return len(self._incoming_sources) * self.KEY_ENTRY_SIZE
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -103,11 +105,6 @@ class LivePacketGatherMachineVertex(
             sdram=ConstantSDRAM(self.get_sdram_usage() +
                                 self._get_key_translation_sdram()),
             iptags=[self._lpg_params.get_iptag_resource()])
-
-    @property
-    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
-    def is_in_injection_mode(self):
-        return True
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
@@ -158,7 +155,7 @@ class LivePacketGatherMachineVertex(
         """
         :param ~pacman.model.tags.Tags tags:
         """
-        # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -229,12 +226,13 @@ class LivePacketGatherMachineVertex(
         if not self._lpg_params.translate_keys:
             spec.write_value(0)
         else:
-            spec.write_value(len(self._incoming_edges))
-            for edge in self._incoming_edges:
-                r_info = routing_info.get_routing_info_for_edge(edge)
+            spec.write_value(len(self._incoming_sources))
+            for vertex, partition_id in self._incoming_sources:
+                r_info = routing_info.get_routing_info_from_pre_vertex(
+                    vertex, partition_id)
                 spec.write_value(r_info.first_key)
                 spec.write_value(r_info.first_mask)
-                spec.write_value(edge.pre_vertex.vertex_slice.lo_atom)
+                spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
         """ Write basic info to the system region
@@ -272,3 +270,7 @@ class LivePacketGatherMachineVertex(
         :rtype: int
         """
         return cls._CONFIG_SIZE
+
+    @property
+    def params(self):
+        return self._lpg_params

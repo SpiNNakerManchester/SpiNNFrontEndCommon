@@ -34,8 +34,6 @@ def profile_data_gatherer(transceiver, placements):
         :param ~pacman.model.placements.Placements placements:
             The placements of the vertices
     """
-    # pylint: disable=too-many-arguments
-
     progress = ProgressBar(
         placements.n_placements, "Getting profile data")
     provenance_file_path = app_provenance_file_path()
@@ -61,7 +59,7 @@ def _write(p, profile_data, directory):
         directory, f"{p.x}_{p.y}_{ p.p}_profile.txt")
 
     # write profile data to file, creating if necessary
-    with open(file_name, "a") as f:
+    with open(file_name, "a", encoding="utf-8") as f:
         # Write header
         f.write(_FMT_A.format(
             "tag", max_tag_len, "n_calls", "mean_ms", "n_calls_per_ts",

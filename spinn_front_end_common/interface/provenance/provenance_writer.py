@@ -160,7 +160,7 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, [category, description, the_value])
 
-    def insert_gatherer(self, x, y, address, bytes, run, description,
+    def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
         """
         Records provenance into the gatherer_provenance
@@ -168,7 +168,7 @@ class ProvenanceWriter(SQLiteDB):
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param int address: sdram address read from
-        :param int bytes: number of bytes read
+        :param int bytes_read: number of bytes read
         :param int run: run number
         :param str description: type of value
         :param float the_value: data
@@ -179,7 +179,7 @@ class ProvenanceWriter(SQLiteDB):
                 INSERT INTO gatherer_provenance(
                     x, y, address, bytes, run, description, the_value)
                 VALUES(?, ?, ?, ?, ?, ?, ?)
-                """, [x, y, address, bytes, run, description, the_value])
+                """, [x, y, address, bytes_read, run, description, the_value])
 
     def insert_monitor(self, x, y, description, the_value):
         """

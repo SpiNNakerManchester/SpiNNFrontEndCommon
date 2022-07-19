@@ -12,69 +12,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-from spinn_utilities.overrides import overrides
-from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
-from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
+from .lpg_splitter import LPGSplitter
 
 
-class LivePacketGather(ApplicationVertex, LegacyPartitionerAPI):
-    """ A model which stores all the events it receives during a timer tick\
-        and then compresses them into Ethernet packets and sends them out of\
-        a SpiNNaker machine.
+class LivePacketGather(ApplicationVertex):
+    """ A vertex that gathers and forwards multicast packets to the host
     """
+    __slots__ = ["__params"]
 
-    def __init__(self, lpg_params, constraints=None):
-        """
-        :param LivePacketGatherParameters lpg_params:
-        :param constraints:
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
-        """
-        label = lpg_params.label or "Live Packet Gatherer"
-        super().__init__(label, constraints, 1)
-        self._lpg_params = lpg_params
-        self._incoming_edges = list()
-
-    def add_incoming_edge(self, edge):
-        self._incoming_edges.append(edge)
-
-    @overrides(LegacyPartitionerAPI.create_machine_vertex)
-    def create_machine_vertex(
-            self, vertex_slice, resources_required,
-            label=None, constraints=None):
-        machine_vertex = LivePacketGatherMachineVertex(
-            self._lpg_params, constraints, self, label)
-        if vertex_slice:
-            assert (vertex_slice == machine_vertex.vertex_slice)
-        if resources_required:
-            assert (resources_required == machine_vertex.resources_required)
-        return machine_vertex
+    def __init__(self, params, label=None):
+        super(LivePacketGather, self).__init__(label)
+        self.__params = params
+        self.splitter = LPGSplitter()
 
     @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
     def n_atoms(self):
-        return 1
+        return 0
 
-    def __get_key_translation_sdram(self):
-        if not self._lpg_params.translate_keys:
-            return 0
-        n_entries = 0
-        for edge in self._incoming_edges:
-            n_entries += len(
-                edge.pre_vertex.splitter.get_in_coming_slices()[0])
-        return n_entries * LivePacketGatherMachineVertex._KEY_ENTRY_SIZE
-
-    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
-        return ResourceContainer(
-            sdram=ConstantSDRAM(
-                LivePacketGatherMachineVertex.get_sdram_usage() +
-                self.__get_key_translation_sdram()),
-            dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
-            cpu_cycles=CPUCyclesPerTickResource(
-                LivePacketGatherMachineVertex.get_cpu_usage()),
-            iptags=[self._lpg_params.get_iptag_resource()])
+    @property
+    def params(self):
+        return self.__params

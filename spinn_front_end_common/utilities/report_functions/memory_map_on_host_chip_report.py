@@ -50,7 +50,7 @@ def memory_map_on_host_chip_report(dsg_targets, transceiver):
         file_name = os.path.join(
             directory_name, MEM_MAP_FILENAME.format(x, y, p))
         try:
-            with open(file_name, "w") as f:
+            with open(file_name, "w", encoding="utf-8") as f:
                 _describe_mem_map(f, transceiver, x, y, p)
         except IOError:
             logger.exception("Generate_placement_reports: Can't open file"
@@ -61,7 +61,6 @@ def _describe_mem_map(f, txrx, x, y, p):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     """
-    # pylint: disable=too-many-arguments
     # Read the memory map data from the given core
     region_table_addr = _get_region_table_addr(txrx, x, y, p)
     memmap_data = txrx.read_memory(
