@@ -336,10 +336,9 @@ class _HostExecuteDataSpecification(object):
                 base_address = self.__malloc_region_storage(
                     core, region_size)
                 base_address, size_allocated, bytes_written = context.execute(
-                        core, reader,
-                        self.__select_writer(x, y)
-                        if use_monitors else transceiver.write_memory,
-                        base_address, region_size)
+                    core, reader, self.__select_writer(x, y)
+                    if use_monitors else transceiver.write_memory,
+                    base_address, region_size)
                 dsg_targets.set_write_info(
                     x, y, p, base_address, size_allocated, bytes_written)
 
