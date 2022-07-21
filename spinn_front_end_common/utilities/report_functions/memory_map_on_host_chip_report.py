@@ -19,9 +19,8 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -30,20 +29,18 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
-def memory_map_on_host_chip_report(dsg_targets, transceiver):
+def memory_map_on_host_chip_report():
     """ Report on memory usage. Creates a report that states where in SDRAM \
         each region is (read from machine)
 
-    :param dict(tuple(int,int,int),...) dsg_targets:
-        the map between placement and file writer
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the spinnMan instance
     """
     directory_name = os.path.join(
-        report_default_directory(), MEM_MAP_SUBDIR_NAME)
+        FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 
+    transceiver = FecDataView.get_transceiver()
+    dsg_targets = FecDataView.get_dsg_targets()
     progress = ProgressBar(
         dsg_targets.ds_n_cores(), "Writing memory map reports")
     for (x, y, p) in progress.over(dsg_targets.keys()):

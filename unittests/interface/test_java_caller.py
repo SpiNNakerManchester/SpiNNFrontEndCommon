@@ -15,6 +15,9 @@
 
 import os
 import unittest
+from spinn_utilities.config_holder import set_config
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -36,28 +39,40 @@ class TestJavaCaller(unittest.TestCase):
         cls.mock_jar = os.path.join(cls.mock, "spinnaker-exe.jar")
 
     def test_creation_with_jar_path(self):
-        caller = JavaCaller(
-            "somepath", "java", java_spinnaker_path="missing",
-            java_jar_path=self.mock_jar)
+        set_config("Java", "java_spinnaker_path", "missing")
+        set_config("Java", "java_jar_path", self.mock_jar)
+        caller = JavaCaller()
         assert caller is not None
+        FecDataWriter.mock().set_java_caller(caller)
+        assert FecDataView.has_java_caller()
+        self.assertEqual(FecDataView.get_java_caller(), caller)
 
     def test_creation_java_spinnaker_path(self):
-        caller = JavaCaller(
-            "somepath", "java", java_spinnaker_path=self.mock)
+        set_config("Java", "java_spinnaker_path", self.mock)
+        set_config("Java", "java_properties",
+                   "-Dspinnaker.compare.download -Dlogging.level=DEBUG")
+        caller = JavaCaller()
         assert caller is not None
 
-    def test_creation_different(self):
+    def test_creation_bad_property(self):
+        set_config("Java", "java_spinnaker_path", self.mock)
+        set_config("Java", "java_properties",
+                   "-Dspinnaker.compare.download -logging.level=DEBUG")
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.mock,
-                java_jar_path=self.mock_jar)
+            JavaCaller()
+
+    def test_creation_different(self):
+        set_config("Java", "java_spinnaker_path", self.mock)
+        set_config("Java", "java_jar_path", self.mock_jar)
+        with self.assertRaises(ConfigurationException):
+            JavaCaller()
 
     def test_creation_wrong_java_spinnaker_path(self):
+        set_config("Java", "java_spinnaker_path", self.interface)
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.interface)
+            JavaCaller()
 
     def test_creation_bad_java_spinnaker_path(self):
+        set_config("Java", "java_spinnaker_path", self.mock_jar)
         with self.assertRaises(ConfigurationException):
-            JavaCaller(
-                "somepath", "java", java_spinnaker_path=self.mock_jar)
+            JavaCaller()

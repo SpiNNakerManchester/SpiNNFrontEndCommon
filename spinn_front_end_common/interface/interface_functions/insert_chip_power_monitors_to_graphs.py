@@ -13,23 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from pacman.model.placements import Placement
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utility_models import (
+    ChipPowerMonitorMachineVertex)
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
-def insert_chip_power_monitors_to_graphs(
-        machine, sampling_frequency, placements):
+def insert_chip_power_monitors_to_graphs(placements):
     """ Adds chip power monitors into a given graph.
 
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine as discovered
-    :param int sampling_frequency:
-    :param Placements placements:
+    param Placements placements:
     """
-
+    sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
+    machine = FecDataView.get_machine()
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")

@@ -22,7 +22,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.resources import (
@@ -31,6 +30,7 @@ from pacman.model.resources import (
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -43,11 +43,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BufferedSendingRegion)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD,
-    MICRO_TO_MILLISECOND_CONVERSION)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
     AbstractSupportsDatabaseInjection)
@@ -319,9 +316,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 send_buffer_times, n_keys)
 
         # Recording live data, use the user provided receive rate
+        # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/896
         keys_per_timestep = math.ceil(
-            receive_rate / (
-                machine_time_step() * MICRO_TO_MILLISECOND_CONVERSION) * 1.1)
+            receive_rate / FecDataView.get_simulation_time_step_ms() * 1.1)
         header_size = EIEIODataHeader.get_header_size(
             EIEIOType.KEY_32_BIT, is_payload_base=True)
         # Maximum size is one packet per key
@@ -478,13 +475,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             first_machine_time_step <= time_stamp_in_ticks <
             n_machine_time_steps)
 
-    def _fill_send_buffer(
-            self, first_machine_time_step, run_until_timesteps):
+    def _fill_send_buffer(self):
         """ Fill the send buffer with keys to send.
 
-        :param int first_machine_time_step:
-        :param int run_until_timesteps:
-        """
+       """
+        first_machine_time_step = FecDataView.get_first_machine_time_step()
+        run_until_timesteps = FecDataView.get_current_run_timesteps()
         if (self._first_machine_time_step == first_machine_time_step and
                 self._run_until_timesteps == run_until_timesteps):
             return
@@ -560,7 +556,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         self._is_recording = new_state
 
-    def _reserve_regions(self, spec, n_machine_time_steps):
+    def _reserve_regions(self, spec):
         """
         :param ~.DataSpecificationGenerator spec:
         :param int n_machine_time_steps:
@@ -584,7 +580,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_size = (
                 self._send_buffer_sdram_per_timestep(
                     self._send_buffer_times, self._n_keys) *
-                n_machine_time_steps)
+                FecDataView.get_max_run_time_steps())
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
@@ -593,10 +589,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self, routing_info):
-        """
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        """
+    def _update_virtual_key(self):
+        routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None
             if self._send_buffer_partition_id is not None:
@@ -666,8 +660,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(data=self._receive_sdp_port)
 
         # write timer offset in microseconds
-        max_offset = ((
-            machine_time_step() * time_scale_factor()) // (
+        max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
             (int(math.ceil(max_offset / self._n_vertices)) *
@@ -675,27 +668,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
             int(math.ceil(max_offset)))
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
-    @inject_items({
-        "routing_info": "RoutingInfos",
-        "data_n_time_steps": "DataNTimeSteps"
-    })
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "routing_info", "data_n_time_steps"
-        })
+        additional_arguments={"routing_info"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            routing_info, data_n_time_steps):
-        """
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
-        :param int data_n_time_steps:
-        """
-        # pylint: disable=too-many-arguments, arguments-differ
-        self._update_virtual_key(routing_info)
+            ):
+        self._update_virtual_key()
 
         # Reserve regions
-        self._reserve_regions(spec, data_n_time_steps)
+        self._reserve_regions(spec)
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM)
@@ -709,7 +691,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             per_timestep = self._recording_sdram_per_timestep(
                 self._is_recording, self._receive_rate,
                 self._send_buffer_times, self._n_keys)
-            recording_size = per_timestep * data_n_time_steps
+            recording_size = (
+                    per_timestep * FecDataView.get_max_run_time_steps())
         spec.write_array(get_recording_header_array([recording_size]))
 
         # Write the configuration information
@@ -750,23 +733,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def injection_partition_id(self):
         return self._injection_partition_id
 
-    @inject_items({
-        "first_machine_time_step": "FirstMachineTimeStep",
-        "run_until_timesteps": "RunUntilTimeSteps"
-    })
-    def update_buffer(
-            self, run_until_timesteps, first_machine_time_step):
-        """ Updates the buffers on specification of the first machine timestep.
-            Note: This is called by injection.
-
-        :param int first_machine_time_step:
-            The first machine time step in the simulation
-        :param int run_until_timesteps:
-            The last machine time step in the simulation
-        """
-        self._fill_send_buffer(
-            first_machine_time_step, run_until_timesteps)
-
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
         if not self._is_recording:
@@ -774,16 +740,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return [0]
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
-    def get_recording_region_base_address(self, txrx, placement):
+    def get_recording_region_base_address(self, placement):
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING, txrx)
+            placement, self._REGIONS.RECORDING)
 
     @property
     def send_buffers(self):
         """
         :rtype: dict(int,BufferedSendingRegion)
         """
-        self.update_buffer()  # pylint: disable=E1120
+        self._fill_send_buffer()
         return self._send_buffers
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)

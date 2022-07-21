@@ -13,10 +13,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_utilities.config_holder import set_config
-from spinn_machine.virtual_machine import virtual_machine
 from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import (
-    ApplicationGraph, ApplicationVertex, ApplicationEdge)
+    ApplicationVertex, ApplicationEdge)
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
@@ -27,6 +26,7 @@ from pacman.model.tags.tags import Tags
 from pacman.model.partitioner_splitters.abstract_splitters import (
     AbstractSplitterCommon)
 from pacman.model.graphs.common.slice import Slice
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     database_interface)
 from spinn_front_end_common.utilities.utility_objs import (
@@ -110,28 +110,27 @@ def test_database_interface():
     set_config("Database", "create_database", "True")
     set_config("Database", "create_routing_info_to_neuron_id_mapping", "True")
 
-    machine = virtual_machine(8, 8)
+    writer = FecDataWriter.mock()
     placements = Placements()
 
-    app_graph = ApplicationGraph("Test")
     app_vertex_1 = TestAppVertex(100, "test_1")
     app_vertex_2 = TestAppVertex(200, "test_2")
-    app_graph.add_vertex(app_vertex_1)
-    app_graph.add_vertex(app_vertex_2)
-    app_graph.add_edge(ApplicationEdge(app_vertex_1, app_vertex_2), "Test")
+    writer.add_vertex(app_vertex_1)
+    writer.add_vertex(app_vertex_2)
+    writer.add_edge(ApplicationEdge(app_vertex_1, app_vertex_2), "Test")
 
     _make_m_vertices(app_vertex_1, 10, 10)
     _make_m_vertices(app_vertex_2, 20, 20)
     params = LivePacketGatherParameters(label="LiveSpikeReceiver")
     lpg_vertex = LivePacketGather(params, label="LiveSpikeReceiver")
-    app_graph.add_vertex(lpg_vertex)
-    app_graph.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
+    writer.add_vertex(lpg_vertex)
+    writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_vertices(machine, placements)
+    lpg_vertex.splitter.create_vertices(placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
 
-    lpg_vertex.splitter.set_placements(placements)
+    writer.set_placements(placements)
     lpg_vertex.splitter.get_source_specific_in_coming_vertices(
         app_vertex_1, "Test")
 
@@ -142,17 +141,18 @@ def test_database_interface():
     _add_rinfo(
         app_vertex_2, "Test", routing_info,
         0x20000000, 0xFFFF0000, 0x0000FF00, 8)
+    writer.set_routing_infos(routing_info)
 
     tags = Tags()
     tag = IPTag("127.0.0.1", 0, 0, 1, "127.0.0.1", 12345, True)
     tags.add_ip_tag(tag, next(iter(lpg_vertex.machine_vertices)))
+    writer.set_tags(tags)
 
-    db_path = database_interface(
-        tags, 1000, machine, placements, routing_info, 17, app_graph)
+    db_path = database_interface(1000)
     print(db_path)
 
     reader = DatabaseReader(db_path)
-    assert(reader.get_ip_address(0, 0) == machine.get_chip_at(0, 0).ip_address)
+    assert(reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address)
     assert(all(db_p == placements.get_placement_of_vertex(m_vertex).location
                for db_p, m_vertex in zip(
                    reader.get_placements(app_vertex_1.label),
