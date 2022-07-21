@@ -50,7 +50,7 @@ def _count_regions():
     # Count the regions to be read
     n_regions_to_read = 0
     recording_placements = list()
-    for app_vertex in FecDataView.get_runtime_graph().vertices:
+    for app_vertex in FecDataView.iterate_vertices:
         for vertex in app_vertex.machine_vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 n_regions_to_read += len(vertex.get_recorded_region_ids())

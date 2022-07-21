@@ -71,13 +71,12 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        app_graph = FecDataView.get_runtime_graph()
-        return (any(isinstance(app_vertex, LivePacketGather)
-                    for app_vertex in app_graph.vertices) or
-                any(isinstance(vertex, AbstractSupportsDatabaseInjection)
-                    and vertex.is_in_injection_mode
-                    for app_vertex in app_graph.vertices
-                    for vertex in app_vertex.machine_vertices))
+        if FecDataView.get_vertices_by_type(LivePacketGather):
+            return True
+        for vertex in FecDataView.get_vertices_by_type(AbstractSupportsDatabaseInjection):
+            if vertex.is_in_injection_mode:
+                return True
+        return False
 
     @property
     def database_path(self):
@@ -137,10 +136,9 @@ class DatabaseWriter(SQLiteDB):
         """ Stores the main application graph description (vertices, edges).
 
         """
-        application_graph = FecDataView.get_runtime_graph()
         with self.transaction() as cur:
             # add vertices
-            for vertex in application_graph.vertices:
+            for vertex in FecDataView.iterate_vertices():
                 vertex_id = self.__insert(
                     cur,
                     "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
@@ -262,7 +260,7 @@ class DatabaseWriter(SQLiteDB):
         :rtype: list(MachineVertex, str)
         """
         targets = [(m_vertex, part_id, lpg_m_vertex)
-                   for vertex in FecDataView.get_runtime_graph().vertices
+                   for vertex in FecDataView.iterate_vertices()
                    if isinstance(vertex, LivePacketGather)
                    for lpg_m_vertex, m_vertex, part_id
                    in vertex.splitter.targeted_lpgs]

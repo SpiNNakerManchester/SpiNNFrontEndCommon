@@ -133,7 +133,6 @@ class _MachineBitFieldRouterCompressor(object):
         """
         view = FecDataView()
         app_id = FecDataView.get_app_id()
-        app_graph = FecDataView.get_runtime_graph()
         routing_tables = FecDataView.get_uncompressed()
         transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
@@ -150,7 +149,7 @@ class _MachineBitFieldRouterCompressor(object):
             text += " capped at {} retries".format(retry_count)
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
-                len(app_graph.vertices) +
+                FecDataView.get_n_vertices() +
                 (len(routing_tables.routing_tables) *
                  self.TIMES_CYCLED_ROUTING_TABLES)),
             string_describing_what_being_progressed=text)
@@ -199,7 +198,7 @@ class _MachineBitFieldRouterCompressor(object):
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
             most_costly_cores = defaultdict(lambda: defaultdict(int))
-            for partition in app_graph.outgoing_edge_partitions:
+            for partition in FecDataView.iterate_partitions():
                 for edge in partition.edges:
                     sttr = edge.pre_vertex.splitter
                     for vertex in sttr.get_source_specific_in_coming_vertices(
@@ -704,10 +703,9 @@ class _MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
-        app_graph = FecDataView.get_runtime_graph()
 
         for app_vertex in progress_bar.over(
-                app_graph.vertices, finish_at_end=False):
+                FecDataView.iterate_vertices(), finish_at_end=False):
             for m_vertex in app_vertex.machine_vertices:
                 if isinstance(
                         m_vertex, AbstractSupportsBitFieldRoutingCompression):

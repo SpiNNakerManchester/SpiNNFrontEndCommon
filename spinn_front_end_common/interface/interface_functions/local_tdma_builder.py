@@ -86,7 +86,7 @@ def local_tdma_builder():
         Y is pop1 firing
 
     """
-    if FecDataView.get_runtime_graph().n_vertices == 0:
+    if FecDataView.get_n_vertices == 0:
         return
     # get config params
     us_per_cycle = FecDataView.get_hardware_time_step_us()
@@ -97,31 +97,31 @@ def local_tdma_builder():
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    for app_vertex in FecDataView.get_runtime_graph().vertices:
-        if isinstance(app_vertex, TDMAAwareApplicationVertex):
-            app_verts.append(app_vertex)
+    vertices = FecDataView.get_vertices_by_type(TDMAAwareApplicationVertex)
+    for app_vertex in vertices:
+        app_verts.append(app_vertex)
 
-            # get timings
+        # get timings
 
-            # check config params for better performance
-            (n_at_same_time, local_clocks) = __auto_config_times(
-                app_machine_quantity, clocks_between_cores,
-                clocks_for_sending, app_vertex, clocks_waiting)
-            n_phases, n_slots, clocks_between_phases = \
-                __generate_times(
-                    app_vertex, n_at_same_time, local_clocks)
+        # check config params for better performance
+        (n_at_same_time, local_clocks) = __auto_config_times(
+            app_machine_quantity, clocks_between_cores,
+            clocks_for_sending, app_vertex, clocks_waiting)
+        n_phases, n_slots, clocks_between_phases = \
+            __generate_times(
+                app_vertex, n_at_same_time, local_clocks)
 
-            # store in tracker
-            app_vertex.set_other_timings(
-                local_clocks, n_slots, clocks_between_phases,
-                n_phases, clocks_per_cycle)
+        # store in tracker
+        app_vertex.set_other_timings(
+            local_clocks, n_slots, clocks_between_phases,
+            n_phases, clocks_per_cycle)
 
-            # test timings
-            fraction_of_sending = __get_fraction_of_sending(
-                n_phases, clocks_between_phases, clocks_for_sending)
-            if fraction_of_sending is not None:
-                max_fraction_of_sending = max(
-                    max_fraction_of_sending, fraction_of_sending)
+        # test timings
+        fraction_of_sending = __get_fraction_of_sending(
+            n_phases, clocks_between_phases, clocks_for_sending)
+        if fraction_of_sending is not None:
+            max_fraction_of_sending = max(
+                max_fraction_of_sending, fraction_of_sending)
 
     time_scale_factor_needed = (
             FecDataView.get_time_scale_factor() * max_fraction_of_sending)
@@ -131,12 +131,11 @@ def local_tdma_builder():
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in FecDataView.get_runtime_graph().vertices:
-        if isinstance(app_vertex, TDMAAwareApplicationVertex):
-            initial_offset = __generate_initial_offset(
-                app_vertex, app_verts, clocks_initial,
-                clocks_waiting)
-            app_vertex.set_initial_offset(initial_offset)
+    for app_vertex in vertices:
+        initial_offset = __generate_initial_offset(
+            app_vertex, app_verts, clocks_initial,
+            clocks_waiting)
+        app_vertex.set_initial_offset(initial_offset)
 
 
 def __auto_config_times(
