@@ -97,8 +97,8 @@ def local_tdma_builder():
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    vertices = FecDataView.get_vertices_by_type(TDMAAwareApplicationVertex)
-    for app_vertex in vertices:
+    for app_vertex in FecDataView.get_vertices_by_type(
+            TDMAAwareApplicationVertex):
         app_verts.append(app_vertex)
 
         # get timings
@@ -131,7 +131,8 @@ def local_tdma_builder():
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in vertices:
+    for app_vertex in  FecDataView.get_vertices_by_type(
+            TDMAAwareApplicationVertex):
         initial_offset = __generate_initial_offset(
             app_vertex, app_verts, clocks_initial,
             clocks_waiting)
