@@ -39,7 +39,7 @@ MILLIWATTS_PER_IDLE_CHIP = 0.000360
 
 #: stated in papers (SpiNNaker: A 1-W 18 core system-on-Chip for
 #: Massively-Parallel Neural Network Simulation)
-MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = 0.001 - MILLIWATTS_PER_IDLE_CHIP
+MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD = (0.001 - MILLIWATTS_PER_IDLE_CHIP)
 
 #: measured from the real power meter and timing between
 #: the photos for a days powered off
@@ -76,7 +76,8 @@ def compute_energy_used(machine_allocation_controller=None):
     db = ProvenanceReader()
     dsg_time = db.get_category_timer_sum(DATA_GENERATION)
     execute_time = db.get_category_timer_sum(RUN_LOOP)
-    # TODO some extraction time is also execute_time
+    # NOTE: this extraction time is part of the execution time; it does not
+    #       refer to the time taken in e.g. pop.get_data() or projection.get()
     extraction_time = db.get_category_timer_sum(BUFFER)
     load_time = db.get_category_timer_sum(LOADING)
     mapping_time = db.get_category_timer_sum(MAPPING)
@@ -88,13 +89,23 @@ def compute_energy_used(machine_allocation_controller=None):
     power_used.num_cores = placements.n_placements + machine.n_chips
     power_used.exec_time_secs = execute_time / _MS_PER_SECOND
     power_used.loading_time_secs = load_time / _MS_PER_SECOND
-    power_used.saving_time_secs = extraction_time / _MS_PER_SECOND
+    # extraction_time could be None if nothing is set to be recorded
+    total_extraction_time = 0
+    if extraction_time is not None:
+        total_extraction_time += extraction_time
+    power_used.saving_time_secs = total_extraction_time / _MS_PER_SECOND
     power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
+    runtime_total_ms = (
+            FecDataView.get_current_run_timesteps() *
+            FecDataView.get_time_scale_factor())
+    # TODO: extraction time as currently defined is part of execution time,
+    #       so for now don't add it on, but revisit this in the future
+    total_booted_time = execute_time + load_time
     _compute_energy_consumption(
          placements, machine, dsg_time, load_time,
-         mapping_time, execute_time + load_time + extraction_time,
+         mapping_time, total_booted_time,
          machine_allocation_controller,
          runtime_total_ms, power_used)
 
@@ -407,7 +418,7 @@ def _calculate_loading_energy(machine, load_time_ms, active_chips, n_frames):
 
     # handle time diff between load time and total load phase of ASB
     energy_cost += (
-        (load_time_ms - total_time_ms) *
+        (total_time_ms - load_time_ms) *
         machine.n_chips * MILLIWATTS_PER_IDLE_CHIP)
 
     # handle active routers etc
@@ -432,25 +443,32 @@ def _calculate_data_extraction_energy(machine, active_chips, n_frames):
 
     # find time
     # TODO is this what was desired
-    total_time_ms = ProvenanceReader().get_category_timer_sum(BUFFER)
+    total_time_ms = 0
+    buffer_time_ms = ProvenanceReader().get_category_timer_sum(BUFFER)
 
-    # min between chips that are active and fixed monitor, as when 1
-    # chip is used its one monitor, if more than 1 chip,
-    # the ethernet connected chip and the monitor handling the read/write
-    # this is checked by min
-    energy_cost = (
-        total_time_ms *
-        min(N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips)) *
-        MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
-        machine.DEFAULT_MAX_CORES_PER_CHIP)
+    energy_cost = 0
+    # NOTE: Buffer time could be None if nothing was set to record
+    if buffer_time_ms is not None:
+        total_time_ms += buffer_time_ms
 
-    # add idle chip cost
-    energy_cost += _calculate_idle_cost(total_time_ms, machine)
+        # min between chips that are active and fixed monitor, as when 1
+        # chip is used its one monitor, if more than 1 chip,
+        # the ethernet connected chip and the monitor handling the read/write
+        # this is checked by min
+        energy_cost = (
+            total_time_ms *
+            min(N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips)) *
+            MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD /
+            machine.DEFAULT_MAX_CORES_PER_CHIP)
 
-    # handle active routers etc
-    energy_cost_of_active_router = (
-        total_time_ms * n_frames * MILLIWATTS_PER_FRAME_ACTIVE_COST)
-    energy_cost += energy_cost_of_active_router
+        # add idle chip cost
+        energy_cost += _calculate_idle_cost(total_time_ms, machine)
+
+        # handle active routers etc
+        energy_cost_of_active_router = (
+            total_time_ms * n_frames * MILLIWATTS_PER_FRAME_ACTIVE_COST)
+        energy_cost += energy_cost_of_active_router
+
     return energy_cost
 
 
