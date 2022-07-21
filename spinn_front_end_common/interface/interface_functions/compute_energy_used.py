@@ -111,6 +111,7 @@ def compute_energy_used(machine_allocation_controller=None):
 
     return power_used
 
+
 def _compute_energy_consumption(
         placements, machine, dsg_time,
         load_time, mapping_time, total_booted_time, job, runtime_total_ms,
