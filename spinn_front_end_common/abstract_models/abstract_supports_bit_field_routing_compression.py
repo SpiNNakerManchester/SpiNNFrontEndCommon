@@ -27,21 +27,19 @@ class AbstractSupportsBitFieldRoutingCompression(
     __slots__ = ()
 
     @abstractmethod
-    def bit_field_base_address(self, transceiver, placement):
+    def bit_field_base_address(self, placement):
         """ Returns the SDRAM address for the bit-field table data.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield address
         :rtype: int
         """
 
     @abstractmethod
-    def regeneratable_sdram_blocks_and_sizes(self, transceiver, placement):
+    def regeneratable_sdram_blocks_and_sizes(self, placement):
         """ Returns the SDRAM addresses and sizes for the cores' SDRAM that \
             are available (borrowed) for generating bitfield tables.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :return: list of tuples containing (the SDRAM address for the cores
             SDRAM address's for the core's SDRAM that can be used to generate

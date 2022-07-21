@@ -1,4 +1,4 @@
-# Copyright (c) 2021 The University of Manchester
+# Copyright (c) 2021-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -12,10 +12,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from spinn_front_end_common.utility_models import LivePacketGather
+
+from .fec_data_view import FecDataView
+from .fec_timer import FecTimer
 
 
-def lpg_placement_setter(app_graph, placements):
-    for vertex in app_graph.vertices:
-        if isinstance(vertex, LivePacketGather):
-            vertex.splitter.set_placements(placements)
+__all__ = ["FecTimer", "FecDataView"]

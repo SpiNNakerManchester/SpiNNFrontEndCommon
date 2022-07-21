@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,14 +16,12 @@
 import itertools
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.ordered_set import OrderedSet
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     BUFFER, DATA_GENERATION, LOADING, MAPPING, ProvenanceReader, RUN_LOOP)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 
 #: milliseconds per second
 _MS_PER_SECOND = 1000.0
@@ -61,37 +59,20 @@ MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
 N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
-def compute_energy_used(
-        placements, machine, version, runtime, buffer_manager,
-        machine_allocation_controller=None):
+def compute_energy_used(machine_allocation_controller=None):
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
 
-    :param ~pacman.model.placements.Placements placements:
-    :param ~spinn_machine.Machine machine:
-    :param int version:
-        The version of the SpiNNaker boards in use.
-    :param float runtime:
-    :param BufferManager buffer_manager:
-    :param float mapping_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float load_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float execute_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float dsg_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param float extraction_time:
-        From simulator via :py:class:`~.FinaliseTimingData`.
-    :param spalloc_server: (optional)
-    :type spalloc_server: str or None
-    :param remote_spinnaker_url: (optional)
-    :type remote_spinnaker_url: str or None
     :param MachineAllocationController machine_allocation_controller:
         (optional)
     :rtype: PowerUsed
     """
     # pylint: disable=too-many-arguments
+    runtime_total_ms = (
+            FecDataView.get_current_run_timesteps() *
+            FecDataView.get_time_scale_factor())
+    machine = FecDataView.get_machine()
+    placements = FecDataView.get_placements()
     db = ProvenanceReader()
     dsg_time = db.get_category_timer_sum(DATA_GENERATION)
     execute_time = db.get_category_timer_sum(RUN_LOOP)
@@ -116,13 +97,14 @@ def compute_energy_used(
     power_used.data_gen_time_secs = dsg_time / _MS_PER_SECOND
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
-    runtime_total_ms = runtime * time_scale_factor()
+    runtime_total_ms = (
+            FecDataView.get_current_run_timesteps() *
+            FecDataView.get_time_scale_factor())
     # TODO: extraction time as currently defined is part of execution time,
     #       so for now don't add it on, but revisit this in the future
     total_booted_time = execute_time + load_time
     _compute_energy_consumption(
-         placements, machine, version,
-         dsg_time, buffer_manager, load_time,
+         placements, machine, dsg_time, load_time,
          mapping_time, total_booted_time,
          machine_allocation_controller,
          runtime_total_ms, power_used)
@@ -131,15 +113,13 @@ def compute_energy_used(
 
 
 def _compute_energy_consumption(
-        placements, machine, version, dsg_time, buffer_manager,
+        placements, machine, dsg_time,
         load_time, mapping_time, total_booted_time, job, runtime_total_ms,
         power_used):
     """
     :param ~.Placements placements:
     :param ~.Machine machine:
-    :param int version:
     :param float dsg_time:
-    :param BufferManager buffer_manager:
     :param float load_time:
     :param float mapping_time:
     :param float total_booted_time:
@@ -148,15 +128,14 @@ def _compute_energy_consumption(
     :param PowerUsed power_used:
     """
     # figure active chips
-    active_chips = __active_chips(machine, placements)
+    active_chips = __active_chips(placements)
 
     # figure out packet cost
     _router_packet_energy(power_used)
 
     # figure FPGA cost over all booted and during runtime cost
     _calculate_fpga_energy(
-        machine, version, total_booted_time,
-        runtime_total_ms, power_used)
+        machine, total_booted_time, runtime_total_ms, power_used)
 
     # figure how many frames are using, as this is a constant cost of
     # routers, cooling etc
@@ -168,11 +147,11 @@ def _compute_energy_consumption(
 
     # figure the down time idle cost for mapping
     power_used.mapping_joules = _calculate_power_down_energy(
-        mapping_time, machine, job, version, power_used.num_frames)
+        mapping_time, machine, job, power_used.num_frames)
 
     # figure the down time idle cost for DSG
     power_used.data_gen_joules = _calculate_power_down_energy(
-        dsg_time, machine, job, version, power_used.num_frames)
+        dsg_time, machine, job, power_used.num_frames)
 
     # figure extraction time cost
     power_used.saving_joules = _calculate_data_extraction_energy(
@@ -181,7 +160,7 @@ def _compute_energy_consumption(
     # figure out active chips cost
     power_used.chip_energy_joules = sum(
         _calculate_chips_active_energy(
-            chip, placements, buffer_manager, runtime_total_ms, power_used)
+            chip, placements, runtime_total_ms, power_used)
         for chip in active_chips)
 
     # figure out cooling/internet router idle cost during runtime
@@ -190,15 +169,14 @@ def _compute_energy_consumption(
         MILLIWATTS_FOR_FRAME_IDLE_COST)
 
 
-def __active_chips(machine, placements):
+def __active_chips(placements):
     """
-    :param ~.Machine machine:
     :param ~.Placements placements
     :rtype: set(~.Chip)
     """
     return OrderedSet(
-        machine.get_chip_at(placement.x, placement.y)
-        for placement in placements
+        FecDataView.get_chip_at(placement.x, placement.y)
+        for placement in placements.placements
         if isinstance(placement.vertex, ChipPowerMonitorMachineVertex))
 
 
@@ -232,12 +210,11 @@ def _router_packet_energy(power_used):
 
 
 def _calculate_chips_active_energy(
-        chip, placements, buffer_manager, runtime_total_ms, power_used):
+        chip, placements, runtime_total_ms, power_used):
     """ Figure out the chip active cost during simulation
 
     :param ~.Chip chip: the chip to consider
     :param ~.Placements placements: placements
-    :param BufferManager buffer_manager: buffer manager
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     :return: energy cost
@@ -249,8 +226,7 @@ def _calculate_chips_active_energy(
 
     # get recordings from the chip power monitor
     recorded_measurements = chip_power_monitor.get_recorded_data(
-        placement=placements.get_placement_of_vertex(chip_power_monitor),
-        buffer_manager=buffer_manager)
+        placement=FecDataView.get_placement_of_vertex(chip_power_monitor))
 
     # deduce time in milliseconds per recording element
     n_samples_per_recording = get_config_int(
@@ -304,11 +280,9 @@ def __get_chip_power_monitor(chip, placements):
 
 
 def _calculate_fpga_energy(
-        machine, version, total_runtime, runtime_total_ms,
-        power_used):
+        machine, total_runtime, runtime_total_ms, power_used):
     """
     :param ~.Machine machine:
-    :param int version:
     :param float total_runtime:
     :param float runtime_total_ms:
     :param PowerUsed power_used:
@@ -320,27 +294,22 @@ def _calculate_fpga_energy(
     if (not get_config_str("Machine", "spalloc_server") and
             not get_config_str("Machine", "remote_spinnaker_url")):
         # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-        if int(version) in (2, 3):
+        if machine.n_chips <= 4:
             return 0, 0
-        elif int(version) not in (4, 5):
-            # No idea what we've got here!
-            raise ConfigurationException(
-                "Do not know what the FPGA setup is for this version of "
-                "SpiNNaker machine.")
 
         # if the spinn4 or spinn5 board, need to verify if wrap-arounds
         # are there, if not then assume fpgas are turned off.
 
         # how many fpgas are active
         total_fpgas = __board_n_operational_fpgas(
-            machine, machine.ethernet_connected_chips[0])
+            machine.ethernet_connected_chips[0])
         # active fpgas
         if total_fpgas == 0:
             return 0, 0
     else:  # spalloc machine, need to check each board
         for ethernet_connected_chip in machine.ethernet_connected_chips:
             total_fpgas += __board_n_operational_fpgas(
-                machine, ethernet_connected_chip)
+               ethernet_connected_chip)
 
     # Only need to update this here now that we've learned there are FPGAs
     # in use
@@ -353,16 +322,18 @@ def _calculate_fpga_energy(
     power_used.fpga_exec_energy_joules = power_usage_runtime
 
 
-def __board_n_operational_fpgas(machine, ethernet_chip):
+def __board_n_operational_fpgas(ethernet_chip):
     """ Figures out how many FPGAs were switched on for a particular \
         SpiNN-5 board.
 
-    :param ~.Machine machine: SpiNNaker machine
     :param ~.Chip ethernet_chip: the ethernet chip to look from
     :return: number of FPGAs on, on this board
     """
 
     # TODO: should be possible to get this info from Machine
+
+    # As the Chips can be None use the machine call and not the View call
+    machine = FecDataView.get_machine()
 
     # positions to check for active links
     left_chips = (
@@ -514,14 +485,13 @@ def _calculate_idle_cost(time, machine):
             machine.DEFAULT_MAX_CORES_PER_CHIP)
 
 
-def _calculate_power_down_energy(time, machine, job, version, n_frames):
+def _calculate_power_down_energy(time, machine, job, n_frames):
     """ Calculate power down costs
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:
     :param AbstractMachineAllocationController job:
         the spalloc job object
-    :param int version:
     :param int n_frames: number of frames used by this machine
     :return: energy in joules
     :rtype: float
@@ -531,15 +501,12 @@ def _calculate_power_down_energy(time, machine, job, version, n_frames):
     # if spalloc or hbp
     if job is not None:
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
-    # if 48 chip
-    elif version == 5 or version == 4:
-        return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
     # if 4 chip
-    elif version == 3 or version == 2:
+    elif machine.n_chips <= 4:
         return machine.n_chips * time * MILLIWATTS_PER_IDLE_CHIP
-    # boom
+    # if 48 chip
     else:
-        raise ConfigurationException("don't know what to do here")
+        return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
 
 
 def _calculate_n_frames(machine, job):

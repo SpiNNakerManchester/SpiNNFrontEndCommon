@@ -20,26 +20,19 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(
-        tags, runtime, machine, placements, routing_infos, app_id,
-        application_graph):
+def database_interface(runtime):
     """
     :param ~pacman.model.tags.Tags tags:
-    :param int runtime:
-    :param ~spinn_machine.Machine machine:
-    :param ~pacman.model.placements.Placements placements:
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-    :param int app_id:
-    :param ~pacman.model.graphs.application.ApplicationGraph application_graph:
     :return: Database interface, where the database is located
     :rtype: tuple(DatabaseInterface, str)
     """
     # pylint: disable=too-many-arguments
-    needs_db = DatabaseWriter.auto_detect_database(application_graph)
+    needs_db = DatabaseWriter.auto_detect_database()
     user_create_database = get_config_bool("Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
@@ -51,45 +44,34 @@ def database_interface(
         writer = DatabaseWriter()
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
-        _write_to_db(
-            writer, machine, runtime, application_graph, placements,
-            routing_infos, tags, app_id)
+        _write_to_db(writer, runtime)
         writer.close()
         return writer.database_path
     return None
 
 
 def _write_to_db(
-        writer, machine, runtime, app_graph, placements, routing_infos, tags,
-        app_id):
+        writer, runtime):
     """
-    :param ~.Machine machine:
     :param int runtime:
-    :param ~.ApplicationGraph app_graph:
-    :param int data_n_timesteps:
-        The number of timesteps for which data space will been reserved
-    :param ~.Placements placements:
-    :param ~.RoutingInfo routing_infos:
-    :param ~.MulticastRoutingTables router_tables:
-    :param ~.Tags tags:
-    :param int app_id:
-    :param dict(MachineVertex,LivePacketGatherMachineVertex) lpg_for_m_vertex:
     """
     # pylint: disable=too-many-arguments
 
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
-        w.add_system_params(runtime, app_id)
+        w.add_system_params(runtime)
         p.update()
-        w.add_machine_objects(machine)
+        w.add_machine_objects()
         p.update()
-        w.add_application_vertices(app_graph)
+        w.add_application_vertices()
         p.update()
-        w.add_placements(placements)
+        w.add_placements()
         p.update()
-        w.add_tags(tags)
+        w.add_tags()
         p.update()
-        lpg_source_machine_vertices = w.add_lpg_mapping(app_graph)
+        lpg_source_machine_vertices = w.add_lpg_mapping()
+        app_graph = FecDataView.get_runtime_graph()
+
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
             machine_vertices = [
@@ -99,6 +81,5 @@ def _write_to_db(
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
                 and vertex.is_in_injection_mode]
             machine_vertices.extend(lpg_source_machine_vertices)
-            w.create_atom_to_event_id_mapping(
-                machine_vertices, routing_infos)
+            w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()

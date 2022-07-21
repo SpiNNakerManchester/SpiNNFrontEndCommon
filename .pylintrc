@@ -381,7 +381,8 @@ init-import=no
 defining-attr-methods=__init__,
                       __new__,
                       _new_run_clear,
-                      _machine_clear
+                      _machine_clear,
+                      _hard_reset
 
 # List of member names, which should be excluded from the protected access
 # warning.

@@ -17,10 +17,9 @@ import logging
 import time
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 
@@ -29,35 +28,18 @@ SAFETY_FINISH_TIME = 0.1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def application_runner(
-        buffer_manager, notification_interface, executable_types,
-        app_id, txrx, runtime, no_sync_changes, time_threshold, machine,
-        run_until_complete=False):
+def application_runner(runtime, time_threshold, run_until_complete):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
 
-        :param BufferManager buffer_manager:
-        :param NotificationProtocol notification_interface:
-        :param executable_types:
-        :type executable_types:
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
-        :param int app_id:
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
-        :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
-        :param ~spinn_machine.Machine machine:
-            the spinn machine instance
         :param bool run_until_complete:
-        :return: Number of synchronisation changes
-        :rtype: int
         :raises ConfigurationException:
     """
-    runner = _ApplicationRunner(
-        executable_types, app_id, txrx, no_sync_changes)
+    runner = _ApplicationRunner()
     # pylint: disable=protected-access
-    return runner._run(buffer_manager, notification_interface, runtime,
-                       time_threshold, machine, run_until_complete)
+    runner._run(runtime, time_threshold, run_until_complete)
 
 
 class _ApplicationRunner(object):
@@ -65,32 +47,18 @@ class _ApplicationRunner(object):
         successfully.
     """
 
-    __slots__ = ["__txrx", "__app_id", "__executable_types", "__syncs"]
+    __slots__ = ["__txrx", "__app_id"]
 
-    def __init__(
-            self, executable_types, app_id, txrx, no_sync_changes):
-        self.__txrx = txrx
-        self.__app_id = app_id
-        self.__executable_types = executable_types
-        self.__syncs = no_sync_changes
+    def __init__(self):
+        self.__txrx = FecDataView.get_transceiver()
+        self.__app_id = FecDataView.get_app_id()
 
     # Wraps up as a PACMAN algorithm
     def _run(
-            self, buffer_manager, notification_interface, runtime,
-            time_threshold, machine, run_until_complete=False):
+            self, runtime, time_threshold, run_until_complete=False):
         """
-        :param BufferManager buffer_manager:
-        :param NotificationProtocol notification_interface:
-        :param executable_types:
-        :type executable_types:
-            dict(ExecutableType,~spinn_machine.CoreSubsets)
-        :param int app_id:
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param int runtime:
-        :param int no_sync_changes: Number of synchronisation changes
         :param int time_threshold:
-        :param ~spinn_machine.Machine machine:
-            the spinn machine instance
         :param bool run_until_complete:
         :return: Number of synchronisation changes
         :rtype: int
@@ -102,6 +70,8 @@ class _ApplicationRunner(object):
         # wait for all cores to be ready
         self._wait_for_start()
 
+        buffer_manager = FecDataView.get_buffer_manager()
+        notification_interface = FecDataView.get_notification_protocol()
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
         buffer_manager.resume()
@@ -111,7 +81,7 @@ class _ApplicationRunner(object):
 
         # clear away any router diagnostics that have been set due to all
         # loading applications
-        for chip in machine.chips:
+        for chip in FecDataView.get_machine().chips:
             if not chip.virtual:
                 self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
 
@@ -140,8 +110,6 @@ class _ApplicationRunner(object):
             # Send stop notification to external applications
             notification_interface.send_stop_pause_notification()
 
-        return self.__syncs
-
     def _run_wait(self, run_until_complete, runtime, time_threshold):
         """
         :param bool run_until_complete:
@@ -149,7 +117,8 @@ class _ApplicationRunner(object):
         :param float time_threshold:
         """
         if not run_until_complete:
-            factor = time_scale_factor() / MICRO_TO_MILLISECOND_CONVERSION
+            factor = (FecDataView.get_time_scale_factor() /
+                      MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
             logger.info(
@@ -166,18 +135,18 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for executable_type in self.__executable_types:
+        for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                self.__executable_types[executable_type], self.__app_id,
-                executable_type.start_state, timeout=timeout)
+                cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
         """ Let apps that use the simulation interface or sync signals \
             commence running their main processing loops. This is done with \
             a very fast synchronisation barrier and a signal.
         """
-        if (ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types
-                or ExecutableType.SYNC in self.__executable_types):
+        executable_types = FecDataView.get_executable_types()
+        if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
+                or ExecutableType.SYNC in executable_types):
             # locate all signals needed to set off executables
             sync_signal = self._determine_simulation_sync_signals()
 
@@ -189,10 +158,9 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for executable_type in self.__executable_types:
+        for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                self.__executable_types[executable_type], self.__app_id,
-                executable_type.end_state, timeout=timeout)
+                cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
     def _determine_simulation_sync_signals(self):
         """ Determines the start states, and creates core subsets of the\
@@ -204,18 +172,13 @@ class _ApplicationRunner(object):
         """
         sync_signal = None
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in self.__executable_types:
-            if self.__syncs % 2 == 0:
-                sync_signal = Signal.SYNC0
-            else:
-                sync_signal = Signal.SYNC1
-            # when it falls out of the running, it'll be in a next sync
-            # state, thus update needed
-            self.__syncs += 1
+        executable_types = FecDataView.get_executable_types()
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
+            sync_signal = FecDataView.get_next_sync_signal()
 
         # handle the sync states, but only send once if they work with
         # the simulation interface requirement
-        if ExecutableType.SYNC in self.__executable_types:
+        if ExecutableType.SYNC in executable_types:
             if sync_signal == Signal.SYNC1:
                 raise ConfigurationException(
                     "There can only be one SYNC signal per run. This is "

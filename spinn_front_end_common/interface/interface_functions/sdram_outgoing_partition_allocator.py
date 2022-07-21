@@ -16,20 +16,25 @@
 from collections import defaultdict
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
-def sdram_outgoing_partition_allocator(
-        app_graph, placements, app_id, transceiver=None):
+def sdram_outgoing_partition_allocator():
+    if FecDataView.has_transceiver():
+        transceiver = FecDataView.get_transceiver()
+        virtual_usage = None
+    else:
+        # Ok if transceiver = None
+        transceiver = None
+        virtual_usage = defaultdict(int)
 
+    app_graph = FecDataView.get_runtime_graph()
     progress_bar = ProgressBar(
         total_number_of_things_to_do=len(app_graph.vertices),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
-
-    if transceiver is None:
-        virtual_usage = defaultdict(int)
 
     # Keep track of SDRAM tags used
     next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
@@ -42,10 +47,10 @@ def sdram_outgoing_partition_allocator(
             # you need to ask for the first pre vertex
             if isinstance(
                     sdram_partition, SourceSegmentedSDRAMMachinePartition):
-                placement = placements.get_placement_of_vertex(
+                placement = FecDataView.get_placement_of_vertex(
                     next(iter(sdram_partition.pre_vertices)))
             else:
-                placement = placements.get_placement_of_vertex(
+                placement = FecDataView.get_placement_of_vertex(
                     sdram_partition.pre_vertex)
 
             # total sdram
@@ -62,7 +67,8 @@ def sdram_outgoing_partition_allocator(
                 tag = next_tag[placement.x, placement.y]
                 next_tag[placement.x, placement.y] = tag + 1
                 sdram_base_address = transceiver.malloc_sdram(
-                    placement.x, placement.y, total_sdram, app_id, tag)
+                    placement.x, placement.y, total_sdram,
+                    FecDataView.get_app_id(), tag)
             else:
                 sdram_base_address = virtual_usage[
                     placement.x, placement.y]

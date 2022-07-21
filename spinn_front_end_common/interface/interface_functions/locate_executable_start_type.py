@@ -16,20 +16,20 @@
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
-def locate_executable_start_type(placements):
-    """ Discovers where applications of particular types need to be launched.
+def locate_executable_start_type():
+    """
+    Discovers where applications of particular types need to be launched.
 
-    :param ~pacman.model.placements.Placements placements:
-    :rtype: dict(ExecutableType,~spinn_machine.CoreSubsets or None)
     """
     binary_start_types = dict()
 
     progress = ProgressBar(
-        placements.n_placements, "Finding executable start types")
-    for placement in progress.over(placements.placements):
+        FecDataView.get_n_placements(), "Finding executable start types")
+    for placement in progress.over(FecDataView.iterate_placemements()):
 
         if isinstance(placement.vertex, AbstractHasAssociatedBinary):
             bin_type = placement.vertex.get_binary_start_type()
