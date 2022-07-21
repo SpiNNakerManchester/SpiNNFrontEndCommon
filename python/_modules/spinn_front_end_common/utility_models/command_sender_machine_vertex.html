@@ -55,7 +55,6 @@
 
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FixedKeyAndMaskConstraint</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span>
@@ -63,6 +62,7 @@
 <span class="kn">from</span> <span class="nn">pacman.model.routing_info</span> <span class="kn">import</span> <span class="n">BaseKeyAndMask</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulation.simulation_utilities</span> <span class="kn">import</span> <span class="p">(</span>
@@ -199,17 +199,14 @@
         <span class="c1"># Return the SDRAM and 1 core</span>
         <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span><span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="n">sdram</span><span class="p">))</span>
 
-<div class="viewcode-block" id="CommandSenderMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span><span class="s2">&quot;routing_infos&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">})</span>
-    <span class="nd">@overrides</span><span class="p">(</span>
-        <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
-        <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;routing_infos&quot;</span><span class="p">})</span>
-    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">):</span>
+<div class="viewcode-block" id="CommandSenderMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
+        <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">            the routing infos</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=arguments-differ</span>
+        <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">mc_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">allocated_mc_key</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_first_key_from_pre_vertex</span><span class="p">(</span>
                 <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">])</span>

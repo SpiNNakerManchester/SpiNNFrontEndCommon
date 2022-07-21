@@ -38,7 +38,7 @@
           <div class="body" role="main">
             
   <h1>Source code for spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span></span><span class="c1"># Copyright (c) 2017-2022 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
 <span class="c1"># it under the terms of the GNU General Public License as published by</span>
@@ -67,15 +67,11 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.impl.iptag_set</span> <span class="kn">import</span> <span class="n">IPTagSet</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums.cpu_state</span> <span class="kn">import</span> <span class="n">CPUState</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get_region_base_address_offset</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.executor.injection_decorator</span> <span class="kn">import</span> <span class="n">inject_items</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">ProvenanceWriter</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get_simulator</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">convert_vertices_to_core_subset</span><span class="p">,</span> <span class="n">n_word_struct</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.emergency_recovery</span> <span class="kn">import</span> <span class="p">(</span>
@@ -88,6 +84,8 @@
     <span class="n">ExecutableType</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SDP_PORTS</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_KB</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">get_region_base_address_offset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
@@ -238,8 +236,6 @@
         <span class="s2">&quot;_coord_word&quot;</span><span class="p">,</span>
         <span class="c1"># transaction id</span>
         <span class="s2">&quot;_transaction_id&quot;</span><span class="p">,</span>
-        <span class="c1"># app id</span>
-        <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
         <span class="c1"># socket</span>
         <span class="s2">&quot;_connection&quot;</span><span class="p">,</span>
         <span class="c1"># path for the data in report</span>
@@ -336,6 +332,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -351,14 +348,12 @@
         <span class="c1"># local provenance storage</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># create report if it doesn&#39;t already exist</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span> <span class="o">=</span> \
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">OUT_REPORT_NAME</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span> <span class="o">=</span> \
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">IN_REPORT_NAME</span><span class="p">)</span>
+        <span class="n">dir_path</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dir_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OUT_REPORT_NAME</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dir_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">IN_REPORT_NAME</span><span class="p">)</span>
 
         <span class="c1"># Stored reinjection status for resetting timeouts</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="kc">None</span>
@@ -378,13 +373,12 @@
     <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">txrx</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Looks up from the machine what the current transaction ID is\</span>
 <span class="sd">            and updates the data speed up gatherer.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan instance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.static_resources_required"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required">[docs]</a>    <span class="nd">@classmethod</span>
@@ -404,37 +398,10 @@
     <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">SYSTEM</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@inject_items</span><span class="p">({</span>
-        <span class="s2">&quot;routing_info&quot;</span><span class="p">:</span> <span class="s2">&quot;RoutingInfos&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;tags&quot;</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">:</span> <span class="s2">&quot;DataInMulticastKeyToChipMap&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;machine&quot;</span><span class="p">:</span> <span class="s2">&quot;ExtendedMachine&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;app_id&quot;</span><span class="p">:</span> <span class="s2">&quot;APPID&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;router_timeout_key&quot;</span><span class="p">:</span> <span class="s2">&quot;SystemMulticastRouterTimeoutKeys&quot;</span>
-    <span class="p">})</span>
-    <span class="nd">@overrides</span><span class="p">(</span>
-        <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">,</span>
-        <span class="n">additional_arguments</span><span class="o">=</span><span class="p">{</span>
-            <span class="s2">&quot;routing_info&quot;</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;mc_data_chips_to_keys&quot;</span><span class="p">,</span> <span class="s2">&quot;machine&quot;</span><span class="p">,</span> <span class="s2">&quot;app_id&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;router_timeout_key&quot;</span>
-        <span class="p">})</span>
-    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span>
-            <span class="n">mc_data_chips_to_keys</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">router_timeout_key</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags: (injected)</span>
-<span class="sd">        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)</span>
-<span class="sd">        :param ~spinn_machine.Machine machine: (injected)</span>
-<span class="sd">        :param int app_id: (injected)</span>
-<span class="sd">        :param dict(tuple(int,int),int) router_timeout_key: (injected)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments, arguments-differ</span>
-
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="c1"># update my placement for future knowledge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="n">placement</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
 
         <span class="c1"># Create the data regions for hello world</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_memory_regions</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
@@ -455,12 +422,13 @@
 
         <span class="c1"># locate the tag ID for our data and update with a port</span>
         <span class="c1"># Note: The port doesn&#39;t matter as we are going to override this later</span>
-        <span class="n">iptags</span> <span class="o">=</span> <span class="n">tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">iptags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">iptag</span> <span class="o">=</span> <span class="n">iptags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">iptag</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tag</span> <span class="o">=</span> <span class="n">iptag</span><span class="o">.</span><span class="n">tag</span>
 
         <span class="c1"># write mc chip key map</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">_DATA_REGIONS</span><span class="o">.</span><span class="n">CHIP_TO_KEY_SPACE</span><span class="p">)</span>
         <span class="n">chips_on_board</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">get_existing_xys_on_board</span><span class="p">(</span>
             <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)))</span>
@@ -469,9 +437,13 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">chips_on_board</span><span class="p">))</span>
 
         <span class="c1"># write the broad cast keys for timeouts</span>
+        <span class="n">router_timeout_key</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_system_multicast_router_timeout_keys</span><span class="p">())</span>
         <span class="n">reinjection_base_key</span> <span class="o">=</span> <span class="n">router_timeout_key</span><span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">reinjection_base_key</span><span class="p">)</span>
 
+        <span class="n">mc_data_chips_to_keys</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_data_in_multicast_key_to_chip_map</span><span class="p">())</span>
         <span class="c1"># write each chip x and y and base key</span>
         <span class="k">for</span> <span class="n">chip_xy</span> <span class="ow">in</span> <span class="n">chips_on_board</span><span class="p">:</span>
             <span class="n">board_chip_x</span><span class="p">,</span> <span class="n">board_chip_y</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_local_xy</span><span class="p">(</span>
@@ -509,14 +481,13 @@
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.locate_correct_write_data_function_for_chip_location">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">locate_correct_write_data_function_for_chip_location</span><span class="p">(</span>
-            <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
+            <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Supports other components figuring out which gatherer and function\</span>
 <span class="sd">            to call for writing data onto SpiNNaker.</span>
 
 <span class="sd">        :param bool uses_advanced_monitors:</span>
 <span class="sd">            Whether the system is using advanced monitors</span>
-<span class="sd">        :param ~spinn_machine.Machine machine: the SpiNNMachine instance</span>
 <span class="sd">        :param int x: the chip x coordinate to write data to</span>
 <span class="sd">        :param int y: the chip y coordinate to write data to</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
@@ -531,8 +502,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">uses_advanced_monitors</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span>
 
-        <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="n">ethernet_connected_chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">ethernet_connected_chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
             <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
         <span class="n">gatherer</span> <span class="o">=</span> <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="p">[</span>
             <span class="n">ethernet_connected_chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet_connected_chip</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
@@ -608,18 +579,18 @@
             <span class="n">n_bytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">n_bytes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">n_bytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">transceiver</span>
 
         <span class="c1"># start time recording</span>
         <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
         <span class="c1"># send data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_data_via_extra_monitors</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">n_bytes</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">n_bytes</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
         <span class="c1"># end time recording</span>
         <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">VERIFY_SENT_DATA</span><span class="p">:</span>
             <span class="n">original_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">n_bytes</span> <span class="o">+</span> <span class="n">offset</span><span class="p">])</span>
+            <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
             <span class="n">verified_data</span> <span class="o">=</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">n_bytes</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__verify_sent_data</span><span class="p">(</span>
@@ -662,11 +633,10 @@
             <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_send_data_via_extra_monitors</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">,</span>
-            <span class="n">start_address</span><span class="p">,</span> <span class="n">data_to_write</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span>
+            <span class="n">data_to_write</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; sends data using the extra monitor cores</span>
 
-<span class="sd">        :param ~.Transceiver transceiver: the SpiNNMan instance</span>
 <span class="sd">        :param int destination_chip_x: chip x</span>
 <span class="sd">        :param int destination_chip_y: chip y</span>
 <span class="sd">        :param int start_address: start address in SDRAM to write data to</span>
@@ -683,13 +653,13 @@
             <span class="nb">len</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">),</span> <span class="n">BYTES_IN_FULL_PACKET_WITH_KEY</span><span class="p">)</span>
 
         <span class="c1"># determine board chip IDs, as the LPG does not know machine scope IDs</span>
-        <span class="n">machine</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">()</span>
-        <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">)</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">)</span>
         <span class="n">dest_x</span><span class="p">,</span> <span class="n">dest_y</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_local_xy</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_coord_word</span> <span class="o">=</span> <span class="p">(</span><span class="n">dest_x</span> <span class="o">&lt;&lt;</span> <span class="n">DEST_X_SHIFT</span><span class="p">)</span> <span class="o">|</span> <span class="n">dest_y</span>
 
         <span class="c1"># for safety, check the transaction id from the machine before updating</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">(</span><span class="n">transceiver</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">TRANSACTION_ID_CAP</span>
         <span class="n">time_out_count</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -749,7 +719,7 @@
                     <span class="n">time_out_count</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">if</span> <span class="n">time_out_count</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
                         <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
-                            <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
                         <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
                             <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                                 <span class="n">time_out_count</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
@@ -936,150 +906,99 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_send_tell_flag</span><span class="p">()</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sent end flag&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">set_cores_for_data_streaming</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">set_cores_for_data_streaming</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper method for setting the router timeouts to a state usable\</span>
 <span class="sd">            for data streaming.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param extra_monitor_cores:</span>
-<span class="sd">            the extra monitor cores to set</span>
-<span class="sd">        :type extra_monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+        <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="c1"># Store the last reinjection status for resetting</span>
         <span class="c1"># NOTE: This assumes the status is the same on all cores</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="n">lead_monitor</span><span class="o">.</span><span class="n">get_reinjection_status</span><span class="p">(</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="n">lead_monitor</span><span class="o">.</span><span class="n">get_reinjection_status</span><span class="p">()</span>
 
         <span class="c1"># Set to not inject dropped packets</span>
         <span class="n">lead_monitor</span><span class="o">.</span><span class="n">set_reinjection_packets</span><span class="p">(</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">point_to_point</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nearest_neighbour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">fixed_route</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="c1"># Clear any outstanding packets from reinjection</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear_reinjection_queue</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_reinjection_queue</span><span class="p">()</span>
 
         <span class="c1"># set time outs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_SHORT_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_LONG_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_SHORT_TIMEOUT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_LONG_TIMEOUT</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">load_application_routing_tables</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Set all chips to have application table loaded in the router.</span>
+    <span class="k">def</span> <span class="nf">load_application_routing_tables</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot; Set all chips to have application table loaded in the router</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param extra_monitor_cores:</span>
-<span class="sd">            the extra monitor cores to set</span>
-<span class="sd">        :type extra_monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">(</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span></div>
+        <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">load_system_routing_tables</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">load_system_routing_tables</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot; Set all chips to have the system table loaded in the router</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param extra_monitor_cores:</span>
-<span class="sd">            the extra monitor cores to set</span>
-<span class="sd">        :type extra_monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">(</span>
-            <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span></div>
+        <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the wait1 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
-        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">],</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_scamp_connection_selector</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">process</span><span class="o">.</span><span class="n">set_wait1_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
-                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set the wait2 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span> <span class="o">=</span> <span class="n">timeout</span>
-        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">],</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">SetRouterTimeoutProcess</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_scamp_connection_selector</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">process</span><span class="o">.</span><span class="n">set_wait2_timeout</span><span class="p">(</span><span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
-                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue">[docs]</a>    <span class="k">def</span> <span class="nf">clear_reinjection_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue">[docs]</a>    <span class="k">def</span> <span class="nf">clear_reinjection_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Clears the queues for reinjection.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the spinnMan interface</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            the placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">],</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="n">process</span> <span class="o">=</span> <span class="n">ClearQueueProcess</span><span class="p">(</span><span class="n">transceiver</span><span class="o">.</span><span class="n">scamp_connection_selector</span><span class="p">)</span>
+        <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">ClearQueueProcess</span><span class="p">(</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_scamp_connection_selector</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">process</span><span class="o">.</span><span class="n">reset_counters</span><span class="p">(</span><span class="n">core_subsets</span><span class="p">)</span>
         <span class="k">except</span><span class="p">:</span>  <span class="c1"># noqa: E722</span>
             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span>
-                <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
             <span class="k">raise</span></div>
 
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">unset_cores_for_data_streaming</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">unset_cores_for_data_streaming</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper method for restoring the router timeouts to normal after\</span>
 <span class="sd">            being in a state usable for data streaming.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the SpiNNMan instance</span>
-<span class="sd">        :param extra_monitor_cores:</span>
-<span class="sd">            the extra monitor cores to set</span>
-<span class="sd">        :type extra_monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set the routers to temporary values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_TEMP_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_ZERO_TIMEOUT</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_TEMP_TIMEOUT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ZERO_TIMEOUT</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
@@ -1087,15 +1006,12 @@
                 <span class="s2">&quot; unset&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait1_timeout_parameters</span><span class="p">,</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait1_timeout_parameters</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait2_timeout</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait2_timeout_parameters</span><span class="p">,</span>
-                <span class="n">transceiver</span><span class="p">,</span> <span class="n">placements</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">router_wait2_timeout_parameters</span><span class="p">)</span>
 
-            <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">extra_monitor_cores</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+            <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">lead_monitor</span><span class="o">.</span><span class="n">set_reinjection_packets</span><span class="p">(</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">extra_monitor_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
                 <span class="n">point_to_point</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">is_reinjecting_point_to_point</span><span class="p">,</span>
                 <span class="n">multicast</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span><span class="o">.</span><span class="n">is_reinjecting_multicast</span><span class="p">,</span>
                 <span class="n">nearest_neighbour</span><span class="o">=</span><span class="p">(</span>
@@ -1105,8 +1021,9 @@
             <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Error resetting timeouts&quot;</span><span class="p">)</span>
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Checking if the cores are OK...&quot;</span><span class="p">)</span>
             <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">convert_vertices_to_core_subset</span><span class="p">(</span>
-                <span class="n">extra_monitor_cores</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">placements</span><span class="p">)</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_monitors</span><span class="p">())</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
                 <span class="n">error_cores</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cores_not_in_state</span><span class="p">(</span>
                     <span class="n">core_subsets</span><span class="p">,</span> <span class="p">{</span><span class="n">CPUState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">})</span>
                 <span class="k">if</span> <span class="n">error_cores</span><span class="p">:</span>
@@ -1137,7 +1054,7 @@
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
-            <span class="n">length_in_bytes</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">):</span>
+            <span class="n">length_in_bytes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Gets data from a given core and memory address.</span>
 
 <span class="sd">        :param ExtraMonitorSupportMachineVertex extra_monitor:</span>
@@ -1146,9 +1063,6 @@
 <span class="sd">            placement object for where to get data from</span>
 <span class="sd">        :param int memory_address: the address in SDRAM to start reading from</span>
 <span class="sd">        :param int length_in_bytes: the length of data to read in bytes</span>
-<span class="sd">        :param fixed_routes: the fixed routes, used in the report of which</span>
-<span class="sd">            chips were used by the speed up process</span>
-<span class="sd">        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)</span>
 <span class="sd">        :return: byte array of the data</span>
 <span class="sd">        :rtype: bytearray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1165,7 +1079,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="s2">&quot;No Extraction time&quot;</span><span class="p">,</span> <span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">data</span>
 
-        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">get_simulator</span><span class="p">()</span><span class="o">.</span><span class="n">transceiver</span>
+        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
 
         <span class="c1"># Update the IP Tag to work through a NAT firewall</span>
         <span class="n">connection</span> <span class="o">=</span> <span class="n">SCAMPConnection</span><span class="p">(</span>
@@ -1217,8 +1131,7 @@
         <span class="c1"># create report elements</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_data_speed_up_reports&quot;</span><span class="p">):</span>
             <span class="n">routers_been_in_use</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_determine_which_routers_were_used</span><span class="p">(</span>
-                <span class="n">placement</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
-                <span class="n">transceiver</span><span class="o">.</span><span class="n">get_machine_details</span><span class="p">())</span>
+                <span class="n">placement</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_routers_used_into_report</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span><span class="p">,</span> <span class="n">routers_been_in_use</span><span class="p">,</span>
                 <span class="n">placement</span><span class="p">)</span>
@@ -1269,25 +1182,23 @@
         <span class="k">return</span> <span class="n">lost_seq_nums</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_determine_which_routers_were_used</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_determine_which_routers_were_used</span><span class="p">(</span><span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Traverse the fixed route paths from a given location to its\</span>
 <span class="sd">            destination. Used for determining which routers were used.</span>
 
 <span class="sd">        :param ~.Placement placement: the source to start from</span>
-<span class="sd">        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:</span>
-<span class="sd">            the fixed routes for each router</span>
-<span class="sd">        :param ~.Machine machine: the spinnMachine instance</span>
 <span class="sd">        :return: list of chip locations</span>
 <span class="sd">        :rtype: list(tuple(int,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
+        <span class="n">fixed_routes</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_fixed_routes</span><span class="p">()</span>
         <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
         <span class="n">chip_x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>
         <span class="n">chip_y</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span>
         <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># can assume one link, as its a minimum spanning tree going to</span>
             <span class="c1"># the root</span>
-            <span class="n">machine_link</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+            <span class="n">machine_link</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
                 <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">get_link</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">link_ids</span><span class="p">)))</span>
             <span class="n">chip_x</span> <span class="o">=</span> <span class="n">machine_link</span><span class="o">.</span><span class="n">destination_x</span>
             <span class="n">chip_y</span> <span class="o">=</span> <span class="n">machine_link</span><span class="o">.</span><span class="n">destination_y</span>
@@ -1606,8 +1517,9 @@
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_provenance_data_from_machine">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractProvidesProvenanceDataFromMachine</span>
                <span class="o">.</span><span class="n">get_provenance_data_from_machine</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="c1"># Get the App Data for the core</span>
+        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
         <span class="n">region_table_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
             <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 

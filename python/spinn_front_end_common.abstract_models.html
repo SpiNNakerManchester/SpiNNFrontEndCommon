@@ -313,14 +313,11 @@ never be called.</p>
 <p>Marks a vertex that can provide information about bitfields it wants         generated on-chip.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM address for the bit field table data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the SDRAM address for the bitfield address</p>
@@ -333,14 +330,11 @@ never be called.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_builder_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_builder_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_builder_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_generation.html#AbstractSupportsBitFieldGeneration.bit_field_builder_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldGeneration.bit_field_builder_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns the SDRAM address for the bit field builder data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the SDRAM address for the bitfield builder data</p>
@@ -360,14 +354,11 @@ never be called.</p>
 <p>Marks a machine vertex that can support having the on-chip bitfield         compressor running on its core.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bit_field_base_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.bit_field_base_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.bit_field_base_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM address for the bit-field table data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the SDRAM address for the bitfield address</p>
@@ -380,14 +371,11 @@ never be called.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">regeneratable_sdram_blocks_and_sizes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">regeneratable_sdram_blocks_and_sizes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_supports_bit_field_routing_compression.html#AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractSupportsBitFieldRoutingCompression.regeneratable_sdram_blocks_and_sizes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the SDRAM addresses and sizes for the cores’ SDRAM that             are available (borrowed) for generating bitfield tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of tuples containing (the SDRAM address for the cores

@@ -55,11 +55,10 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">,</span> <span class="n">HasCustomAtomKeyMap</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">machine_time_step</span><span class="p">,</span> <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="n">LivePacketGather</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -85,11 +84,12 @@
         <span class="s2">&quot;_machine_id&quot;</span><span class="p">,</span>
 
         <span class="c1"># Mappings used to accelerate inserts</span>
-        <span class="s2">&quot;__machine_to_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__vertex_to_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__edge_to_id&quot;</span>
+        <span class="s2">&quot;__machine_to_id&quot;</span><span class="p">,</span> <span class="s2">&quot;__vertex_to_id&quot;</span>
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span>
+                                           <span class="n">DB_NAME</span><span class="p">)</span>
         <span class="n">init_sql_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">INIT_SQL</span><span class="p">)</span>
 
         <span class="c1"># delete any old database</span>
@@ -99,20 +99,18 @@
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">init_sql_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__machine_to_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__edge_to_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="c1"># set up checks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="DatabaseWriter.auto_detect_database"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">auto_detect_database</span><span class="p">(</span><span class="n">app_graph</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">auto_detect_database</span><span class="p">():</span>
         <span class="sd">&quot;&quot;&quot; Auto detects if there is a need to activate the database system</span>
 
-<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:</span>
-<span class="sd">            the graph of the application problem space.</span>
 <span class="sd">        :return: whether the database is needed for the application</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app_graph</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span>
         <span class="k">return</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">LivePacketGather</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">app_vertex</span> <span class="ow">in</span> <span class="n">app_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">)</span>
@@ -141,11 +139,11 @@
                              <span class="nb">str</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">args</span><span class="p">)))</span>
             <span class="k">raise</span>
 
-<div class="viewcode-block" id="DatabaseWriter.add_machine_objects"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">[docs]</a>    <span class="k">def</span> <span class="nf">add_machine_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_machine_objects"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">[docs]</a>    <span class="k">def</span> <span class="nf">add_machine_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Store the machine object into the database</span>
 
-<span class="sd">        :param ~spinn_machine.Machine machine: the machine object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__machine_to_id</span><span class="p">[</span><span class="n">machine</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__insert</span><span class="p">(</span>
                 <span class="n">cur</span><span class="p">,</span>
@@ -174,13 +172,11 @@
                      <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_application_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">application_graph</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_application_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Stores the main application graph description (vertices, edges).</span>
 
-<span class="sd">        :param application_graph: The graph to add from</span>
-<span class="sd">        :type application_graph:</span>
-<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">application_graph</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="c1"># add vertices</span>
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">application_graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
@@ -207,7 +203,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">m_vertex</span><span class="p">]</span> <span class="o">=</span> <span class="n">m_vertex_id</span>
         <span class="k">return</span> <span class="n">m_vertex_id</span>
 
-<div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write system params into the database</span>
 
 <span class="sd">        :param int runtime: the amount of time the application is to run for</span>
@@ -219,13 +215,15 @@
 <span class="sd">                    parameter_id, value)</span>
 <span class="sd">                VALUES (?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span>
-                    <span class="p">(</span><span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="p">()),</span>
-                    <span class="p">(</span><span class="s2">&quot;time_scale_factor&quot;</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">()),</span>
+                    <span class="p">(</span><span class="s2">&quot;machine_time_step&quot;</span><span class="p">,</span>
+                     <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_simulation_time_step_us</span><span class="p">()),</span>
+                    <span class="p">(</span><span class="s2">&quot;time_scale_factor&quot;</span><span class="p">,</span>
+                     <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_time_scale_factor</span><span class="p">()),</span>
                     <span class="p">(</span><span class="s2">&quot;infinite_run&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)),</span>
                     <span class="p">(</span><span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runtime</span><span class="p">),</span>
-                    <span class="p">(</span><span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)])</span></div>
+                    <span class="p">(</span><span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">())])</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">[docs]</a>    <span class="k">def</span> <span class="nf">add_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">[docs]</a>    <span class="k">def</span> <span class="nf">add_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the placements objects into the database</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
@@ -233,7 +231,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="c1"># Make sure machine vertices are represented</span>
-            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="o">.</span><span class="n">placements</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__add_machine_vertex</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
             <span class="c1"># add records</span>
@@ -245,15 +243,13 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">],</span>
                      <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="o">.</span><span class="n">placements</span><span class="p">))</span></div>
+                    <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">()))</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_tags"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">[docs]</a>    <span class="k">def</span> <span class="nf">add_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_tags"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">[docs]</a>    <span class="k">def</span> <span class="nf">add_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the tags into the database</span>
 
-<span class="sd">        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:</span>
-<span class="sd">            the graph object</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags: the tags object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
@@ -266,14 +262,10 @@
                      <span class="n">ipt</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">ipt</span><span class="o">.</span><span class="n">port</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">ipt</span><span class="o">.</span><span class="n">strip_sdp</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">ipt</span><span class="p">,</span> <span class="n">vert</span> <span class="ow">in</span> <span class="n">tags</span><span class="o">.</span><span class="n">ip_tags_vertices</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.create_atom_to_event_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">create_atom_to_event_id_mapping</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">machine_vertices</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.create_atom_to_event_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">create_atom_to_event_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_vertices</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param app_graph:</span>
-<span class="sd">        :type app_graph:</span>
-<span class="sd">            ~pacman.model.graphs.application.ApplicationGraph</span>
-<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
         <span class="c1"># This could happen if there are no LPGs</span>
         <span class="k">if</span> <span class="n">machine_vertices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -302,16 +294,14 @@
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">((</span><span class="n">m_vertex_id</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">key</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">atom_keys</span><span class="p">)</span>
                 <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DatabaseWriter.add_lpg_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_lpg_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">add_lpg_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_graph</span><span class="p">):</span>
+<div class="viewcode-block" id="DatabaseWriter.add_lpg_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_lpg_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">add_lpg_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add mapping from machine vertex to LPG machine vertex</span>
 
-<span class="sd">        :param ApplicationGraph app_graph:</span>
-<span class="sd">            The application graph to get the LPG vertices from</span>
 <span class="sd">        :return: A list of (source vertex, partition id)</span>
 <span class="sd">        :rtype: list(MachineVertex, str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">targets</span> <span class="o">=</span> <span class="p">[(</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">part_id</span><span class="p">,</span> <span class="n">lpg_m_vertex</span><span class="p">)</span>
-                   <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">app_graph</span><span class="o">.</span><span class="n">vertices</span>
+                   <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span><span class="o">.</span><span class="n">vertices</span>
                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">LivePacketGather</span><span class="p">)</span>
                    <span class="k">for</span> <span class="n">lpg_m_vertex</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">part_id</span>
                    <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">targeted_lpgs</span><span class="p">]</span>

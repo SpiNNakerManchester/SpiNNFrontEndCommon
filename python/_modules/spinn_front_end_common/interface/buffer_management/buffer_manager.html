@@ -70,6 +70,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="n">EIEIODataMessage</span>
 <span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">SDP_PORTS</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BufferableRegionTooSmall</span><span class="p">,</span> <span class="n">SpinnFrontEndException</span><span class="p">)</span>
@@ -121,15 +122,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="c1"># placements object</span>
-        <span class="s2">&quot;_placements&quot;</span><span class="p">,</span>
-
-        <span class="c1"># list of tags</span>
-        <span class="s2">&quot;_tags&quot;</span><span class="p">,</span>
-
-        <span class="c1"># SpiNNMan instance</span>
-        <span class="s2">&quot;_transceiver&quot;</span><span class="p">,</span>
-
         <span class="c1"># Set of (ip_address, port) that are being listened to for the tags</span>
         <span class="s2">&quot;_seen_tags&quot;</span><span class="p">,</span>
 
@@ -154,55 +146,12 @@
         <span class="c1"># listener port</span>
         <span class="s2">&quot;_listener_port&quot;</span><span class="p">,</span>
 
-        <span class="c1"># the extra_monitor to Ethernet connection map</span>
-        <span class="s2">&quot;_packet_gather_cores_to_ethernet_connection_map&quot;</span><span class="p">,</span>
-
-        <span class="c1"># monitor cores via chip ID</span>
-        <span class="s2">&quot;_extra_monitor_cores_by_chip&quot;</span><span class="p">,</span>
-
-        <span class="c1"># fixed routes, used by the speed up functionality for reports</span>
-        <span class="s2">&quot;_fixed_routes&quot;</span><span class="p">,</span>
-
-        <span class="c1"># machine object</span>
-        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
-
         <span class="c1"># Support class to help call Java</span>
         <span class="s2">&quot;_java_caller&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-                 <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">,</span>
-                 <span class="n">extra_monitor_to_chip_mapping</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">,</span>
-                 <span class="n">java_caller</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            The placements of the vertices</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            The transceiver to use for sending and receiving information</span>
-<span class="sd">        :param packet_gather_cores_to_ethernet_connection_map:</span>
-<span class="sd">            mapping of cores to the gatherer vertex placed on them</span>
-<span class="sd">        :type packet_gather_cores_to_ethernet_connection_map:</span>
-<span class="sd">            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
-<span class="sd">        :param extra_monitor_to_chip_mapping:</span>
-<span class="sd">        :type extra_monitor_to_chip_mapping:</span>
-<span class="sd">            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)</span>
-<span class="sd">        :param ~spinn_machine.Machine machine:</span>
-<span class="sd">        :param fixed_routes:</span>
-<span class="sd">        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)</span>
-<span class="sd">        :param JavaCaller java_caller:</span>
-<span class="sd">            Support class to call Java, or ``None`` to use Python</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span> <span class="o">=</span> <span class="n">placements</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">tags</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span> <span class="o">=</span> <span class="n">transceiver</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_packet_gather_cores_to_ethernet_connection_map</span> <span class="o">=</span> \
-            <span class="n">packet_gather_cores_to_ethernet_connection_map</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span> <span class="o">=</span> <span class="n">extra_monitor_to_chip_mapping</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span> <span class="o">=</span> <span class="n">fixed_routes</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
-
         <span class="c1"># Set of (ip_address, port) that are being listened to for the tags</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_seen_tags</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
@@ -221,14 +170,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_listener_port</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">java_caller</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="n">machine</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_java_caller</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_java_caller</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_advanced_monitors</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_packet_gather_cores_to_ethernet_connection_map</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_advanced_monitors</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_request_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Uses the extra monitor cores for data extraction.</span>
@@ -244,7 +192,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="k">return</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
 
         <span class="c1"># Round to word boundaries</span>
@@ -254,15 +202,13 @@
         <span class="n">final</span> <span class="o">=</span> <span class="p">(</span><span class="n">BYTES_PER_WORD</span> <span class="o">-</span> <span class="p">(</span><span class="n">length</span> <span class="o">%</span> <span class="n">BYTES_PER_WORD</span><span class="p">))</span> <span class="o">%</span> <span class="n">BYTES_PER_WORD</span>
         <span class="n">length</span> <span class="o">+=</span> <span class="n">final</span>
 
-        <span class="n">sender</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="p">[</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">]</span>
-        <span class="n">receiver</span> <span class="o">=</span> <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_packet_gather_cores_to_ethernet_connection_map</span><span class="p">)</span>
+        <span class="n">sender</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
+        <span class="n">receiver</span> <span class="o">=</span> <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
         <span class="n">extra_mon_data</span> <span class="o">=</span> <span class="n">receiver</span><span class="o">.</span><span class="n">get_data</span><span class="p">(</span>
-            <span class="n">sender</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">sender</span><span class="p">),</span>
-            <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_routes</span><span class="p">)</span>
+            <span class="n">sender</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">sender</span><span class="p">),</span>
+            <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">VERIFY</span><span class="p">:</span>
-            <span class="n">txrx_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+            <span class="n">txrx_data</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
                 <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_verify_data</span><span class="p">(</span><span class="n">extra_mon_data</span><span class="p">,</span> <span class="n">txrx_data</span><span class="p">)</span>
 
@@ -313,7 +259,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_in</span><span class="p">:</span>
-                <span class="n">vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span>
+                <span class="n">vertex</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placements</span><span class="p">()</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span>
                     <span class="n">packet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sender_vertices</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_send_messages</span><span class="p">(</span>
@@ -325,7 +271,7 @@
 <span class="sd">        :param ~spinn_machine.tags.IPTag tag:</span>
 <span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">connection</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">register_udp_listener</span><span class="p">(</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">register_udp_listener</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_receive_buffer_command_message</span><span class="p">,</span> <span class="n">EIEIOConnection</span><span class="p">,</span>
             <span class="n">local_port</span><span class="o">=</span><span class="n">tag</span><span class="o">.</span><span class="n">port</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="n">tag</span><span class="o">.</span><span class="n">ip_address</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_seen_tags</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">tag</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">connection</span><span class="o">.</span><span class="n">local_port</span><span class="p">))</span>
@@ -343,7 +289,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Find a tag for receiving buffer data</span>
-        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">tags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># locate tag associated with the buffer manager traffic</span>
@@ -477,9 +423,9 @@
 
         <span class="c1"># Get the vertex load details</span>
         <span class="c1"># region_base_address = self._locate_region_address(region, vertex)</span>
-        <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
         <span class="n">region_base_address</span> <span class="o">=</span> <span class="n">locate_memory_region_for_placement</span><span class="p">(</span>
-            <span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">)</span>
+            <span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
 
         <span class="c1"># Add packets until out of space</span>
         <span class="n">sent_message</span> <span class="o">=</span> <span class="kc">False</span>
@@ -530,7 +476,7 @@
                 <span class="n">region</span><span class="p">,</span> <span class="n">sent_stop_message</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Do the writing all at once for efficiency</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
+        <span class="n">FecDataView</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span>
             <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_base_address</span><span class="p">,</span> <span class="n">all_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_send_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">sequence_no</span><span class="p">):</span>
@@ -606,13 +552,13 @@
 <span class="sd">            ~spinman.messages.eieio.command_messages.EIEIOCommandMessage</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
         <span class="n">sdp_header</span> <span class="o">=</span> <span class="n">SDPHeader</span><span class="p">(</span>
             <span class="n">destination_chip_x</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
             <span class="n">destination_cpu</span><span class="o">=</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_NOT_EXPECTED</span><span class="p">,</span>
             <span class="n">destination_port</span><span class="o">=</span><span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">INPUT_BUFFERING_SDP_PORT</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
         <span class="n">sdp_message</span> <span class="o">=</span> <span class="n">SDPMessage</span><span class="p">(</span><span class="n">sdp_header</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">bytestring</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">sdp_message</span><span class="p">)</span>
+        <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">sdp_message</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BufferManager.stop"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Indicates that the simulation has finished, so no further\</span>
@@ -622,15 +568,15 @@
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span> <span class="o">=</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="BufferManager.get_data_for_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_for_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="BufferManager.get_data_for_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_for_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            Where to get the data from.</span>
+<span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
+<span class="sd">            Where to get the data from. May not be all placements</span>
 <span class="sd">        :param progress: How to measure/display the progress.</span>
 <span class="sd">        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_placements</span><span class="p">(</span><span class="n">placements</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_placements</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">)</span>
 
         <span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">timer</span><span class="p">:</span>
@@ -642,47 +588,43 @@
                 <span class="k">elif</span> <span class="n">get_config_bool</span><span class="p">(</span>
                         <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
-                        <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
+                        <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span><span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span>
+                        <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
-                <span class="n">BUFFER</span><span class="p">,</span> <span class="n">timer</span><span class="o">.</span><span class="n">measured_interval</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span><span class="n">BUFFER</span><span class="p">,</span> <span class="n">timer</span><span class="o">.</span><span class="n">measured_interval</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
 <span class="sd">            Where to get the data from.</span>
 <span class="sd">        :param progress: How to measure/display the progress.</span>
 <span class="sd">        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># locate receivers</span>
         <span class="n">receivers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">OrderedSet</span><span class="p">(</span>
-            <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_packet_gather_cores_to_ethernet_connection_map</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">))</span>
+            <span class="n">locate_extra_monitor_mc_receiver</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">recording_placements</span><span class="p">))</span>
 
         <span class="c1"># update transaction id from the machine for all extra monitors</span>
-        <span class="k">for</span> <span class="n">extra_mon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
-            <span class="n">extra_mon</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">extra_mon</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_monitors</span><span class="p">():</span>
+            <span class="n">extra_mon</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">StreamingContextManager</span><span class="p">(</span>
-                <span class="n">receivers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_extra_monitor_cores_by_chip</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">StreamingContextManager</span><span class="p">(</span><span class="n">receivers</span><span class="p">):</span>
             <span class="c1"># get data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span><span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__old_get_data_for_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__old_get_data_for_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
 <span class="sd">            Where to get the data from.</span>
 <span class="sd">        :param progress: How to measure/display the progress.</span>
 <span class="sd">        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># get data</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">recording_placements</span><span class="p">:</span>
             <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
             <span class="k">for</span> <span class="n">recording_region_id</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">get_recorded_region_ids</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_retreive_by_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span>
@@ -723,7 +665,7 @@
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">):</span>
 
             <span class="n">addr</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+                <span class="n">placement</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_get_region_information</span><span class="p">(</span>
                 <span class="n">addr</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
 
@@ -746,9 +688,10 @@
 <span class="sd">        :param x: The x-coordinate of the chip containing the data</span>
 <span class="sd">        :param y: The y-coordinate of the chip containing the data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_regions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
+        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
+        <span class="n">n_regions</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>
         <span class="n">n_bytes</span> <span class="o">=</span> <span class="n">get_recording_header_size</span><span class="p">(</span><span class="n">n_regions</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span> <span class="o">+</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">n_bytes</span> <span class="o">-</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
         <span class="n">data_type</span> <span class="o">=</span> <span class="n">_RecordingRegion</span> <span class="o">*</span> <span class="n">n_regions</span>
         <span class="n">regions</span> <span class="o">=</span> <span class="n">data_type</span><span class="o">.</span><span class="n">from_buffer_copy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>

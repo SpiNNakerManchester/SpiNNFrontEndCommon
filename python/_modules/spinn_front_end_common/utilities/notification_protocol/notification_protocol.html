@@ -61,6 +61,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">DatabaseConfirmation</span><span class="p">,</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">,</span>
     <span class="n">NotificationProtocolStartResume</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
@@ -79,13 +80,7 @@
         <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_pool&quot;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket_addresses</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param socket_addresses: Where to notify.</span>
-<span class="sd">        :type socket_addresses:</span>
-<span class="sd">            set(~spinn_utilities.socket_address.SocketAddress)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Determines whether to wait for confirmation that the database</span>
         <span class="c1"># has been read before starting the simulation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
@@ -94,7 +89,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span> <span class="n">socket_addresses</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_database_socket_addresses</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EIEIOConnection</span><span class="p">(</span>
                 <span class="n">local_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">listen_port</span><span class="p">,</span>
                 <span class="n">remote_host</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_host_name</span><span class="p">,</span>
@@ -152,18 +147,18 @@
                     <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
     <span class="c1"># noinspection PyPep8</span>
-<div class="viewcode-block" id="NotificationProtocol.send_read_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+<div class="viewcode-block" id="NotificationProtocol.send_read_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sends notifications to all devices which have expressed an\</span>
 <span class="sd">            interest in when the database has been written</span>
 
 <span class="sd">        :param str database_path: the path to the database file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">notification_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_send_read_notification</span><span class="p">,</span> <span class="n">database_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_read_notification</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">notification_thread</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sends notifications to a list of socket addresses that the\</span>
 <span class="sd">            database has been written. Message also includes the path to the\</span>
 <span class="sd">            database</span>
@@ -172,12 +167,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># noinspection PyBroadException</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__do_read_notify</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__do_read_notify</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem when sending DB notification&quot;</span><span class="p">,</span>
                            <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__do_read_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__do_read_notify</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">database_path</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_database_file_path</span><span class="p">()</span>
         <span class="c1"># add file path to database into command message.</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">database_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="nb">len</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">):</span>

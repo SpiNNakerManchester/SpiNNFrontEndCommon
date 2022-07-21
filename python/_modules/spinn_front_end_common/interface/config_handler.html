@@ -53,19 +53,15 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">NoOptionError</span>
-<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">errno</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">Machine</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">config_options</span><span class="p">,</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span><span class="p">,</span>
     <span class="n">get_config_str</span><span class="p">,</span> <span class="n">get_config_str_list</span><span class="p">,</span> <span class="n">set_config</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data.fec_data_writer</span> <span class="kn">import</span> <span class="n">FecDataWriter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -91,50 +87,25 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="c1">#</span>
-        <span class="s2">&quot;_json_folder&quot;</span><span class="p">,</span>
 
-        <span class="c1">#</span>
-        <span class="s2">&quot;_provenance_file_path&quot;</span><span class="p">,</span>
+        <span class="c1"># The writer and therefore view of the global data</span>
+        <span class="s2">&quot;_data_writer&quot;</span>
 
-        <span class="c1">#</span>
-        <span class="s2">&quot;_app_provenance_file_path&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
-        <span class="s2">&quot;_system_provenance_file_path&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
-        <span class="s2">&quot;_report_default_directory&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
-        <span class="s2">&quot;_report_simulation_top_directory&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
-        <span class="s2">&quot;_this_run_time_string&quot;</span><span class="p">,</span>
-
-        <span class="c1">#</span>
-        <span class="s2">&quot;_use_virtual_board&quot;</span><span class="p">,</span>
-
-        <span class="c1"># The machine timestep, in microseconds</span>
-        <span class="s2">&quot;__machine_time_step&quot;</span><span class="p">,</span>
-
-        <span class="c1"># The machine timestep, in milliseconds</span>
-        <span class="c1"># Semantic sugar for __machine_time_step / 1000</span>
-        <span class="s2">&quot;__machine_time_step_ms&quot;</span><span class="p">,</span>
-
-        <span class="c1"># The number of machine timestep in a milliseconds</span>
-        <span class="c1"># Semantic sugar for 1000 / __machine_time_step</span>
-        <span class="s2">&quot;__machine_time_step_per_ms&quot;</span><span class="p">,</span>
-
-        <span class="c1"># The time scaling factor.</span>
-        <span class="s2">&quot;__time_scale_factor&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_writer_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param FecDataWriter data_writer:</span>
+<span class="sd">            The Global data writer object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">load_config</span><span class="p">()</span>
 
+        <span class="k">if</span> <span class="n">data_writer_cls</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span> <span class="o">=</span> <span class="n">data_writer_cls</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span> <span class="o">=</span> <span class="n">FecDataWriter</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
         <span class="c1"># set up machine targeted data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_debug_configs</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_previous_handler</span><span class="p">()</span>
 
@@ -142,17 +113,6 @@
         <span class="n">max_machine_core</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_machine_core&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">max_machine_core</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">Machine</span><span class="o">.</span><span class="n">set_max_cores_per_chip</span><span class="p">(</span><span class="n">max_machine_core</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_debug_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adjust and checks config based on mode and reports_enabled</span>
@@ -176,7 +136,7 @@
                         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                             <span class="s2">&quot;As reportsEnabled == </span><span class="se">\&quot;</span><span class="s2">False</span><span class="se">\&quot;</span><span class="s2">, [Reports] </span><span class="si">{}</span><span class="s2"> &quot;</span>
                             <span class="s2">&quot;has been set to False&quot;</span><span class="p">,</span> <span class="n">option</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_use_virtual_board</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">):</span>
             <span class="c1"># TODO handle in the execute methods</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
@@ -214,28 +174,6 @@
                 <span class="n">set_config</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">)</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[Reports]write_energy_report has been set to &quot;</span>
                             <span class="s2">&quot;False as runtime is set to forever&quot;</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ConfigHandler.child_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.child_folder">[docs]</a>    <span class="k">def</span> <span class="nf">child_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str parent:</span>
-<span class="sd">        :param str child_name:</span>
-<span class="sd">        :param bool must_create:</span>
-<span class="sd">            If `True`, the directory named by `child_name` (but not necessarily</span>
-<span class="sd">            its parents) must be created by this call, and an exception will be</span>
-<span class="sd">            thrown if this fails.</span>
-<span class="sd">        :return: The fully qualified name of the child folder.</span>
-<span class="sd">        :rtype: str</span>
-<span class="sd">        :raises OSError: if the directory existed ahead of time and creation</span>
-<span class="sd">            was required by the user</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">child</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">must_create</span><span class="p">:</span>
-            <span class="c1"># Throws OSError or FileExistsError (a subclass of OSError) if the</span>
-            <span class="c1"># directory exists.</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">child</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">child</span></div>
 
     <span class="k">def</span> <span class="nf">_remove_excess_folders</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">max_kept</span><span class="p">,</span> <span class="n">starting_directory</span><span class="p">,</span> <span class="n">remove_errored_folders</span><span class="p">):</span>
@@ -283,113 +221,31 @@
             <span class="c1"># process in the same folder, but we shouldn&#39;t die because of it</span>
             <span class="k">pass</span>
 
-    <span class="k">def</span> <span class="nf">_set_up_report_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_calls_to_run</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param int n_calls_to_run:</span>
-<span class="sd">            the counter of how many times run has been called.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">default_report_file_path</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span>
-            <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;default_report_file_path&quot;</span><span class="p">)</span>
-        <span class="c1"># determine common report folder</span>
-        <span class="k">if</span> <span class="n">default_report_file_path</span> <span class="o">==</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">:</span>
-            <span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
-
-            <span class="c1"># global reports folder</span>
-            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
-                <span class="n">directory</span><span class="p">,</span> <span class="n">REPORTS_DIRNAME</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">default_report_file_path</span> <span class="o">==</span> <span class="s2">&quot;REPORTS&quot;</span><span class="p">:</span>
-            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="n">REPORTS_DIRNAME</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
-                <span class="n">default_report_file_path</span><span class="p">,</span> <span class="n">REPORTS_DIRNAME</span><span class="p">)</span>
-
+    <span class="k">def</span> <span class="nf">_set_up_report_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># clear and clean out folders considered not useful anymore</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">):</span>
+        <span class="n">report_dir_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_report_dir_path</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">report_dir_path</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_remove_excess_folders</span><span class="p">(</span>
                 <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;max_reports_kept&quot;</span><span class="p">),</span>
-                <span class="n">report_default_directory</span><span class="p">,</span>
+                <span class="n">report_dir_path</span><span class="p">,</span>
                 <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;remove_errored_folders&quot;</span><span class="p">))</span>
 
-        <span class="c1"># determine the time slot for later while also making the report folder</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__make_timestamp</span><span class="p">()</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
-                        <span class="n">report_default_directory</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span> <span class="o">=</span> <span class="n">timestamp</span>
-                    <span class="k">break</span>
-                <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-                    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
-                <span class="n">report_default_directory</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span><span class="p">)</span>
-
-        <span class="c1"># create sub folder within reports for sub runs</span>
-        <span class="c1"># (where changes need to be recorded)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_folder</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="s2">&quot;run_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">n_calls_to_run</span><span class="p">))</span>
-
         <span class="c1"># store timestamp in latest/time_stamp for provenance reasons</span>
+        <span class="n">timestamp_dir_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_timestamp_dir_path</span><span class="p">()</span>
         <span class="n">time_of_run_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="n">TIMESTAMP_FILENAME</span><span class="p">)</span>
+            <span class="n">timestamp_dir_path</span><span class="p">,</span> <span class="n">TIMESTAMP_FILENAME</span><span class="p">)</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">timestamp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">timestamp_dir_path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">time_of_run_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_this_run_time_string</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Logging&quot;</span><span class="p">,</span> <span class="s2">&quot;warnings_at_end_to_file&quot;</span><span class="p">):</span>
             <span class="n">log_report_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="n">WARNING_LOGS_FILENAME</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">WARNING_LOGS_FILENAME</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">set_report_File</span><span class="p">(</span><span class="n">log_report_file</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__make_timestamp</span><span class="p">():</span>
-        <span class="n">now</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{:04}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">-</span><span class="si">{:02}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">now</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">day</span><span class="p">,</span>
-            <span class="n">now</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">second</span><span class="p">,</span> <span class="n">now</span><span class="o">.</span><span class="n">microsecond</span><span class="p">)</span>
-
-    <span class="k">def</span> <span class="nf">_set_up_output_folders</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_calls_to_run</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sets up all outgoing folders by creating a new timestamp folder</span>
-<span class="sd">            for each and clearing</span>
-
-<span class="sd">        :param int n_calls_to_run:</span>
-<span class="sd">            the counter of how many times run has been called.</span>
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># set up reports default folder</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_report_specifics</span><span class="p">(</span><span class="n">n_calls_to_run</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="s2">&quot;json_files&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">)</span>
-
-        <span class="c1"># make a folder for the provenance data storage</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span> <span class="s2">&quot;provenance_data&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">)</span>
-
-        <span class="c1"># make application folder for provenance data storage</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">,</span> <span class="s2">&quot;app_provenance_data&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_app_provenance_file_path</span><span class="p">)</span>
-
-        <span class="c1"># make system folder for provenance data storage</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_provenance_file_path</span><span class="p">,</span> <span class="s2">&quot;system_provenance_data&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_make_dirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_system_provenance_file_path</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__write_named_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
         <span class="n">app_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_report_simulation_top_directory</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_timestamp_dir_path</span><span class="p">(),</span> <span class="n">file_name</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">app_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="s2">&quot;file_name&quot;</span><span class="p">)</span>
 
@@ -405,95 +261,7 @@
 <span class="sd">            folders that are errored if requested to do so</span>
 <span class="sd">        :rtype:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__write_named_file</span><span class="p">(</span><span class="n">ERRORED_FILENAME</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ConfigHandler.set_up_timings"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.set_up_timings">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_timings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_time_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Set up timings of the machine</span>
-
-<span class="sd">        :param machine_time_step:</span>
-<span class="sd">            An explicitly specified time step for the machine.  If None,</span>
-<span class="sd">            the value is read from the config</span>
-<span class="sd">        :type machine_time_step: int or None</span>
-<span class="sd">        :param time_scale_factor:</span>
-<span class="sd">            An explicitly specified time scale factor for the simulation.</span>
-<span class="sd">            If None, the value is read from the config</span>
-<span class="sd">        :type time_scale_factor: int or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># set up timings</span>
-        <span class="k">if</span> <span class="n">machine_time_step</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_time_step&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">machine_time_step</span> <span class="o">=</span> <span class="n">machine_time_step</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s1">&#39;invalid machine_time_step </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Note while this reads from the cfg the cfg default is None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
-
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">machine_time_step_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The machine timestep, in milli_seconds</span>
-
-<span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">machine_time_step_per_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The machine timesteps in a milli_second</span>
-
-<span class="sd">        :rtype: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_per_ms</span>
-
-    <span class="nd">@machine_time_step</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param new_value: Machine timestep in microseconds</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step</span> <span class="o">=</span> <span class="n">new_value</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_ms</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">new_value</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__machine_time_step_per_ms</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span> <span class="o">/</span> <span class="n">new_value</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span>
-
-    <span class="nd">@time_scale_factor</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__time_scale_factor</span> <span class="o">=</span> <span class="n">new_value</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_make_dirs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-        <span class="c1"># Workaround for Python 2/3 Compatibility (Python 3 raises on exists)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">!=</span> <span class="n">errno</span><span class="o">.</span><span class="n">EEXIST</span><span class="p">:</span>
-                <span class="k">raise</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__write_named_file</span><span class="p">(</span><span class="n">ERRORED_FILENAME</span><span class="p">)</span></div></div>
 </pre></div>
 
             <div class="clearer"></div>

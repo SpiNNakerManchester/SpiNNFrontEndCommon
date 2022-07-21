@@ -57,15 +57,15 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_str</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="n">PacmanExternalAlgorithmFailedToCompleteException</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">write_json_machine</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">report_default_directory</span><span class="p">)</span>
 
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -88,10 +88,6 @@
         <span class="s2">&quot;_java_call&quot;</span><span class="p">,</span>
         <span class="c1"># The location of the java jar file</span>
         <span class="s2">&quot;_jar_file&quot;</span><span class="p">,</span>
-        <span class="c1"># the folder to write the any json files into</span>
-        <span class="s2">&quot;_json_folder&quot;</span><span class="p">,</span>
-        <span class="c1"># The machine</span>
-        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
         <span class="c1"># The location where the machine json is written</span>
         <span class="s2">&quot;_machine_json_path&quot;</span><span class="p">,</span>
         <span class="c1"># Dict of chip (x, y) to the p of the monitor vertex</span>
@@ -108,31 +104,14 @@
         <span class="s2">&quot;_java_properties&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">json_folder</span><span class="p">,</span> <span class="n">java_call</span><span class="p">,</span> <span class="n">java_spinnaker_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">java_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates a java caller and checks the user/config parameters.</span>
 
-<span class="sd">        :param str json_folder: The location where the machine JSON is written.</span>
-<span class="sd">        :param str java_call:</span>
-<span class="sd">            Call to start java. Including the path if required.</span>
-<span class="sd">        :param str java_spinnaker_path:</span>
-<span class="sd">            The path where the java code can be found.</span>
-<span class="sd">            This must point to a local copy of</span>
-<span class="sd">            `https://github.com/SpiNNakerManchester/JavaSpiNNaker`.</span>
-<span class="sd">            It must also have been built!</span>
-<span class="sd">            If `None` the assumption is that it is the same parent directory as</span>
-<span class="sd">            `https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon`.</span>
-<span class="sd">        :param str java_properties:</span>
-<span class="sd">            Optional properties that will be passed to Java.\</span>
-<span class="sd">            Must start with ``-D``.</span>
-<span class="sd">            For example ``-Dlogging.level=DEBUG``</span>
 <span class="sd">        :raise ConfigurationException: if simple parameter checking fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recording</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">report_default_directory</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span> <span class="o">=</span> <span class="n">json_folder</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span> <span class="o">=</span> <span class="n">java_call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_call&quot;</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span><span class="p">,</span> <span class="s1">&#39;-version&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
@@ -140,25 +119,27 @@
                 <span class="s2">&quot;Please set [Java] java_call to the absolute path &quot;</span>
                 <span class="s2">&quot;to start java. (in config file)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_find_java_jar</span><span class="p">(</span><span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find_java_jar</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_monitor_cores</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_iptags</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_cores</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span> <span class="o">=</span> <span class="n">java_properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_properties&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_chipxy_by_ethernet</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="c1"># pylint: disable=not-an-iterable</span>
             <span class="k">for</span> <span class="n">_property</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">_property</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;-D&quot;</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                         <span class="s2">&quot;Java Properties must start with -D found at </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span>
                         <span class="nb">format</span><span class="p">(</span><span class="n">_property</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_find_java_jar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">java_spinnaker_path</span><span class="p">,</span> <span class="n">java_jar_path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_find_java_jar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">java_spinnaker_path</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_spinnaker_path&quot;</span><span class="p">)</span>
+        <span class="n">java_jar_path</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_jar_path&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">java_spinnaker_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">interface</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
             <span class="n">spinn_front_end_common</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
@@ -198,42 +179,27 @@
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;No file found at java_jar_path: </span><span class="si">{</span><span class="n">java_jar_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="JavaCaller.set_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_machine">[docs]</a>    <span class="k">def</span> <span class="nf">set_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Passes the machine in leaving this class to decide pass it to Java.</span>
-
-<span class="sd">        :param ~spinn_machine.Machine machine: A machine Object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span></div>
-
-<div class="viewcode-block" id="JavaCaller.set_advanced_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">[docs]</a>    <span class="k">def</span> <span class="nf">set_advanced_monitors</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">monitor_cores</span><span class="p">,</span> <span class="n">packet_gathers</span><span class="p">):</span>
+<div class="viewcode-block" id="JavaCaller.set_advanced_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">[docs]</a>    <span class="k">def</span> <span class="nf">set_advanced_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            The placements of the vertices</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices</span>
-<span class="sd">        :param monitor_cores: Where the advanced monitor for each core is</span>
-<span class="sd">        :type monitor_cores:</span>
-<span class="sd">            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)</span>
-<span class="sd">        :param packet_gathers: Where the packet gatherers are</span>
-<span class="sd">        :type packet_gathers:</span>
-<span class="sd">            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_monitor_cores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">monitor_core</span> <span class="ow">in</span> <span class="n">monitor_cores</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">monitor_core</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">monitor_core</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_monitor_items</span><span class="p">():</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">monitor_core</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_monitor_cores</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_iptags</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_cores</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">packet_gather</span> <span class="ow">in</span> <span class="n">packet_gathers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">core</span><span class="p">,</span> <span class="n">packet_gather</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_gather_items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_iptags</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> \
                 <span class="n">tags</span><span class="o">.</span><span class="n">get_ip_tags_for_vertex</span><span class="p">(</span><span class="n">packet_gather</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">packet_gather</span><span class="p">)</span>
+            <span class="n">placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">packet_gather</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_cores</span><span class="p">[</span><span class="n">core</span><span class="p">]</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_chipxy_by_ethernet</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">chips</span><span class="p">:</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
                 <span class="n">chip_xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
                 <span class="n">ethernet</span> <span class="o">=</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
@@ -245,8 +211,7 @@
 <span class="sd">        :return: the name of the file containing the JSON</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="n">write_json_machine</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="n">write_json_machine</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span>
 
 <div class="viewcode-block" id="JavaCaller.set_report_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder">[docs]</a>    <span class="k">def</span> <span class="nf">set_report_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">):</span>
@@ -258,12 +223,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">report_folder</span></div>
 
-<div class="viewcode-block" id="JavaCaller.set_placements"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">[docs]</a>    <span class="k">def</span> <span class="nf">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+<div class="viewcode-block" id="JavaCaller.set_placements"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">[docs]</a>    <span class="k">def</span> <span class="nf">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Passes in the placements leaving this class to decide pass it to</span>
 <span class="sd">            Java.</span>
-
-<span class="sd">        This method may obtain extra information about he placements which is</span>
-<span class="sd">        why it also needs the transceiver.</span>
 
 <span class="sd">        Currently the extra information extracted is recording region base</span>
 <span class="sd">        address but this could change if recording region saved in the</span>
@@ -272,23 +234,22 @@
 <span class="sd">        Currently this method uses JSON but that may well change to using the</span>
 <span class="sd">        database.</span>
 
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            The Placements Object</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: The Transceiver</span>
+<span class="sd">        :param ~pacman.model.placements.Placements used_placements:</span>
+<span class="sd">            Placements that are recording. May not be all placements</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_json_folder</span><span class="p">,</span> <span class="s2">&quot;java_placements.json&quot;</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_json_dir_path</span><span class="p">(),</span> <span class="s2">&quot;java_placements.json&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recording</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_iptags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_placements</span><span class="p">(</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+                <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_write_gather</span><span class="p">(</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
+                <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_json_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_json_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
@@ -304,8 +265,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_recording</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">json_vertex</span><span class="p">[</span><span class="s2">&quot;recordedRegionIds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">get_recorded_region_ids</span><span class="p">()</span>
             <span class="n">json_vertex</span><span class="p">[</span><span class="s2">&quot;recordingRegionBaseAddress&quot;</span><span class="p">]</span> <span class="o">=</span> \
-                <span class="n">vertex</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">(</span>
-                    <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+                <span class="n">vertex</span><span class="o">.</span><span class="n">get_recording_region_base_address</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">json_vertex</span><span class="p">[</span><span class="s2">&quot;recordedRegionIds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">json_vertex</span><span class="p">[</span><span class="s2">&quot;recordingRegionBaseAddress&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
@@ -330,28 +290,28 @@
 
         <span class="k">return</span> <span class="n">json_tag</span>
 
-    <span class="k">def</span> <span class="nf">_placements_grouped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_placements_grouped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements recording_placementss:</span>
 <span class="sd">        :rtype: dict(tuple(int,int),dict(tuple(int,int),</span>
 <span class="sd">            ~pacman.model.placements.Placement))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">by_ethernet</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">))</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
-            <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">recording_placements</span><span class="p">:</span>
+            <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
             <span class="n">chip_xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
             <span class="n">ethernet</span> <span class="o">=</span> <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
             <span class="n">by_ethernet</span><span class="p">[</span><span class="n">ethernet</span><span class="p">][</span><span class="n">chip_xy</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">by_ethernet</span>
 
-    <span class="k">def</span> <span class="nf">_write_gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">        :param ~pacman.model.placements.Placements used_placements:</span>
+<span class="sd">            placements that are being used. May not eb all placements</span>
 <span class="sd">        :param str path:</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">placements_by_ethernet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements_grouped</span><span class="p">(</span><span class="n">placements</span><span class="p">)</span>
+        <span class="n">placements_by_ethernet</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placements_grouped</span><span class="p">(</span><span class="n">used_placements</span><span class="p">)</span>
         <span class="n">json_obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">ethernet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_chipxy_by_ethernet</span><span class="p">:</span>
             <span class="n">by_chip</span> <span class="o">=</span> <span class="n">placements_by_ethernet</span><span class="p">[</span><span class="n">ethernet</span><span class="p">]</span>
@@ -370,7 +330,7 @@
                 <span class="k">if</span> <span class="n">chip_xy</span> <span class="ow">in</span> <span class="n">by_chip</span><span class="p">:</span>
                     <span class="n">json_placements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
                     <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">by_chip</span><span class="p">[</span><span class="n">chip_xy</span><span class="p">]:</span>
-                        <span class="n">json_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+                        <span class="n">json_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">json_p</span><span class="p">:</span>
                             <span class="n">json_placements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json_p</span><span class="p">)</span>
                     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_placements</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -385,17 +345,17 @@
 
         <span class="k">return</span> <span class="n">path</span>
 
-    <span class="k">def</span> <span class="nf">_write_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            Placements that are being used. May not be all placements</span>
 <span class="sd">        :param str path:</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Read back the regions</span>
         <span class="n">json_obj</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
-            <span class="n">json_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">used_placements</span><span class="p">:</span>
+            <span class="n">json_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_json_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">json_p</span><span class="p">:</span>
                 <span class="n">json_obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json_p</span><span class="p">)</span>
 

@@ -57,8 +57,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">report_default_directory</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 <span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
 
@@ -69,22 +68,16 @@
 
 <span class="k">class</span> <span class="nc">DsSqlliteDatabase</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;_app_id&quot;</span><span class="p">,</span>
-        <span class="c1"># The machine cached for getting the &quot;ethernet&quot;s</span>
-        <span class="s2">&quot;_machine&quot;</span><span class="p">,</span>
         <span class="c1"># The root ethernet id if required</span>
         <span class="s2">&quot;_root_ethernet_id&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">app_id</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~spinn_machine.Machine machine:</span>
 <span class="sd">        :param init:</span>
 <span class="sd">        :type init: bool or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span> <span class="o">=</span> <span class="n">machine</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span> <span class="o">=</span> <span class="n">app_id</span>
-        <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_default_directory</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
+        <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">init</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
@@ -96,6 +89,7 @@
 
     <span class="k">def</span> <span class="nf">__init_db_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Set up the database contents from the machine. &quot;&quot;&quot;</span>
+        <span class="n">eth_chips</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span><span class="o">.</span><span class="n">ethernet_connected_chips</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
@@ -104,7 +98,7 @@
 <span class="sd">                VALUES(?, ?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
                     <span class="p">(</span><span class="n">ethernet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">ethernet</span><span class="o">.</span><span class="n">ip_address</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">ethernet</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">ethernet</span> <span class="ow">in</span> <span class="n">eth_chips</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">__find_root_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">first_x</span> <span class="o">=</span> <span class="n">first_y</span> <span class="o">=</span> <span class="n">root_id</span> <span class="o">=</span> <span class="kc">None</span>
@@ -143,7 +137,7 @@
 <span class="sd">        :param int p: p of the core ds applies to</span>
 <span class="sd">        :param bytearray ds: the data spec as byte code</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">)</span>
+        <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="p">()</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
@@ -157,7 +151,7 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
                     <span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">,</span> <span class="n">core_p</span><span class="p">,</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Binary</span><span class="p">(</span><span class="n">ds</span><span class="p">),</span>
                     <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">,</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app_id</span><span class="p">))</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">,</span> <span class="n">FecDataView</span><span class="p">()</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.get_ds"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds">[docs]</a>    <span class="k">def</span> <span class="nf">get_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Retrieves the data spec as byte code for this core.</span>
@@ -393,7 +387,7 @@
 <span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">written</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="p">()</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
                 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    INSERT INTO core(</span>
@@ -417,7 +411,7 @@
 <span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">memory_used</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">rowcount</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">chip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+                <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="p">()</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
                 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
                     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    INSERT INTO core(</span>

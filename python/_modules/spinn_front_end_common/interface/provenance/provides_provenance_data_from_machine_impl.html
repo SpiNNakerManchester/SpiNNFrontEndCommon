@@ -55,10 +55,11 @@
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_base</span> <span class="kn">import</span> <span class="n">abstractproperty</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_region_base_address_offset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.abstract_provides_provenance_data_from_machine</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">BYTES_PER_WORD</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="n">n_word_struct</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance.provenance_writer</span> <span class="kn">import</span> <span class="p">(</span>
@@ -163,12 +164,12 @@
         <span class="k">return</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span>
             <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">prov_region_entry_address</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_read_provenance_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_read_provenance_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">        :rtype: iterable(int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
         <span class="n">provenance_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provenance_region_address</span><span class="p">(</span>
             <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span>
@@ -322,15 +323,13 @@
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="o">.</span>
         <span class="n">get_provenance_data_from_machine</span><span class="p">,</span>
         <span class="n">extend_doc</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">get_provenance_data_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Retrieve the provenance data.</span>
 
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            How to talk to the machine</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            Which vertex are we retrieving from, and where was it</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span><span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
+        <span class="n">provenance_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_provenance_data</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
         <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_provenance_placement_description</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parse_system_provenance_items</span><span class="p">(</span>
             <span class="n">label</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">provenance_data</span><span class="p">)</span>

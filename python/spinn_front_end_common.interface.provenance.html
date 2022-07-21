@@ -73,14 +73,11 @@ the ApplicationGraph</p>
 <p>Indicates that an object provides provenance data retrieved from the        machine.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterable of provenance data items.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpinnMan interface object</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -480,14 +477,13 @@ if different.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">
-<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts algorithms run times into the timer_provenance table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Category of the Algorithms run</p></li>
 <li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
-<li><p><strong>n_run</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The end user run number</p></li>
 <li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
 </ul>
 </dd>
@@ -626,7 +622,7 @@ cfg provenance_report_cutoff</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">
-<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_run</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts algorithms run times into the timer_provenance table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -634,7 +630,6 @@ cfg provenance_report_cutoff</p>
 <li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Category of the Algorithm</p></li>
 <li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
 <li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Runtime</p></li>
-<li><p><strong>n_run</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The end user run number</p></li>
 <li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
 <li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
 it was not skipped</p></li>
@@ -717,14 +712,11 @@ it was not skipped</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine">
-<span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transceiver</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve the provenance data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – How to talk to the machine</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Which vertex are we retrieving from, and where was it</p></li>
-</ul>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Which vertex are we retrieving from, and where was it</p>
 </dd>
 </dl>
 </dd></dl>

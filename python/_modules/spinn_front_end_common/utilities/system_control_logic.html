@@ -56,23 +56,22 @@
     <span class="n">SpinnmanException</span><span class="p">,</span> <span class="n">SpiNNManCoresNotInStateException</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums</span> <span class="kn">import</span> <span class="n">Signal</span>
 <span class="kn">from</span> <span class="nn">spinnman.model</span> <span class="kn">import</span> <span class="n">ExecutableTargets</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.iobuf_extractor</span> <span class="kn">import</span> <span class="n">IOBufExtractor</span>
 
 
 <div class="viewcode-block" id="run_system_application"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.system_control_logic.run_system_application">[docs]</a><span class="k">def</span> <span class="nf">run_system_application</span><span class="p">(</span>
-        <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
-        <span class="n">executable_finder</span><span class="p">,</span> <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
+        <span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span>
+        <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
         <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
         <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
 <span class="sd">        Used for on-chip expanders, compressors, etc.</span>
 
 <span class="sd">    :param ~spinnman.model.ExecutableTargets executable_cores:</span>
-<span class="sd">        the cores to run the executable on</span>
+<span class="sd">        the cores to run the executable on.</span>
 <span class="sd">    :param int app_id: the app-id for the executable</span>
-<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver: the SpiNNMan instance</span>
-<span class="sd">    :param ExecutableFinder executable_finder: finder for executable paths</span>
 <span class="sd">    :param bool read_algorithm_iobuf: whether to report IOBUFs</span>
 <span class="sd">    :param callable check_for_success_function:</span>
 <span class="sd">        function used to check success;</span>
@@ -97,7 +96,7 @@
 <span class="sd">    :raise SpinnmanException:</span>
 <span class="sd">        If one should arise from the underlying SpiNNMan calls</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
+    <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
     <span class="c1"># load the executable</span>
     <span class="n">transceiver</span><span class="o">.</span><span class="n">execute_application</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">app_id</span><span class="p">)</span>
 
@@ -142,17 +141,15 @@
 
     <span class="c1"># Check if any cores have not completed successfully</span>
     <span class="k">if</span> <span class="n">succeeded</span> <span class="ow">and</span> <span class="n">check_for_success_function</span><span class="p">:</span>
-        <span class="n">succeeded</span> <span class="o">=</span> <span class="n">check_for_success_function</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">)</span>
+        <span class="n">succeeded</span> <span class="o">=</span> <span class="n">check_for_success_function</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">)</span>
 
     <span class="c1"># if doing iobuf or on failure (succeeded is None is not failure)</span>
     <span class="k">if</span> <span class="n">read_algorithm_iobuf</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">succeeded</span><span class="p">:</span>
-        <span class="n">_report_iobuf_messages</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">executable_cores</span><span class="p">,</span> <span class="n">executable_finder</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span>
-            <span class="n">filename_template</span><span class="p">)</span>
+        <span class="n">_report_iobuf_messages</span><span class="p">(</span><span class="n">executable_cores</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">)</span>
 
     <span class="c1"># stop anything that&#39;s associated with the compressor binary</span>
     <span class="n">transceiver</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
-    <span class="n">transceiver</span><span class="o">.</span><span class="n">app_id_tracker</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
+    <span class="n">FecDataView</span><span class="o">.</span><span class="n">free_id</span><span class="p">(</span><span class="n">app_id</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">core_state_string</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -160,18 +157,15 @@
         <span class="k">raise</span> <span class="n">error</span>  <span class="c1"># pylint: disable=raising-bad-type</span></div>
 
 
-<span class="k">def</span> <span class="nf">_report_iobuf_messages</span><span class="p">(</span>
-        <span class="n">txrx</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">exe_finder</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_report_iobuf_messages</span><span class="p">(</span><span class="n">cores</span><span class="p">,</span> <span class="n">logger</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param Transceiver txrx:</span>
 <span class="sd">    :param ~spinnman.model.ExecutableTargets cores:</span>
-<span class="sd">    :param ExecutableFinder exe_finder:</span>
 <span class="sd">    :param ~logging.Logger logger:</span>
 <span class="sd">    :param str filename_template:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Import in this function to prevent circular import issue</span>
     <span class="n">iobuf_reader</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
-        <span class="n">txrx</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">exe_finder</span><span class="p">,</span>
+        <span class="n">cores</span><span class="p">,</span>
         <span class="n">filename_template</span><span class="o">=</span><span class="n">filename_template</span><span class="p">,</span> <span class="n">suppress_progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="n">error_entries</span><span class="p">,</span> <span class="n">warn_entries</span> <span class="o">=</span> <span class="n">iobuf_reader</span><span class="o">.</span><span class="n">extract_iobuf</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

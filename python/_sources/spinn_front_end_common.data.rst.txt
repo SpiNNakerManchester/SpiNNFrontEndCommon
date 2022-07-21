@@ -1,0 +1,10 @@
+spinn\_front\_end\_common.data package
+======================================
+
+Module contents
+---------------
+
+.. automodule:: spinn_front_end_common.data
+   :members:
+   :undoc-members:
+   :show-inheritance:

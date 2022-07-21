@@ -58,7 +58,9 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums</span> <span class="kn">import</span> <span class="n">CPUState</span>
-<span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utility_calls</span>
+<span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">APP_PTR_TABLE_HEADER_BYTE_SIZE</span><span class="p">,</span> <span class="n">APP_PTR_TABLE_REGION_BYTE_SIZE</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 
@@ -66,26 +68,20 @@
 <span class="n">_n_word_structs</span> <span class="o">=</span> <span class="p">[]</span>
 
 
-<div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span>
-        <span class="n">machine</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span>
-        <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">):</span>
+<div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get the data speed up gatherer that can be used to talk to a\</span>
 <span class="sd">        particular chip. This will be on the same board.</span>
 
-<span class="sd">    :param ~spinn_machine.Machine machine: The machine descriptor</span>
 <span class="sd">    :param int placement_x: The X coordinate of the reference chip</span>
 <span class="sd">    :param int placement_y: The Y coordinate of the reference chip</span>
-<span class="sd">    :param packet_gather_cores_to_ethernet_connection_map:</span>
-<span class="sd">    :type packet_gather_cores_to_ethernet_connection_map:</span>
-<span class="sd">        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)</span>
 <span class="sd">    :rtype: DataSpeedUpPacketGatherMachineVertex</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">chip</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">packet_gather_cores_to_ethernet_connection_map</span><span class="p">[</span>
-        <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">]</span></div>
+    <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_gatherer_by_xy</span><span class="p">(</span>
+        <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">data_format</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+<div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">data_format</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory.</span>
 
 <span class="sd">    :param int x: chip x</span>
@@ -94,42 +90,51 @@
 <span class="sd">    :param int length: length to read</span>
 <span class="sd">    :param str data_format:</span>
 <span class="sd">        the format to read memory (see :py:func:`struct.pack`)</span>
-<span class="sd">    :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">        the SpinnMan interface</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-many-arguments</span>
 
-    <span class="n">data</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">read_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data_format</span><span class="p">,</span> <span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="write_address_to_user0"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user0</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<div class="viewcode-block" id="write_address_to_user0"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user0</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Writes the given address into the user_0 register of the given core.</span>
 
-<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
 <span class="sd">    :param int x: Chip coordinate.</span>
 <span class="sd">    :param int y: Chip coordinate.</span>
 <span class="sd">    :param int p: Core ID on chip.</span>
 <span class="sd">    :param int address: Value to write (32-bit integer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">txrx</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
     <span class="n">user_0_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_0_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_0_address</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="write_address_to_user1"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user1">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user1</span><span class="p">(</span><span class="n">txrx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<div class="viewcode-block" id="write_address_to_user1"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user1">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Writes the given address into the user_1 register of the given core.</span>
 
-<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
 <span class="sd">    :param int x: Chip coordinate.</span>
 <span class="sd">    :param int y: Chip coordinate.</span>
 <span class="sd">    :param int p: Core ID on chip.</span>
 <span class="sd">    :param int address: Value to write (32-bit integer)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">txrx</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
     <span class="n">user_1_address</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_user_1_register_address_from_core</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
     <span class="n">txrx</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">user_1_address</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">):</span>
+<div class="viewcode-block" id="get_region_base_address_offset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_region_base_address_offset">[docs]</a><span class="k">def</span> <span class="nf">get_region_base_address_offset</span><span class="p">(</span><span class="n">app_data_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Find the address of the of a given region for the DSG</span>
+
+<span class="sd">    :param int app_data_base_address: base address for the core</span>
+<span class="sd">    :param int region: the region ID we&#39;re looking for</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">app_data_base_address</span> <span class="o">+</span>
+            <span class="n">APP_PTR_TABLE_HEADER_BYTE_SIZE</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">region</span> <span class="o">*</span> <span class="n">APP_PTR_TABLE_REGION_BYTE_SIZE</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement.</span>
 
 <span class="sd">    :param int region: the region to locate the base address of</span>
@@ -140,12 +145,13 @@
 <span class="sd">    :return: the address</span>
 <span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
     <span class="n">regions_base_address</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cpu_information_from_core</span><span class="p">(</span>
         <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">user</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Get the position of the region in the pointer table</span>
-    <span class="n">region_offset</span> <span class="o">=</span> <span class="n">utility_calls</span><span class="o">.</span><span class="n">get_region_base_address_offset</span><span class="p">(</span>
-        <span class="n">regions_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+    <span class="n">region_offset</span> <span class="o">=</span> \
+        <span class="n">get_region_base_address_offset</span><span class="p">(</span><span class="n">regions_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
 
     <span class="c1"># Get the actual address of the region</span>
     <span class="k">return</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_offset</span><span class="p">)</span></div>
@@ -167,21 +173,18 @@
     <span class="k">return</span> <span class="n">ignored_cores</span></div>
 
 
-<div class="viewcode-block" id="flood_fill_binary_to_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">[docs]</a><span class="k">def</span> <span class="nf">flood_fill_binary_to_spinnaker</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">txrx</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
+<div class="viewcode-block" id="flood_fill_binary_to_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">[docs]</a><span class="k">def</span> <span class="nf">flood_fill_binary_to_spinnaker</span><span class="p">(</span><span class="n">binary</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Flood fills a binary to spinnaker on a given `app_id` \</span>
 <span class="sd">        given the executable targets and binary.</span>
 
-<span class="sd">    :param ~spinnman.model.ExecutableTargets executable_targets:</span>
-<span class="sd">        the executable targets object</span>
-<span class="sd">    :param str binary: the (name of the) binary to flood fill</span>
-<span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: spinnman instance</span>
-<span class="sd">    :param int app_id: the application ID to load it as</span>
 <span class="sd">    :return: the number of cores it was loaded onto</span>
 <span class="sd">    :rtype: int</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">executable_targets</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_executable_targets</span><span class="p">()</span>
     <span class="n">core_subset</span> <span class="o">=</span> <span class="n">executable_targets</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span>
-    <span class="n">txrx</span><span class="o">.</span><span class="n">execute_flood</span><span class="p">(</span>
-        <span class="n">core_subset</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_filename</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">execute_flood</span><span class="p">(</span>
+        <span class="n">core_subset</span><span class="p">,</span> <span class="n">binary</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">(),</span> <span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">is_filename</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">core_subset</span><span class="p">)</span></div>
 
 
@@ -263,19 +266,17 @@
     <span class="k">return</span> <span class="n">expected_start_states</span><span class="p">,</span> <span class="n">expected_end_states</span></div>
 
 
-<div class="viewcode-block" id="convert_vertices_to_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">vertices</span><span class="p">,</span> <span class="n">placements</span><span class="p">):</span>
+<div class="viewcode-block" id="convert_vertices_to_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Converts vertices into core subsets.</span>
 
 <span class="sd">    :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:</span>
 <span class="sd">        the vertices to convert to core subsets</span>
-<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">        the placements object</span>
 <span class="sd">    :return: the CoreSubSets of the vertices</span>
 <span class="sd">    :rtype: ~spinn_machine.CoreSubsets</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
-        <span class="n">placement</span> <span class="o">=</span> <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
+        <span class="n">placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
         <span class="n">core_subsets</span><span class="o">.</span><span class="n">add_processor</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">core_subsets</span></div>
 

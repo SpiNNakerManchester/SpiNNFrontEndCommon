@@ -37,7 +37,7 @@
           <div class="body" role="main">
             
   <h1>Source code for spinn_front_end_common.utilities.globals_variables</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span></span><span class="c1"># Copyright (c) 2017-2022 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
 <span class="c1"># it under the terms of the GNU General Public License as published by</span>
@@ -53,14 +53,9 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.exceptions</span> <span class="kn">import</span> <span class="n">SimulatorNotSetupException</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">pacman.executor</span> <span class="kn">import</span> <span class="n">injection_decorator</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.simulator_status</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">RUNNING_STATUS</span><span class="p">,</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">SimulatorRunningException</span><span class="p">,</span> <span class="n">SimulatorNotSetupException</span><span class="p">,</span>
-    <span class="n">SimulatorShutdownException</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 
 <span class="c1"># pylint: disable=global-statement, protected-access</span>
 <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
@@ -70,36 +65,6 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
-
-
-<div class="viewcode-block" id="check_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.check_simulator">[docs]</a><span class="k">def</span> <span class="nf">check_simulator</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; Check if a simulator has been setup but not yet shut down</span>
-
-<span class="sd">    :raises: SimulatorNotSetupException, SimulatorShutdownException</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;This call is only valid after setup has been called&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorShutdownException</span><span class="p">(</span>
-            <span class="s2">&quot;This call is only valid between setup and end/stop&quot;</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="has_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.has_simulator">[docs]</a><span class="k">def</span> <span class="nf">has_simulator</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; Check if a simulator has been setup but not yet shut down</span>
-
-<span class="sd">    Should behave in the same way as check_simulator except that it returns</span>
-<span class="sd">    False where check_simulator raises and exception and True when it does not</span>
-
-<span class="sd">    :rtype: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-    <span class="k">return</span> <span class="kc">True</span></div>
-
 
 <div class="viewcode-block" id="get_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_simulator">[docs]</a><span class="k">def</span> <span class="nf">get_simulator</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot; Get the current simulator object.</span>
@@ -107,7 +72,7 @@
 <span class="sd">    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase</span>
 <span class="sd">    :raises: SimulatorNotSetupException, SimulatorShutdownException</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_simulator</span><span class="p">()</span>
+    <span class="n">FecDataView</span><span class="o">.</span><span class="n">check_valid_simulator</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">_simulator</span></div>
 
 
@@ -123,20 +88,6 @@
     <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
             <span class="s2">&quot;This call is only valid after setup has been called&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_simulator</span></div>
-
-
-<div class="viewcode-block" id="get_not_running_simulator"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_not_running_simulator">[docs]</a><span class="k">def</span> <span class="nf">get_not_running_simulator</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; Get the current simulator object and verify that it is not running.</span>
-
-<span class="sd">    :rtype: ~spinn_front_end_common.interface.AbstractSpinnakerBase</span>
-<span class="sd">    :raises: SimulatorNotSetupException, SimulatorShutdownException,</span>
-<span class="sd">        SimulatorRunningException</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">check_simulator</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">RUNNING_STATUS</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorRunningException</span><span class="p">(</span>
-            <span class="s2">&quot;Illegal call while a simulation is already running&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_simulator</span></div>
 
 
@@ -165,244 +116,7 @@
     <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">__temp_dir</span><span class="p">,</span> <span class="n">__unittest_mode</span>
     <span class="n">_simulator</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">__unittest_mode</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">injection_decorator</span><span class="o">.</span><span class="n">_instances</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">__temp_dir</span> <span class="o">=</span> <span class="kc">None</span></div>
-
-
-<div class="viewcode-block" id="get_generated_output"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.get_generated_output">[docs]</a><span class="k">def</span> <span class="nf">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get one of the simulator outputs by name.</span>
-
-<span class="sd">    :param str output: The name of the output to retrieve.</span>
-<span class="sd">    :return: The value (of arbitrary type, dependent on which output),</span>
-<span class="sd">        or `None` if the variable is not found.</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        if the system has a status where outputs can&#39;t be retrieved</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">get_generated_output</span><span class="p">(</span><span class="n">output</span><span class="p">)</span></div>
-
-
-<span class="k">def</span> <span class="nf">_temp_dir</span><span class="p">():</span>
-    <span class="k">global</span> <span class="n">__temp_dir</span>
-    <span class="k">if</span> <span class="n">__temp_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">__temp_dir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">__temp_dir</span><span class="o">.</span><span class="n">name</span>
-
-
-<div class="viewcode-block" id="machine_time_step"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.machine_time_step">[docs]</a><span class="k">def</span> <span class="nf">machine_time_step</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
-
-<span class="sd">    ..note: In unittest mode this returns the default 1000</span>
-
-<span class="sd">    :rtype: int</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1">#  set by unittest_setup</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">1000</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;machine_time_step() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;simulator shutdown before machine_time_step requested&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine_time_step</span></div>
-
-
-<div class="viewcode-block" id="machine_time_step_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.machine_time_step_ms">[docs]</a><span class="k">def</span> <span class="nf">machine_time_step_ms</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; The machine timestep, in microseconds</span>
-
-<span class="sd">    Semantic sugar for machine_time_step() / 1000.</span>
-
-<span class="sd">    ..note: In unittest mode this returns the default 1.0</span>
-
-<span class="sd">    :rtype: float</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1">#  set by unittest_setup</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mf">1.0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;machine_time_step_ms() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;simulator shutdown before machine_time_step_ms requested&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine_time_step_ms</span></div>
-
-
-<div class="viewcode-block" id="machine_time_step_per_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.machine_time_step_per_ms">[docs]</a><span class="k">def</span> <span class="nf">machine_time_step_per_ms</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; The machine timesteps in a microseconds</span>
-
-<span class="sd">    Semantic sugar for 1000 / machine_time_step()</span>
-
-<span class="sd">    ..note: In unittest mode this returns the default 1.0</span>
-
-<span class="sd">    :rtype: float</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1">#  set by unittest_setup</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mf">1.0</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;machine_time_step_per_ms() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;simulator shutdown before machine_time_step_per_ms requested&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine_time_step_per_ms</span></div>
-
-
-<div class="viewcode-block" id="time_scale_factor"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.time_scale_factor">[docs]</a><span class="k">def</span> <span class="nf">time_scale_factor</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot; The time scaling factor.</span>
-
-<span class="sd">    ..note: In unittest mode this returns the default 1</span>
-
-<span class="sd">    :rtype: int</span>
-<span class="sd">    :raises ValueError:</span>
-<span class="sd">        if the system is in a state where machine_timestep can&#39;t be retrieved</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1">#  set by unittest_setup</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;time_scale_factor() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_status</span> <span class="ow">in</span> <span class="n">SHUTDOWN_STATUS</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="s2">&quot;simulator shutdown before time_scale_factorrequested&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">time_scale_factor</span></div>
-
-
-<div class="viewcode-block" id="provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">provenance_file_path</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the path to the directory that holds all provenance files</span>
-
-<span class="sd">    This will be the path used by the last run call or to be used by</span>
-<span class="sd">    the next run if it has not yet been called.</span>
-
-<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
-
-<span class="sd">    :rtpye: str</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;provenance_file_path() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_provenance_file_path</span></div>
-
-
-<div class="viewcode-block" id="app_provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.app_provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">app_provenance_file_path</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the path to the directory that holds all app provenance files</span>
-
-<span class="sd">    This will be the path used by the last run call or to be used by</span>
-<span class="sd">    the next run if it has not yet been called.</span>
-
-<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
-
-<span class="sd">    :rtpye: str</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;app_provenance_file_path() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_app_provenance_file_path</span></div>
-
-
-<div class="viewcode-block" id="system_provenance_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.system_provenance_file_path">[docs]</a><span class="k">def</span> <span class="nf">system_provenance_file_path</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the path to the directory that holds all provenance files</span>
-
-<span class="sd">    This will be the path used by the last run call or to be used by</span>
-<span class="sd">    the next run if it has not yet been called.</span>
-
-<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
-
-<span class="sd">    :rtpye: str</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;system_provenance_file_path not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_system_provenance_file_path</span></div>
-
-
-<div class="viewcode-block" id="report_default_directory"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.report_default_directory">[docs]</a><span class="k">def</span> <span class="nf">report_default_directory</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns the path to the directory that holds all the reports for run</span>
-
-<span class="sd">    This will be the path used by the last run call or to be used by</span>
-<span class="sd">    the next run if it has not yet been called.</span>
-
-<span class="sd">    ..note: In unittest mode this returns a tempdir shared by all path methods</span>
-
-<span class="sd">    :rtpye: str</span>
-<span class="sd">    :raises SimulatorNotSetupException:</span>
-<span class="sd">        If the simulator has not been setup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">__unittest_mode</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_temp_dir</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-                <span class="s2">&quot;report_default_directory() not supported before sim.setup.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># underscore param used avoid exposing a None PyNN parameter</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">_report_default_directory</span></div>
-
-
-<div class="viewcode-block" id="where_is_chip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.where_is_chip">[docs]</a><span class="k">def</span> <span class="nf">where_is_chip</span><span class="p">(</span><span class="n">chip</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">where_is_chip</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="where_is_xy"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.globals_variables.where_is_xy">[docs]</a><span class="k">def</span> <span class="nf">where_is_xy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">_simulator</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">SimulatorNotSetupException</span><span class="p">(</span>
-            <span class="s2">&quot;You need to have ran a simulator before asking for its &quot;</span>
-            <span class="s2">&quot;generated output.&quot;</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">machine</span><span class="o">.</span><span class="n">where_is_xy</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

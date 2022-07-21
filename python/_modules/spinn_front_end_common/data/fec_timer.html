@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>spinn_front_end_common.utilities.fec_timer &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <title>spinn_front_end_common.data.fec_timer &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
@@ -27,7 +27,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.fec_timer</a></li> 
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.data.fec_timer</a></li> 
       </ul>
     </div>  
 
@@ -36,7 +36,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for spinn_front_end_common.utilities.fec_timer</h1><div class="highlight"><pre>
+  <h1>Source code for spinn_front_end_common.data.fec_timer</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2017-2018 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
@@ -58,6 +58,7 @@
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">timedelta</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_config_bool</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance.provenance_writer</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvenanceWriter</span><span class="p">)</span>
 
@@ -107,14 +108,14 @@
         <span class="s2">&quot;_category&quot;</span><span class="p">,</span>
         <span class="p">]</span>
 
-<div class="viewcode-block" id="FecTimer.setup"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.setup">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="FecTimer.setup"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.setup">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">simulator</span><span class="p">):</span>
         <span class="c1"># pylint: disable=global-statement, protected-access</span>
         <span class="k">global</span> <span class="n">_simulator</span><span class="p">,</span> <span class="n">_provenance_path</span><span class="p">,</span> <span class="n">_print_timings</span>
         <span class="n">_simulator</span> <span class="o">=</span> <span class="n">simulator</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_algorithm_timings&quot;</span><span class="p">):</span>
             <span class="n">_provenance_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">simulator</span><span class="o">.</span><span class="n">_report_default_directory</span><span class="p">,</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span>
                 <span class="s2">&quot;algorithm_timings.rpt&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">_provenance_path</span> <span class="o">=</span> <span class="kc">None</span>
@@ -137,30 +138,30 @@
         <span class="k">if</span> <span class="n">_print_timings</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
 
-<div class="viewcode-block" id="FecTimer.skip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip">[docs]</a>    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.skip"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip">[docs]</a>    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
         <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> skipped as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_category</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">time_taken</span><span class="o">.</span><span class="n">microseconds</span><span class="p">,</span>
-                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_calls_to_run</span><span class="p">,</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="FecTimer.skip_if_has_not_run"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip_if_has_not_run">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_has_not_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.skip_if_has_not_run"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip_if_has_not_run">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_has_not_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">has_ran</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;simulator.has_run&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="FecTimer.skip_if_virtual_board"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip_if_virtual_board">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_virtual_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">use_virtual_board</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;simulator.use_virtual_board&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="FecTimer.skip_if_virtual_board"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip_if_virtual_board">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_virtual_board</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;virtual_board&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="FecTimer.skip_if_empty"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip_if_empty">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.skip_if_empty"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip_if_empty">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -171,14 +172,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is False for an unknown reason&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="FecTimer.skip_if_cfg_false"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip_if_cfg_false">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_cfg_false</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.skip_if_cfg_false"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip_if_cfg_false">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_cfg_false</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cfg </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">option</span><span class="si">}</span><span class="s2"> is False&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="FecTimer.skip_if_cfgs_false"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.skip_if_cfgs_false">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_cfgs_false</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option1</span><span class="p">,</span> <span class="n">option2</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.skip_if_cfgs_false"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.skip_if_cfgs_false">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_cfgs_false</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">option1</span><span class="p">,</span> <span class="n">option2</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">option1</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
         <span class="k">elif</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">option2</span><span class="p">):</span>
@@ -187,13 +188,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cfg </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">option1</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">option2</span><span class="si">}</span><span class="s2"> are False&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-<div class="viewcode-block" id="FecTimer.error"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.FecTimer.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
+<div class="viewcode-block" id="FecTimer.error"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecTimer.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
         <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> failed after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_category</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">time_taken</span><span class="o">.</span><span class="n">microseconds</span><span class="p">,</span>
-                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_calls_to_run</span><span class="p">,</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_stop_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -227,7 +228,7 @@
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_category</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="n">time_taken</span><span class="o">.</span><span class="n">microseconds</span><span class="p">,</span>
-                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_calls_to_run</span><span class="p">,</span> <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
+                <span class="n">_simulator</span><span class="o">.</span><span class="n">n_loops</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 </pre></div>
@@ -263,7 +264,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.fec_timer</a></li> 
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.data.fec_timer</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

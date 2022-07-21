@@ -57,18 +57,15 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_config_int</span><span class="p">,</span> <span class="n">get_config_str</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">LOADING</span><span class="p">,</span> <span class="n">ProvenanceReader</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="n">ChipPowerMonitorMachineVertex</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">report_default_directory</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.compute_energy_used</span>\
     <span class="kn">import</span> <span class="p">(</span><span class="n">JOULES_PER_SPIKE</span><span class="p">,</span> <span class="n">MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD</span><span class="p">,</span>
             <span class="n">MILLIWATTS_PER_FRAME_ACTIVE_COST</span><span class="p">,</span> <span class="n">MILLIWATTS_PER_FPGA</span><span class="p">,</span>
             <span class="n">MILLIWATTS_PER_IDLE_CHIP</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.globals_variables</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">time_scale_factor</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_machine.machine</span> <span class="kn">import</span> <span class="n">Machine</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
@@ -88,48 +85,43 @@
     <span class="n">_DETAILED_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;detailed_energy_report.rpt&quot;</span>
     <span class="n">_SUMMARY_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;summary_energy_report.rpt&quot;</span>
 
-<div class="viewcode-block" id="EnergyReport.write_energy_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report">[docs]</a>    <span class="k">def</span> <span class="nf">write_energy_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
+<div class="viewcode-block" id="EnergyReport.write_energy_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report">[docs]</a>    <span class="k">def</span> <span class="nf">write_energy_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Writes the report.</span>
 
-<span class="sd">        :param ~pacman.model.placements.Placements placements: the placements</span>
-<span class="sd">        :param BufferManager buffer_manager:</span>
+<span class="sd">        :param ~spinn_machine.Machine machine: the machine</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
-        <span class="k">if</span> <span class="n">buffer_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Skipping Energy report as no buffer_manager set&quot;</span><span class="p">)</span>
-            <span class="k">return</span>
+        <span class="n">report_dir</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">()</span>
 
-        <span class="n">report_dir</span> <span class="o">=</span> <span class="n">report_default_directory</span><span class="p">()</span>
         <span class="c1"># detailed report path</span>
         <span class="n">detailed_report</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DETAILED_FILENAME</span><span class="p">)</span>
 
         <span class="c1"># summary report path</span>
         <span class="n">summary_report</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">report_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_SUMMARY_FILENAME</span><span class="p">)</span>
 
-        <span class="c1"># figure runtime in milliseconds with time scale factor</span>
-        <span class="n">runtime_total_ms</span> <span class="o">=</span> <span class="n">runtime</span> <span class="o">*</span> <span class="n">time_scale_factor</span><span class="p">()</span>
-
         <span class="c1"># create detailed report</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">detailed_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_write_detailed_report</span><span class="p">(</span>
-                <span class="n">placements</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_detailed_report</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
         <span class="c1"># create summary report</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_report</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_write_summary_report</span><span class="p">(</span><span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_write_summary_report</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">)</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_write_summary_report</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_summary_report</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write summary file</span>
 
-<span class="sd">        :param int runtime_total_ms:</span>
-<span class="sd">            Runtime with time scale factor taken into account</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=too-many-arguments, too-many-locals</span>
+
+        <span class="c1"># figure runtime in milliseconds with time scale factor</span>
+        <span class="n">runtime_total_ms</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_current_run_time_ms</span><span class="p">()</span> <span class="o">*</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_time_scale_factor</span><span class="p">())</span>
+
         <span class="c1"># write summary data</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Summary energy file</span><span class="se">\n</span><span class="s2">-------------------</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
@@ -192,17 +184,15 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;(over </span><span class="si">{}</span><span class="s2"> seconds)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_write_detailed_report</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">placements</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_write_detailed_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Write detailed report and calculate costs</span>
 
-<span class="sd">        :param ~.Placements placements: placements</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
-<span class="sd">        :param float runtime_total_ms:</span>
-<span class="sd">            total runtime with time scale factor taken into account</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># pylint: disable=too-many-arguments</span>
+        <span class="n">runtime_total_ms</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_current_run_time_ms</span><span class="p">()</span> <span class="o">*</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_time_scale_factor</span><span class="p">())</span>
 
         <span class="c1"># write warning about accuracy etc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_write_warning</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -222,7 +212,7 @@
 
         <span class="c1"># sort what to report by chip</span>
         <span class="n">active_chips</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">placements</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">():</span>
             <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">):</span>
                 <span class="n">labels</span> <span class="o">=</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
@@ -266,18 +256,17 @@
 <span class="sd">        :param PowerUsed power_used: the runtime</span>
 <span class="sd">        :param ~io.TextIOBase f: the file writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">version</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">)</span>
         <span class="c1"># if not spalloc, then could be any type of board</span>
         <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_server&quot;</span><span class="p">)</span> <span class="ow">and</span>
                 <span class="ow">not</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;remote_spinnaker_url&quot;</span><span class="p">)):</span>
             <span class="c1"># if a spinn2 or spinn3 (4 chip boards) then they have no fpgas</span>
-            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">version</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;A SpiNN-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> board does not contain any FPGA&#39;s,&quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot; and so its energy cost is 0 </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot;A SpiNN-</span><span class="si">{</span><span class="n">version</span><span class="si">}</span><span class="s2"> board does not contain any FPGA&#39;s, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;and so its energy cost is 0 </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">return</span>
-            <span class="k">elif</span> <span class="nb">int</span><span class="p">(</span><span class="n">version</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
+            <span class="k">elif</span> <span class="n">version</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">):</span>
                 <span class="c1"># no idea where we are; version unrecognised</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="s2">&quot;Do not know what the FPGA setup is for this version of &quot;</span>
