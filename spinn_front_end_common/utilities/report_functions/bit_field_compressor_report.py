@@ -19,9 +19,8 @@ import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.provenance import ProvenanceReader
@@ -46,21 +45,18 @@ def generate_provenance_item(x, y, bit_fields_merged):
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
-def bitfield_compressor_report(app_graph, placements):
+def bitfield_compressor_report():
     """
     Generates a report that shows the impact of the compression of \
     bitfields into the routing table.
 
-    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-        the graph
-    :param ~pacman.model.placements.Placements placements: the placements
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
     """
-    file_name = os.path.join(report_default_directory(), _FILE_NAME)
+    file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            return _write_report(f, app_graph, placements)
+            return _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
@@ -126,15 +122,14 @@ def _merged_component(to_merge_per_chip, writer):
             average_per_chip_merged)
 
 
-def _compute_to_merge_per_chip(app_graph, placements):
+def _compute_to_merge_per_chip():
     """
-    :param ~.ApplicationGraph app_graph:
-    :param ~.Placements placements:
     :rtype: tuple(int, int, int, float or int)
     """
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
+    app_graph = FecDataView.get_runtime_graph()
     for partition in app_graph.outgoing_edge_partitions:
         for edge in partition.edges:
             splitter = edge.post_vertex.splitter
@@ -144,7 +139,7 @@ def _compute_to_merge_per_chip(app_graph, placements):
                     continue
                 if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
                     continue
-                place = placements.get_placement_of_vertex(vertex)
+                place = FecDataView.get_placement_of_vertex(vertex)
                 to_merge_per_chip[place.chip] += 1
                 total_to_merge += 1
 
@@ -172,17 +167,14 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
     return max_bit_fields_on_chip, min_bit_fields_on_chip, average
 
 
-def _write_report(writer, app_graph, placements):
+def _write_report(writer):
     """ writes the report
 
     :param ~io.FileIO writer: the file writer
-    :param ~.ApplicationGraph app_graph: the graph
-    :param ~.Placements placements: the placements
     :return: a summary
     :rtype: BitFieldSummary
     """
-    total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip(
-        app_graph, placements)
+    total_to_merge, to_merge_per_chip = _compute_to_merge_per_chip()
     (max_to_merge_per_chip, low_to_merge_per_chip,
      average_per_chip_to_merge) = _before_merge_component(
         total_to_merge, to_merge_per_chip)

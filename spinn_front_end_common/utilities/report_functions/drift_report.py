@@ -17,10 +17,9 @@ import struct
 import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 
 # The fixed point position for drift readings
 DRIFT_FP = 1 << 17
@@ -28,12 +27,12 @@ DRIFT_FP = 1 << 17
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def drift_report(txrx):
+def drift_report():
     """ A report on the clock drift as reported by each chip
     """
     ethernet_only = get_config_bool(
             "Reports", "drift_report_ethernet_only")
-    machine = txrx.get_machine_details()
+    machine = FecDataView.get_machine()
     eth_chips = machine.ethernet_connected_chips
     n_chips = machine.n_chips
     if ethernet_only:
@@ -41,11 +40,11 @@ def drift_report(txrx):
 
     # create file path
     directory_name = os.path.join(
-        report_default_directory(), "clock_drift.csv")
+        FecDataView.get_report_dir_path(), "clock_drift.csv")
 
     # If the file is new, write a header
     if not os.path.exists(directory_name):
-        with open(directory_name, "w") as writer:
+        with open(directory_name, "w", encoding="utf-8") as writer:
             for eth_chip in eth_chips:
                 if ethernet_only:
                     writer.write(f'"{eth_chip.x} {eth_chip.y}",')
@@ -59,7 +58,8 @@ def drift_report(txrx):
     progress = ProgressBar(n_chips, "Writing clock drift report")
 
     # iterate over ethernet chips and then the chips on that board
-    with open(directory_name, "a") as writer:
+    txrx = FecDataView.get_transceiver()
+    with open(directory_name, "a", encoding="utf-8") as writer:
         for eth_chip in eth_chips:
             if ethernet_only:
                 __write_drift(txrx, eth_chip, writer)
@@ -72,15 +72,17 @@ def drift_report(txrx):
                     if last_drift is None:
                         last_drift = drift
                     elif last_drift != drift:
-                        logger.warn("On board {}, chip {}, {} is not in sync"
-                                    " ({} vs {})".format(
-                                        eth_chip.ip_address, chip.x, chip.y,
-                                        drift, last_drift))
+                        logger.warning(
+                            "On board {}, chip {}, {} is not in sync"
+                            " ({} vs {})".format(
+                                eth_chip.ip_address, chip.x, chip.y,
+                                drift, last_drift))
                     progress.update()
         writer.write("\n")
 
 
 def __write_drift(txrx, chip, writer):
+    # pylint: disable=protected-access
     drift = txrx._get_sv_data(
         chip.x, chip.y, SystemVariableDefinition.clock_drift)
     drift = struct.unpack("<i", struct.pack("<I", drift))[0]

@@ -28,11 +28,9 @@ class AbstractProvidesProvenanceDataFromMachine(
     __slots__ = ()
 
     @abstractmethod
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         """ Get an iterable of provenance data items.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpinnMan interface object
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
         """

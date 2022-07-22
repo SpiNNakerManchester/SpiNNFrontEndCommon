@@ -26,10 +26,9 @@ class AbstractHasProfileData(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_profile_data(self, transceiver, placement):
+    def get_profile_data(self, placement):
         """ Get the profile data recorded during simulation
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :rtype: ~spinn_front_end_common.interface.profiling.ProfileData
         """

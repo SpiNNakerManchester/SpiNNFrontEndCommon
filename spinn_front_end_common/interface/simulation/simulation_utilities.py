@@ -15,9 +15,8 @@
 
 import os
 from pacman.utilities.utility_calls import md5
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import SDP_PORTS
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
 
 
 def get_simulation_header_array(binary_file_name):
@@ -33,7 +32,7 @@ def get_simulation_header_array(binary_file_name):
     # Write this to the system region (to be picked up by the simulation):
     data = list()
     data.append(int(application_name_hash, 16))
-    data.append(machine_time_step() * time_scale_factor())
+    data.append(FecDataView.get_hardware_time_step_us())
 
     # add SDP port number for receiving synchronisations and new run times
     data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)

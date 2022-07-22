@@ -20,6 +20,7 @@ from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
 from spinn_machine import MulticastRoutingEntry
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 
 # ADDRESS_KEY, DATA_KEY, BOUNDARY_KEY
 N_KEYS_PER_PARTITION_ID = 8
@@ -31,23 +32,16 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator(
-        machine, extra_monitor_cores, placements):
+def system_multicast_routing_generator():
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
 
-    :param ~spinn_machine.Machine machine:
-    :param extra_monitor_cores:
-    :type extra_monitor_cores:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-    :param ~pacman.model.placements.Placements placements:
     :return: routing tables, destination-to-key map,
         board-locn-to-timeout-key map
     :rtype: tuple(MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
-    generator = _SystemMulticastRoutingGenerator(
-        machine, extra_monitor_cores, placements)
+    generator = _SystemMulticastRoutingGenerator()
     # pylint: disable=protected-access
     return generator._run()
 
@@ -56,21 +50,15 @@ class _SystemMulticastRoutingGenerator(object):
     """ Generates routing table entries used by the data in processes with the\
         extra monitor cores.
     """
-    __slots__ = ["_monitors", "_machine", "_key_to_destination_map",
-                 "_placements", "_routing_tables", "_time_out_keys_by_board"]
+    __slots__ = ["_key_to_destination_map", "_machine",
+                 "_routing_tables", "_time_out_keys_by_board"]
 
-    def __init__(self, machine, extra_monitor_cores, placements):
+    def __init__(self):
         """
 
-        :param ~spinn_machine.Machine machine:
-        :param extra_monitor_cores:
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
         :param ~pacman.model.placements.Placements placements:
         """
-        self._machine = machine
-        self._placements = placements
-        self._monitors = extra_monitor_cores
+        self._machine = FecDataView.get_machine()
         self._routing_tables = MulticastRoutingTables()
         self._key_to_destination_map = dict()
         self._time_out_keys_by_board = dict()
@@ -221,8 +209,8 @@ class _SystemMulticastRoutingGenerator(object):
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
             self._key_to_destination_map[x, y] = key
-            placement = self._placements.get_placement_of_vertex(
-                self._monitors[x, y])
+            placement = FecDataView.get_placement_of_vertex(
+                FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
                 x, y, link = tree[(x, y)]
@@ -239,8 +227,8 @@ class _SystemMulticastRoutingGenerator(object):
         time_out_key = key
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
-            placement = self._placements.get_placement_of_vertex(
-                self._monitors[x, y])
+            placement = FecDataView.get_placement_of_vertex(
+                FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(
                 x, y, time_out_key, processor_id=placement.p,
                 link_ids=links_per_chip[x, y])

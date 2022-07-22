@@ -19,7 +19,9 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState
-from . import utility_calls
+from data_specification.constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
@@ -27,26 +29,20 @@ logger = FormatAdapter(logging.getLogger(__name__))
 _n_word_structs = []
 
 
-def locate_extra_monitor_mc_receiver(
-        machine, placement_x, placement_y,
-        packet_gather_cores_to_ethernet_connection_map):
+def locate_extra_monitor_mc_receiver(placement_x, placement_y):
     """ Get the data speed up gatherer that can be used to talk to a\
         particular chip. This will be on the same board.
 
-    :param ~spinn_machine.Machine machine: The machine descriptor
     :param int placement_x: The X coordinate of the reference chip
     :param int placement_y: The Y coordinate of the reference chip
-    :param packet_gather_cores_to_ethernet_connection_map:
-    :type packet_gather_cores_to_ethernet_connection_map:
-        dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
     :rtype: DataSpeedUpPacketGatherMachineVertex
     """
-    chip = machine.get_chip_at(placement_x, placement_y)
-    return packet_gather_cores_to_ethernet_connection_map[
-        chip.nearest_ethernet_x, chip.nearest_ethernet_y]
+    chip = FecDataView.get_chip_at(placement_x, placement_y)
+    return FecDataView.get_gatherer_by_xy(
+        chip.nearest_ethernet_x, chip.nearest_ethernet_y)
 
 
-def read_data(x, y, address, length, data_format, transceiver):
+def read_data(x, y, address, length, data_format):
     """ Reads and converts a single data item from memory.
 
     :param int x: chip x
@@ -55,42 +51,51 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param int length: length to read
     :param str data_format:
         the format to read memory (see :py:func:`struct.pack`)
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpinnMan interface
     """
     # pylint: disable=too-many-arguments
 
-    data = transceiver.read_memory(x, y, address, length)
+    data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
-def write_address_to_user0(txrx, x, y, p, address):
+def write_address_to_user0(x, y, p, address):
     """ Writes the given address into the user_0 register of the given core.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
+    txrx = FecDataView.get_transceiver()
     user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, address)
 
 
-def write_address_to_user1(txrx, x, y, p, address):
+def write_address_to_user1(x, y, p, address):
     """ Writes the given address into the user_1 register of the given core.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
     :param int p: Core ID on chip.
     :param int address: Value to write (32-bit integer)
     """
+    txrx = FecDataView.get_transceiver()
     user_1_address = txrx.get_user_1_register_address_from_core(p)
     txrx.write_memory(x, y, user_1_address, address)
 
 
-def locate_memory_region_for_placement(placement, region, transceiver):
+def get_region_base_address_offset(app_data_base_address, region):
+    """ Find the address of the of a given region for the DSG
+
+    :param int app_data_base_address: base address for the core
+    :param int region: the region ID we're looking for
+    """
+    return (app_data_base_address +
+            APP_PTR_TABLE_HEADER_BYTE_SIZE +
+            (region * APP_PTR_TABLE_REGION_BYTE_SIZE))
+
+
+def locate_memory_region_for_placement(placement, region):
     """ Get the address of a region for a placement.
 
     :param int region: the region to locate the base address of
@@ -101,12 +106,13 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :return: the address
     :rtype: int
     """
+    transceiver = FecDataView.get_transceiver()
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset = utility_calls.get_region_base_address_offset(
-        regions_base_address, region)
+    region_offset = \
+        get_region_base_address_offset(regions_base_address, region)
 
     # Get the actual address of the region
     return transceiver.read_word(placement.x, placement.y, region_offset)
@@ -128,21 +134,18 @@ def convert_string_into_chip_and_core_subset(cores):
     return ignored_cores
 
 
-def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+def flood_fill_binary_to_spinnaker(binary):
     """ Flood fills a binary to spinnaker on a given `app_id` \
         given the executable targets and binary.
 
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-        the executable targets object
-    :param str binary: the (name of the) binary to flood fill
-    :param ~spinnman.transceiver.Transceiver txrx: spinnman instance
-    :param int app_id: the application ID to load it as
     :return: the number of cores it was loaded onto
     :rtype: int
     """
+    executable_targets = FecDataView.get_executable_targets()
     core_subset = executable_targets.get_cores_for_binary(binary)
-    txrx.execute_flood(
-        core_subset, binary, app_id, wait=True, is_filename=True)
+    FecDataView.get_transceiver().execute_flood(
+        core_subset, binary, FecDataView.get_app_id(), wait=True,
+        is_filename=True)
     return len(core_subset)
 
 
@@ -224,19 +227,17 @@ def determine_flow_states(executable_types, no_sync_changes):
     return expected_start_states, expected_end_states
 
 
-def convert_vertices_to_core_subset(vertices, placements):
+def convert_vertices_to_core_subset(vertices):
     """ Converts vertices into core subsets.
 
     :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:
         the vertices to convert to core subsets
-    :param ~pacman.model.placements.Placements placements:
-        the placements object
     :return: the CoreSubSets of the vertices
     :rtype: ~spinn_machine.CoreSubsets
     """
     core_subsets = CoreSubsets()
     for vertex in vertices:
-        placement = placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
 

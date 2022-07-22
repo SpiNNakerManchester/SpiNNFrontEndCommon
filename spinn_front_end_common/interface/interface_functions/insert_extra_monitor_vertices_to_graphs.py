@@ -15,22 +15,15 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.placements import Placement
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
 
 
-def insert_extra_monitor_vertices_to_graphs(
-        machine, application_graph, placements):
+def insert_extra_monitor_vertices_to_graphs(placements):
     """ Inserts the extra monitor vertices into the graph that correspond to\
         the extra monitor cores required.
 
-    :param ~spinn_machine.Machine machine: spinnMachine instance
-    :param int n_cores_to_allocate:
-        number of cores to allocate for reception
-    :param application_graph: app graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
-    :param Placements placements: Where to put placements
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map
@@ -42,6 +35,7 @@ def insert_extra_monitor_vertices_to_graphs(
     # pylint: disable=too-many-arguments, attribute-defined-outside-init
     chip_to_gatherer_map = dict()
     vertex_to_chip_map = dict()
+    machine = FecDataView.get_machine()
     ethernet_chips = list(machine.ethernet_connected_chips)
     progress = ProgressBar(
         len(ethernet_chips), "Inserting extra monitors into graphs")

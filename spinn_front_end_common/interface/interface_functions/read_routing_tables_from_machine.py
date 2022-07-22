@@ -16,22 +16,20 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.routing_tables.compressed_multicast_routing_table import (
     CompressedMulticastRoutingTable)
+from spinn_front_end_common.data import FecDataView
 
 
-def read_routing_tables_from_machine(transceiver, routing_tables, app_id):
+def read_routing_tables_from_machine():
     """ Reads compressed routing tables from a SpiNNaker machine.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
-    :param routing_tables: uncompressed routing tables
-    :type routing_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
-    :param int app_id:
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
-
+    routing_tables = FecDataView.get_uncompressed()
     progress = ProgressBar(
         routing_tables, "Reading Routing Tables from Machine")
     machine_routing_tables = MulticastRoutingTables()
+    app_id = FecDataView.get_app_id()
+    transceiver = FecDataView.get_transceiver()
     for routing_table in progress.over(routing_tables):
         # get multicast entries from machine
         machine_routing_table = _read_routing_table(

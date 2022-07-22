@@ -15,25 +15,23 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import MAX_TAG_ID
+from spinn_front_end_common.data import FecDataView
 
 
-def tags_loader(transceiver, tags):
+def tags_loader():
     """ Loads tags onto the machine.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the transceiver object
-    :param ~pacman.model.tags.Tags tags:
-        the tags object which contains IP and reverse IP tags;
-        could be ``None`` if these are being given in separate lists
     """
     # clear all the tags from the Ethernet connection, as nothing should
     # be allowed to use it (no two apps should use the same Ethernet
     # connection at the same time)
+    transceiver = FecDataView.get_transceiver()
     progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
     for tag_id in progress.over(range(MAX_TAG_ID)):
         transceiver.clear_ip_tag(tag_id)
 
     # Use tags object to supply tag info if it is supplied
+    tags = FecDataView.get_tags()
     iptags = list(tags.ip_tags)
     reverse_iptags = list(tags.reverse_ip_tags)
 

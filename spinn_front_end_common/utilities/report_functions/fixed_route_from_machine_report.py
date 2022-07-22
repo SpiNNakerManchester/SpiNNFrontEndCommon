@@ -15,22 +15,22 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 
-def fixed_route_from_machine_report(transceiver, machine, app_id):
+def fixed_route_from_machine_report():
     """ Writes the fixed routes from the machine
 
-    :param ~spinnman.transceiver.Transceiver transceiver: spinnMan instance
-    :param ~spinn_machine.Machine machine: SpiNNMachine instance
-    :param int app_id: the application ID the fixed routes were loaded with
-    """
+        :param int app_id: the application ID the fixed routes were loaded with
+        """
     file_name = os.path.join(
-        report_default_directory(), "fixed_route_routers")
+        FecDataView.get_run_dir_path(), "fixed_route_routers")
+    transceiver = FecDataView.get_transceiver()
+    machine = FecDataView.get_machine()
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")
 
+    app_id = FecDataView.get_app_id()
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
