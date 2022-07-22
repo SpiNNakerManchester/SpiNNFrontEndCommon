@@ -223,7 +223,7 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
 -- A table app vertex provenance
 CREATE TABLE IF NOT EXISTS app_vertex_provenance(
     app_vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    population STRING NOT NULL,
-    the_type  STRING NOT NULL,
+    label STRING NOT NULL,
+    the_type STRING NOT NULL,
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
