@@ -15,6 +15,7 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
+from pacman.data import PacmanDataView
 from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
@@ -25,14 +26,13 @@ from spinn_front_end_common.utility_models import (
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def splitter_selector(app_graph):
+def splitter_selector():
     """ basic selector which puts the legacy splitter object on\
         everything without a splitter object
 
-    :param ApplicationGraph app_graph: app graph
     :rtype: None
     """
-    for app_vertex in app_graph.vertices:
+    for app_vertex in PacmanDataView.get_runtime_graph().vertices:
         if app_vertex.splitter is None:
             vertex_selector(app_vertex)
 

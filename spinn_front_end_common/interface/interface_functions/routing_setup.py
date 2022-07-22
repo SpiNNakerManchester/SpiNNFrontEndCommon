@@ -19,26 +19,24 @@ from spinnman.model import DiagnosticFilter
 from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
+from spinn_front_end_common.data import FecDataView
 
 
-def routing_setup(router_tables, transceiver, machine):
+def routing_setup():
     """
     Initialises the routers. Note that this does not load any routes into\
     them.
 
-    :param router_tables:
-    :type router_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
     :param ~spinnman.transceiver.Transceiver transceiver:
-    :param ~spinn_machine.Machine machine:
     """
-    routing_tables = list(router_tables.routing_tables)
-    progress = ProgressBar(routing_tables, "Preparing Routing Tables")
+    transceiver = FecDataView.get_transceiver()
+    routing_tables = FecDataView.get_uncompressed().routing_tables
+    progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
     # Clear the routing table for each router that needs to be set up
     # and set up the diagnostics
     for router_table in progress.over(routing_tables):
-        if not machine.get_chip_at(router_table.x, router_table.y).virtual:
+        if not FecDataView.get_chip_at(router_table.x, router_table.y).virtual:
             transceiver.clear_multicast_routes(
                 router_table.x, router_table.y)
             transceiver.clear_router_diagnostic_counters(

@@ -19,9 +19,8 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 import time
 import logging
 
@@ -46,19 +45,11 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 
 def machine_generator(
-        hostname, bmp_details, board_version, auto_detect_bmp,
+        bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, reset_machine_on_start_up):
     """ Makes a transceiver and a machine object.
 
-    :param str hostname:
-        the hostname or IP address of the SpiNNaker machine
     :param str bmp_details: the details of the BMP connections
-    :param set(tuple(int,int)) downed_chips:
-        the chips that are down which SARK thinks are alive
-    :param set(tuple(int,int,int)) downed_cores:
-        the cores that are down which SARK thinks are alive
-    :param set(tuple(int,int,int)) downed_links:
-        the links that are down which SARK thinks are alive
     :param int board_version:
         the version of the boards being used within the machine
         (1, 2, 3, 4 or 5)
@@ -76,10 +67,10 @@ def machine_generator(
     # pylint: disable=too-many-arguments
 
     txrx = create_transceiver_from_hostname(
-        hostname=hostname,
+        hostname=FecDataView.get_ipaddress(),
         bmp_connection_data=_parse_bmp_details(bmp_details),
-        version=board_version, auto_detect_bmp=auto_detect_bmp,
-        default_report_directory=report_default_directory())
+        version=board_version,
+        auto_detect_bmp=auto_detect_bmp)
 
     if reset_machine_on_start_up:
         success = txrx.power_off_machine()

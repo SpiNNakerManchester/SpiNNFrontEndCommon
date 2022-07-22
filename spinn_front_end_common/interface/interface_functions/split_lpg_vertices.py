@@ -13,10 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import LivePacketGather
 
 
-def split_lpg_vertices(app_graph, machine, system_placements):
+def split_lpg_vertices(system_placements):
     """ Split any LPG vertices found
 
     :param ApplictiongGraph app_graph: The application graph
@@ -25,6 +26,6 @@ def split_lpg_vertices(app_graph, machine, system_placements):
     :param Placements system_placements:
         exiting placements to be added to
     """
-    for vertex in app_graph.vertices:
+    for vertex in FecDataView.get_runtime_graph().vertices:
         if isinstance(vertex, LivePacketGather):
-            vertex.splitter.create_vertices(machine, system_placements)
+            vertex.splitter.create_vertices(system_placements)

@@ -16,11 +16,10 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, report_default_directory, time_scale_factor)
 from spinn_front_end_common.utility_models import LivePacketGather
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -46,11 +45,12 @@ class DatabaseWriter(SQLiteDB):
         "_machine_id",
 
         # Mappings used to accelerate inserts
-        "__machine_to_id", "__vertex_to_id", "__edge_to_id"
+        "__machine_to_id", "__vertex_to_id"
     ]
 
     def __init__(self):
-        self._database_path = os.path.join(report_default_directory(), DB_NAME)
+        self._database_path = os.path.join(FecDataView.get_run_dir_path(),
+                                           DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
         # delete any old database
@@ -60,20 +60,18 @@ class DatabaseWriter(SQLiteDB):
         super().__init__(self._database_path, ddl_file=init_sql_path)
         self.__machine_to_id = dict()
         self.__vertex_to_id = dict()
-        self.__edge_to_id = dict()
 
         # set up checks
         self._machine_id = 0
 
     @staticmethod
-    def auto_detect_database(app_graph):
+    def auto_detect_database():
         """ Auto detects if there is a need to activate the database system
 
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-            the graph of the application problem space.
         :return: whether the database is needed for the application
         :rtype: bool
         """
+        app_graph = FecDataView.get_runtime_graph()
         return (any(isinstance(app_vertex, LivePacketGather)
                     for app_vertex in app_graph.vertices) or
                 any(isinstance(vertex, AbstractSupportsDatabaseInjection)
@@ -102,11 +100,11 @@ class DatabaseWriter(SQLiteDB):
                              str(map(type, args)))
             raise
 
-    def add_machine_objects(self, machine):
+    def add_machine_objects(self):
         """ Store the machine object into the database
 
-        :param ~spinn_machine.Machine machine: the machine object.
         """
+        machine = FecDataView.get_machine()
         with self.transaction() as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
                 cur,
@@ -135,13 +133,11 @@ class DatabaseWriter(SQLiteDB):
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                     for chip in machine.chips if not chip.virtual))
 
-    def add_application_vertices(self, application_graph):
+    def add_application_vertices(self):
         """ Stores the main application graph description (vertices, edges).
 
-        :param application_graph: The graph to add from
-        :type application_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
         """
+        application_graph = FecDataView.get_runtime_graph()
         with self.transaction() as cur:
             # add vertices
             for vertex in application_graph.vertices:
@@ -168,7 +164,7 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime, app_id):
+    def add_system_params(self, runtime):
         """ Write system params into the database
 
         :param int runtime: the amount of time the application is to run for
@@ -180,13 +176,15 @@ class DatabaseWriter(SQLiteDB):
                     parameter_id, value)
                 VALUES (?, ?)
                 """, [
-                    ("machine_time_step", machine_time_step()),
-                    ("time_scale_factor", time_scale_factor()),
+                    ("machine_time_step",
+                     FecDataView.get_simulation_time_step_us()),
+                    ("time_scale_factor",
+                     FecDataView.get_time_scale_factor()),
                     ("infinite_run", str(runtime is None)),
                     ("runtime", -1 if runtime is None else runtime),
-                    ("app_id", app_id)])
+                    ("app_id", FecDataView.get_app_id())])
 
-    def add_placements(self, placements):
+    def add_placements(self):
         """ Adds the placements objects into the database
 
         :param ~pacman.model.placements.Placements placements:
@@ -194,7 +192,7 @@ class DatabaseWriter(SQLiteDB):
         """
         with self.transaction() as cur:
             # Make sure machine vertices are represented
-            for placement in placements.placements:
+            for placement in FecDataView.iterate_placemements():
                 if placement.vertex not in self.__vertex_to_id:
                     self.__add_machine_vertex(cur, placement.vertex)
             # add records
@@ -206,15 +204,13 @@ class DatabaseWriter(SQLiteDB):
                 """, (
                     (self.__vertex_to_id[placement.vertex],
                      placement.x, placement.y, placement.p, self._machine_id)
-                    for placement in placements.placements))
+                    for placement in FecDataView.iterate_placemements()))
 
-    def add_tags(self, tags):
+    def add_tags(self):
         """ Adds the tags into the database
 
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-            the graph object
-        :param ~pacman.model.tags.Tags tags: the tags object
         """
+        tags = FecDataView.get_tags()
         with self.transaction() as cur:
             cur.executemany(
                 """
@@ -227,14 +223,10 @@ class DatabaseWriter(SQLiteDB):
                      ipt.ip_address, ipt.port or 0, 1 if ipt.strip_sdp else 0)
                     for ipt, vert in tags.ip_tags_vertices))
 
-    def create_atom_to_event_id_mapping(
-            self, machine_vertices, routing_infos):
+    def create_atom_to_event_id_mapping(self, machine_vertices):
         """
-        :param app_graph:
-        :type app_graph:
-            ~pacman.model.graphs.application.ApplicationGraph
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
         """
+        routing_infos = FecDataView.get_routing_infos()
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
@@ -263,16 +255,14 @@ class DatabaseWriter(SQLiteDB):
                     """, ((m_vertex_id, int(key), i) for i, key in atom_keys)
                 )
 
-    def add_lpg_mapping(self, app_graph):
+    def add_lpg_mapping(self):
         """ Add mapping from machine vertex to LPG machine vertex
 
-        :param ApplicationGraph app_graph:
-            The application graph to get the LPG vertices from
         :return: A list of (source vertex, partition id)
         :rtype: list(MachineVertex, str)
         """
         targets = [(m_vertex, part_id, lpg_m_vertex)
-                   for vertex in app_graph.vertices
+                   for vertex in FecDataView.get_runtime_graph().vertices
                    if isinstance(vertex, LivePacketGather)
                    for lpg_m_vertex, m_vertex, part_id
                    in vertex.splitter.targeted_lpgs]

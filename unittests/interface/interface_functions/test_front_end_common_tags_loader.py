@@ -18,12 +18,13 @@ from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag, ReverseIPTag
 from pacman.model.tags import Tags
 from pacman.model.graphs.machine import SimpleMachineVertex
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import tags_loader
 from spinnman.transceiver import Transceiver
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
 
     def __init__(self):
         self._ip_tags = list()
@@ -41,6 +42,10 @@ class _MockTransceiver(object):
     def clear_ip_tag(self, tag, board_address=None):
         pass
 
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
+
 
 class TestFrontEndCommonTagsLoader(unittest.TestCase):
 
@@ -50,7 +55,7 @@ class TestFrontEndCommonTagsLoader(unittest.TestCase):
     def test_call(self):
         """ Test calling the tags loader
         """
-
+        writer = FecDataWriter.mock()
         vertex = SimpleMachineVertex(None)
 
         tag_1 = IPTag("127.0.0.1", 0, 0, 1, "localhost", 12345, True, "Test")
@@ -63,10 +68,12 @@ class TestFrontEndCommonTagsLoader(unittest.TestCase):
         tags.add_ip_tag(tag_2, vertex)
         tags.add_reverse_ip_tag(rip_tag_1, vertex)
         tags.add_reverse_ip_tag(rip_tag_2, vertex)
-
+        writer.set_tags(tags)
         txrx = _MockTransceiver()
+        writer.set_transceiver(txrx)
 
-        tags_loader(txrx, tags)
+        tags_loader()
+        # Note the values being tested are only in the MockTransceiver
         self.assertIn(tag_1, txrx._ip_tags)
         self.assertIn(tag_2, txrx._ip_tags)
         self.assertIn(rip_tag_1, txrx._reverse_ip_tags)

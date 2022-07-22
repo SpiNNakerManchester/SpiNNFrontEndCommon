@@ -12,13 +12,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from collections import defaultdict
 from spinn_utilities.overrides import overrides
 from pacman.model.partitioner_splitters.abstract_splitters import (
     AbstractSplitterCommon)
 from pacman.model.placements import Placement
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_xy)
-from collections import defaultdict
+from spinn_front_end_common.data import FecDataView
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 
 
@@ -27,45 +28,35 @@ class LPGSplitter(AbstractSplitterCommon):
     """
 
     __slots__ = [
-        "__machine",
-        "__placements",
         "__m_vertices_by_ethernet",
         "__targeted_lpgs"
     ]
 
     def __init__(self):
         super(LPGSplitter, self).__init__()
-        self.__machine = None
-        self.__placements = None
+
         self.__m_vertices_by_ethernet = dict()
         self.__targeted_lpgs = set()
 
-    def create_vertices(self, machine, system_placements):
+    def create_vertices(self, system_placements):
         """ Special way of making LPG machine vertices, where one is placed
             on each Ethernet chip.  Note that this adds to system placements.
         """
-        self.__machine = machine
+        machine = FecDataView.get_machine()
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(
                 self.governed_app_vertex.params, self.governed_app_vertex)
             self.governed_app_vertex.remember_machine_vertex(lpg_vtx)
-            cores = self.__cores(machine, eth.x, eth.y)
+            cores = self.__cores(eth.x, eth.y)
             p = cores[system_placements.n_placements_on_chip(eth.x, eth.y)]
             system_placements.add_placement(
                 Placement(lpg_vtx, eth.x, eth.y, p))
             self.__m_vertices_by_ethernet[eth.x, eth.y] = lpg_vtx
 
-    def __cores(self, machine, x, y):
-        return [p.processor_id for p in machine.get_chip_at(x, y).processors
+    def __cores(self, x, y):
+        return [p.processor_id
+                for p in FecDataView.get_chip_at(x, y).processors
                 if not p.is_monitor]
-
-    def set_placements(self, placements):
-        """ Set the placements made, so the correct links can be made from
-            any vertices that target the LPG to the vertex closest on the
-            machine.  This is special to this splitter, so needs special care
-            to make use of it.
-        """
-        self.__placements = placements
 
     @overrides(AbstractSplitterCommon.create_machine_vertices)
     def create_machine_vertices(self, chip_counter):
@@ -93,8 +84,8 @@ class LPGSplitter(AbstractSplitterCommon):
         target_map = defaultdict(list)
         for m_vertex in source_vertex.splitter.get_out_going_vertices(
                 partition_id):
-            x, y = vertex_xy(m_vertex, self.__placements, self.__machine)
-            chip = self.__machine.get_chip_at(x, y)
+            x, y = vertex_xy(m_vertex)
+            chip = FecDataView.get_chip_at(x, y)
             lpg_vertex = self.__m_vertices_by_ethernet[
                 chip.nearest_ethernet_x, chip.nearest_ethernet_y]
             target_map[lpg_vertex].append(m_vertex)

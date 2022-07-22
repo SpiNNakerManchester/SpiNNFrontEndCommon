@@ -18,7 +18,8 @@ from spinn_machine import virtual_machine
 from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placements
-from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
+from pacman.model.graphs.application import ApplicationVertex
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     split_lpg_vertices)
@@ -40,7 +41,8 @@ class TestInsertLPGs(unittest.TestCase):
         unittest_setup()
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
-        machine = virtual_machine(width=12, height=12)
+        writer = FecDataWriter.mock()
+        writer.set_machine(virtual_machine(width=12, height=12))
 
         default_params = {
             'use_prefix': False,
@@ -59,13 +61,12 @@ class TestInsertLPGs(unittest.TestCase):
             'tag': None,
             'label': "Test"}
 
-        app_graph = ApplicationGraph("Test")
         default_params_holder = LivePacketGatherParameters(**default_params)
         lpg_vertex = LivePacketGather(default_params_holder)
-        app_graph.add_vertex(lpg_vertex)
+        writer.add_vertex(lpg_vertex)
 
         system_placements = Placements()
-        split_lpg_vertices(app_graph, machine, system_placements)
+        split_lpg_vertices(system_placements)
 
         locs = set()
         locs.add((0, 0))
