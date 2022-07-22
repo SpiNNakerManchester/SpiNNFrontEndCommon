@@ -73,7 +73,8 @@ class DatabaseWriter(SQLiteDB):
         """
         if FecDataView.get_vertices_by_type(LivePacketGather):
             return True
-        for vertex in FecDataView.get_vertices_by_type(AbstractSupportsDatabaseInjection):
+        for vertex in FecDataView.get_vertices_by_type(
+                AbstractSupportsDatabaseInjection):
             if vertex.is_in_injection_mode:
                 return True
         return False

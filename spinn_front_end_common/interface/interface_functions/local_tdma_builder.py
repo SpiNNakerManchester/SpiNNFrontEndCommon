@@ -131,7 +131,7 @@ def local_tdma_builder():
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in  FecDataView.get_vertices_by_type(
+    for app_vertex in FecDataView.get_vertices_by_type(
             TDMAAwareApplicationVertex):
         initial_offset = __generate_initial_offset(
             app_vertex, app_verts, clocks_initial,

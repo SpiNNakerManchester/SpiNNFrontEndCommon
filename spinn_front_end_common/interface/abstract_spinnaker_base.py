@@ -503,7 +503,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._hard_reset()
             FecTimer.setup(self)
 
-            #self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
