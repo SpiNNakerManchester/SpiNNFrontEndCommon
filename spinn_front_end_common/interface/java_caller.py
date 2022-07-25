@@ -261,7 +261,8 @@ class JavaCaller(object):
         by_ethernet = defaultdict(lambda: defaultdict(list))
         for placement in recording_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
-                chip = self._machine.get_chip_at(placement.x, placement.y)
+                machine = FecDataView.get_machine()
+                chip = machine.get_chip_at(placement.x, placement.y)
                 chip_xy = (placement.x, placement.y)
                 ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 by_ethernet[ethernet][chip_xy].append(placement)
