@@ -319,7 +319,7 @@ class JavaCaller(object):
         json_obj = list()
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
-                json_p = self._json_placement(placement, transceiver)
+                json_p = self._json_placement(placement)
                 if json_p:
                     json_obj.append(json_p)
 
