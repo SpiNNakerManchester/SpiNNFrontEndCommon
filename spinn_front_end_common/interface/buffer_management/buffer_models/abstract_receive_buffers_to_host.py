@@ -34,10 +34,9 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def get_recording_region_base_address(self, txrx, placement):
+    def get_recording_region_base_address(self, placement):
         """ Get the recording region base address
 
-        :param ~spinnman.transceiver.Transceiver txrx: the SpiNNMan instance
         :param ~pacman.model.placements.Placement placement:
             the placement object of the core to find the address of
         :return: the base address of the recording region

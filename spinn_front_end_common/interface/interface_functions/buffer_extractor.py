@@ -16,22 +16,19 @@
 import logging
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def buffer_extractor(app_graph, placements, buffer_manager):
+def buffer_extractor():
     """ Extracts data in between runs.
 
-    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-    :param ~pacman.model.placements.Placements placements:
-    :param BufferManager buffer_manager:
     """
     # Count the regions to be read
-    n_regions_to_read, recording_placements = _count_regions(
-        app_graph, placements)
+    n_regions_to_read, recording_placements = _count_regions()
     if not n_regions_to_read:
         logger.info("No recorded data to extract")
         return
@@ -39,25 +36,24 @@ def buffer_extractor(app_graph, placements, buffer_manager):
     # Read back the regions
     progress = ProgressBar(
         n_regions_to_read, "Extracting buffers from the last run")
+    buffer_manager = FecDataView.get_buffer_manager()
     try:
         buffer_manager.get_data_for_placements(recording_placements, progress)
     finally:
         progress.end()
 
 
-def _count_regions(app_graph, placements):
+def _count_regions():
     """
-    :param ~.ApplicationGraph app_graph
-    :param ~.Placements placements:
     :rtype: tuple(int, list(~.Placement))
     """
     # Count the regions to be read
     n_regions_to_read = 0
     recording_placements = list()
-    for app_vertex in app_graph.vertices:
+    for app_vertex in FecDataView.get_runtime_graph().vertices:
         for vertex in app_vertex.machine_vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 n_regions_to_read += len(vertex.get_recorded_region_ids())
-                placement = placements.get_placement_of_vertex(vertex)
+                placement = FecDataView.get_placement_of_vertex(vertex)
                 recording_placements.append(placement)
     return n_regions_to_read, recording_placements

@@ -58,12 +58,12 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self):
         with ProvenanceWriter() as db:
-            db.insert_timing("mapping", "compressor", 12, 1, None, None)
+            db.insert_timing("mapping", "compressor", 12, None, None)
             db.insert_timing(
-                "mapping", "router_report", 123, 1, None, "cfg says no")
-            db.insert_timing("execute", "run", 134, 1, 1, None)
-            db.insert_timing("execute", "run", 344, 1, 2, None)
-            db.insert_timing("execute", "clear", 4, 1, 2, None)
+                "mapping", "router_report", 123, None, "cfg says no")
+            db.insert_timing("execute", "run", 134, 1, None)
+            db.insert_timing("execute", "run", 344, 2, None)
+            db.insert_timing("execute", "clear", 4, 2, None)
         reader = ProvenanceReader()
         data = reader.get_timer_sum_by_category("mapping")
         self.assertEqual(12 + 123, data)
@@ -80,11 +80,10 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_category_timings(self):
         with ProvenanceWriter() as db:
-            db.insert_category_timing("mapping", timedelta(seconds=12), 1, 1)
-            db.insert_category_timing("mapping", timedelta(seconds=123), 1, 2)
-            db.insert_category_timing(
-                "execute", timedelta(seconds=134), 1, None)
-            db.insert_category_timing("execute", timedelta(seconds=344), 1, 2)
+            db.insert_category_timing("mapping", timedelta(seconds=12), 1)
+            db.insert_category_timing("mapping", timedelta(seconds=123), 2)
+            db.insert_category_timing("execute", timedelta(seconds=134), None)
+            db.insert_category_timing("execute", timedelta(seconds=344), 2)
         reader = ProvenanceReader()
         data = reader.get_category_timer_sum("mapping")
         self.assertEqual((12 + 123) * 1000, data)

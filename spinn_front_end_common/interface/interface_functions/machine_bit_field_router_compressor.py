@@ -20,7 +20,6 @@ from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.ordered_set import OrderedSet
 from spinn_machine import CoreSubsets, Router
 from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
@@ -35,6 +34,7 @@ from pacman.operations.router_compressors.ordered_covering_router_compressor\
 from spinn_front_end_common.abstract_models.\
     abstract_supports_bit_field_routing_compression import (
         AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
@@ -121,40 +121,26 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_aplx = compressor_aplx
         self._compressor_type = compressor_type
 
-    def run(
-            self, routing_tables, transceiver, machine, app_id,
-            app_graph, placements, executable_finder,
-            routing_infos, executable_targets,
-            compress_as_much_as_possible=False):
+    def run(self, compress_as_much_as_possible=False):
         """ entrance for routing table compression with bit field
 
         :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
-        :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param int app_id: app id of the application
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-            the graph
-        :param ~pacman.model.placements.Placements placements:
-            placements on machine
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
         :param bool write_compressor_iobuf: flag saying if read IOBUF
         :param bool produce_report:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
         """
+        view = FecDataView()
+        app_id = FecDataView.get_app_id()
+        app_graph = FecDataView.get_runtime_graph()
+        routing_tables = FecDataView.get_uncompressed()
+        transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
         # new app id for this simulation
-        routing_table_compressor_app_id = \
-            transceiver.app_id_tracker.get_new_id()
+        routing_table_compressor_app_id = view.get_new_id()
 
         text = self._PROGRESS_BAR_TEXT.format(self._compressor_type)
         retry_count = get_config_int(
@@ -171,18 +157,17 @@ class _MachineBitFieldRouterCompressor(object):
 
         # locate data and on_chip_cores to load binary on
         (addresses, matrix_addresses_and_size) = self._generate_addresses(
-            app_graph, placements, transceiver, progress_bar)
+            progress_bar)
 
         # create executable targets
         (compressor_executable_targets, bit_field_sorter_executable_path,
          bit_field_compressor_executable_path) = self._generate_core_subsets(
-            routing_tables, executable_finder, machine, progress_bar,
-            executable_targets)
+            routing_tables, progress_bar)
 
         # load data into sdram
         on_host_chips = self._load_data(
             addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, machine,
+            routing_tables, app_id,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
             matrix_addresses_and_size, bit_field_compressor_executable_path,
@@ -192,8 +177,7 @@ class _MachineBitFieldRouterCompressor(object):
         try:
             run_system_application(
                 compressor_executable_targets,
-                routing_table_compressor_app_id, transceiver,
-                executable_finder,
+                routing_table_compressor_app_id,
                 get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
@@ -208,7 +192,7 @@ class _MachineBitFieldRouterCompressor(object):
                 e.failed_core_states()))
             try:
                 transceiver.stop_application(routing_table_compressor_app_id)
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 logger.warning("Could not stop compressor!")
             raise e
 
@@ -220,7 +204,7 @@ class _MachineBitFieldRouterCompressor(object):
                     sttr = edge.pre_vertex.splitter
                     for vertex in sttr.get_source_specific_in_coming_vertices(
                             partition.pre_vertex, partition.identifier):
-                        place = placements.get_placement_of_vertex(vertex)
+                        place = FecDataView.get_placement_of_vertex(vertex)
                         if place.chip in on_host_chips:
                             most_costly_cores[place.chip][place.p] += 1
             logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
@@ -229,7 +213,7 @@ class _MachineBitFieldRouterCompressor(object):
                 string_describing_what_being_progressed=self._HOST_BAR_TEXT)
             compressed_pacman_router_tables = MulticastRoutingTables()
 
-            key_atom_map = generate_key_to_atom_map(app_graph, routing_infos)
+            key_atom_map = generate_key_to_atom_map()
 
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
                 if get_config_bool(
@@ -243,17 +227,15 @@ class _MachineBitFieldRouterCompressor(object):
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     report_folder_path=report_folder_path,
-                    transceiver=transceiver,
                     most_costly_cores=most_costly_cores,
-                    placements=placements, machine=machine,
                     compressed_pacman_router_tables=(
                         compressed_pacman_router_tables),
                     key_atom_map=key_atom_map)
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
-                if (not machine.get_chip_at(table.x, table.y).virtual
-                        and table.number_of_entries):
+                if (not view.get_chip_at(table.x, table.y).virtual
+                        and table.multicast_routing_entries):
                     transceiver.clear_multicast_routes(table.x, table.y)
                     transceiver.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
@@ -263,14 +245,10 @@ class _MachineBitFieldRouterCompressor(object):
 
         return compressor_executable_targets
 
-    def _generate_core_subsets(
-            self, routing_tables, executable_finder, machine, progress_bar,
-            system_executable_targets):
+    def _generate_core_subsets(self, routing_tables, progress_bar):
         """ generates the core subsets for the binaries
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
-        :param ~.ExecutableFinder executable_finder: the executable path finder
-        :param ~.Machine machine: the spinn machine instance
         :param ~.ProgressBar progress_bar: progress bar
         :param ExecutableTargets system_executable_targets:
             the executables targets to cores
@@ -280,13 +258,12 @@ class _MachineBitFieldRouterCompressor(object):
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
 
-        _, cores = filter_targets(
-            system_executable_targets, lambda ty: ty is ExecutableType.SYSTEM)
-
+        _, cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
+        view = FecDataView()
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
             sorter = None
-            for processor in machine.get_chip_at(
+            for processor in view.get_chip_at(
                     routing_table.x, routing_table.y).processors:
                 if (not processor.is_monitor and
                         not cores.all_core_subsets.is_core(
@@ -307,11 +284,11 @@ class _MachineBitFieldRouterCompressor(object):
 
         # bit field executable paths
         bit_field_sorter_executable_path = \
-            executable_finder.get_executable_path(
+            FecDataView.get_executable_path(
                 self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
 
         bit_field_compressor_executable_path = \
-            executable_finder.get_executable_path(self._compressor_aplx)
+            FecDataView.get_executable_path(self._compressor_aplx)
 
         # add the sets
         executable_targets.add_subsets(
@@ -327,19 +304,18 @@ class _MachineBitFieldRouterCompressor(object):
                 bit_field_compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
-            self, executable_targets, transceiver, host_chips,
-            sorter_binary_path):
+            self, executable_targets, host_chips, sorter_binary_path):
         """ Goes through the cores checking for cores that have failed to\
             generate the compressed routing tables with bitfield
 
         :param ExecutableTargets executable_targets:
             cores to load router compressor with bitfield on
-        :param ~.Transceiver transceiver: SpiNNMan instance
         :param list(tuple(int,int)) host_chips:
             the chips which need to be ran on host.
         :param str sorter_binary_path: the path to the sorter binary
         :rtype: bool
         """
+        transceiver = FecDataView.get_transceiver()
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
         result = True
@@ -365,7 +341,7 @@ class _MachineBitFieldRouterCompressor(object):
 
     def _load_data(
             self, addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id, machine,
+            routing_tables, app_id,
             compress_as_much_as_possible, progress_bar, cores,
             matrix_addresses_and_size,
             bit_field_compressor_executable_path,
@@ -399,9 +375,10 @@ class _MachineBitFieldRouterCompressor(object):
             host compression, as the malloc failed.
         :rtype: list(tuple(int,int))
         """
-        run_by_host = OrderedSet()
+        run_by_host = list()
+        view = FecDataView()
         for table in routing_tables.routing_tables:
-            if not machine.get_chip_at(table.x, table.y).virtual:
+            if not view.get_chip_at(table.x, table.y).virtual:
                 try:
                     self._load_routing_table_data(
                         table, app_id, transceiver,
@@ -431,7 +408,7 @@ class _MachineBitFieldRouterCompressor(object):
                         bit_field_compressor_executable_path, cores,
                         compress_as_much_as_possible, comms_sdram)
                 except CantFindSDRAMToUseException:
-                    run_by_host.add((table.x, table.y))
+                    run_by_host.append((table.x, table.y))
 
         return run_by_host
 
@@ -685,14 +662,13 @@ class _MachineBitFieldRouterCompressor(object):
         raise CantFindSDRAMToUseException()
 
     def _add_to_addresses(
-            self, vertex, placement, transceiver, region_addresses,
+            self, vertex, placement, region_addresses,
             sdram_block_addresses_and_sizes):
         """ adds data about the API-based vertex.
 
         :param AbstractSupportsBitFieldRoutingCompression vertex:
             vertex which utilises the API
         :param ~.Placement placement: placement of vertex
-        :param ~.Transceiver transceiver:  spinnman instance
         :param dict(tuple(int,int),list(tuple(int,int))) region_addresses:
             store for data regions
         :param sdram_block_addresses_and_sizes: store for surplus SDRAM
@@ -700,14 +676,12 @@ class _MachineBitFieldRouterCompressor(object):
             dict(tuple(int,int),list(tuple(int,int)))
         """
         # store the region sdram address's
-        bit_field_sdram_address = vertex.bit_field_base_address(
-            transceiver, placement)
+        bit_field_sdram_address = vertex.bit_field_base_address(placement)
         region_addresses[placement.x, placement.y].append(
             (bit_field_sdram_address, placement.p))
 
         # store the available space from the matrix to steal
-        blocks = vertex.regeneratable_sdram_blocks_and_sizes(
-            transceiver, placement)
+        blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
             if size != 0 and size > self._MIN_SIZE_FOR_HEAP:
@@ -717,13 +691,9 @@ class _MachineBitFieldRouterCompressor(object):
             sdram_block_addresses_and_sizes[placement.x, placement.y],
             key=lambda data: data[0])
 
-    def _generate_addresses(
-            self, app_graph, placements, transceiver, progress_bar):
+    def _generate_addresses(self, progress_bar):
         """ generates the bitfield SDRAM addresses
 
-        :param ~.ApplicationGraph app_graph: the graph
-        :param ~.Placements placements: placements
-        :param ~.Transceiver transceiver: spinnman instance
         :param ~.ProgressBar progress_bar: the progress bar
         :return: region_addresses and the executable targets to load the
             router table compressor with bitfield. and the SDRAM blocks
@@ -734,17 +704,17 @@ class _MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses = defaultdict(list)
         sdram_block_addresses_and_sizes = defaultdict(list)
+        app_graph = FecDataView.get_runtime_graph()
 
         for app_vertex in progress_bar.over(
                 app_graph.vertices, finish_at_end=False):
             for m_vertex in app_vertex.machine_vertices:
                 if isinstance(
                         m_vertex, AbstractSupportsBitFieldRoutingCompression):
-                    placement = placements.get_placement_of_vertex(m_vertex)
+                    placement = FecDataView.get_placement_of_vertex(m_vertex)
                     self._add_to_addresses(
-                        m_vertex, placement, transceiver, region_addresses,
+                        m_vertex, placement, region_addresses,
                         sdram_block_addresses_and_sizes)
-
         return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(
@@ -789,70 +759,26 @@ class _MachineBitFieldRouterCompressor(object):
 
 
 def machine_bit_field_ordered_covering_compressor(
-        routing_tables, transceiver, machine, app_id, app_graph,
-        placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
-        :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param int app_id: app id of the application
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-            the graph
-        :param ~pacman.model.placements.Placements placements:
-            placements on machine
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
-        :param bool produce_report:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
-    return compressor.run(
-        routing_tables, transceiver, machine, app_id, app_graph,
-        placements, executable_finder, routing_infos, executable_targets,
-        compress_as_much_as_possible)
+    return compressor.run(compress_as_much_as_possible)
 
 
 def machine_bit_field_pair_router_compressor(
-        routing_tables, transceiver, machine, app_id, app_graph,
-        placements, executable_finder, routing_infos, executable_targets,
         compress_as_much_as_possible=False):
     """ compression with bit field and ordered covering
 
-        :param routing_tables: routing tables
-        :type routing_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
-        :param ~spinn_machine.Machine machine: spinnMachine instance
-        :param int app_id: app id of the application
-        :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-            the graph
-        :param ~pacman.model.placements.Placements placements:
-            placements on machine
-        :param ExecutableFinder executable_finder:
-            where are binaries are located
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
-        :param bool produce_report:
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        :param ~spinnman.model.ExecutableTargets executable_targets:
-            the set of targets and executables
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
         :return: where the compressors ran
         """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
-    return compressor.run(
-        routing_tables, transceiver, machine, app_id, app_graph,
-        placements, executable_finder, routing_infos, executable_targets,
-        compress_as_much_as_possible)
+    return compressor.run(compress_as_much_as_possible)

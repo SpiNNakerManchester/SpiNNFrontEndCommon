@@ -14,17 +14,16 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesLocalProvenanceData)
 
 
-def graph_provenance_gatherer(application_graph):
+def graph_provenance_gatherer():
     """ Gets provenance information from the graph.
 
-    :param application_graph: The optional application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
-    """
+     """
+    application_graph = FecDataView.get_runtime_graph()
     progress = ProgressBar(
         application_graph.n_vertices +
         application_graph.n_outgoing_edge_partitions,

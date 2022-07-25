@@ -21,6 +21,7 @@ from spinn_machine.tags import IPTag
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import (
     SCAMPConnection, EIEIOConnection)
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from pacman_test_objects import SimpleTestVertex
@@ -37,6 +38,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # individual boards, where it's preferred all traffic is received by
         # a single listener
 
+        writer = FecDataWriter.mock()
         # Create two vertices
         v1 = SimpleTestVertex(10, "v1", 256)
         v2 = SimpleTestVertex(10, "v2", 256)
@@ -53,6 +55,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         t = Tags()
         t.add_ip_tag(t1, v1)
         t.add_ip_tag(t2, v2)
+        writer.set_tags(t)
 
         # Create board connections
         connections = []
@@ -63,20 +66,17 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # Create two placements and 'Placements' object
         pl1 = Placement(v1, 0, 1, 1)
         pl2 = Placement(v2, 0, 2, 1)
-        pl = Placements([pl1, pl2])
+        writer.set_placements(Placements([pl1, pl2]))
 
         # Create transceiver
-        trnx = Transceiver(version=5, connections=connections)
+        transceiver = Transceiver(version=5, connections=connections)
+        writer.set_transceiver(transceiver)
         # Alternatively, one can register a udp listener for testing via:
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
         # Create buffer manager
-        bm = BufferManager(
-            placements=pl, tags=t, transceiver=trnx,
-            packet_gather_cores_to_ethernet_connection_map=None,
-            extra_monitor_to_chip_mapping=None, machine=None,
-            fixed_routes=None)
+        bm = BufferManager()
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
@@ -84,7 +84,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         bm._add_buffer_listeners(vertex=v2)
 
         number_of_listeners = 0
-        for i in bm._transceiver._udp_listenable_connections_by_class[
+        for i in transceiver._udp_listenable_connections_by_class[
                 EIEIOConnection]:
             # Check if listener is registered on connection - we only expect
             # one listener to be registered, as all connections can use the
