@@ -119,7 +119,7 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
+    CommandSender, DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
