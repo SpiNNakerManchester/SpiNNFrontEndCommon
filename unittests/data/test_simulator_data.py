@@ -730,5 +730,7 @@ class TestSimulatorData(unittest.TestCase):
         cs = CommandSender("test", [])
         writer.add_vertex(app1)
         with self.assertRaises(NotImplementedError):
-            writer.add_vertex((cs))
+            FecDataView.add_vertex((cs))
         self.assertEqual(1, FecDataView.get_n_vertices())
+        writer.add_vertex(cs)
+        self.assertEqual(2, FecDataView.get_n_vertices())
