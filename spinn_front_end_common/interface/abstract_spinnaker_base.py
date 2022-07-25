@@ -251,31 +251,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _machine_clear(self):
         pass
 
-    def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters. Note that LPGs can be inserted to track behaviour \
-            either at the application graph level or at the machine graph \
-            level, but not both at the same time.
-
-        :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
-            the vertex that needs to send to a given LPG
-        :param list(str) partition_ids:
-            the IDs of the partitions to connect from the vertex
-        """
-        lpg_vertex = self._lpg_vertices.get(live_packet_gatherer_params)
-        if lpg_vertex is None:
-            lpg_vertex = LivePacketGather(
-                live_packet_gatherer_params, live_packet_gatherer_params.label)
-            self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
-            self._data_writer.add_vertex(lpg_vertex)
-        for part_id in partition_ids:
-            self._data_writer.add_edge(
-                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
-
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
 
