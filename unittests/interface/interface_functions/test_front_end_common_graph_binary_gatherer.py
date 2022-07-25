@@ -17,7 +17,6 @@ import unittest
 from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import SimpleMachineVertex
-from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from pacman.model.placements import Placements, Placement
