@@ -184,10 +184,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_max_machine"
     ]
 
-    def __init__(
-            self, graph_label=None, data_writer_cls=None):
+    def __init__(self, data_writer_cls=None):
         """
-        :param str graph_label: A label for the overall application graph
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
@@ -206,7 +204,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
-        self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._hard_reset()
 

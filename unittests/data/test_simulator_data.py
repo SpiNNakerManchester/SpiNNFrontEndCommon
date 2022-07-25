@@ -521,7 +521,6 @@ class TestSimulatorData(unittest.TestCase):
         vertex1 = SimpleTestVertex(1, "1")
         vertex2 = SimpleTestVertex(2, "2")
         vertex3 = SimpleTestVertex(3, "3")
-        writer.create_graphs("test")
         FecDataView.add_vertex(vertex1)
         FecDataView.add_vertex(vertex2)
         FecDataView.add_vertex(vertex3)
@@ -725,7 +724,6 @@ class TestSimulatorData(unittest.TestCase):
 
     def test_command_sender_safety(self):
         writer = FecDataWriter.setup()
-        writer.create_graphs("test")
         app1 = SimpleTestVertex(12, "app1")
         cs = CommandSender("test", [])
         writer.add_vertex(app1)
