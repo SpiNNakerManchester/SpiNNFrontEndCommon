@@ -620,32 +620,33 @@ class AbstractSpinnakerBase(ConfigHandler):
         for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 constraints = []
+                machine = self._data_writer.get_machine()
 
                 # Decide if a constraint is needed
                 if isinstance(vertex, ApplicationFPGAVertex):
                     fpga = vertex.outgoing_fpga_connection
                     if fpga is not None:
-                        link_data = self._machine.get_fpga_link_with_id(
+                        link_data = machine.get_fpga_link_with_id(
                             fpga.fpga_id, fpga.fpga_link_id,
                             fpga.board_address, fpga.chip_coords)
                         constraints.append(ChipAndCoreConstraint(
                             link_data.connected_chip_x,
                             link_data.connected_chip_y))
                 elif isinstance(vertex, AbstractFPGA):
-                    link_data = self._machine.get_fpga_link_with_id(
+                    link_data = machine.get_fpga_link_with_id(
                             vertex.fpga_id, vertex.fpga_link_id,
                             vertex.board_address, fpga.linked_chip_coordinates)
                     constraints.append(ChipAndCoreConstraint(
                         link_data.connected_chip_x,
                         link_data.connected_chip_y))
                 elif isinstance(vertex, ApplicationSpiNNakerLinkVertex):
-                    link_data = self._machine.get_spinnaker_link_with_id(
+                    link_data = machine.get_spinnaker_link_with_id(
                         vertex.spinnaker_link_id, vertex.board_address)
                     constraints.append(ChipAndCoreConstraint(
                         link_data.connected_chip_x,
                         link_data.connected_chip_y))
                 elif isinstance(vertex, AbstractSpiNNakerLink):
-                    link_data = self._machine.get_spinnaker_link_with_id(
+                    link_data = machine.get_spinnaker_link_with_id(
                         vertex.spinnaker_link_id, vertex.board_address)
                     constraints.append(ChipAndCoreConstraint(
                         link_data.connected_chip_x,
