@@ -78,13 +78,11 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         vertex_1 = _TestAppVertexWithBinary(
             "test.aplx", ExecutableType.RUNNING)
+
         vertex_2 = _TestAppVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
         vertex_3 = _TestAppVertexWithBinary(
             "test2.aplx", ExecutableType.RUNNING)
-
-        graph = ApplicationGraph("Test")
-        graph.add_vertices([vertex_1, vertex_2, vertex_3])
 
         placements = Placements(placements=[
             Placement(vertex_1.machine_vertex, 0, 0, 0),

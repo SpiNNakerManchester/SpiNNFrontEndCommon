@@ -590,7 +590,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 if command_sender is None:
                     command_sender = CommandSender(
                         "auto_added_command_sender", None)
-                    self._data_writer.add_vertex(command_sender)
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
@@ -600,6 +599,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # add the edges from the command sender to the dependent vertices
         if command_sender is not None:
+            if not command_sender.addedToGraph():
+                self._data_writer.add_vertex(command_sender)
             edges, partition_ids = command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
                 self._data_writer.add_edge(edge, partition_id)
