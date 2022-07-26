@@ -66,8 +66,7 @@ from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
-    AbstractCanReset)
+    AbstractVertexWithEdgeToDependentVertices, AbstractCanReset)
 from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
@@ -2422,33 +2421,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         # mark vertices as not changed, otherwise they will keep reporting
         # that they have changed when they haven't
         changed = self._data_writer.get_vertices_or_edges_added()
+        if self._data_writer.get_runtime_graph():
+            changed = True
         if self._data_writer.is_hard_reset():
             changed = True
-        data_changed = False
-
-        for vertex in self._data_writer.iterate_vertices():
-            if isinstance(vertex, AbstractChangableAfterRun):
-                if vertex.requires_mapping:
-                    changed = True
-                if vertex.requires_data_generation:
-                    data_changed = True
-                vertex.mark_no_changes()
-            for machine_vertex in vertex.machine_vertices:
-                if isinstance(machine_vertex, AbstractChangableAfterRun):
-                    if machine_vertex.requires_mapping:
-                        changed = True
-                    if machine_vertex.requires_data_generation:
-                        data_changed = True
-                    machine_vertex.mark_no_changes()
-        for partition in \
-                self._data_writer.iterate_partitions():
-            for edge in partition.edges:
-                if isinstance(edge, AbstractChangableAfterRun):
-                    if edge.requires_mapping:
-                        changed = True
-                    if edge.requires_data_generation:
-                        data_changed = True
-                    edge.mark_no_changes()
+        data_changed = self._data_writer.get_requires_data_generation()
 
         return changed, data_changed
 
