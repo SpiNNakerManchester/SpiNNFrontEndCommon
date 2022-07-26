@@ -15,7 +15,7 @@
 
 import os
 import sqlite3
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
@@ -53,7 +53,7 @@ class ProvenanceReader(object):
             for example before run is called
         """
         return os.path.join(
-            globals_variables.provenance_file_path(), PROVENANCE_DB)
+            FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
 
     def __init__(self, provenance_data_path=None):
         """

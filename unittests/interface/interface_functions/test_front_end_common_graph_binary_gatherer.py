@@ -21,6 +21,7 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from pacman.model.placements import Placements, Placement
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     graph_binary_gatherer, locate_executable_start_type)
@@ -90,9 +91,11 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_2.machine_vertex, 0, 0, 1),
             Placement(vertex_3.machine_vertex, 0, 0, 2)])
 
-        targets = graph_binary_gatherer(
-            placements, _TestExecutableFinder())
-        start_type = locate_executable_start_type(placements)
+        writer = FecDataWriter.mock()
+        writer.set_placements(placements)
+        writer._set_executable_finder(_TestExecutableFinder())
+        targets = graph_binary_gatherer()
+        start_type = locate_executable_start_type()
         self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -117,10 +120,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_1.machine_vertex, 0, 0, 0),
             Placement(vertex_2.machine_vertex, 0, 0, 1)])
 
-        graph = ApplicationGraph("Test")
-        graph.add_vertices([vertex_1, vertex_2])
-
-        results = locate_executable_start_type(placements)
+        writer = FecDataWriter.mock()
+        writer.set_placements(placements)
+        results = locate_executable_start_type()
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
         self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)

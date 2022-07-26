@@ -18,6 +18,7 @@ from collections import defaultdict
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
@@ -55,6 +56,10 @@ class _MockTransceiver(Transceiver):
     def send_signal(self, app_id, signal):
         pass
 
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
+
 
 class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
@@ -62,7 +67,8 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         unittest_setup()
 
     def test_front_end_common_load_executable_images(self):
-        transceiver = _MockTransceiver(self)
+        writer = FecDataWriter.mock()
+        writer.set_transceiver(_MockTransceiver(self))
         targets = ExecutableTargets()
         targets.add_processor("test.aplx", 0, 0, 0, SIM)
         targets.add_processor("test.aplx", 0, 0, 1, SIM)
@@ -70,7 +76,8 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         targets.add_processor("test2.aplx", 0, 1, 0, SIM)
         targets.add_processor("test2.aplx", 0, 1, 1, SIM)
         targets.add_processor("test2.aplx", 0, 1, 2, SIM)
-        load_app_images(targets, 30, transceiver)
+        writer.set_executable_targets(targets)
+        load_app_images()
 
 
 if __name__ == "__main__":

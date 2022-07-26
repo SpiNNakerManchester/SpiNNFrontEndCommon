@@ -16,10 +16,11 @@
 from enum import Enum
 from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.utility_calls import (
+from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.interface.provenance.provenance_writer import (
@@ -124,12 +125,12 @@ class ProvidesProvenanceDataFromMachineImpl(
         return transceiver.read_word(
             placement.x, placement.y, prov_region_entry_address)
 
-    def _read_provenance_data(self, transceiver, placement):
+    def _read_provenance_data(self, placement):
         """
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :rtype: iterable(int)
         """
+        transceiver = FecDataView.get_transceiver()
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
         data = transceiver.read_memory(
@@ -283,15 +284,13 @@ class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine.
         get_provenance_data_from_machine,
         extend_doc=False)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         """ Retrieve the provenance data.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            How to talk to the machine
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it
         """
-        provenance_data = self._read_provenance_data(transceiver, placement)
+        provenance_data = self._read_provenance_data(placement)
         label, x, y, p = self._get_provenance_placement_description(placement)
         self.parse_system_provenance_items(
             label, x, y, p, provenance_data)

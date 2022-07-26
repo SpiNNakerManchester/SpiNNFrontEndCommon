@@ -19,6 +19,7 @@ import time
 from datetime import timedelta
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
 
@@ -75,7 +76,7 @@ class FecTimer(object):
         _simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
             _provenance_path = os.path.join(
-                simulator._report_default_directory,
+                FecDataView.get_run_dir_path(),
                 "algorithm_timings.rpt")
         else:
             _provenance_path = None
@@ -104,7 +105,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -115,8 +116,8 @@ class FecTimer(object):
             return True
 
     def skip_if_virtual_board(self):
-        if _simulator.use_virtual_board:
-            self.skip("simulator.use_virtual_board")
+        if get_config_bool("Machine", "virtual_board"):
+            self.skip("virtual_board")
             return True
         else:
             return False
@@ -154,7 +155,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -188,6 +189,6 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, skip)
+                _simulator.n_loops, skip)
         self._report(message)
         return False

@@ -31,42 +31,31 @@ from pacman.model.routing_tables import (
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.utilities.constants import (
     BYTES_PER_WORD, BYTES_PER_4_WORDS)
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from pacman.operations.router_compressors.pair_compressor import (
     _PairCompressor)
 
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 
-def host_based_bit_field_router_compressor(
-        router_tables, machine, placements, transceiver,
-        app_graph, routing_infos):
+def host_based_bit_field_router_compressor():
     """
     Entry point when using the PACMANAlgorithmExecutor
 
-    :param router_tables: routing tables (uncompressed and unordered)
-    :type router_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
-    :param ~spinn_machine.Machine machine: SpiNNMachine instance
-    :param ~pacman.model.placements.Placements placements: placements
-    :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
-        the graph
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        routing information
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
+    routing_tables = FecDataView.get_uncompressed().routing_tables
+    app_graph = FecDataView.get_runtime_graph()
     # create progress bar
     progress = ProgressBar(
-        len(router_tables.routing_tables) * 2,
+        len(routing_tables) * 2,
         "Compressing routing Tables with bitfields in host")
 
     # create report
@@ -79,7 +68,7 @@ def host_based_bit_field_router_compressor(
     # compressed router table
     compressed_pacman_router_tables = MulticastRoutingTables()
 
-    key_atom_map = generate_key_to_atom_map(app_graph, routing_infos)
+    key_atom_map = generate_key_to_atom_map()
 
     most_costly_cores = defaultdict(lambda: defaultdict(int))
     for partition in app_graph.outgoing_edge_partitions:
@@ -87,15 +76,14 @@ def host_based_bit_field_router_compressor(
             splitter = edge.post_vertex.splitter
             for vertex, _ in splitter.get_source_specific_in_coming_vertices(
                     partition.pre_vertex, partition.identifier):
-                place = placements.get_placement_of_vertex(vertex)
+                place = FecDataView.get_placement_of_vertex(vertex)
                 most_costly_cores[place.xy][place.p] += 1
 
     # start the routing table choice conversion
-    for router_table in progress.over(router_tables.routing_tables):
+    for router_table in progress.over(routing_tables):
         start_compression_selection_process(
             router_table, report_folder_path,
-            transceiver, most_costly_cores, placements, machine,
-            compressed_pacman_router_tables, key_atom_map)
+            most_costly_cores, compressed_pacman_router_tables, key_atom_map)
 
     # return compressed tables
     return compressed_pacman_router_tables
@@ -106,23 +94,21 @@ def generate_report_path():
     :rtype: str
     """
     report_folder_path = os.path.join(
-        report_default_directory(), _REPORT_FOLDER_NAME)
+        FecDataView.get_report_dir_path(), _REPORT_FOLDER_NAME)
     if not os.path.exists(report_folder_path):
         os.mkdir(report_folder_path)
     return report_folder_path
 
 
-def generate_key_to_atom_map(app_graph, routing_infos):
+def generate_key_to_atom_map():
     """ THIS IS NEEDED due to the link from key to edge being lost.
 
-    :param ~pacman.model.graphs.allication.ApplicationGraph app_graph:
-        The graph
-    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-        routing infos
     :return: key to atom map based of key to n atoms
     :rtype: dict(int,int)
     """
     # build key to n atoms map
+    app_graph = FecDataView.get_runtime_graph()
+    routing_infos = FecDataView.get_routing_infos()
     key_to_n_atoms_map = dict()
     for partition in app_graph.outgoing_edge_partitions:
         for vertex in partition.pre_vertex.splitter.get_out_going_vertices(
@@ -136,8 +122,7 @@ def generate_key_to_atom_map(app_graph, routing_infos):
 
 def start_compression_selection_process(
         router_table, report_folder_path,
-        transceiver, most_costly_cores, placements, machine,
-        compressed_pacman_router_tables, key_atom_map):
+        most_costly_cores, compressed_pacman_router_tables, key_atom_map):
     """ Entrance method for doing on host compression. Can be used as a \
         public method for other compressors.
 
@@ -146,24 +131,16 @@ def start_compression_selection_process(
         ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
     :param report_folder_path: the report folder base address
     :type report_folder_path: str or None
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        spinnMan instance
     :param dict(dict(int)) most_costly_cores:
         Map of chip x, y to processors to count of incoming on processor
-    :param ~pacman.model.placements.Placements placements: placements
-    :param ~spinn_machine.Machine machine: SpiNNMan instance
-    :param compressed_pacman_router_tables:
-        a data holder for compressed tables
-    :type compressed_pacman_router_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
     :param dict(int,int) key_atom_map: key to atoms map
         should be allowed to handle per time step
     """
     compressor = _HostBasedBitFieldRouterCompressor()
     # pylint: disable=protected-access
     compressor._run(
-        router_table, report_folder_path, transceiver, most_costly_cores,
-        placements, machine, compressed_pacman_router_tables, key_atom_map)
+        router_table, report_folder_path, most_costly_cores,
+        compressed_pacman_router_tables, key_atom_map)
 
 
 class _BitFieldData(object):
@@ -285,32 +262,28 @@ class _HostBasedBitFieldRouterCompressor(object):
         self._compression_attempts = dict()
         self._n_bitfields = None
 
-    def get_bit_field_sdram_base_addresses(
-            self, chip_x, chip_y, machine, placements, transceiver):
+    def get_bit_field_sdram_base_addresses(self, chip_x, chip_y):
         """
         :param int chip_x:
         :param int chip_y:
-        :param ~spinn_machine.Machine machine:
-        :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         """
         # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
+        placements = FecDataView.get_placements()
         for p in range(0, Machine.max_cores_per_chip()):
             if placements.is_processor_occupied(chip_x, chip_y, p):
-                vertex = placements.get_vertex_on_processor(chip_x, chip_y, p)
+                vertex = placements.get_vertex_on_processor(
+                    chip_x, chip_y, p)
 
                 if isinstance(
                         vertex, AbstractSupportsBitFieldRoutingCompression):
                     base_addresses[p] = vertex.bit_field_base_address(
-                        transceiver, placements.get_placement_of_vertex(
-                            vertex))
+                        FecDataView.get_placement_of_vertex(vertex))
         return base_addresses
 
     def _run(
-            self, router_table, report_folder_path,
-            transceiver, most_costly_cores, placements, machine,
+            self, router_table, report_folder_path, most_costly_cores,
             compressed_pacman_router_tables, key_atom_map):
         """ Entrance method for doing on host compression. Can be used as a \
             public method for other compressors.
@@ -320,12 +293,8 @@ class _HostBasedBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param report_folder_path: the report folder base address
         :type report_folder_path: str or None
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            spinnMan instance
         :param dict(dict(int)) most_costly_cores:
             Map of chip x, y to processors to count of incoming on processor
-        :param ~pacman.model.placements.Placements placements: placements
-        :param ~spinn_machine.Machine machine: SpiNNMan instance
         :param compressed_pacman_router_tables:
             a data holder for compressed tables
         :type compressed_pacman_router_tables:
@@ -336,13 +305,12 @@ class _HostBasedBitFieldRouterCompressor(object):
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (
             self.get_bit_field_sdram_base_addresses(
-                router_table.x, router_table.y, machine, placements,
-                transceiver))
+                router_table.x, router_table.y))
 
         # read in bitfields.
         self._read_in_bit_fields(
-            transceiver, router_table.x, router_table.y,
-            bit_field_chip_base_addresses, most_costly_cores)
+            router_table.x, router_table.y, bit_field_chip_base_addresses,
+            most_costly_cores)
 
         # execute binary search
         self._start_binary_search(router_table, key_atom_map)
@@ -361,7 +329,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         # remove bitfields from cores that have been merged into the
         # router table
         self._remove_merged_bitfields_from_cores(
-            router_table.x, router_table.y, transceiver)
+            router_table.x, router_table.y)
 
         # create report file if required
         if report_folder_path:
@@ -434,11 +402,10 @@ class _HostBasedBitFieldRouterCompressor(object):
         return flag
 
     def _read_in_bit_fields(
-            self, transceiver, chip_x, chip_y, bit_field_chip_base_addresses,
+            self, chip_x, chip_y, bit_field_chip_base_addresses,
             most_costly_cores):
         """ reads in the bitfields from the cores
 
-        :param ~.Transceiver transceiver: SpiNNMan instance
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
         :param dict(dict(int)) most_costly_cores:
@@ -461,14 +428,14 @@ class _HostBasedBitFieldRouterCompressor(object):
 
             # from filter_region_t read how many bitfields there are
             # n_filters then array of filters
-            n_filters = transceiver.read_word(
+            n_filters = FecDataView.get_transceiver().read_word(
                 chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
             # read in each bitfield
             for _ in range(0, n_filters):
                 master_pop_key, n_atoms_word, n_per_core_word, read_pointer = \
-                    self._FOUR_WORDS.unpack(transceiver.read_memory(
+                    self._FOUR_WORDS.unpack(FecDataView.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_4_WORDS))
                 n_atoms_address = reading_address + BYTES_PER_WORD
                 reading_address += BYTES_PER_4_WORDS
@@ -479,7 +446,7 @@ class _HostBasedBitFieldRouterCompressor(object):
                 n_words_to_read = math.ceil(atoms / self._BITS_PER_WORD)
 
                 bit_field = n_word_struct(n_words_to_read).unpack(
-                    transceiver.read_memory(
+                    FecDataView.read_memory(
                         chip_x, chip_y, read_pointer,
                         n_words_to_read * BYTES_PER_WORD))
 
@@ -643,20 +610,19 @@ class _HostBasedBitFieldRouterCompressor(object):
                 f"entires found")
         return compressed_entries
 
-    def _remove_merged_bitfields_from_cores(self, chip_x, chip_y, transceiver):
+    def _remove_merged_bitfields_from_cores(self, chip_x, chip_y):
         """ Goes to SDRAM and removes said merged entries from the cores' \
             bitfield region
 
         :param int chip_x: the chip x coord from which this happened
         :param int chip_y: the chip y coord from which this happened
-        :param ~.Transceiver transceiver: spinnman instance
         """
         for entries in self._bit_fields_by_key.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:
                     # set merged
                     n_atoms_word = entry.n_atoms_word | self.MERGED_SETTER
-                    transceiver.write_memory(
+                    FecDataView.write_memory(
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
     def _create_table_report(self, router_table, report_out):

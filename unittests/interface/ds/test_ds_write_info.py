@@ -15,6 +15,7 @@
 
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
@@ -26,8 +27,8 @@ class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        machine = virtual_machine(2, 2)
-        db = DsSqlliteDatabase(machine)
+        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
+        db = DsSqlliteDatabase()
         c1 = (0, 0, 0)
         db.set_write_info(*c1, 123, 12, 23)
         check[c1] = (123, 12, 23)
