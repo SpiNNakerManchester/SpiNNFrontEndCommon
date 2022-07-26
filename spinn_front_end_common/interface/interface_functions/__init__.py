@@ -33,7 +33,6 @@ from .graph_data_specification_writer import (
     graph_data_specification_writer)
 from .graph_provenance_gatherer import graph_provenance_gatherer
 from .hbp_allocator import hbp_allocator
-from .hbp_max_machine_generator import hbp_max_machine_generator
 from .host_bit_field_router_compressor import (
     host_based_bit_field_router_compressor)
 from .host_execute_data_specification import (
@@ -55,7 +54,6 @@ from .router_provenance_gatherer import router_provenance_gatherer
 from .routing_setup import routing_setup
 from .routing_table_loader import routing_table_loader
 from .spalloc_allocator import spalloc_allocator
-from .spalloc_max_machine_generator import spalloc_max_machine_generator
 from .tags_loader import tags_loader
 from .virtual_machine_generator import virtual_machine_generator
 from .read_routing_tables_from_machine import read_routing_tables_from_machine
@@ -76,7 +74,6 @@ __all__ = [
     "graph_binary_gatherer", "graph_data_specification_writer",
     "graph_provenance_gatherer",
     "hbp_allocator", "host_based_bit_field_router_compressor",
-    "hbp_max_machine_generator",
     "insert_chip_power_monitors_to_graphs",
     "insert_extra_monitor_vertices_to_graphs",
     "split_lpg_vertices",
@@ -87,7 +84,7 @@ __all__ = [
     "read_routing_tables_from_machine", "router_provenance_gatherer",
     "routing_setup",
     "routing_table_loader", "sdram_outgoing_partition_allocator",
-    "spalloc_allocator", "spalloc_max_machine_generator",
+    "spalloc_allocator",
     "system_multicast_routing_generator", "tags_loader",
     "virtual_machine_generator",
 ]

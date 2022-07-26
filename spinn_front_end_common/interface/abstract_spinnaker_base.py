@@ -79,8 +79,7 @@ from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
-    host_based_bit_field_router_compressor,
-    hbp_allocator, hbp_max_machine_generator,
+    host_based_bit_field_router_compressor, hbp_allocator,
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
@@ -90,7 +89,6 @@ from spinn_front_end_common.interface.interface_functions import (
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
-    spalloc_max_machine_generator,
     system_multicast_routing_generator,
     tags_loader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
@@ -177,11 +175,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Flag to say is compressed routing tables are on machine
         # TODO remove this when the data change only algorithms are done
-        "_multicast_routes_loaded",
-
-        # Flag to say if current machine is a temporary max machine
-        # the temp /max machine is held in the "machine" slot
-        "_max_machine"
+        "_multicast_routes_loaded"
     ]
 
     def __init__(
@@ -244,7 +238,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.hard_reset()
-        self._max_machine = False
         self._multicast_routes_loaded = False
         self.__close_allocation_controller()
 
@@ -513,9 +506,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
-            self._get_known_machine(total_run_time)
-            if not self._data_writer.has_machine():
-                self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -777,31 +767,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 auto_detect_bmp, scamp_connection_data, reset_machine)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
-
-    def _execute_get_max_machine(self, total_run_time):
-        """
-        Runs, times and logs the a MaxMachineGenerator if required
-
-        Will set the "machine" value if not already set
-
-        Sets the _max_machine to True if the "machine" value is a temporary
-        max machine.
-
-        :param total_run_time: The total run time to request
-        :type total_run_time: int or None
-        """
-        self._max_machine = True
-        if get_config_str("Machine", "spalloc_server"):
-            with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                self._data_writer.set_machine(spalloc_max_machine_generator())
-
-        elif get_config_str("Machine", "remote_spinnaker_url"):
-            with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
-                self._data_writer.set_machine(hbp_max_machine_generator(
-                    total_run_time))
-
-        else:
-            raise NotImplementedError("No machine generataion possible")
 
     def _get_known_machine(self, total_run_time=0.0):
         """ The python machine description object.
@@ -1387,9 +1352,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        if self._max_machine:
-            self._max_machine = False
-            self._data_writer.clear_machine()
         allocator_data = self._execute_allocator(MAPPING, total_run_time)
         self._execute_machine_generator(MAPPING, allocator_data)
         self._json_machine()
