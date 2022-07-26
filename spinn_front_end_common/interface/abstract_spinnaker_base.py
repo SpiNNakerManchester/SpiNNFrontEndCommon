@@ -606,8 +606,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
-        for vertex in self._data_writer.get_vertices_by_type(
-                AbstractVertexWithEdgeToDependentVertices):
+        # cache vertices to allow insertion during iteration
+        vertices = list(self._data_writer.get_vertices_by_type(
+                AbstractVertexWithEdgeToDependentVertices))
+        for vertex in vertices:
             for dependant_vertex in vertex.dependent_vertices():
                 if not vertex.addedToGraph():
                     self._data_writer.add_vertex(dependant_vertex)
