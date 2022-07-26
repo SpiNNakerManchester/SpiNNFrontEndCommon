@@ -2421,7 +2421,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # mark vertices as not changed, otherwise they will keep reporting
         # that they have changed when they haven't
         changed = self._data_writer.get_vertices_or_edges_added()
-        if self._data_writer.get_runtime_graph():
+        if self._data_writer.get_requires_mapping():
             changed = True
         if self._data_writer.is_hard_reset():
             changed = True
