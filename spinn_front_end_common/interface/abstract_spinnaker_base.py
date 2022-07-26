@@ -713,9 +713,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return None
-        if (not self._data_writer.has_n_boards_required() and
-                not self._data_writer.has_n_chips_needed()):
-            return
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
                 return spalloc_allocator()
