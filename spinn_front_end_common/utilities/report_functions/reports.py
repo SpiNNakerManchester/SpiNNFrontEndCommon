@@ -421,29 +421,6 @@ def _write_one_chip_application_placement(f, chip):
                         total_sdram.per_timestep))
 
 
-def _write_one_chip_machine_placement(f, c, placements):
-    """
-    :param ~io.FileIO f:
-    :param ~spinn_machine.Chip c:
-    :param Placements placements:
-    """
-    written_header = False
-    for pr in c.processors:
-        if placements.is_processor_occupied(c.x, c.y, pr.processor_id):
-            if not written_header:
-                f.write("**** Chip: ({}, {})\n".format(c.x, c.y))
-                f.write("Application cores: {}\n".format(
-                    len(list(c.processors))))
-                written_header = True
-            vertex = placements.get_vertex_on_processor(
-                c.x, c.y, pr.processor_id)
-            f.write("  Processor {}: Vertex: '{}' \n".format(
-                pr.processor_id, vertex.label))
-            f.write("              Model: {}\n\n".format(
-                vertex.__class__.__name__))
-            f.write("\n")
-
-
 def sdram_usage_report_per_chip():
     """ Reports the SDRAM used per chip
 
