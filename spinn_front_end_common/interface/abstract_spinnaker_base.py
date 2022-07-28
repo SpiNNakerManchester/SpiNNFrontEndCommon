@@ -117,7 +117,7 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
+    CommandSender, DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -178,10 +178,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded"
     ]
 
-    def __init__(
-            self, graph_label=None, data_writer_cls=None):
+    def __init__(self, data_writer_cls=None):
         """
-        :param str graph_label: A label for the overall application graph
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
@@ -200,7 +198,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
-        self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._hard_reset()
 
@@ -243,31 +240,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _machine_clear(self):
         pass
-
-    def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters. Note that LPGs can be inserted to track behaviour \
-            either at the application graph level or at the machine graph \
-            level, but not both at the same time.
-
-        :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
-            the vertex that needs to send to a given LPG
-        :param list(str) partition_ids:
-            the IDs of the partitions to connect from the vertex
-        """
-        lpg_vertex = self._lpg_vertices.get(live_packet_gatherer_params)
-        if lpg_vertex is None:
-            lpg_vertex = LivePacketGather(
-                live_packet_gatherer_params, live_packet_gatherer_params.label)
-            self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
-            self._data_writer.add_vertex(lpg_vertex)
-        for part_id in partition_ids:
-            self._data_writer.add_edge(
-                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
@@ -496,7 +468,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._hard_reset()
             FecTimer.setup(self)
 
-            self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
             self._add_commands_to_command_sender()
 
@@ -600,15 +571,15 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _add_commands_to_command_sender(self):
         command_sender = None
-        graph = self._data_writer.get_runtime_graph()
-        vertices = graph.vertices
-        for vertex in vertices:
+        for vertex in self._data_writer.iterate_vertices():
+            if isinstance(vertex, CommandSender):
+                command_sender = vertex
+        for vertex in self._data_writer.iterate_vertices():
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
                 if command_sender is None:
                     command_sender = CommandSender(
                         "auto_added_command_sender", None)
-                    graph.add_vertex(command_sender)
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
@@ -618,24 +589,28 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # add the edges from the command sender to the dependent vertices
         if command_sender is not None:
+            if not command_sender.addedToGraph():
+                self._data_writer.add_vertex(command_sender)
             edges, partition_ids = command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                graph.add_edge(edge, partition_id)
+                self._data_writer.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
-        graph = self._data_writer.get_runtime_graph()
-        for vertex in graph.vertices:
-            # add any dependent edges and vertices if needed
-            if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
-                for dependant_vertex in vertex.dependent_vertices():
-                    graph.add_vertex(dependant_vertex)
+        # cache vertices to allow insertion during iteration
+        vertices = list(self._data_writer.get_vertices_by_type(
+                AbstractVertexWithEdgeToDependentVertices))
+        for vertex in vertices:
+            for dependant_vertex in vertex.dependent_vertices():
+                if not vertex.addedToGraph():
+                    self._data_writer.add_vertex(dependant_vertex)
                     edge_partition_ids = vertex.\
                         edge_partition_identifiers_for_dependent_vertex(
                             dependant_vertex)
                     for edge_identifier in edge_partition_ids:
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex, post_vertex=dependant_vertex)
-                        graph.add_edge(dependant_edge, edge_identifier)
+                        self._data_writer.add_edge(
+                            dependant_edge, edge_identifier)
 
     def _deduce_data_n_timesteps(self):
         """ Operates the auto pause and resume functionality by figuring out\
@@ -880,7 +855,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the SplitterPartitioner if required
         """
-        if not self._data_writer.get_runtime_graph().n_vertices:
+        if self._data_writer.get_n_vertices() == 0:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             self._data_writer.set_n_chips_in_graph(splitter_partitioner())
@@ -998,7 +973,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
-        if not self._data_writer.get_runtime_graph().n_vertices:
+        if self._data_writer.get_n_vertices() == 0:
             return
         with FecTimer(
                 MAPPING, "Placements wth application graph report") as timer:

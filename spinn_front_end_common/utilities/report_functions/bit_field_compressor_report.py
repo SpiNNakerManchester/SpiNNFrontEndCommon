@@ -129,8 +129,7 @@ def _compute_to_merge_per_chip():
     total_to_merge = 0
     to_merge_per_chip = defaultdict(int)
 
-    app_graph = FecDataView.get_runtime_graph()
-    for partition in app_graph.outgoing_edge_partitions:
+    for partition in FecDataView.iterate_partitions():
         for edge in partition.edges:
             splitter = edge.post_vertex.splitter
             for vertex in splitter.get_source_specific_in_coming_vertices(
