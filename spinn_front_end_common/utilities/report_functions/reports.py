@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -405,7 +405,7 @@ def _write_one_chip_application_placement(f, chip):
                 f.write("              Model: {}\n".format(
                     vertex.__class__.__name__))
 
-            sdram = vertex.resources_required.sdram
+            sdram = vertex.sdram_required
             f.write("              SDRAM required: {}; {} per timestep\n\n"
                     .format(sdram.fixed, sdram.per_timestep))
             if total_sdram is None:
@@ -487,7 +487,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     placements = sorted(
         FecDataView.iterate_placemements(), key=lambda x: x.vertex.label)
     for placement in progress.over(placements, False):
-        vertex_sdram = placement.vertex.resources_required.sdram
+        vertex_sdram = placement.vertex.sdram_required
         core_sdram = vertex_sdram.get_total_sdram(timesteps)
         x, y, p = placement.x, placement.y, placement.p
         if details:

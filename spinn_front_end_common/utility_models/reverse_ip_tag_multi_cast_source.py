@@ -241,7 +241,7 @@ class ReverseIpTagMultiCastSource(
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
         if resources_required:
-            assert (resources_required == machine_vertex.resources_required)
+            assert (resources_required == machine_vertex.sdram_required)
         return machine_vertex
 
     def __repr__(self):

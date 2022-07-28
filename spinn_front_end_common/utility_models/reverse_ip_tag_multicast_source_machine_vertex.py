@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,9 +24,7 @@ from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
-from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource,
-    ReverseIPtagResource, ResourceContainer, VariableSDRAM)
+from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
@@ -381,18 +379,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return 5
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        sdram = self.get_sdram_usage(
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
+        return self.get_sdram_usage(
             self._send_buffer_times, self._is_recording,
             self._receive_rate, self._n_keys)
 
-        resources = ResourceContainer(
-            dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=sdram,
-            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
-            reverse_iptags=self._reverse_iptags)
-        return resources
+    @property
+    @overrides(MachineVertex.reverse_iptags)
+    def reverse_iptags(self):
+        return self._reverse_iptags
 
     @classmethod
     def get_sdram_usage(
@@ -419,14 +415,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 recording_enabled, receive_rate, send_buffer_times, n_keys))
         static_usage += per_timestep
         return VariableSDRAM(static_usage, per_timestep)
-
-    @staticmethod
-    def get_dtcm_usage():
-        return 1
-
-    @staticmethod
-    def get_cpu_usage():
-        return 1
 
     @staticmethod
     def _n_regions_to_allocate(send_buffering, recording):

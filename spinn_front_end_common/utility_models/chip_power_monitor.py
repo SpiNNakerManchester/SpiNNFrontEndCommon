@@ -52,8 +52,7 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
         if vertex_slice:
             assert (vertex_slice == machine_vertex.vertex_slice)
         if resources_required:
-            assert (resources_required ==
-                    machine_vertex.resources_required)
+            assert (resources_required == machine_vertex.sdram_required)
         return machine_vertex
 
     @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)

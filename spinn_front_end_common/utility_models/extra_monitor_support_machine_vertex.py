@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from pacman.model.resources import ConstantSDRAM
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
@@ -191,24 +191,9 @@ class ExtraMonitorSupportMachineVertex(
         return self._reinject_fixed_route
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return self.static_resources_required()
-
-    @property
-    def placement(self):
-        """
-        :rtype: ~pacman.model.placements.Placement
-        """
-        return self._placement
-
-    @staticmethod
-    def static_resources_required():
-        """ The resources required by this vertex.
-
-        :rtype: ~pacman.model.resources.ResourceContainer
-        """
-        return ResourceContainer(sdram=ConstantSDRAM(
+    @overrides(MachineVertex.sdram_required)
+    def sdarm_required(self):
+        return ConstantSDRAM(
             _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES +
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
@@ -218,7 +203,14 @@ class ExtraMonitorSupportMachineVertex(
             SARK_PER_MALLOC_SDRAM_USAGE +
             _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
             _SDRAM_FOR_ROUTER_TABLE_ENTRIES +
-            _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES))
+            _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES)
+
+    @property
+    def placement(self):
+        """
+        :rtype: ~pacman.model.placements.Placement
+        """
+        return self._placement
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

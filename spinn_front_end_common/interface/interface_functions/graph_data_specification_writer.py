@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ class _GraphDataSpecificationWriter(object):
             "    {}: {} (total={}, estimated={})".format(
                 vert, region_size,
                 sum(region_size),
-                vert.resources_required.sdram.get_total_sdram(
+                vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
