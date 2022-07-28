@@ -156,7 +156,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.iobuf_extractor</span> <span class="kn">import</span> <span class="n">IOBufExtractor</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs</span> <span class="kn">import</span> <span class="n">ExecutableType</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CommandSender</span><span class="p">,</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">,</span> <span class="n">LivePacketGather</span><span class="p">)</span>
+    <span class="n">CommandSender</span><span class="p">,</span> <span class="n">DataSpeedUpPacketGatherMachineVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions.reports</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">generate_comparison_router_report</span><span class="p">,</span> <span class="n">partitioner_report</span><span class="p">,</span>
     <span class="n">placer_reports_with_application_graph</span><span class="p">,</span>
@@ -217,10 +217,8 @@
         <span class="s2">&quot;_multicast_routes_loaded&quot;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">graph_label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_writer_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_writer_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str graph_label: A label for the overall application graph</span>
 <span class="sd">        :param int n_chips_required:</span>
 <span class="sd">            Overrides the number of chips to allocate from spalloc</span>
 <span class="sd">        :param int n_boards_required:</span>
@@ -239,7 +237,6 @@
         <span class="c1"># store for Live Packet Gatherers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_vertices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">create_graphs</span><span class="p">(</span><span class="n">graph_label</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
 
@@ -282,31 +279,6 @@
 
     <span class="k">def</span> <span class="nf">_machine_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
-
-<div class="viewcode-block" id="AbstractSpinnakerBase.add_live_packet_gatherer_parameters"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.add_live_packet_gatherer_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">add_live_packet_gatherer_parameters</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gatherer_params</span><span class="p">,</span> <span class="n">vertex_to_record_from</span><span class="p">,</span>
-            <span class="n">partition_ids</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds parameters for a new LPG if needed, or adds to the tracker \</span>
-<span class="sd">            for parameters. Note that LPGs can be inserted to track behaviour \</span>
-<span class="sd">            either at the application graph level or at the machine graph \</span>
-<span class="sd">            level, but not both at the same time.</span>
-
-<span class="sd">        :param LivePacketGatherParameters live_packet_gatherer_params:</span>
-<span class="sd">            params to look for a LPG</span>
-<span class="sd">        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:</span>
-<span class="sd">            the vertex that needs to send to a given LPG</span>
-<span class="sd">        :param list(str) partition_ids:</span>
-<span class="sd">            the IDs of the partitions to connect from the vertex</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lpg_vertex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_vertices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">live_packet_gatherer_params</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">lpg_vertex</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lpg_vertex</span> <span class="o">=</span> <span class="n">LivePacketGather</span><span class="p">(</span>
-                <span class="n">live_packet_gatherer_params</span><span class="p">,</span> <span class="n">live_packet_gatherer_params</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_vertices</span><span class="p">[</span><span class="n">live_packet_gatherer_params</span><span class="p">]</span> <span class="o">=</span> <span class="n">lpg_vertex</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">lpg_vertex</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">part_id</span> <span class="ow">in</span> <span class="n">partition_ids</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
-                <span class="n">ApplicationEdge</span><span class="p">(</span><span class="n">vertex_to_record_from</span><span class="p">,</span> <span class="n">lpg_vertex</span><span class="p">),</span> <span class="n">part_id</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.check_machine_specifics"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.check_machine_specifics">[docs]</a>    <span class="k">def</span> <span class="nf">check_machine_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Checks machine specifics for the different modes of execution.</span>
@@ -535,7 +507,6 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
             <span class="n">FecTimer</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">clone_graphs</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_commands_to_command_sender</span><span class="p">()</span>
 
@@ -639,15 +610,15 @@
 
     <span class="k">def</span> <span class="nf">_add_commands_to_command_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">command_sender</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span>
-        <span class="n">vertices</span> <span class="o">=</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span>
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_vertices</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">CommandSender</span><span class="p">):</span>
+                <span class="n">command_sender</span> <span class="o">=</span> <span class="n">vertex</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_vertices</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractSendMeMulticastCommandsVertex</span><span class="p">):</span>
                 <span class="c1"># if there&#39;s no command sender yet, build one</span>
                 <span class="k">if</span> <span class="n">command_sender</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">command_sender</span> <span class="o">=</span> <span class="n">CommandSender</span><span class="p">(</span>
                         <span class="s2">&quot;auto_added_command_sender&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">command_sender</span><span class="p">)</span>
 
                 <span class="c1"># allow the command sender to create key to partition map</span>
                 <span class="n">command_sender</span><span class="o">.</span><span class="n">add_commands</span><span class="p">(</span>
@@ -657,24 +628,28 @@
 
         <span class="c1"># add the edges from the command sender to the dependent vertices</span>
         <span class="k">if</span> <span class="n">command_sender</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">command_sender</span><span class="o">.</span><span class="n">addedToGraph</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">command_sender</span><span class="p">)</span>
             <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span> <span class="o">=</span> <span class="n">command_sender</span><span class="o">.</span><span class="n">edges_and_partitions</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">):</span>
-                <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">graph</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">vertices</span><span class="p">:</span>
-            <span class="c1"># add any dependent edges and vertices if needed</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">dependant_vertex</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">dependent_vertices</span><span class="p">():</span>
-                    <span class="n">graph</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">dependant_vertex</span><span class="p">)</span>
+        <span class="c1"># cache vertices to allow insertion during iteration</span>
+        <span class="n">vertices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_vertices_by_type</span><span class="p">(</span>
+                <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dependant_vertex</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">dependent_vertices</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">vertex</span><span class="o">.</span><span class="n">addedToGraph</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">dependant_vertex</span><span class="p">)</span>
                     <span class="n">edge_partition_ids</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span>\
                         <span class="n">edge_partition_identifiers_for_dependent_vertex</span><span class="p">(</span>
                             <span class="n">dependant_vertex</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">edge_identifier</span> <span class="ow">in</span> <span class="n">edge_partition_ids</span><span class="p">:</span>
                         <span class="n">dependant_edge</span> <span class="o">=</span> <span class="n">ApplicationEdge</span><span class="p">(</span>
                             <span class="n">pre_vertex</span><span class="o">=</span><span class="n">vertex</span><span class="p">,</span> <span class="n">post_vertex</span><span class="o">=</span><span class="n">dependant_vertex</span><span class="p">)</span>
-                        <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">dependant_edge</span><span class="p">,</span> <span class="n">edge_identifier</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span>
+                            <span class="n">dependant_edge</span><span class="p">,</span> <span class="n">edge_identifier</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_deduce_data_n_timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Operates the auto pause and resume functionality by figuring out\</span>
@@ -919,7 +894,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SplitterPartitioner if required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter partitioner&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_n_chips_in_graph</span><span class="p">(</span><span class="n">splitter_partitioner</span><span class="p">())</span>
@@ -1037,7 +1012,7 @@
 <span class="sd">        Writes, times and logs the application graph placer report if</span>
 <span class="sd">        requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_runtime_graph</span><span class="p">()</span><span class="o">.</span><span class="n">n_vertices</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Placements wth application graph report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -2647,7 +2622,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>
