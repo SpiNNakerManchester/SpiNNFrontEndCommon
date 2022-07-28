@@ -17,7 +17,7 @@ from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import (
     ApplicationVertex, ApplicationEdge)
 from pacman.model.graphs.machine import SimpleMachineVertex
-from pacman.model.resources import ResourceContainer
+from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
     RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
@@ -73,7 +73,7 @@ class TestAppVertex(ApplicationVertex):
 def _make_m_vertices(app_vertex, n_m_vertices, atoms_per_core):
     for i in range(n_m_vertices):
         m_vertex = SimpleMachineVertex(
-            ResourceContainer(), label=f"{app_vertex.label}_{i}",
+            ConstantSDRAM(0), label=f"{app_vertex.label}_{i}",
             vertex_slice=Slice(
                 i * atoms_per_core, ((i + 1) * atoms_per_core) - 1),
             app_vertex=app_vertex)
