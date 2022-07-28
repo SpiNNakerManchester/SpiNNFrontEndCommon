@@ -30,16 +30,15 @@ def sdram_outgoing_partition_allocator():
         transceiver = None
         virtual_usage = defaultdict(int)
 
-    app_graph = FecDataView.get_runtime_graph()
     progress_bar = ProgressBar(
-        total_number_of_things_to_do=len(app_graph.vertices),
+        total_number_of_things_to_do=FecDataView.get_n_vertices(),
         string_describing_what_being_progressed=(
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
     # Keep track of SDRAM tags used
     next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
-    for vertex in app_graph.vertices:
+    for vertex in FecDataView.iterate_vertices():
         sdram_partitions = vertex.splitter.get_internal_sdram_partitions()
         for sdram_partition in sdram_partitions:
 

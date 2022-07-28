@@ -70,14 +70,12 @@ def _write_to_db(
         w.add_tags()
         p.update()
         lpg_source_machine_vertices = w.add_lpg_mapping()
-        app_graph = FecDataView.get_runtime_graph()
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
             machine_vertices = [
                 (vertex, vertex.injection_partition_id)
-                for app_vertex in app_graph.vertices
-                for vertex in app_vertex.machine_vertices
+                for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
                 and vertex.is_in_injection_mode]
             machine_vertices.extend(lpg_source_machine_vertices)
