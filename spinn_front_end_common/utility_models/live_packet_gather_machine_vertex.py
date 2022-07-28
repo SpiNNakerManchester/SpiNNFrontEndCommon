@@ -99,7 +99,7 @@ class LivePacketGatherMachineVertex(
     @overrides(MachineVertex.sdram_required)
     def sdram_required(self):
         return ConstantSDRAM(
-            self.get_sdram_usage() + self._get_key_translation_sdram()
+            self.get_sdram_usage() + self._get_key_translation_sdram())
 
     @property
     @overrides(MachineVertex.iptags)
