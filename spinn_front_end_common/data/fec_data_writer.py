@@ -548,3 +548,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         If the close causes an Exception it is logged and ignored
         """
         self.__fec_data._clear_notification_protocol()
+
+    @classmethod
+    @overrides(FecDataView.add_vertex)
+    def add_vertex(cls, vertex):
+        # Avoid the safety check in FecDataView
+        PacmanDataWriter.add_vertex(vertex)
