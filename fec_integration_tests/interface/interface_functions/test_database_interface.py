@@ -153,10 +153,10 @@ def test_database_interface():
 
     reader = DatabaseReader(db_path)
     assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
-    assert (all(db_p == placements.get_placement_of_vertex(m_vertex).location
-                for db_p, m_vertex in zip(
+    assert all(db_p == placements.get_placement_of_vertex(m_vertex).location
+               for db_p, m_vertex in zip(
                    reader.get_placements(app_vertex_1.label),
-                   app_vertex_1.machine_vertices)))
+                   app_vertex_1.machine_vertices))
     assert reader.get_configuration_parameter_value("runtime") == 1000
     assert (
         reader.get_live_output_details(
