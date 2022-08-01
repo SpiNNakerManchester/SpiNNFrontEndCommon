@@ -140,7 +140,7 @@ class _GraphDataSpecificationWriter(object):
             targets.set_size_info(pl.x, pl.y, pl.p, region_size)
 
             # Check per-region memory usage if possible
-            sdram = vertex.resources_required.sdram
+            sdram = vertex.sdram_required
             if isinstance(sdram, MultiRegionSDRAM):
                 for i, size in enumerate(spec.region_sizes):
                     est_size = sdram.regions.get(i, ConstantSDRAM(0))

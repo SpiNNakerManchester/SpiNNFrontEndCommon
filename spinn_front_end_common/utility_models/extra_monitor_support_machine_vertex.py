@@ -192,7 +192,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @property
     @overrides(MachineVertex.sdram_required)
-    def sdarm_required(self):
+    def sdram_required(self):
         return ConstantSDRAM(
             _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES +
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +

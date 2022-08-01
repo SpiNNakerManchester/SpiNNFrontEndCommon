@@ -190,7 +190,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         super().__init__(label, constraints, app_vertex, vertex_slice)
 
-        self._reverse_iptags = None
+        self._reverse_iptags = []
         self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
