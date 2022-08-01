@@ -338,8 +338,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(MachineVertex.iptags)
     def iptags(self):
         return [IPtagResource(
-        port=self._TAG_INITIAL_PORT, strip_sdp=True,
-        ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
+            port=self._TAG_INITIAL_PORT, strip_sdp=True,
+            ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
     def update_transaction_id_from_machine(self):
         """ Looks up from the machine what the current transaction ID is\
