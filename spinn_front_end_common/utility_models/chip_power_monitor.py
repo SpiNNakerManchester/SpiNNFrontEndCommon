@@ -53,8 +53,8 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
             assert (sdram_required == machine_vertex.sdram_required)
         return machine_vertex
 
-    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(
+    @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
+    def get_sdram_used_by_atoms(
             self, vertex_slice,  # @UnusedVariable
             ):
         return ChipPowerMonitorMachineVertex.get_resources(

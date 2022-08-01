@@ -18,9 +18,6 @@ import sys
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
-    ReverseIPtagResource)
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
@@ -128,12 +125,6 @@ class ReverseIpTagMultiCastSource(
         self._prefix_type = prefix_type
         self._check_keys = check_keys
 
-        self._reverse_iptags = None
-        if receive_port is not None or reserve_reverse_ip_tag:
-            self._reverse_iptags = [ReverseIPtagResource(
-                port=receive_port, sdp_port=receive_sdp_port,
-                tag=receive_tag)]
-
         # Store the send buffering details
         self._send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
@@ -162,8 +153,8 @@ class ReverseIpTagMultiCastSource(
     def n_atoms(self):
         return self._n_atoms
 
-    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
+    @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
+    def get_sdram_used_by_atoms(self, vertex_slice):
         send_buffer_times = self._send_buffer_times
         if send_buffer_times is not None and len(send_buffer_times):
             if hasattr(send_buffer_times[0], "__len__"):
@@ -180,16 +171,9 @@ class ReverseIpTagMultiCastSource(
                 if n_buffer_times == 0:
                     send_buffer_times = None
 
-        container = ResourceContainer(
-            sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                send_buffer_times, self._is_recording,
-                self._receive_rate, vertex_slice.n_atoms),
-            dtcm=DTCMResource(
-                ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
-            cpu_cycles=CPUCyclesPerTickResource(
-                ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage()),
-            reverse_iptags=self._reverse_iptags)
-        return container
+        return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
+            send_buffer_times, self._is_recording,
+            self._receive_rate, vertex_slice.n_atoms)
 
     @property
     def send_buffer_times(self):
