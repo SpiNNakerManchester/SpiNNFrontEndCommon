@@ -101,7 +101,7 @@ class ChipPowerMonitorMachineVertex(
         """ Get the resources used by this vertex
 
         :param float sampling_frequency:
-        :rtype: ~pacman.model.resources.ResourceContainer
+        :rtype: ~pacman.model.resources.VariableSDRAM
         """
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
