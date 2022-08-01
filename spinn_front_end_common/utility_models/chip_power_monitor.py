@@ -43,14 +43,14 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, sdram_required, label=None, constraints=None):
+            self, vertex_slice, sdram, label=None, constraints=None):
         machine_vertex = ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
             sampling_frequency=self._sampling_frequency,  app_vertex=self)
         if vertex_slice:
             assert (vertex_slice == machine_vertex.vertex_slice)
-        if sdram_required:
-            assert (sdram_required == machine_vertex.sdram_required)
+        if sdram:
+            assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)

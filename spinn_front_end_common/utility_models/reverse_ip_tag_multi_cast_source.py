@@ -201,7 +201,7 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, sdram_required, label=None, constraints=None):
+            self, vertex_slice, sdram, label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
         if send_buffer_times is not None and len(send_buffer_times):
             if hasattr(send_buffer_times[0], "__len__"):
@@ -222,8 +222,8 @@ class ReverseIpTagMultiCastSource(
             injection_partition_id=self._injection_partition_id)
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
-        if sdram_required:
-            assert (sdram_required == machine_vertex.sdram_required)
+        if sdram:
+            assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
     def __repr__(self):
