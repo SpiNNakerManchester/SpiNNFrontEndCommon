@@ -212,7 +212,7 @@ def _write_one_router_partition_report(f, partition):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(
-                source_placement, r_info.first_key_and_mask)
+                source_placement, r_info.key_and_mask)
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
             f.write("{}\n".format(path))
@@ -558,13 +558,13 @@ def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
     if rinfo is not None:
         f.write("Vertex: {}\n".format(pre_vertex))
         f.write("    Partition: {}, Routing Info: {}\n".format(
-            part_id, rinfo.keys_and_masks))
+            part_id, rinfo.key_and_mask))
         for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, part_id)
             if r_info is not None:
                 f.write("    Machine Vertex: {}, Routing Info: {}\n".format(
-                    m_vertex, r_info.keys_and_masks))
+                    m_vertex, r_info.key_and_mask))
 
 
 def router_report_from_router_tables():
