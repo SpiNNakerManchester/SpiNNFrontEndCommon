@@ -23,19 +23,18 @@ def graph_provenance_gatherer():
     """ Gets provenance information from the graph.
 
      """
-    application_graph = FecDataView.get_runtime_graph()
     progress = ProgressBar(
-        application_graph.n_vertices +
-        application_graph.n_outgoing_edge_partitions,
+        FecDataView.get_n_vertices() +
+        FecDataView.get_n_partitions(),
         "Getting provenance data from application graph")
-    for vertex in progress.over(application_graph.vertices, False):
+    for vertex in progress.over(FecDataView.iterate_vertices(), False):
         if isinstance(vertex, AbstractProvidesLocalProvenanceData):
             vertex.get_local_provenance_data()
             for m_vertex in vertex.machine_vertices:
                 if isinstance(m_vertex, AbstractProvidesLocalProvenanceData):
                     m_vertex.get_local_provenance_data()
     for partition in progress.over(
-            application_graph.outgoing_edge_partitions):
+            FecDataView.iterate_partitions()):
         for edge in partition.edges:
             if isinstance(edge, AbstractProvidesLocalProvenanceData):
                 edge.get_local_provenance_data()

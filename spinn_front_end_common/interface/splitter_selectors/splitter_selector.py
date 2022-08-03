@@ -32,7 +32,7 @@ def splitter_selector():
 
     :rtype: None
     """
-    for app_vertex in PacmanDataView.get_runtime_graph().vertices:
+    for app_vertex in PacmanDataView.iterate_vertices():
         if app_vertex.splitter is None:
             vertex_selector(app_vertex)
 
