@@ -104,7 +104,6 @@ from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
     ProvenanceWriter, MAPPING, RUN_LOOP)
 from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
@@ -211,8 +210,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
-
-        globals_variables.set_simulator(self)
 
         self._create_version_provenance()
 
