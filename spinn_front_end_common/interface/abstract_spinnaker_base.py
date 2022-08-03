@@ -577,6 +577,10 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _add_commands_to_command_sender(self):
         command_sender = None
         for vertex in self._data_writer.iterate_vertices():
+            if isinstance(vertex, CommandSender):
+                command_sender = vertex
+
+        for vertex in self._data_writer.iterate_vertices():
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 constraints = []
                 machine = self._data_writer.get_machine()
@@ -611,20 +615,25 @@ class AbstractSpinnakerBase(ConfigHandler):
                         link_data.connected_chip_x,
                         link_data.connected_chip_y))
 
-                # Add a command sender
-                label = f"CommandSender for {vertex.label}"
-                command_sender = CommandSender(label, constraints)
-                command_sender.splitter = SplitterOneAppOneMachine()
-                self._data_writer.add_vertex(command_sender)
-
-                app_edge = ApplicationEdge(command_sender, vertex)
-                self._data_writer.add_edge(app_edge, "Commands")
+                if command_sender is None:
+                    # Build a command sender
+                    label = f"CommandSender for {vertex.label}"
+                    command_sender = CommandSender(label, constraints)
+                    command_sender.splitter = SplitterOneAppOneMachine()
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
+
+        # add the edges from the command sender to the dependent vertices
+        if command_sender is not None:
+            if not command_sender.addedToGraph():
+                self._data_writer.add_vertex(command_sender)
+            edges, partition_ids = command_sender.edges_and_partitions()
+            for edge, partition_id in zip(edges, partition_ids):
+                self._data_writer.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         # cache vertices to allow insertion during iteration
