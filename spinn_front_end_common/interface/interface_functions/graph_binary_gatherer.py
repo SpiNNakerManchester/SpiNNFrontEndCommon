@@ -18,6 +18,7 @@ from spinnman.model import ExecutableTargets
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from pacman.model.graphs import AbstractVirtual
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ExecutableNotFoundException)
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -25,57 +26,46 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def graph_binary_gatherer(placements, graph, executable_finder):
+def graph_binary_gatherer():
     """
     Extracts binaries to be executed.
 
-    :param ~pacman.model.placements.Placements placements:
-    :param ~pacman.model.graphs.machine.MachineGraph graph:
-    :param executable_finder:
-    :type executable_finder:
-        ~spinn_utilities.executable_finder.ExecutableFinder
     :rtype: ExecutableTargets
     """
-    gatherer = _GraphBinaryGatherer(executable_finder)
+    gatherer = _GraphBinaryGatherer()
     # pylint: disable=protected-access
-    return gatherer._run(placements, graph)
+    return gatherer._run()
 
 
 class _GraphBinaryGatherer(object):
     """ Extracts binaries to be executed.
     """
 
-    __slots__ = ["_exe_finder", "_exe_targets"]
+    __slots__ = ["_exe_targets"]
 
-    def __init__(self, executable_finder):
-        """
-
-        :param executable_finder:
-        :type executable_finder:
-            ~spinn_utilities.executable_finder.ExecutableFinder
-        """
-        self._exe_finder = executable_finder
+    def __init__(self):
         self._exe_targets = ExecutableTargets()
 
-    def _run(self, placements, graph):
+    def _run(self):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~pacman.model.graphs.machine.MachineGraph graph:
         :rtype: ExecutableTargets
         """
-        progress = ProgressBar(graph.n_vertices, "Finding binaries")
-        for vertex in progress.over(graph.vertices):
-            placement = placements.get_placement_of_vertex(vertex)
-            self.__get_binary(placement, vertex)
+
+        progress = ProgressBar(
+            FecDataView.get_n_placements(), "Finding binaries")
+        for placement in progress.over(FecDataView.iterate_placemements()):
+            self.__get_binary(placement)
 
         return self._exe_targets
 
-    def __get_binary(self, placement, vertex):
+    def __get_binary(self, placement):
         """
         :param ~.Placement placement:
         :param ~.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
+        vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
                 msg = (
@@ -90,7 +80,7 @@ class _GraphBinaryGatherer(object):
         exec_type = vertex.get_binary_start_type()
 
         # Attempt to find this within search paths
-        binary_path = self._exe_finder.get_executable_path(binary_name)
+        binary_path = FecDataView.get_executable_path(binary_name)
         if binary_path is None:
             raise ExecutableNotFoundException(binary_name)
 

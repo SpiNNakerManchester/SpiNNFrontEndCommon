@@ -17,31 +17,14 @@ import logging
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanException
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def router_provenance_gatherer(transceiver, machine, router_tables,
-                               extra_monitor_vertices=None, placements=None):
-    """
-    :param ~spinnman.transceiver.Transceiver transceiver:
-        the SpiNNMan interface object
-    :param ~spinn_machine.Machine machine:
-        the SpiNNaker machine
-    :param router_tables: the router tables that have been generated
-    :type router_tables:
-        ~pacman.model.routing_tables.MulticastRoutingTables
-    :param extra_monitor_vertices:
-        vertices which represent the extra monitor code
-    :type extra_monitor_vertices:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-    :param ~pacman.model.placements.Placements placements:
-        the placements object
-    """
-    gather = _RouterProvenanceGatherer(
-        transceiver, machine, router_tables, extra_monitor_vertices,
-        placements)
+def router_provenance_gatherer():
+    gather = _RouterProvenanceGatherer()
     # pylint: disable=protected-access
     gather._add_router_provenance_data()
 
@@ -50,69 +33,30 @@ class _RouterProvenanceGatherer(object):
     """ Gathers diagnostics from the routers.
     """
 
-    __slots__ = [
-        # Extra monitor vertices if any
-        '_extra_monitor_vertices',
-        # machine passed in
-        '_machine',
-        # placements passed in if any
-        '_placements',
-        # routingtabkes passed in
-        '_router_tables',
-        # transceiver
-        '_txrx',
-    ]
-
-    def __init__(self, transceiver, machine, router_tables,
-                 extra_monitor_vertices=None, placements=None):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan interface object
-        :param ~spinn_machine.Machine machine:
-            the SpiNNaker machine
-        :param router_tables: the router tables that have been generated
-        :type router_tables:
-            ~pacman.model.routing_tables.MulticastRoutingTables
-        :param list(ExtraMonitorSupportMachineVertex) extra_monitor_vertices:
-            vertices which represent the extra monitor code
-        :type extra_monitor_vertices:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
-        """
-        # pylint: disable=too-many-arguments
-        # pylint: disable=attribute-defined-outside-init
-        self._extra_monitor_vertices = extra_monitor_vertices
-        self._txrx = transceiver
-        self._machine = machine
-        self._placements = placements
-        self._router_tables = router_tables
+    __slots__ = []
 
     def _add_router_provenance_data(self):
         """ Writes the provenance data of the router diagnostics
         """
-        progress = ProgressBar(self._machine.n_chips*2,
+        progress = ProgressBar(FecDataView.get_machine().n_chips*2,
                                "Getting Router Provenance")
 
         seen_chips = set()
 
         # get all extra monitor core data if it exists
         reinjection_data = None
-        if self._extra_monitor_vertices is not None:
-            monitor = self._extra_monitor_vertices[(0, 0)]
-            reinjection_data = monitor.get_reinjection_status_for_vertices(
-                placements=self._placements,
-                extra_monitor_cores_for_data=self._extra_monitor_vertices,
-                transceiver=self._txrx)
+        if FecDataView.has_monitors():
+            monitor = FecDataView.get_monitor_by_xy(0, 0)
+            reinjection_data = monitor.get_reinjection_status_for_vertices()
 
         for router_table in progress.over(
-                self._router_tables.routing_tables, False):
+                FecDataView.get_uncompressed().routing_tables, False):
             seen_chips.add(self._add_router_table_diagnostic(
                 router_table, reinjection_data))
 
         # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
-                self._machine.chips, key=lambda c: (c.x, c.y))):
+                FecDataView.get_machine().chips, key=lambda c: (c.x, c.y))):
             if not chip.virtual and (chip.x, chip.y) not in seen_chips:
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
@@ -122,12 +66,12 @@ class _RouterProvenanceGatherer(object):
         :param ~.MulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=too-many-arguments, bare-except
         x = table.x
         y = table.y
-        if not self._machine.get_chip_at(x, y).virtual:
+        if not FecDataView.get_chip_at(x, y).virtual:
             try:
-                diagnostics = self._txrx.get_router_diagnostics(x, y)
+                transceiver = FecDataView.get_transceiver()
+                diagnostics = transceiver.get_router_diagnostics(x, y)
             except SpinnmanException:
                 logger.warning(
                     "Could not read routing diagnostics from {}, {}",
@@ -142,9 +86,9 @@ class _RouterProvenanceGatherer(object):
         :param ~.Chip chip:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
-        # pylint: disable=bare-except
         try:
-            diagnostics = self._txrx.get_router_diagnostics(chip.x, chip.y)
+            transceiver = FecDataView.get_transceiver()
+            diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
@@ -358,6 +302,6 @@ class _RouterProvenanceGatherer(object):
         :rtype: bool
         """
         return any(
-            self._machine.get_chip_at(
+            FecDataView.get_chip_at(
                 link.destination_x, link.destination_y).virtual
-            for link in self._machine.get_chip_at(x, y).router.links)
+            for link in FecDataView.get_chip_at(x, y).router.links)

@@ -18,8 +18,7 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .data_row_writer import DataRowWriter
 
@@ -30,22 +29,16 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class DsSqlliteDatabase(SQLiteDB):
     __slots__ = [
-        "_app_id",
-        # The machine cached for getting the "ethernet"s
-        "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
     ]
 
-    def __init__(self, machine, app_id=-1, init=None):
+    def __init__(self, init=None):
         """
-        :param ~spinn_machine.Machine machine:
         :param init:
         :type init: bool or None
         """
-        self._machine = machine
-        self._app_id = app_id
-        database_file = os.path.join(report_default_directory(), DB_NAME)
+        database_file = os.path.join(FecDataView.get_run_dir_path(), DB_NAME)
 
         if init is None:
             init = not os.path.exists(database_file)
@@ -57,6 +50,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def __init_db_contents(self):
         """ Set up the database contents from the machine. """
+        eth_chips = FecDataView.get_machine().ethernet_connected_chips
         with self.transaction() as cursor:
             cursor.executemany(
                 """
@@ -65,7 +59,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, (
                     (ethernet.x, ethernet.y, ethernet.ip_address)
-                    for ethernet in self._machine.ethernet_connected_chips))
+                    for ethernet in eth_chips))
 
     def __find_root_id(self):
         first_x = first_y = root_id = None
@@ -104,7 +98,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int p: p of the core ds applies to
         :param bytearray ds: the data spec as byte code
         """
-        chip = self._machine.get_chip_at(core_x, core_y)
+        chip = FecDataView().get_chip_at(core_x, core_y)
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -118,7 +112,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (
                     core_x, core_y, core_p, sqlite3.Binary(ds),
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-                    self._root_ethernet_id, self._app_id))
+                    self._root_ethernet_id, FecDataView().get_app_id()))
 
     def get_ds(self, x, y, p):
         """ Retrieves the data spec as byte code for this core.
@@ -354,7 +348,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, (start, used, written, x, y, p))
             if cursor.rowcount == 0:
-                chip = self._machine.get_chip_at(x, y)
+                chip = FecDataView().get_chip_at(x, y)
                 cursor.execute(
                     """
                     INSERT INTO core(
@@ -378,7 +372,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE x = ? AND y = ? AND processor = ?
                 """, (memory_used, x, y, p))
             if cursor.rowcount == 0:
-                chip = self._machine.get_chip_at(x, y)
+                chip = FecDataView().get_chip_at(x, y)
                 cursor.execute(
                     """
                     INSERT INTO core(

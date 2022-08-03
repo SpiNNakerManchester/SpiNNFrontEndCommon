@@ -14,64 +14,59 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import numpy
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset, get_data_spec_and_file_writer_filename)
+    get_data_spec_and_file_writer_filename)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
-    generate_unique_folder_name, n_word_struct)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+    generate_unique_folder_name)
 
 
-def dsg_region_reloader(transceiver, placements, hostname):
-    reloader = _DSGRegionReloader(transceiver, hostname)
+def dsg_region_reloader():
+    reloader = _DSGRegionReloader()
     # pylint: disable=protected-access
-    reloader._run(placements)
+    reloader._run()
 
 
 class _DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
-    __slots__ = ["_txrx", "_host", "_data_dir"]
+    __slots__ = ["_txrx", "_data_dir"]
 
-    def __init__(self, transceiver, hostname):
-        """
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            SpiNNMan transceiver for communication
-        :param str hostname:
-            the machine name
-        """
-        self._txrx = transceiver
-        self._host = hostname
-        self._data_dir = generate_unique_folder_name(
-            report_default_directory(), "reloaded_data_regions", "")
+    def __init__(self):
+        self._txrx = FecDataView.get_transceiver()
+        self._data_dir = None
 
-    def _run(self, placements):
+    def _run(self):
         """
-        :param ~pacman.model.placements.Placements placements:
-            the list of placements of the machine graph to cores
         """
-        # pylint: disable=too-many-arguments, attribute-defined-outside-init
 
         # build file paths for reloaded stuff
+        run_dir_path = FecDataView.get_run_dir_path()
+        self._data_dir = generate_unique_folder_name(
+            run_dir_path, "reloaded_data_regions", "")
         if not os.path.exists(self._data_dir):
             os.makedirs(self._data_dir)
 
         report_dir = None
         if get_config_bool("Reports", "write_text_specs"):
             report_dir = generate_unique_folder_name(
-                report_default_directory(), "reloaded_data_regions", "")
+                run_dir_path, "reloaded_data_regions", "")
             if not os.path.exists(report_dir):
                 os.makedirs(report_dir)
 
-        progress = ProgressBar(placements.n_placements, "Reloading data")
-        for placement in progress.over(placements.placements):
+        progress = ProgressBar(
+            FecDataView.get_n_placements(), "Reloading data")
+        for placement in progress.over(FecDataView.iterate_placemements()):
             # Generate the data spec for the placement if needed
             self._regenerate_data_spec_for_vertices(placement)
 
@@ -94,7 +89,7 @@ class _DSGRegionReloader(object):
 
         # build the writers for the reports and data
         spec_file, spec = get_data_spec_and_file_writer_filename(
-            placement.x, placement.y, placement.p, self._host, self._data_dir)
+            placement.x, placement.y, placement.p, self._data_dir)
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
@@ -116,14 +111,14 @@ class _DSGRegionReloader(object):
         start_region = get_region_base_address_offset(regions_base_address, 0)
         table_size = get_region_base_address_offset(
             regions_base_address, MAX_MEM_REGIONS) - start_region
-        offsets = n_word_struct(MAX_MEM_REGIONS).unpack_from(
-            self._txrx.read_memory(
-                placement.x, placement.y, start_region, table_size))
+        ptr_table = numpy.frombuffer(self._txrx.read_memory(
+                placement.x, placement.y, start_region, table_size),
+            dtype=DataSpecificationExecutor.TABLE_TYPE)
 
         # Write the regions to the machine
         for i, region in enumerate(data_spec_executor.dsef.mem_regions):
             if region is not None and not region.unfilled:
                 self._txrx.write_memory(
-                    placement.x, placement.y, offsets[i],
+                    placement.x, placement.y, ptr_table[i]["pointer"],
                     region.region_data[:region.max_write_pointer])
         vertex.set_reload_required(False)

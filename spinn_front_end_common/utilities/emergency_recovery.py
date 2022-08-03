@@ -17,19 +17,20 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from .iobuf_extractor import IOBufExtractor
-from .globals_variables import get_simulator
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def _emergency_state_check(txrx, app_id):
+def _emergency_state_check():
     """
-    :param ~.Transceiver txrx: spinnman interface
     :param int app_id: the app id
     """
     # pylint: disable=broad-except
     try:
+        app_id = FecDataView.get_app_id()
+        txrx = FecDataView.get_transceiver()
         rte_count = txrx.get_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
@@ -55,57 +56,56 @@ def _emergency_state_check(txrx, app_id):
                         infos.add_processor(chip.x, chip.y, p, info)
                 except Exception:
                     errors.append((chip.x, chip.y, p))
-        logger.warning(txrx.get_core_status_string(infos))
-        logger.warning("Could not read information from cores {}".format(
-            errors))
+        if len(infos):
+            logger.warning(txrx.get_core_status_string(infos))
+        if len(len(errors) > 10):
+            logger.warning("Could not read information from {} cores".format(
+                len(errors)))
+        else:
+            logger.warning("Could not read information from cores {}".format(
+                errors))
 
 
-# TRICKY POINT: Have to delay the import to here because of import circularity
-def _emergency_iobuf_extract(txrx, executable_targets):
+def _emergency_iobuf_extract(executable_targets=None):
     """
-    :param ~.Transceiver txrx:
-    :param ExecutableTargets executable_targets:
+    :param executable_targets: The specific targets to extract of None for all
+    :type executable_targets: ExecutableTargets  or None
     """
     # pylint: disable=protected-access
-    sim = get_simulator()
     extractor = IOBufExtractor(
-        txrx, executable_targets, sim._executable_finder,
+        executable_targets,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
     extractor.extract_iobuf()
 
 
-def emergency_recover_state_from_failure(txrx, app_id, vertex, placement):
+def emergency_recover_state_from_failure(vertex, placement):
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
     :param AbstractHasAssociatedBinary vertex:
         The vertex to retrieve the IOBUF from if it is suspected as being dead
     :param ~pacman.model.placements.Placement placement:
         Where the vertex is located.
     """
     # pylint: disable=protected-access
-    _emergency_state_check(txrx, app_id)
+    _emergency_state_check()
     target = ExecutableTargets()
-    path = get_simulator()._executable_finder.get_executable_path(
-        vertex.get_binary_file_name())
+    path = FecDataView.get_executable_path(vertex.get_binary_file_name())
     target.add_processor(
         path, placement.x, placement.y, placement.p,
         vertex.get_binary_start_type())
-    _emergency_iobuf_extract(txrx, target)
+    _emergency_iobuf_extract(target)
 
 
-def emergency_recover_states_from_failure(txrx, app_id, executable_targets):
+def emergency_recover_states_from_failure():
     """ Used to get at least *some* information out of a core when something\
         goes badly wrong. Not a replacement for what abstract spinnaker base\
         does.
 
-    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
-    :param int app_id: The ID of the application.
     :param ~spinnman.model.ExecutableTargets executable_targets:
         The what/where mapping
     """
-    _emergency_state_check(txrx, app_id)
-    _emergency_iobuf_extract(txrx, executable_targets)
+    _emergency_state_check()
+    _emergency_iobuf_extract()

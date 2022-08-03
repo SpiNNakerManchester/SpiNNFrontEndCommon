@@ -18,15 +18,15 @@ import json
 import logging
 import os
 import subprocess
+from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions import (
     write_json_machine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -49,10 +49,6 @@ class JavaCaller(object):
         "_java_call",
         # The location of the java jar file
         "_jar_file",
-        # the folder to write the any json files into
-        "_json_folder",
-        # The machine
-        "_machine",
         # The location where the machine json is written
         "_machine_json_path",
         # Dict of chip (x, y) to the p of the monitor vertex
@@ -69,31 +65,14 @@ class JavaCaller(object):
         "_java_properties"
     ]
 
-    def __init__(self, json_folder, java_call, java_spinnaker_path=None,
-                 java_properties=None, java_jar_path=None):
+    def __init__(self):
         """ Creates a java caller and checks the user/config parameters.
 
-        :param str json_folder: The location where the machine JSON is written.
-        :param str java_call:
-            Call to start java. Including the path if required.
-        :param str java_spinnaker_path:
-            The path where the java code can be found.
-            This must point to a local copy of
-            `https://github.com/SpiNNakerManchester/JavaSpiNNaker`.
-            It must also have been built!
-            If `None` the assumption is that it is the same parent directory as
-            `https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon`.
-        :param str java_properties:
-            Optional properties that will be passed to Java.\
-            Must start with ``-D``.
-            For example ``-Dlogging.level=DEBUG``
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
-        self._report_folder = report_default_directory()
-        self._json_folder = json_folder
-
-        self._java_call = java_call
+        self._report_folder = FecDataView.get_run_dir_path()
+        self._java_call = get_config_str("Java", "java_call")
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
@@ -101,25 +80,27 @@ class JavaCaller(object):
                 "Please set [Java] java_call to the absolute path "
                 "to start java. (in config file)".format(self._java_call))
 
-        self._find_java_jar(java_spinnaker_path, java_jar_path)
+        self._find_java_jar()
 
-        self._machine = None
         self._machine_json_path = None
         self._placement_json = None
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
-        self._java_properties = java_properties
+        self._java_properties = get_config_str("Java", "java_properties")
         self._chipxy_by_ethernet = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
+            # pylint: disable=not-an-iterable
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
                         "Java Properties must start with -D found at {}".
                         format(_property))
 
-    def _find_java_jar(self, java_spinnaker_path, java_jar_path):
+    def _find_java_jar(self):
+        java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
+        java_jar_path = get_config_str("Java", "java_jar_path")
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
@@ -159,42 +140,27 @@ class JavaCaller(object):
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
 
-    def set_machine(self, machine):
-        """ Passes the machine in leaving this class to decide pass it to Java.
-
-        :param ~spinn_machine.Machine machine: A machine Object
+    def set_advanced_monitors(self):
         """
-        self._machine = machine
-
-    def set_advanced_monitors(
-            self, placements, tags, monitor_cores, packet_gathers):
-        """
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
-        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
-        :param monitor_cores: Where the advanced monitor for each core is
-        :type monitor_cores:
-            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
-        :param packet_gathers: Where the packet gatherers are
-        :type packet_gathers:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
         :rtype: None
         """
+        tags = FecDataView.get_tags()
         self._monitor_cores = dict()
-        for core, monitor_core in monitor_cores.items():
-            placement = placements.get_placement_of_vertex(monitor_core)
+        for core, monitor_core in FecDataView.iterate_monitor_items():
+            placement = FecDataView.get_placement_of_vertex(monitor_core)
             self._monitor_cores[core] = placement.p
 
         self._gatherer_iptags = dict()
         self._gatherer_cores = dict()
-        for core, packet_gather in packet_gathers.items():
+        for core, packet_gather in FecDataView.iterate_gather_items():
             self._gatherer_iptags[core] = \
                 tags.get_ip_tags_for_vertex(packet_gather)[0]
-            placement = placements.get_placement_of_vertex(packet_gather)
+            placement = FecDataView.get_placement_of_vertex(packet_gather)
             self._gatherer_cores[core] = placement.p
 
         self._chipxy_by_ethernet = defaultdict(list)
-        for chip in self._machine.chips:
+        machine = FecDataView.get_machine()
+        for chip in machine.chips:
             if not chip.virtual:
                 chip_xy = (chip.x, chip.y)
                 ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
@@ -206,8 +172,7 @@ class JavaCaller(object):
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = write_json_machine(
-                self._machine, self._json_folder, False)
+            self._machine_json_path = write_json_machine(progress_bar=False)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
@@ -219,12 +184,9 @@ class JavaCaller(object):
         """
         self._report_folder = report_folder
 
-    def set_placements(self, placements, transceiver):
+    def set_placements(self, used_placements):
         """ Passes in the placements leaving this class to decide pass it to
             Java.
-
-        This method may obtain extra information about he placements which is
-        why it also needs the transceiver.
 
         Currently the extra information extracted is recording region base
         address but this could change if recording region saved in the
@@ -233,23 +195,22 @@ class JavaCaller(object):
         Currently this method uses JSON but that may well change to using the
         database.
 
-        :param ~pacman.model.placements.Placements placements:
-            The Placements Object
-        :param ~spinnman.transceiver.Transceiver transceiver: The Transceiver
+        :param ~pacman.model.placements.Placements used_placements:
+            Placements that are recording. May not be all placements
         """
-        path = os.path.join(self._json_folder, "java_placements.json")
+        path = os.path.join(
+            FecDataView.get_json_dir_path(), "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
             self._placement_json = self._write_placements(
-                placements, transceiver, path)
+                used_placements, path)
         else:
             self._placement_json = self._write_gather(
-                placements, transceiver, path)
+                used_placements, path)
 
-    def _json_placement(self, placement, transceiver):
+    def _json_placement(self, placement):
         """
         :param ~pacman.model.placements.Placement placement:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :rtype: dict
         """
         vertex = placement.vertex
@@ -265,8 +226,7 @@ class JavaCaller(object):
             self._recording = True
             json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
             json_vertex["recordingRegionBaseAddress"] = \
-                vertex.get_recording_region_base_address(
-                    transceiver, placement)
+                vertex.get_recording_region_base_address(placement)
         else:
             json_vertex["recordedRegionIds"] = []
             json_vertex["recordingRegionBaseAddress"] = 0
@@ -291,28 +251,28 @@ class JavaCaller(object):
 
         return json_tag
 
-    def _placements_grouped(self, placements):
+    def _placements_grouped(self, recording_placements):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placementss:
         :rtype: dict(tuple(int,int),dict(tuple(int,int),
             ~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
-        for placement in placements:
-            chip = self._machine.get_chip_at(placement.x, placement.y)
+        for placement in recording_placements:
+            chip = FecDataView.get_chip_at(placement.x, placement.y)
             chip_xy = (placement.x, placement.y)
             ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
             by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
-    def _write_gather(self, placements, transceiver, path):
+    def _write_gather(self, used_placements, path):
         """
-        :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
+        :param ~pacman.model.placements.Placements used_placements:
+            placements that are being used. May not eb all placements
         :param str path:
         :rtype: str
         """
-        placements_by_ethernet = self._placements_grouped(placements)
+        placements_by_ethernet = self._placements_grouped(used_placements)
         json_obj = list()
         for ethernet in self._chipxy_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
@@ -331,7 +291,7 @@ class JavaCaller(object):
                 if chip_xy in by_chip:
                     json_placements = list()
                     for placement in by_chip[chip_xy]:
-                        json_p = self._json_placement(placement, transceiver)
+                        json_p = self._json_placement(placement)
                         if json_p:
                             json_placements.append(json_p)
                     if len(json_placements) > 0:
@@ -346,17 +306,17 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, placements, transceiver, path):
+    def _write_placements(self, used_placements, path):
         """
         :param ~pacman.model.placements.Placements placements:
-        :param ~spinnman.transceiver.Transceiver transceiver:
+            Placements that are being used. May not be all placements
         :param str path:
         :rtype: str
         """
         # Read back the regions
         json_obj = list()
-        for placement in placements:
-            json_p = self._json_placement(placement, transceiver)
+        for placement in used_placements:
+            json_p = self._json_placement(placement)
             if json_p:
                 json_obj.append(json_p)
 

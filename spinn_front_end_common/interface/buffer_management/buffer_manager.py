@@ -31,6 +31,7 @@ from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from data_specification.constants import BYTES_PER_WORD
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
@@ -84,15 +85,6 @@ class BufferManager(object):
     """
 
     __slots__ = [
-        # placements object
-        "_placements",
-
-        # list of tags
-        "_tags",
-
-        # SpiNNMan instance
-        "_transceiver",
-
         # Set of (ip_address, port) that are being listened to for the tags
         "_seen_tags",
 
@@ -117,18 +109,6 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # the extra_monitor to Ethernet connection map
-        "_packet_gather_cores_to_ethernet_connection_map",
-
-        # monitor cores via chip ID
-        "_extra_monitor_cores_by_chip",
-
-        # fixed routes, used by the speed up functionality for reports
-        "_fixed_routes",
-
-        # machine object
-        "_machine",
-
         # Support class to help call Java
         "_java_caller",
 
@@ -140,44 +120,8 @@ class BufferManager(object):
         "__proxied_connection"
     ]
 
-    def __init__(self, placements, tags, transceiver,
-                 packet_gather_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 java_caller=None, machine_allocation_controller=None):
-        """
-        :param ~pacman.model.placements.Placements placements:
-            The placements of the vertices
-        :param ~pacman.model.tags.Tags tags: The tags assigned to the vertices
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            The transceiver to use for sending and receiving information
-        :param packet_gather_cores_to_ethernet_connection_map:
-            mapping of cores to the gatherer vertex placed on them
-        :type packet_gather_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
-        :param extra_monitor_to_chip_mapping:
-        :type extra_monitor_to_chip_mapping:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-        :param ~spinn_machine.Machine machine:
-        :param fixed_routes:
-        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
-        :param JavaCaller java_caller:
-            Support class to call Java, or ``None`` to use Python
-        :param MachineAllocationController machine_allocation_controller:
-            The machine controller, if known.
-        """
+    def __init__(self):
         # pylint: disable=too-many-arguments
-        self._placements = placements
-        self._tags = tags
-        self._transceiver = transceiver
-        self._packet_gather_cores_to_ethernet_connection_map = \
-            packet_gather_cores_to_ethernet_connection_map
-        self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
-        self._fixed_routes = fixed_routes
-        self._machine = machine
-        self._machine_controller = machine_allocation_controller if isinstance(
-            machine_allocation_controller, SpallocJobController) else None
-        self.__proxied_connection = None
-
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
 
@@ -196,14 +140,14 @@ class BufferManager(object):
 
         self._finished = False
         self._listener_port = None
-        self._java_caller = java_caller
-        if self._java_caller is not None:
-            self._java_caller.set_machine(machine)
+        self.__proxied_connection = None
+
+        if FecDataView.has_java_caller():
+            self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
-                self._java_caller.set_advanced_monitors(
-                    self._placements, self._tags,
-                    self._extra_monitor_cores_by_chip,
-                    self._packet_gather_cores_to_ethernet_connection_map)
+                self._java_caller.set_advanced_monitors()
+        else:
+            self._java_caller = None
 
     def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.
@@ -219,7 +163,7 @@ class BufferManager(object):
         """
         # pylint: disable=too-many-arguments
         if not get_config_bool("Machine", "enable_advanced_monitor_support"):
-            return self._transceiver.read_memory(
+            return FecDataView.read_memory(
                 placement_x, placement_y, address, length)
 
         # Round to word boundaries
@@ -229,15 +173,13 @@ class BufferManager(object):
         final = (BYTES_PER_WORD - (length % BYTES_PER_WORD)) % BYTES_PER_WORD
         length += final
 
-        sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
-        receiver = locate_extra_monitor_mc_receiver(
-            self._machine, placement_x, placement_y,
-            self._packet_gather_cores_to_ethernet_connection_map)
+        sender = FecDataView.get_monitor_by_xy(placement_x, placement_y)
+        receiver = locate_extra_monitor_mc_receiver(placement_x, placement_y)
         extra_mon_data = receiver.get_data(
-            sender, self._placements.get_placement_of_vertex(sender),
-            address, length, self._fixed_routes)
+            sender, FecDataView.get_placement_of_vertex(sender),
+            address, length)
         if VERIFY:
-            txrx_data = self._transceiver.read_memory(
+            txrx_data = FecDataView.read_memory(
                 placement_x, placement_y, address, length)
             self._verify_data(extra_mon_data, txrx_data)
 
@@ -288,7 +230,7 @@ class BufferManager(object):
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
-                vertex = self._placements.get_vertex_on_processor(
+                vertex = FecDataView.get_placements().get_vertex_on_processor(
                     packet.x, packet.y, packet.p)
                 if vertex in self._sender_vertices:
                     self._send_messages(
@@ -300,18 +242,20 @@ class BufferManager(object):
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
-        if self._machine_controller:
+        mac = None
+        if FecDataView.has_allocation_controller():
+            mac = FecDataView.get_allocation_controller()
+        if mac and isinstance(mac, SpallocJobController):
+            # No trigger message needed
             if not self.__proxied_connection:
-                self.__proxied_connection = \
-                    self._machine_controller.open_eieio_listener()
-                self._transceiver.register_existing_udp_listener(
+                self.__proxied_connection = mac.open_eieio_listener()
+                FecDataView.get_transceiver().register_existing_udp_listener(
                     self._receive_buffer_command_message,
                     self.__proxied_connection)
             connection = self.__proxied_connection
             connection.update_tag_by_ip(tag.ip_address, tag.tag)
-            # No trigger message needed
         else:
-            connection = self._transceiver.register_udp_listener(
+            connection = FecDataView.get_transceiver().register_udp_listener(
                 self._receive_buffer_command_message, EIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
             utility_functions.send_port_trigger_message(
@@ -329,7 +273,7 @@ class BufferManager(object):
         """
 
         # Find a tag for receiving buffer data
-        tags = self._tags.get_ip_tags_for_vertex(vertex)
+        tags = FecDataView.get_tags().get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
             # locate tag associated with the buffer manager traffic
@@ -463,9 +407,9 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        placement = self._placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         region_base_address = locate_memory_region_for_placement(
-            placement, region, self._transceiver)
+            placement, region)
 
         # Add packets until out of space
         sent_message = False
@@ -516,7 +460,7 @@ class BufferManager(object):
                 region, sent_stop_message=True)
 
         # Do the writing all at once for efficiency
-        self._transceiver.write_memory(
+        FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
@@ -592,13 +536,13 @@ class BufferManager(object):
             ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
         """
 
-        placement = self._placements.get_placement_of_vertex(vertex)
+        placement = FecDataView.get_placement_of_vertex(vertex)
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
             destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
-        self._transceiver.send_sdp_message(sdp_message)
+        FecDataView.get_transceiver().send_sdp_message(sdp_message)
 
     def stop(self):
         """ Indicates that the simulation has finished, so no further\
@@ -608,15 +552,15 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
-    def get_data_for_placements(self, placements, progress=None):
+    def get_data_for_placements(self, recording_placements, progress=None):
         """
-        :param ~pacman.model.placements.Placements placements:
-            Where to get the data from.
+        :param ~pacman.model.placements.Placements recording_placements:
+            Where to get the data from. May not be all placements
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         if self._java_caller is not None:
-            self._java_caller.set_placements(placements, self._transceiver)
+            self._java_caller.set_placements(recording_placements)
 
         timer = Timer()
         with timer:
@@ -628,47 +572,43 @@ class BufferManager(object):
                 elif get_config_bool(
                         "Machine", "enable_advanced_monitor_support"):
                     self.__old_get_data_for_placements_with_monitors(
-                        placements, progress)
+                        recording_placements, progress)
                 else:
-                    self.__old_get_data_for_placements(placements, progress)
+                    self.__old_get_data_for_placements(
+                        recording_placements, progress)
         with ProvenanceWriter() as db:
-            db.insert_category_timing(
-                BUFFER, timer.measured_interval, None, None)
+            db.insert_category_timing(BUFFER, timer.measured_interval, None)
 
     def __old_get_data_for_placements_with_monitors(
-            self, placements, progress):
+            self, recording_placements, progress):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         # locate receivers
         receivers = list(OrderedSet(
-            locate_extra_monitor_mc_receiver(
-                self._machine, placement.x, placement.y,
-                self._packet_gather_cores_to_ethernet_connection_map)
-            for placement in placements))
+            locate_extra_monitor_mc_receiver(placement.x, placement.y)
+            for placement in recording_placements))
 
         # update transaction id from the machine for all extra monitors
-        for extra_mon in self._extra_monitor_cores_by_chip.values():
-            extra_mon.update_transaction_id_from_machine(self._transceiver)
+        for extra_mon in FecDataView.iterate_monitors():
+            extra_mon.update_transaction_id_from_machine()
 
-        with StreamingContextManager(
-                receivers, self._transceiver,
-                self._extra_monitor_cores_by_chip, self._placements):
+        with StreamingContextManager(receivers):
             # get data
-            self.__old_get_data_for_placements(placements, progress)
+            self.__old_get_data_for_placements(recording_placements, progress)
 
-    def __old_get_data_for_placements(self, placements, progress):
+    def __old_get_data_for_placements(self, recording_placements, progress):
         """
-        :param ~pacman.model.placements.Placements placements:
+        :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         # get data
-        for placement in placements:
+        for placement in recording_placements:
             vertex = placement.vertex
             for recording_region_id in vertex.get_recorded_region_ids():
                 self._retreive_by_placement(placement, recording_region_id)
@@ -709,7 +649,7 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p):
 
             addr = placement.vertex.get_recording_region_base_address(
-                self._transceiver, placement)
+                placement)
             self._get_region_information(
                 addr, placement.x, placement.y, placement.p)
 
@@ -732,9 +672,10 @@ class BufferManager(object):
         :param x: The x-coordinate of the chip containing the data
         :param y: The y-coordinate of the chip containing the data
         """
-        n_regions = self._transceiver.read_word(x, y, addr)
+        transceiver = FecDataView.get_transceiver()
+        n_regions = transceiver.read_word(x, y, addr)
         n_bytes = get_recording_header_size(n_regions)
-        data = self._transceiver.read_memory(
+        data = transceiver.read_memory(
             x, y, addr + BYTES_PER_WORD, n_bytes - BYTES_PER_WORD)
         data_type = _RecordingRegion * n_regions
         regions = data_type.from_buffer_copy(data)

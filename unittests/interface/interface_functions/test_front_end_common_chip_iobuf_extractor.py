@@ -17,21 +17,20 @@ import os
 import tempfile
 import unittest
 from spinn_utilities.config_holder import set_config
-from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_utilities.make_tools.log_sqllite_database import LogSqlLiteDatabase
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.interface_functions import (
     chip_io_buf_extractor)
-from spinn_front_end_common.utilities.globals_variables import (
-    app_provenance_file_path)
 from spinnman.model import ExecutableTargets
 from spinnman.transceiver import Transceiver
 
 
-class _PretendTransceiver(object):
+class _PretendTransceiver(Transceiver):
     def __init__(self, iobuffers):
         self._iobuffers = iobuffers
 
@@ -40,6 +39,10 @@ class _PretendTransceiver(object):
         for iobuf in self._iobuffers:
             if core_subsets.is_core(iobuf.x, iobuf.y, iobuf.p):
                 yield iobuf
+
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
 
 
 def mock_text(x, y, p):
@@ -61,20 +64,12 @@ text111, result_error111, result_warning111 = mock_text(1, 1, 1)
 text112, result_error112, result_warning112 = mock_text(1, 1, 2)
 text003, result_error003, result_warning003 = mock_text(0, 0, 3)
 
-
 path = os.path.dirname(os.path.abspath(__file__))
 
 
 def mock_aplx(name):
     return os.path.join(path, "mock{}.aplx".format(name))
 
-
-executableFinder = ExecutableFinder([path])
-
-transceiver = _PretendTransceiver(
-    [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
-     IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
-     IOBuffer(0, 0, 3, text003)])
 
 executable_targets = ExecutableTargets()
 core_subsets = CoreSubsets([CoreSubset(0, 0, [1, 2])])
@@ -95,15 +90,20 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         os.environ["C_LOGS_DICT"] = tempfile.mktemp()
         # There needs to be a dict but it can be empty
         LogSqlLiteDatabase(new_dict=True)
+        writer = FecDataWriter.mock()
+        writer.set_transceiver(_PretendTransceiver(
+            [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
+             IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
+             IOBuffer(0, 0, 3, text003)]))
+        FecDataView.register_binary_search_path(path)
+        writer.set_executable_targets(executable_targets)
 
     def testExectuableFinder(self):
-        self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
+        self.assertIn(fooaplx, FecDataView.get_executable_path(fooaplx))
 
     def testCallSimple(self):
-        folder = app_provenance_file_path()
-        error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
-            executable_finder=None)
+        folder = FecDataView.get_app_provenance_dir_path()
+        error_entries, warn_entries = chip_io_buf_extractor()
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
         testfile = os.path.join(
@@ -134,12 +134,10 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(5, len(warn_entries))
 
     def testCallChips(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:0,0,3")
         set_config("Reports", "extract_iobuf_from_binary_types", "None")
-        error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
-            executable_finder=None)
+        error_entries, warn_entries = chip_io_buf_extractor()
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertFalse(os.path.exists(testfile))
@@ -168,13 +166,11 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(2, len(warn_entries))
 
     def testCallBinary(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "None")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
-        error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
-            executable_finder=executableFinder)
+        error_entries, warn_entries = chip_io_buf_extractor()
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
@@ -199,13 +195,11 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(3, len(warn_entries))
 
     def testCallBoth(self):
-        folder = app_provenance_file_path()
+        folder = FecDataView.get_app_provenance_dir_path()
         set_config("Reports", "extract_iobuf_from_cores", "0,0,2:1,1,1")
         set_config("Reports", "extract_iobuf_from_binary_types",
                    fooaplx + "," + alphaaplx)
-        error_entries, warn_entries = chip_io_buf_extractor(
-            transceiver, executable_targets=executable_targets,
-            executable_finder=executableFinder)
+        error_entries, warn_entries = chip_io_buf_extractor()
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))

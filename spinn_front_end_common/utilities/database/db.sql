@@ -40,7 +40,6 @@ CREATE TABLE IF NOT EXISTS Machine_chip(
     chip_x INTEGER,
     chip_y INTEGER,
     machine_id INTEGER,
-    avilableSDRAM INTEGER,
     ip_address INTEGER,
     nearest_ethernet_x INTEGER,
     nearest_ethernet_y INTEGER,
@@ -48,78 +47,15 @@ CREATE TABLE IF NOT EXISTS Machine_chip(
     FOREIGN KEY (machine_id)
         REFERENCES Machine_layout(machine_id));
 
--- An atomic processing element
-CREATE TABLE IF NOT EXISTS Processor(
-    chip_x INTEGER,
-    chip_y INTEGER,
-    machine_id INTEGER,
-    available_DTCM INTEGER,
-    available_CPU INTEGER,
-    physical_id INTEGER,
-    PRIMARY KEY (chip_x, chip_y, machine_id, physical_id),
-    FOREIGN KEY (chip_x, chip_y, machine_id)
-        REFERENCES Machine_chip(chip_x, chip_y, machine_id));
-
 -- One unit of computation at the application level
 CREATE TABLE IF NOT EXISTS Application_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    vertex_label TEXT,
-    vertex_class TEXT,
-    no_atoms INTEGER,
-    max_atom_constrant INTEGER);
-
--- A communication link between two application vertices
-CREATE TABLE IF NOT EXISTS Application_edges(
-    edge_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    pre_vertex INTEGER,
-    post_vertex INTEGER,
-    edge_label TEXT,
-    edge_class TEXT,
-    FOREIGN KEY (pre_vertex)
-        REFERENCES Application_vertices(vertex_id),
-    FOREIGN KEY (post_vertex)
-        REFERENCES Application_vertices(vertex_id));
-
--- The edge identified by edge_id starts at the vertex identified by vertex_id
-CREATE TABLE IF NOT EXISTS Application_graph(
-    vertex_id INTEGER,
-    edge_id INTEGER,
-    PRIMARY KEY (vertex_id, edge_id),
-    FOREIGN KEY (vertex_id)
-        REFERENCES Application_vertices(vertex_id),
-    FOREIGN KEY (edge_id)
-        REFERENCES Application_edges(edge_id));
+    vertex_label TEXT);
 
 -- One unit of computation at the system level; deploys to one processor
 CREATE TABLE IF NOT EXISTS Machine_vertices(
     vertex_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT,
-    class TEXT,
-    cpu_used INTEGER,
-    sdram_used INTEGER,
-    dtcm_used INTEGER);
-
--- A communication link between two machine vertices
-CREATE TABLE IF NOT EXISTS Machine_edges(
-    edge_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    pre_vertex INTEGER,
-    post_vertex INTEGER,
-    label TEXT,
-    class TEXT,
-    FOREIGN KEY (pre_vertex)
-        REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (post_vertex)
-        REFERENCES Machine_vertices(vertex_id));
-
--- The edge identified by edge_id starts at the vertex identified by vertex_id
-CREATE TABLE IF NOT EXISTS Machine_graph(
-    vertex_id INTEGER,
-    edge_id INTEGER,
-    PRIMARY KEY (vertex_id, edge_id),
-    FOREIGN KEY (vertex_id)
-        REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (edge_id)
-        REFERENCES Machine_edges(edge_id));
+    label TEXT);
 
 -- The state of the graph mapper, which links each application vertex to a
 -- number of machine vertexes, with contiguous-but-non-overlapping ranges of
@@ -127,24 +63,11 @@ CREATE TABLE IF NOT EXISTS Machine_graph(
 CREATE TABLE IF NOT EXISTS graph_mapper_vertex(
     application_vertex_id INTEGER,
     machine_vertex_id INTEGER,
-    lo_atom INTEGER,
-    hi_atom INTEGER,
     PRIMARY KEY (application_vertex_id, machine_vertex_id),
     FOREIGN KEY (machine_vertex_id)
         REFERENCES Machine_vertices(vertex_id),
     FOREIGN KEY (application_vertex_id)
         REFERENCES Application_vertices(vertex_id));
-
--- The state of the graph mapper, which links each application edge to one or
--- more machine edges.
-CREATE TABLE IF NOT EXISTS graph_mapper_edges(
-    application_edge_id INTEGER,
-    machine_edge_id INTEGER,
-    PRIMARY KEY (application_edge_id, machine_edge_id),
-    FOREIGN KEY (machine_edge_id)
-        REFERENCES Machine_edges(edge_id),
-    FOREIGN KEY (application_edge_id)
-        REFERENCES Application_edges(edge_id));
 
 -- How the machine vertices are actually placed on the SpiNNaker machine.
 CREATE TABLE IF NOT EXISTS Placements(
@@ -155,28 +78,19 @@ CREATE TABLE IF NOT EXISTS Placements(
     chip_p INTEGER,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id),
-    FOREIGN KEY (chip_x, chip_y, chip_p, machine_id)
-        REFERENCES Processor(chip_x, chip_y, physical_id, machine_id));
+    FOREIGN KEY (chip_x, chip_y, machine_id)
+        REFERENCES Machine_chip(chip_x, chip_y, machine_id));
 
--- The mapping of machine edges to the keys and masks used in SpiNNaker
--- packets.
-CREATE TABLE IF NOT EXISTS Routing_info(
-    edge_id INTEGER,
-    "key" INTEGER,
-    mask INTEGER,
-    PRIMARY KEY (edge_id, "key", mask),
-    FOREIGN KEY (edge_id)
-        REFERENCES Machine_edges(edge_id));
-
--- The computed routing table for a chip.
-CREATE TABLE IF NOT EXISTS Routing_table(
-    chip_x INTEGER,
-    chip_y INTEGER,
-    position INTEGER,
-    key_combo INTEGER,
-    mask INTEGER,
-    route INTEGER,
-    PRIMARY KEY (chip_x, chip_y, position));
+-- A map of which machine vertex is connected to which LPG vertex
+CREATE TABLE IF NOT EXISTS m_vertex_to_lpg_vertex(
+    pre_vertex_id INTEGER,
+    partition_id TEXT,
+    post_vertex_id INTEGER,
+    PRIMARY KEY (pre_vertex_id, partition_id, post_vertex_id)
+    FOREIGN KEY (pre_vertex_id)
+        REFERENCES Machine_vertices(vertex_id),
+    FOREIGN KEY (post_vertex_id)
+        REFERENCES Machine_vertices(vertex_id));
 
 CREATE TABLE IF NOT EXISTS IP_tags(
     vertex_id INTEGER,
@@ -186,14 +100,6 @@ CREATE TABLE IF NOT EXISTS IP_tags(
     port INTEGER,
     strip_sdp BOOLEAN,
     PRIMARY KEY (vertex_id, tag, board_address, ip_address, port, strip_sdp),
-    FOREIGN KEY (vertex_id)
-        REFERENCES Machine_vertices(vertex_id));
-
-CREATE TABLE IF NOT EXISTS Reverse_IP_tags(
-    vertex_id INTEGER PRIMARY KEY,
-    tag INTEGER,
-    board_address TEXT,
-    port INTEGER,
     FOREIGN KEY (vertex_id)
         REFERENCES Machine_vertices(vertex_id));
 
@@ -209,10 +115,14 @@ CREATE TABLE IF NOT EXISTS event_to_atom_mapping(
 CREATE VIEW IF NOT EXISTS label_event_atom_view AS SELECT
     e_to_a.atom_id AS atom,
     e_to_a.event_id AS event,
-    app_vtx.vertex_label AS label,
-    app_vtx.vertex_class AS class
+    app_vtx.vertex_label AS label
 FROM event_to_atom_mapping AS e_to_a
-    NATURAL JOIN Application_vertices AS app_vtx;
+    JOIN Machine_vertices as machine_vertices
+        ON e_to_a.vertex_id == machine_vertices.vertex_id
+    JOIN graph_mapper_vertex as mapper
+        ON machine_vertices.vertex_id == mapper.machine_vertex_id
+    JOIN Application_vertices AS app_vtx
+        ON mapper.application_vertex_id == app_vtx.vertex_id;
 
 CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.ip_address AS ip_address,
@@ -221,101 +131,26 @@ CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.board_address AS board_address,
     IP_tags.tag AS tag,
     pre_app_vertices.vertex_label AS pre_vertex_label,
-    pre_app_vertices.vertex_class AS pre_vertex_class,
-    post_app_vertices.vertex_label AS post_vertex_label,
-    post_app_vertices.vertex_class AS post_vertex_class,
-    post_placements.chip_x AS x,
-    post_placements.chip_y AS y
-FROM IP_tags
-    JOIN Machine_vertices AS post_vertices
-        ON IP_tags.vertex_id = post_vertices.vertex_id
-    JOIN Machine_edges AS edges
-        ON edges.post_vertex = post_vertices.vertex_id
-    JOIN Machine_vertices AS pre_vertices
-        ON edges.pre_vertex = pre_vertices.vertex_id
+    lpg_vertices.label AS post_vertex_label,
+    lpg_placements.chip_x AS chip_x,
+    lpg_placements.chip_y AS chip_y
+FROM m_vertex_to_lpg_vertex
+    JOIN IP_Tags
+        ON m_vertex_to_lpg_vertex.post_vertex_id = IP_tags.vertex_id
+    JOIN Machine_vertices AS lpg_vertices
+        ON m_vertex_to_lpg_vertex.post_vertex_id = lpg_vertices.vertex_id
     JOIN graph_mapper_vertex AS pre_mapper
-        ON edges.pre_vertex = pre_mapper.machine_vertex_id
-    JOIN graph_mapper_vertex AS post_mapper
-        ON edges.post_vertex = post_mapper.machine_vertex_id
+        ON m_vertex_to_lpg_vertex.pre_vertex_id = pre_mapper.machine_vertex_id
     JOIN Application_vertices AS pre_app_vertices
         ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id
-    JOIN Application_vertices AS post_app_vertices
-        ON post_mapper.application_vertex_id = post_app_vertices.vertex_id
-    JOIN Placements AS post_placements
-        ON post_vertices.vertex_id = post_placements.vertex_id;
-
-CREATE VIEW IF NOT EXISTS machine_output_tag_view AS SELECT
-    IP_tags.ip_address AS ip_address,
-    IP_tags.port AS port,
-    IP_tags.strip_sdp AS strip_sdp,
-    IP_tags.board_address AS board_address,
-    IP_tags.tag AS tag,
-    pre_vertices.label AS pre_vertex_label,
-    pre_vertices.class AS pre_vertex_class,
-    post_vertices.label AS post_vertex_label,
-    post_vertices.class AS post_vertex_class,
-    post_placements.chip_x AS x,
-    post_placements.chip_y AS y
-FROM IP_tags
-    JOIN Machine_vertices AS post_vertices
-        ON IP_tags.vertex_id = post_vertices.vertex_id
-    JOIN Machine_edges AS edges
-        ON edges.post_vertex = post_vertices.vertex_id
-    JOIN Machine_vertices AS pre_vertices
-        ON edges.pre_vertex = pre_vertices.vertex_id
-    JOIN Placements AS post_placements
-        ON post_vertices.vertex_id = post_placements.vertex_id;
-
-CREATE VIEW IF NOT EXISTS app_input_tag_view AS SELECT
-    Reverse_IP_tags.board_address AS board_address,
-    Reverse_IP_tags.port AS port,
-    application.vertex_label AS application_label,
-    application.vertex_class AS application_class
-FROM Reverse_IP_tags
-    JOIN graph_mapper_vertex AS mapper
-        ON Reverse_IP_tags.vertex_id = mapper.machine_vertex_id
-    JOIN Application_vertices AS application
-        ON mapper.application_vertex_id = application.vertex_id;
-
-CREATE VIEW IF NOT EXISTS machine_input_tag_view AS SELECT
-    Reverse_IP_tags.board_address AS board_address,
-    Reverse_IP_tags.port AS port,
-    post_vertices.label AS machine_label,
-    post_vertices.class AS machine_class
-FROM Reverse_IP_tags
-    JOIN Machine_vertices AS post_vertices
-        ON Reverse_IP_tags.vertex_id = post_vertices.vertex_id;
-
-CREATE VIEW IF NOT EXISTS machine_edge_key_view AS SELECT
-    Routing_info."key" AS "key",
-    Routing_info.mask AS mask,
-    pre_vertices.label AS pre_vertex_label,
-    pre_vertices.class AS pre_vertex_class,
-    post_vertices.label AS post_vertex_label,
-    post_vertices.class AS post_vertex_class
-FROM Routing_info
-    JOIN Machine_edges
-        ON Machine_edges.edge_id = Routing_info.edge_id
-    JOIN Machine_vertices AS post_vertices
-        ON post_vertices.vertex_id = Machine_edges.post_vertex
-    JOIN Machine_vertices AS pre_vertices
-        ON pre_vertices.vertex_id = Machine_edges.pre_vertex;
-
-CREATE VIEW IF NOT EXISTS machine_vertex_placement AS SELECT
-    Placements.chip_x AS x,
-    Placements.chip_y AS y,
-    Placements.chip_p AS p,
-    Machine_vertices.label AS vertex_label,
-    Machine_vertices.class AS vertex_class
-FROM Placements
-    NATURAL JOIN Machine_vertices;
+    JOIN Placements AS lpg_placements
+        ON lpg_placements.vertex_id = lpg_vertices.vertex_id;
 
 CREATE VIEW IF NOT EXISTS application_vertex_placements AS SELECT
     Placements.chip_x AS x,
     Placements.chip_y AS y,
     Placements.chip_p AS p,
-    Application_vertices.vertex_label AS vertex_label,
-    Application_vertices.vertex_class AS vertex_class
+    Application_vertices.vertex_label AS vertex_label
 FROM Placements
     JOIN graph_mapper_vertex
         ON Placements.vertex_id = graph_mapper_vertex.machine_vertex_id

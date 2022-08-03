@@ -21,12 +21,12 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
     CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
@@ -34,8 +34,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -97,7 +95,6 @@ class ChipPowerMonitorMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        # pylint: disable=arguments-differ
         return self.get_resources(self._sampling_frequency)
 
     @staticmethod
@@ -107,10 +104,9 @@ class ChipPowerMonitorMachineVertex(
         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.ResourceContainer
         """
-        # pylint: disable=too-many-locals
-        step_in_microseconds = machine_time_step() * time_scale_factor()
-        # The number of sample per step CB believes does not have to be an int
-        samples_per_step = (step_in_microseconds / sampling_frequency)
+        # The number of sample per step does not have to be an int
+        samples_per_step = (FecDataView.get_hardware_time_step_us() /
+                            sampling_frequency)
         n_samples_per_recording = get_config_int(
             "EnergyMonitor", "n_samples_per_recording_entry")
         recording_per_step = (samples_per_step / n_samples_per_recording)
@@ -142,24 +138,20 @@ class ChipPowerMonitorMachineVertex(
         """
         return BINARY_FILE_NAME
 
-    @inject_items({"data_n_time_steps": "DataNTimeSteps"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"data_n_time_steps"})
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            data_n_time_steps):
-        # pylint: disable=arguments-differ
+            ):
         """ Supports the application vertex calling this directly
 
         :param ~data_specification.DataSpecificationGenerator spec: data spec
         :param int data_n_time_steps: timesteps to reserve data for
         """
-        # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, data_n_time_steps)
+        self._write_setup_info(spec)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -177,13 +169,12 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(n_samples_per_recording, data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(self, spec, n_machine_time_steps):
+    def _write_setup_info(self, spec):
         """ Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
         """
-        # pylint: disable=too-many-arguments
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))
@@ -191,7 +182,7 @@ class ChipPowerMonitorMachineVertex(
         spec.switch_write_focus(region=self._REGIONS.RECORDING)
         recorded_region_sizes = [
             self._deduce_sdram_requirements_per_timer_tick()
-            * n_machine_time_steps]
+            * FecDataView.get_max_run_time_steps()]
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes))
 
@@ -230,9 +221,9 @@ class ChipPowerMonitorMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
-    def get_recording_region_base_address(self, txrx, placement):
+    def get_recording_region_base_address(self, placement):
         return locate_memory_region_for_placement(
-            placement, self._REGIONS.RECORDING, txrx)
+            placement, self._REGIONS.RECORDING)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -244,28 +235,25 @@ class ChipPowerMonitorMachineVertex(
         :return: the SDRAM usage
         :rtype: int
         """
-        timer_tick_in_micro_seconds = (
-                machine_time_step() * time_scale_factor())
-
         recording_time = \
             self._sampling_frequency * get_config_int(
                 "EnergyMonitor", "n_samples_per_recording_entry")
-        n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
+        n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
+                               recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement, buffer_manager):
+    def get_recorded_data(self, placement):
         """ Get data from SDRAM given placement and buffer manager. \
             Also arranges for provenance data to be available.
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from
-        :param BufferManager buffer_manager:
-            the buffer manager that might have data
         :return: results, an array with 1 dimension of uint32 values
         :rtype: ~numpy.ndarray
         """
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
+        buffer_manager = FecDataView.get_buffer_manager()
         record_raw, data_missing = buffer_manager.get_data_by_placement(
             placement, self._SAMPLE_RECORDING_CHANNEL)
         if data_missing:

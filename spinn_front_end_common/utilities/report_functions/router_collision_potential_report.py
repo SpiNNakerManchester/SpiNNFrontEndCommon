@@ -16,23 +16,17 @@
 import os
 from collections import defaultdict
 from spinn_machine.router import Router
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
+from spinn_front_end_common.data import FecDataView
 
 COLLISION_REPORT = "routing_collision_protential_report.rpt"
 
 
-def router_collision_potential_report(
-        router_tables_by_partition, n_keys_map, machine):
-    """
-    :param MulticastRoutingTableByPartition router_tables_by_partition:
-    :param AbstractMachinePartitionNKeysMap n_keys_map:
-    :param ~spinn_machine.Machine machine:
-    """
-    file_name = os.path.join(report_default_directory(), COLLISION_REPORT)
+def router_collision_potential_report():
+    file_name = os.path.join(
+        FecDataView.get_run_dir_path(),
+        "routing_collision_protential_report.rpt")
     with open(file_name, "w", encoding="utf-8") as writer:
-        collision_counts = _generate_data(
-            router_tables_by_partition, n_keys_map, machine)
+        collision_counts = _generate_data()
         _write_report(collision_counts, writer)
 
 
@@ -49,9 +43,12 @@ def _write_report(collision_counts, writer):
                     x, y, link_id, collision_counts[(x, y)][link_id]))
 
 
-def _generate_data(router_tables_by_partition, n_keys_map, machine):
+def _generate_data():
+    router_tables_by_partition = FecDataView.get_routing_table_by_partition()
     collisions = defaultdict(lambda: defaultdict(int))
-
+    n_keys_map = dict()
+    # https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon/issues/891
+    # use machine_vertex.get_n_keys_for_partition(identifier)
     for (x, y) in router_tables_by_partition.get_routers():
         for partition in \
                 router_tables_by_partition.get_entries_for_router(x, y):
@@ -60,7 +57,7 @@ def _generate_data(router_tables_by_partition, n_keys_map, machine):
                     partition, x, y)
             for link in entry.link_ids:
                 if collisions[(x, y)][link] == 0:
-                    chip = machine.get_chip_at(x, y)
+                    chip = FecDataView.get_chip_at(x, y)
                     other_chip_x = chip.router.get_link(link).destination_x
                     other_chip_y = chip.router.get_link(link).destination_y
                     collision_route = Router.opposite(link)
@@ -72,7 +69,7 @@ def _generate_data(router_tables_by_partition, n_keys_map, machine):
 
                     collisions[(x, y)][link] = collision_potential
 
-                n_packets = n_keys_map.n_keys_for_partition(partition)
+                n_packets = 0  # n_keys_map.n_keys_for_partition(partition)
                 collisions[(x, y)][link] += n_packets
     return collisions
 

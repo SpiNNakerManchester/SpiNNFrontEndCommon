@@ -16,8 +16,8 @@
 import tempfile
 import unittest
 from testfixtures import LogCapture
+from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utilities import FecTimer
 
 
 class MockSimulator(object):

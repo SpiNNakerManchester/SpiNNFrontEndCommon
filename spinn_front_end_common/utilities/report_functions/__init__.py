@@ -27,9 +27,9 @@ from .routing_table_from_machine_report import (
     routing_table_from_machine_report)
 from .real_tags_report import tags_from_machine_report
 from .write_json_machine import write_json_machine
-from .write_json_partition_n_keys_map import write_json_partition_n_keys_map
 from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
+from .drift_report import drift_report
 
 
 __all__ = [
@@ -45,6 +45,6 @@ __all__ = [
     "routing_table_from_machine_report",
     "tags_from_machine_report",
     "write_json_machine",
-    "write_json_partition_n_keys_map",
     "write_json_placements",
-    "write_json_routing_tables"]
+    "write_json_routing_tables",
+    "drift_report"]

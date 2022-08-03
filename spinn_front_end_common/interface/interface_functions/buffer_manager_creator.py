@@ -14,50 +14,26 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import (
         AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost)
 
 
-def buffer_manager_creator(
-        placements, tags, txrx, extra_monitor_to_chip_mapping=None,
-        packet_gather_cores_to_ethernet_connection_map=None, machine=None,
-        fixed_routes=None, java_caller=None,
-        machine_allocation_controller=None):
+def buffer_manager_creator():
     """ Creates a buffer manager.
 
-    :param ~pacman.model.placements.Placements placements:
-    :param ~pacman.model.tags.Tags tags:
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param bool uses_advanced_monitors:
-    :param extra_monitor_to_chip_mapping:
-    :type extra_monitor_to_chip_mapping:
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex)
-    :param packet_gather_cores_to_ethernet_connection_map:
-    :type packet_gather_cores_to_ethernet_connection_map:
-        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex)
-    :param ~spinn_machine.Machine machine:
-    :param fixed_routes:
-    :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
-    :param JavaCaller java_caller:
-    :param MachineAllocationController machine_allocation_controller:
     :rtype: BufferManager
     """
     # pylint: disable=too-many-arguments
-    progress = ProgressBar(placements.n_placements, "Initialising buffers")
+    progress = ProgressBar(
+        FecDataView.get_n_placements(), "Initialising buffers")
 
     # Create the buffer manager
-    buffer_manager = BufferManager(
-        placements=placements, tags=tags, transceiver=txrx,
-        packet_gather_cores_to_ethernet_connection_map=(
-            packet_gather_cores_to_ethernet_connection_map),
-        extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
-        machine=machine, fixed_routes=fixed_routes,
-        java_caller=java_caller,
-        machine_allocation_controller=machine_allocation_controller)
+    buffer_manager = BufferManager()
 
-    for placement in progress.over(placements.placements):
+    for placement in progress.over(FecDataView.iterate_placemements()):
         vertex = placement.vertex
         if isinstance(vertex, AbstractSendsBuffersFromHost) and \
                 vertex.buffering_input():

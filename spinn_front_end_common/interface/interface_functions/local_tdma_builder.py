@@ -20,10 +20,9 @@ from spinn_utilities.config_holder import get_config_float, get_config_int
 from spinn_front_end_common.abstract_models.impl.\
     tdma_aware_application_vertex import (
         TDMAAwareApplicationVertex)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.constants import CLOCKS_PER_US
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step, time_scale_factor)
 logger = FormatAdapter(logging.getLogger(__name__))
 
 # default fraction of the real time we will use for spike transmissions
@@ -31,7 +30,7 @@ FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
 FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
-def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
+def local_tdma_builder():
     """ Builds a localised TDMA
 
     Builds a localised TDMA which allows a number of machine vertices
@@ -86,20 +85,11 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
         X is pop0 firing,
         Y is pop1 firing
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph.
-    :param n_keys_map: the map of partitions to n keys.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
-    :param application_graph: app graph.
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph or None
     """
-    if application_graph.n_vertices == 0:
+    if FecDataView.get_n_vertices == 0:
         return
-
     # get config params
-    us_per_cycle = machine_time_step() * time_scale_factor()
+    us_per_cycle = FecDataView.get_hardware_time_step_us()
     clocks_per_cycle = us_per_cycle * CLOCKS_PER_US
     (app_machine_quantity, clocks_between_cores, clocks_for_sending,
      clocks_waiting, clocks_initial) = __config_values(clocks_per_cycle)
@@ -107,56 +97,54 @@ def local_tdma_builder(machine_graph, n_keys_map, application_graph=None):
     # calculate for each app vertex if the time needed fits
     app_verts = list()
     max_fraction_of_sending = 0
-    for app_vertex in application_graph.vertices:
-        if isinstance(app_vertex, TDMAAwareApplicationVertex):
-            app_verts.append(app_vertex)
+    for app_vertex in FecDataView.get_vertices_by_type(
+            TDMAAwareApplicationVertex):
+        app_verts.append(app_vertex)
 
-            # get timings
+        # get timings
 
-            # check config params for better performance
-            (n_at_same_time, local_clocks) = __auto_config_times(
-                app_machine_quantity, clocks_between_cores,
-                clocks_for_sending, app_vertex, n_keys_map,
-                machine_graph, clocks_waiting)
-            n_phases, n_slots, clocks_between_phases = \
-                __generate_times(
-                    machine_graph, app_vertex, n_at_same_time,
-                    local_clocks, n_keys_map)
+        # check config params for better performance
+        (n_at_same_time, local_clocks) = __auto_config_times(
+            app_machine_quantity, clocks_between_cores,
+            clocks_for_sending, app_vertex, clocks_waiting)
+        n_phases, n_slots, clocks_between_phases = \
+            __generate_times(
+                app_vertex, n_at_same_time, local_clocks)
 
-            # store in tracker
-            app_vertex.set_other_timings(
-                local_clocks, n_slots, clocks_between_phases,
-                n_phases, clocks_per_cycle)
+        # store in tracker
+        app_vertex.set_other_timings(
+            local_clocks, n_slots, clocks_between_phases,
+            n_phases, clocks_per_cycle)
 
-            # test timings
-            fraction_of_sending = __get_fraction_of_sending(
-                n_phases, clocks_between_phases, clocks_for_sending)
-            if fraction_of_sending is not None:
-                max_fraction_of_sending = max(
-                    max_fraction_of_sending, fraction_of_sending)
+        # test timings
+        fraction_of_sending = __get_fraction_of_sending(
+            n_phases, clocks_between_phases, clocks_for_sending)
+        if fraction_of_sending is not None:
+            max_fraction_of_sending = max(
+                max_fraction_of_sending, fraction_of_sending)
 
     time_scale_factor_needed = (
-            time_scale_factor() * max_fraction_of_sending)
+            FecDataView.get_time_scale_factor() * max_fraction_of_sending)
     if max_fraction_of_sending > 1:
         logger.warning(
             "A time scale factor of {} may be needed to run correctly"
             .format(time_scale_factor_needed))
 
     # get initial offset for each app vertex.
-    for app_vertex in application_graph.vertices:
-        if isinstance(app_vertex, TDMAAwareApplicationVertex):
-            initial_offset = __generate_initial_offset(
-                app_vertex, app_verts, clocks_initial,
-                clocks_waiting)
-            app_vertex.set_initial_offset(initial_offset)
+    for app_vertex in FecDataView.get_vertices_by_type(
+            TDMAAwareApplicationVertex):
+        initial_offset = __generate_initial_offset(
+            app_vertex, app_verts, clocks_initial,
+            clocks_waiting)
+        app_vertex.set_initial_offset(initial_offset)
 
 
 def __auto_config_times(
         app_machine_quantity, clocks_between_cores, clocks_for_sending,
-        app_vertex, n_keys_map, machine_graph, clocks_waiting):
+        app_vertex, clocks_waiting):
 
     n_cores = app_vertex.get_n_cores()
-    n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+    n_phases = app_vertex.get_n_phases()
 
     # If there are no packets sent, pretend there is 1 to avoid division
     # by 0; it won't actually matter anyway
@@ -219,27 +207,21 @@ def __generate_initial_offset(
 
 
 def __generate_times(
-        machine_graph, app_vertex, app_machine_quantity,
-        clocks_between_cores, n_keys_map):
+        app_vertex, app_machine_quantity, clocks_between_cores):
     """ Generates the number of phases needed for this app vertex, as well\
         as the number of slots and the time between spikes for this app\
         vertex, given the number of machine verts to fire at the same time\
         from a given app vertex.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        machine graph
     :param TDMAAwareApplicationVertex app_vertex: the app vertex
     :param int app_machine_quantity: the pop spike control level
     :param int clocks_between_cores: the clock cycles between cores
-    :param n_keys_map: the partition to n keys map.
-    :type n_keys_map:
-        ~pacman.model.routing_info.AbstractMachinePartitionNKeysMap
     :return: (n_phases, n_slots, time_between_phases) for this app vertex
     :rtype: tuple(int, int, int)
     """
 
     # Figure total T2s
-    n_phases = app_vertex.find_n_phases_for(machine_graph, n_keys_map)
+    n_phases = app_vertex.get_n_phases()
 
     # how many hops between T2's
     n_cores = app_vertex.get_n_cores()

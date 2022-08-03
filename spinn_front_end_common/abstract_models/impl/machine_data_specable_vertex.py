@@ -15,9 +15,9 @@
 
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 
 
 class MachineDataSpecableVertex(
@@ -26,43 +26,24 @@ class MachineDataSpecableVertex(
     """
     __slots__ = ()
 
-    @inject_items({
-        "machine_graph": "MachineGraph",
-        "routing_info": "RoutingInfos",
-        "tags": "Tags"})
     @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_graph", "routing_info", "tags",
-        })
-    def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags):
-        """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (Injected)
-        :param ~pacman.model.routing_info.RoutingInfo routing_info: (Injected)
-        :param ~pacman.model.tags.Tags tags: (Injected)
-        """
+        AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         # pylint: disable=too-many-arguments, arguments-differ
+        tags = FecDataView.get_tags()
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_machine_data_specification(
-            spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags)
+            spec, placement, iptags, reverse_iptags)
 
     @abstractmethod
     def generate_machine_data_specification(
-            self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags):
+            self, spec, placement, iptags, reverse_iptags):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write into.
         :param ~pacman.model.placements.Placement placement:
             Where this node is on the SpiNNaker machine.
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            The graph containing this node.
-        :param ~pacman.model.routing_info.RoutingInfo routing_info:
-            The routing info.
         :param iptags: The (forward) IP tags for the vertex, if any
         :type iptags: iterable(~spinn_machine.tags.IPTag) or None
         :param reverse_iptags: The reverse IP tags for the vertex, if any

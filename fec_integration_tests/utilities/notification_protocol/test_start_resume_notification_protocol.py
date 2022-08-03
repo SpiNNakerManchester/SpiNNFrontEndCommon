@@ -19,6 +19,7 @@ from spinn_utilities.socket_address import SocketAddress
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman.constants import EIEIO_COMMAND_IDS
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.notification_protocol import (
     NotificationProtocol)
 
@@ -33,9 +34,9 @@ class TestStartResumeNotificationProtocol(unittest.TestCase):
             protocol
         """
         listener = EIEIOConnection()
-        socket_addresses = [SocketAddress(
-            "127.0.0.1", listener.local_port, None)]
-        protocol = NotificationProtocol(socket_addresses)
+        FecDataWriter.mock().add_database_socket_address(SocketAddress(
+            "127.0.0.1", listener.local_port, None))
+        protocol = NotificationProtocol()
         protocol.send_start_resume_notification()
         message = listener.receive_eieio_message(timeout=10)
         self.assertIsInstance(message, EIEIOCommandMessage)

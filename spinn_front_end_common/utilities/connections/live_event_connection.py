@@ -56,7 +56,6 @@ class LiveEventConnection(DatabaseConnection):
         "__key_to_atom_id_and_label",
         "__live_event_callbacks",
         "__live_packet_gather_label",
-        "__machine_vertices",
         "__pause_stop_callbacks",
         "__receive_labels",
         "__receiver_connection",
@@ -69,12 +68,10 @@ class LiveEventConnection(DatabaseConnection):
         "__spalloc_job"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
-                 send_labels=None, local_host=None, local_port=NOTIFY_PORT,
-                 machine_vertices=False):
+                 send_labels=None, local_host=None, local_port=NOTIFY_PORT):
         """
         :param str live_packet_gather_label:
-            The label of the :py:class:`LivePacketGather` vertex to which
-            received events are being sent
+            The label of the vertex to which received events are being sent
         :param iterable(str) receive_labels:
             Labels of vertices from which live events will be received.
         :param iterable(str) send_labels:
@@ -99,7 +96,6 @@ class LiveEventConnection(DatabaseConnection):
             list(receive_labels) if receive_labels is not None else None)
         self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
-        self.__machine_vertices = machine_vertices
         self.__sender_connection = None
         self.__send_address_details = dict()
         # Also used by SpynnakerPoissonControlConnection
@@ -261,14 +257,9 @@ class LiveEventConnection(DatabaseConnection):
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
-            if self.__machine_vertices:
-                key, _ = db.get_machine_live_input_key(label)
-                self._atom_id_to_key[label] = {0: key}
-                vertex_sizes[label] = 1
-            else:
-                self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(
-                    label)
-                vertex_sizes[label] = len(self._atom_id_to_key[label])
+            self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(
+                label)
+            vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def __init_receivers(self, db, vertex_sizes):
         """
@@ -307,16 +298,10 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection.local_ip_address,
                 self.__receiver_connection.local_port)
 
-            if self.__machine_vertices:
-                key, _ = db.get_machine_live_output_key(
-                    label, self.__live_packet_gather_label)
-                self.__key_to_atom_id_and_label[key] = (0, label_id)
-                vertex_sizes[label] = 1
-            else:
-                key_to_atom_id = db.get_key_to_atom_id_mapping(label)
-                for key, atom_id in key_to_atom_id.items():
-                    self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
-                vertex_sizes[label] = len(key_to_atom_id)
+            key_to_atom_id = db.get_key_to_atom_id_mapping(label)
+            for key, atom_id in key_to_atom_id.items():
+                self.__key_to_atom_id_and_label[key] = (atom_id, label_id)
+            vertex_sizes[label] = len(key_to_atom_id)
 
         # Last of all, set up the listener for packets
         # NOTE: Has to be done last as otherwise will receive SCP messages
@@ -333,31 +318,19 @@ class LiveEventConnection(DatabaseConnection):
         :param str send_label:
         :rtype: tuple(int,int,int,str or None)
         """
-        if self.__machine_vertices:
-            x, y, p = db_reader.get_placement(send_label)
-        else:
-            x, y, p = db_reader.get_placements(send_label)[0]
+        x, y, p = db_reader.get_placements(send_label)[0]
 
         ip_address = db_reader.get_ip_address(x, y)
         return x, y, p, ip_address
 
     def __get_live_output_details(self, db_reader, receive_label):
-        if self.__machine_vertices:
-            host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
-                db_reader.get_machine_live_output_details(
-                    receive_label, self.__live_packet_gather_label)
-            if host is None:
-                raise Exception(
-                    "no live output tag found for {} in machine graph".
-                    format(receive_label))
-        else:
-            host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
-                db_reader.get_live_output_details(
-                    receive_label, self.__live_packet_gather_label)
-            if host is None:
-                raise Exception(
-                    "no live output tag found for {} in app graph".format(
-                        receive_label))
+        host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
+            db_reader.get_live_output_details(
+                receive_label, self.__live_packet_gather_label)
+        if host is None:
+            raise Exception(
+                "no live output tag found for {} in app graph".format(
+                    receive_label))
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")

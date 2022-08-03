@@ -31,13 +31,17 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
+
+#: The number of chips per board to use in calculations to ensure that
+#: the number of boards allocated is enough.  This is 2 less than the maximum
+#: as there are a few boards with 2 down chips in the big machine.
+CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
 
 
 class SpallocJobController(MachineAllocationController):
@@ -116,7 +120,7 @@ class SpallocJobController(MachineAllocationController):
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
         """
-        return self._job.create_transceiver(report_default_directory())
+        return self._job.create_transceiver(FecDataView.get_run_dir_path())
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
@@ -208,19 +212,16 @@ class _OldSpallocJobController(MachineAllocationController):
         super()._teardown()
 
 
+_MACHINE_VERSION = 5
+
+
 def spalloc_allocator(
-        n_chips: int = None, n_boards: int = None,
         bearer_token: str = None) -> Tuple[
             str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
             MachineAllocationController]:
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
-    :param n_chips: The number of chips required.
-        IGNORED if n_boards is not None
-    :type n_chips: int or None
-    :param int n_boards: The number of boards required
-    :type n_boards: int or None
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
     :return:
@@ -230,16 +231,23 @@ def spalloc_allocator(
         MachineAllocationController)
     """
 
-    # Work out how many boards are needed
     spalloc_server = get_config_str("Machine", "spalloc_server")
-    if n_boards is None:
-        n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
-        # If the number of boards rounded up is less than 10% of a board
+
+    # Work out how many boards are needed
+    if FecDataView.has_n_boards_required():
+        n_boards = FecDataView.get_n_boards_required()
+    else:
+        n_chips = FecDataView.get_n_chips_needed()
+        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+        logger.info("{:.2f} Boards Required for {} chips",
+                    n_boards_float, n_chips)
+        # If the number of boards rounded up is less than 50% of a board
         # bigger than the actual number of boards,
         # add another board just in case.
-        if math.ceil(n_boards) - n_boards < 0.1:
+        n_boards = int(math.ceil(n_boards_float))
+        if n_boards - n_boards_float < 0.5:
             n_boards += 1
-        n_boards = int(math.ceil(n_boards))
+
     if is_server_address(spalloc_server):
         host, connections, mac = _allocate_job_new(
             spalloc_server, n_boards, bearer_token)

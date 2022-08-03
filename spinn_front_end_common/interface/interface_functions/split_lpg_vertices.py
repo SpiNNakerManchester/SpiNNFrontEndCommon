@@ -13,18 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from spinn_utilities.overrides import overrides
-from spinn_front_end_common.abstract_models import (
-    AbstractProvidesKeyToAtomMapping)
+from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utility_models import LivePacketGather
 
 
-class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
-    __slots__ = ()
+def split_lpg_vertices(system_placements):
+    """ Split any LPG vertices found
 
-    @overrides(
-        AbstractProvidesKeyToAtomMapping.routing_key_partition_atom_mapping)
-    def routing_key_partition_atom_mapping(self, routing_info, partition):
-        vertex_slice = partition.pre_vertex.vertex_slice
-        keys = routing_info.get_keys(vertex_slice.n_atoms)
-        start = vertex_slice.lo_atom
-        return enumerate(keys, start)
+    :param ApplictiongGraph app_graph: The application graph
+    :param ~spinn_machine.Machine machine:
+        the SpiNNaker machine as discovered
+    :param Placements system_placements:
+        exiting placements to be added to
+    """
+    for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
+        vertex.splitter.create_vertices(system_placements)
