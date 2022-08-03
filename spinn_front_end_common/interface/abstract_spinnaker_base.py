@@ -577,9 +577,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _add_commands_to_command_sender(self):
         command_sender = None
         for vertex in self._data_writer.iterate_vertices():
-            if isinstance(vertex, CommandSender):
-                command_sender = vertex
-        for vertex in self._data_writer.iterate_vertices():
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 constraints = []
                 machine = self._data_writer.get_machine()
