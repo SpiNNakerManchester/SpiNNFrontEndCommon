@@ -30,23 +30,21 @@ def network_specification():
     :rtype: None
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
-    graph = FecDataView.get_runtime_graph()
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write("*** Vertices:\n")
-            for vertex in graph.vertices:
-                _write_report(f, vertex, graph)
+            for vertex in FecDataView.iterate_vertices():
+                _write_report(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {}"
                          " for writing.", filename)
 
 
-def _write_report(f, vertex, graph):
+def _write_report(f, vertex):
     """
     :param ~io.FileIO f:
     :param vertex:
-    :type vertex: ApplicationVertex or MachineVertex
-    :param ApplicationGraph graph:
+    :type vertex: ApplicationVertex
     """
     if isinstance(vertex, ApplicationVertex):
         f.write("Vertex {}, size: {}, model: {}, max_atoms{}\n".format(
@@ -62,8 +60,9 @@ def _write_report(f, vertex, graph):
             str(constraint)))
 
     f.write("    Outgoing Edge Partitions:\n")
-    for partition in graph.get_outgoing_edge_partitions_starting_at_vertex(
-            vertex):
+    for partition in \
+            FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
+                vertex):
         f.write("    Partition {}:\n".format(
             partition.identifier))
         for edge in partition.edges:
