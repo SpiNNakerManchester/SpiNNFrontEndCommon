@@ -85,8 +85,7 @@ from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs, execute_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
-    host_based_bit_field_router_compressor,
-    hbp_allocator, hbp_max_machine_generator,
+    host_based_bit_field_router_compressor, hbp_allocator,
     insert_chip_power_monitors_to_graphs,
     insert_extra_monitor_vertices_to_graphs, split_lpg_vertices,
     load_app_images, load_fixed_routes, load_sys_images,
@@ -96,7 +95,6 @@ from spinn_front_end_common.interface.interface_functions import (
     read_routing_tables_from_machine, router_provenance_gatherer,
     routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
-    spalloc_max_machine_generator,
     system_multicast_routing_generator,
     tags_loader, virtual_machine_generator)
 from spinn_front_end_common.interface.interface_functions.\
@@ -125,7 +123,7 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex, LivePacketGather)
+    CommandSender, DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -183,17 +181,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Flag to say is compressed routing tables are on machine
         # TODO remove this when the data change only algorithms are done
-        "_multicast_routes_loaded",
-
-        # Flag to say if current machine is a temporary max machine
-        # the temp /max machine is held in the "machine" slot
-        "_max_machine"
+        "_multicast_routes_loaded"
     ]
 
-    def __init__(
-            self, graph_label=None, data_writer_cls=None):
+    def __init__(self, data_writer_cls=None):
         """
-        :param str graph_label: A label for the overall application graph
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
         :param int n_boards_required:
@@ -212,7 +204,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
-        self._data_writer.create_graphs(graph_label)
         self._machine_allocation_controller = None
         self._hard_reset()
 
@@ -250,37 +241,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.hard_reset()
-        self._max_machine = False
         self._multicast_routes_loaded = False
         self.__close_allocation_controller()
 
     def _machine_clear(self):
         pass
-
-    def add_live_packet_gatherer_parameters(
-            self, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters. Note that LPGs can be inserted to track behaviour \
-            either at the application graph level or at the machine graph \
-            level, but not both at the same time.
-
-        :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
-        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
-            the vertex that needs to send to a given LPG
-        :param list(str) partition_ids:
-            the IDs of the partitions to connect from the vertex
-        """
-        lpg_vertex = self._lpg_vertices.get(live_packet_gatherer_params)
-        if lpg_vertex is None:
-            lpg_vertex = LivePacketGather(
-                live_packet_gatherer_params, live_packet_gatherer_params.label)
-            self._lpg_vertices[live_packet_gatherer_params] = lpg_vertex
-            self._data_writer.add_vertex(lpg_vertex)
-        for part_id in partition_ids:
-            self._data_writer.add_edge(
-                ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     def check_machine_specifics(self):
         """ Checks machine specifics for the different modes of execution.
@@ -509,7 +474,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     self._hard_reset()
             FecTimer.setup(self)
 
-            self._data_writer.clone_graphs()
             self._add_dependent_verts_and_edges_for_application_graph()
 
             if get_config_bool("Buffers", "use_auto_pause_and_resume"):
@@ -518,9 +482,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
-            self._get_known_machine(total_run_time)
-            if not self._data_writer.has_machine():
-                self._execute_get_max_machine(total_run_time)
             self._do_mapping(total_run_time)
 
         # Check if anything has per-timestep SDRAM usage
@@ -615,9 +576,10 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _add_commands_to_command_sender(self):
         command_sender = None
-        graph = self._data_writer.get_runtime_graph()
-        vertices = graph.vertices
-        for vertex in vertices:
+        for vertex in self._data_writer.iterate_vertices():
+            if isinstance(vertex, CommandSender):
+                command_sender = vertex
+        for vertex in self._data_writer.iterate_vertices():
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 constraints = []
                 machine = self._data_writer.get_machine()
@@ -652,20 +614,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                         link_data.connected_chip_x,
                         link_data.connected_chip_y))
 
-                # if command_sender is None:
                 # Add a command sender
                 label = f"CommandSender for {vertex.label}"
                 command_sender = CommandSender(label, constraints)
                 command_sender.splitter = SplitterOneAppOneMachine()
-                graph.add_vertex(command_sender)
+                self._data_writer.add_vertex(command_sender)
 
                 app_edge = ApplicationEdge(command_sender, vertex)
-                graph.add_edge(app_edge, "Commands")
-                # app_partition = graph.\
-                #     get_outgoing_edge_partitions_starting_at_vertex(vertex)
-                # post_vertex = next(iter(
-                #     vertex.splitter.get_in_coming_vertices(
-                #         app_partition).keys()))
+                self._data_writer.add_edge(app_edge, "Commands")
 
                 # allow the command sender to create key to partition map
                 command_sender.add_commands(
@@ -673,26 +629,22 @@ class AbstractSpinnakerBase(ConfigHandler):
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
 
-                # add the edges from the command sender to the dependent
-                # vertices
-                edges, partition_ids = command_sender.edges_and_partitions()
-                for edge, partition_id in zip(edges, partition_ids):
-                    graph.add_edge(edge, partition_id)
-
     def _add_dependent_verts_and_edges_for_application_graph(self):
-        graph = self._data_writer.get_runtime_graph()
-        for vertex in graph.vertices:
-            # add any dependent edges and vertices if needed
-            if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
-                for dependant_vertex in vertex.dependent_vertices():
-                    graph.add_vertex(dependant_vertex)
+        # cache vertices to allow insertion during iteration
+        vertices = list(self._data_writer.get_vertices_by_type(
+                AbstractVertexWithEdgeToDependentVertices))
+        for vertex in vertices:
+            for dependant_vertex in vertex.dependent_vertices():
+                if not vertex.addedToGraph():
+                    self._data_writer.add_vertex(dependant_vertex)
                     edge_partition_ids = vertex.\
                         edge_partition_identifiers_for_dependent_vertex(
                             dependant_vertex)
                     for edge_identifier in edge_partition_ids:
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex, post_vertex=dependant_vertex)
-                        graph.add_edge(dependant_edge, edge_identifier)
+                        self._data_writer.add_edge(
+                            dependant_edge, edge_identifier)
 
     def _deduce_data_n_timesteps(self):
         """ Operates the auto pause and resume functionality by figuring out\
@@ -773,9 +725,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_machine():
             return None
-        if (not self._data_writer.has_n_boards_required() and
-                not self._data_writer.has_n_chips_needed()):
-            return
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
                 return spalloc_allocator()
@@ -827,31 +776,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 auto_detect_bmp, scamp_connection_data, reset_machine)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
-
-    def _execute_get_max_machine(self, total_run_time):
-        """
-        Runs, times and logs the a MaxMachineGenerator if required
-
-        Will set the "machine" value if not already set
-
-        Sets the _max_machine to True if the "machine" value is a temporary
-        max machine.
-
-        :param total_run_time: The total run time to request
-        :type total_run_time: int or None
-        """
-        self._max_machine = True
-        if get_config_str("Machine", "spalloc_server"):
-            with FecTimer(GET_MACHINE, "Spalloc max machine generator"):
-                self._data_writer.set_machine(spalloc_max_machine_generator())
-
-        elif get_config_str("Machine", "remote_spinnaker_url"):
-            with FecTimer(GET_MACHINE, "HBPMaxMachineGenerator"):
-                self._data_writer.set_machine(hbp_max_machine_generator(
-                    total_run_time))
-
-        else:
-            raise NotImplementedError("No machine generataion possible")
 
     def _get_known_machine(self, total_run_time=0.0):
         """ The python machine description object.
@@ -968,7 +892,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the SplitterPartitioner if required
         """
-        if not self._data_writer.get_runtime_graph().n_vertices:
+        if self._data_writer.get_n_vertices() == 0:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
             self._data_writer.set_n_chips_in_graph(splitter_partitioner())
@@ -1086,7 +1010,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Writes, times and logs the application graph placer report if
         requested
         """
-        if not self._data_writer.get_runtime_graph().n_vertices:
+        if self._data_writer.get_n_vertices() == 0:
             return
         with FecTimer(
                 MAPPING, "Placements wth application graph report") as timer:
@@ -1437,9 +1361,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        if self._max_machine:
-            self._max_machine = False
-            self._data_writer.clear_machine()
         allocator_data = self._execute_allocator(MAPPING, total_run_time)
         self._execute_machine_generator(MAPPING, allocator_data)
         self._json_machine()

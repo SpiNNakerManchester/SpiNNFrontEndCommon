@@ -231,10 +231,9 @@ def partitioner_report():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PARTITIONING_FILENAME)
     time_date_string = time.strftime("%c")
-    graph = FecDataView.get_runtime_graph()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(graph.n_vertices,
+            progress = ProgressBar(FecDataView.get_n_vertices(),
                                    "Generating partitioner report")
 
             f.write("        Partitioning Information by Vertex\n")
@@ -242,7 +241,7 @@ def partitioner_report():
             f.write(f"Generated: {time_date_string} for target machine "
                     f"'{FecDataView.get_ipaddress()}'\n\n")
 
-            for vertex in progress.over(graph.vertices):
+            for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_partition(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -282,10 +281,9 @@ def placement_report_with_application_graph_by_vertex():
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), _PLACEMENT_VTX_GRAPH_FILENAME)
     time_date_string = time.strftime("%c")
-    graph = FecDataView.get_runtime_graph()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            progress = ProgressBar(graph.n_vertices,
+            progress = ProgressBar(FecDataView.get_n_vertices(),
                                    "Generating placement report")
 
             f.write("        Placement Information by Vertex\n")
@@ -293,7 +291,7 @@ def placement_report_with_application_graph_by_vertex():
             f.write(f"Generated: {time_date_string} "
                     f"for target machine '{FecDataView.get_ipaddress()}'\n\n")
 
-            for vertex in progress.over(graph.vertices):
+            for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_application_placement(f, vertex)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file {} for"
@@ -519,13 +517,12 @@ def routing_info_report(extra_allocations):
 
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
-    app_graph = FecDataView.get_runtime_graph()
     routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             vertex_partitions = set(
                 (p.pre_vertex, p.identifier)
-                for p in app_graph.outgoing_edge_partitions)
+                for p in FecDataView.iterate_partitions())
             vertex_partitions.update(extra_allocations)
             progress = ProgressBar(len(vertex_partitions),
                                    "Generating Routing info report")

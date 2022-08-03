@@ -26,6 +26,5 @@ def split_lpg_vertices(system_placements):
     :param Placements system_placements:
         exiting placements to be added to
     """
-    for vertex in FecDataView.get_runtime_graph().vertices:
-        if isinstance(vertex, LivePacketGather):
-            vertex.splitter.create_vertices(system_placements)
+    for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
+        vertex.splitter.create_vertices(system_placements)
