@@ -436,12 +436,18 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">placements_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">used_placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets provenance information from vertices on the machine.</p>
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">placements_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets provenance information from placements</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>used_placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – The placements of the vertices to gather data form.
-May not be all placements so dont use View</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_placements</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of placements to gather</p></li>
+<li><p><strong>placements</strong> (<em>iterator</em><em>(</em><em>Placement</em><em>)</em>) – The placements of the vertices to gather data form.
+May not be all placements so dont use View</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p></p>
 </dd>
 </dl>
 </dd></dl>
