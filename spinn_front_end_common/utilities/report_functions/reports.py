@@ -401,7 +401,7 @@ def _write_one_chip_application_placement(f, chip):
             f.write("              Model: {}\n".format(
                 vertex.__class__.__name__))
 
-        sdram = vertex.sdram_reguired
+        sdram = vertex.sdram_required
         f.write("              SDRAM required: {}; {} per timestep\n\n"
                 .format(sdram.fixed, sdram.per_timestep))
         if total_sdram is None:
