@@ -91,7 +91,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         """
 
     @property
-    def _proxying(self):
+    def proxying(self):
         """
         Whether this is a proxying connection. False unless overridden.
 

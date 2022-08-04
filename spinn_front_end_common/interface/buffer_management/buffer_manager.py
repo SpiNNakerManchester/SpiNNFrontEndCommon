@@ -243,7 +243,7 @@ class BufferManager(object):
         mac = None
         if FecDataView.has_allocation_controller():
             mac = FecDataView.get_allocation_controller()
-        if mac and mac._proxying:  # pylint: disable=protected-access
+        if mac and mac.proxying:
             # No trigger message needed
             if not self.__proxied_connection:
                 self.__proxied_connection = mac.open_eieio_listener()
