@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
+from pacman.model.resources import VariableSDRAM
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.data import FecDataView
@@ -93,8 +92,8 @@ class ChipPowerMonitorMachineVertex(
         return self._sampling_frequency
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
         return self.get_resources(self._sampling_frequency)
 
     @staticmethod
@@ -102,7 +101,7 @@ class ChipPowerMonitorMachineVertex(
         """ Get the resources used by this vertex
 
         :param float sampling_frequency:
-        :rtype: ~pacman.model.resources.ResourceContainer
+        :rtype: ~pacman.model.resources.VariableSDRAM
         """
         # The number of sample per step does not have to be an int
         samples_per_step = (FecDataView.get_hardware_time_step_us() /
@@ -121,10 +120,7 @@ class ChipPowerMonitorMachineVertex(
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_timestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
-        return ResourceContainer(
-            sdram=VariableSDRAM(with_overflow, per_timestep),
-            cpu_cycles=CPUCyclesPerTickResource(100),
-            dtcm=DTCMResource(100))
+        return VariableSDRAM(with_overflow, per_timestep)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
