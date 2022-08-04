@@ -61,19 +61,5 @@ def __prop_name(name):
     return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
 
 
-def __core_name(placements, x, y, p):
-    """
-    :param ~.Placements placements:
-    :rtype: str
-    """
-    if p == 0:
-        # SCAMP always runs on virtual core zero, by definition
-        return "SCAMP(OS)@{},{},{} energy (Joules)".format(x, y, p)
-    if placements.is_processor_occupied(x, y, p):
-        vtx = placements.get_vertex_on_processor(x, y, p)
-        return "{} energy (Joules)".format(vtx.label)
-    return "core@{},{},{} energy (Joules)".format(x, y, p)
-
-
 def __router_name(x, y):
     return "router@{},{} energy (Joules)".format(x, y)
