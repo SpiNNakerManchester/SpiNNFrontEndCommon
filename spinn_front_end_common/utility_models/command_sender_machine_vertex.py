@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
@@ -147,8 +147,8 @@ class CommandSenderMachineVertex(
         return 1
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
         sdram = (
             self.get_timed_commands_bytes() +
             self.get_n_command_bytes(self._commands_at_start_resume) +
@@ -157,7 +157,7 @@ class CommandSenderMachineVertex(
             self.get_provenance_data_size(self._n_additional_data_items))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=ConstantSDRAM(sdram))
+        return ConstantSDRAM(sdram)
 
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)

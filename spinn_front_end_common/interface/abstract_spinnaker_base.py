@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -562,7 +562,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _is_per_timestep_sdram(self):
         for placement in self._data_writer.iterate_placemements():
-            if placement.vertex.resources_required.sdram.per_timestep:
+            if placement.vertex.sdram_required.per_timestep:
                 return True
         return False
 
@@ -621,7 +621,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
 
         for place in self._data_writer.iterate_placemements():
-            sdram = place.vertex.resources_required.sdram
+            sdram = place.vertex.sdram_required
             if (place.x, place.y) in usage_by_chip:
                 usage_by_chip[place.x, place.y] += sdram
             else:
