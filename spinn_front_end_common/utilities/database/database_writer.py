@@ -22,9 +22,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinnman.spalloc.abstract_classes import SpallocJob
 from spinn_front_end_common.utility_models import LivePacketGather
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
-    import (
-        SpallocJobController)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -194,7 +191,9 @@ class DatabaseWriter(SQLiteDB):
         if not FecDataView.has_allocation_controller():
             return
         mac = FecDataView.get_allocation_controller()
-        if isinstance(mac, SpallocJobController):
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
