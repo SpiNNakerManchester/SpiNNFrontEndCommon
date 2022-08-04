@@ -22,8 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
+from pacman.model.constraints import FixedKeyAndMaskConstraint
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice

@@ -15,8 +15,7 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
+from pacman.model.constraints import FixedKeyAndMaskConstraint
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
