@@ -38,7 +38,7 @@
           <div class="body" role="main">
             
   <h1>Source code for spinn_front_end_common.utility_models.live_packet_gather_machine_vertex</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span></span><span class="c1"># Copyright (c) 2017-2022 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
 <span class="c1"># it under the terms of the GNU General Public License as published by</span>
@@ -57,8 +57,7 @@
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">CPUCyclesPerTickResource</span><span class="p">,</span> <span class="n">DTCMResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">)</span>
@@ -137,14 +136,15 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">KEY_ENTRY_SIZE</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
-            <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
-            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
-            <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span> <span class="o">+</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_get_key_translation_sdram</span><span class="p">()),</span>
-            <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">get_iptag_resource</span><span class="p">()])</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">sdram_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sdram_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ConstantSDRAM</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_key_translation_sdram</span><span class="p">())</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">iptags</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">iptags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_lpg_params</span><span class="o">.</span><span class="n">get_iptag_resource</span><span class="p">()]</span>
 
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.parse_extra_provenance_items"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.parse_extra_provenance_items">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">parse_extra_provenance_items</span><span class="p">)</span>
@@ -280,15 +280,6 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_binary_file_name</span><span class="p">()))</span>
 
-<div class="viewcode-block" id="LivePacketGatherMachineVertex.get_cpu_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_cpu_usage">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_cpu_usage</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot; Get the CPU used by this vertex</span>
-
-<span class="sd">        :return: 0</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="mi">0</span></div>
-
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.get_sdram_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_sdram_usage</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the SDRAM used by this vertex</span>
@@ -298,14 +289,6 @@
         <span class="k">return</span> <span class="p">(</span>
             <span class="n">SYSTEM_BYTES_REQUIREMENT</span> <span class="o">+</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span> <span class="o">+</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">get_provenance_data_size</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_N_ADDITIONAL_PROVENANCE_ITEMS</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="LivePacketGatherMachineVertex.get_dtcm_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">get_dtcm_usage</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the DTCM used by this vertex</span>
-
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_CONFIG_SIZE</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -38,7 +38,7 @@
           <div class="body" role="main">
             
   <h1>Source code for spinn_front_end_common.utility_models.reverse_ip_tag_multicast_source_machine_vertex</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
+<span></span><span class="c1"># Copyright (c) 2017-2022 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
 <span class="c1"># it under the terms of the GNU General Public License as published by</span>
@@ -64,9 +64,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="n">EIEIODataHeader</span>
 <span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">FixedKeyAndMaskConstraint</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">CPUCyclesPerTickResource</span><span class="p">,</span> <span class="n">DTCMResource</span><span class="p">,</span>
-    <span class="n">ReverseIPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">,</span> <span class="n">VariableSDRAM</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ReverseIPtagResource</span><span class="p">,</span> <span class="n">VariableSDRAM</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_info</span> <span class="kn">import</span> <span class="n">BaseKeyAndMask</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.common</span> <span class="kn">import</span> <span class="n">Slice</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
@@ -232,7 +230,7 @@
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span> <span class="o">=</span> <span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span>
 
         <span class="c1"># Set up for receiving live packets</span>
@@ -421,18 +419,16 @@
         <span class="k">return</span> <span class="mi">5</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">sdram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">(</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">sdram_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sdram_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sdram_usage</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_send_buffer_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_recording</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_receive_rate</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span><span class="p">)</span>
 
-        <span class="n">resources</span> <span class="o">=</span> <span class="n">ResourceContainer</span><span class="p">(</span>
-            <span class="n">dtcm</span><span class="o">=</span><span class="n">DTCMResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_dtcm_usage</span><span class="p">()),</span>
-            <span class="n">sdram</span><span class="o">=</span><span class="n">sdram</span><span class="p">,</span>
-            <span class="n">cpu_cycles</span><span class="o">=</span><span class="n">CPUCyclesPerTickResource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_cpu_usage</span><span class="p">()),</span>
-            <span class="n">reverse_iptags</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">resources</span>
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">reverse_iptags</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">reverse_iptags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span>
 
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_sdram_usage</span><span class="p">(</span>
@@ -459,14 +455,6 @@
                 <span class="n">recording_enabled</span><span class="p">,</span> <span class="n">receive_rate</span><span class="p">,</span> <span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">n_keys</span><span class="p">))</span>
         <span class="n">static_usage</span> <span class="o">+=</span> <span class="n">per_timestep</span>
         <span class="k">return</span> <span class="n">VariableSDRAM</span><span class="p">(</span><span class="n">static_usage</span><span class="p">,</span> <span class="n">per_timestep</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_dtcm_usage</span><span class="p">():</span>
-        <span class="k">return</span> <span class="mi">1</span></div>
-
-<div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_cpu_usage</span><span class="p">():</span>
-        <span class="k">return</span> <span class="mi">1</span></div>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_n_regions_to_allocate</span><span class="p">(</span><span class="n">send_buffering</span><span class="p">,</span> <span class="n">recording</span><span class="p">):</span>

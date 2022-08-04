@@ -68,8 +68,7 @@
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums.cpu_state</span> <span class="kn">import</span> <span class="n">CPUState</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
-<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span><span class="p">,</span> <span class="n">ResourceContainer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">ProvenanceWriter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.helpful_functions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -369,9 +368,18 @@
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_TRANSMISSION_THROTTLE_TIME</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">resources_required</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">resources_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_resources_required</span><span class="p">()</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">sdram_required</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">sdram_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ConstantSDRAM</span><span class="p">(</span>
+                <span class="n">CONFIG_SIZE</span> <span class="o">+</span> <span class="n">SDRAM_FOR_MISSING_SDP_SEQ_NUMS</span> <span class="o">+</span>
+                <span class="n">SIZE_DATA_IN_CHIP_TO_KEY_SPACE</span> <span class="o">+</span> <span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">MachineVertex</span><span class="o">.</span><span class="n">iptags</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">iptags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">IPtagResource</span><span class="p">(</span>
+            <span class="n">port</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TAG_INITIAL_PORT</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">ip_address</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">traffic_identifier</span><span class="o">=</span><span class="s2">&quot;DATA_SPEED_UP&quot;</span><span class="p">)]</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Looks up from the machine what the current transaction ID is\</span>
@@ -380,19 +388,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.static_resources_required"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">static_resources_required</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :rtype: ~pacman.model.resources.ResourceContainer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">ResourceContainer</span><span class="p">(</span>
-            <span class="n">sdram</span><span class="o">=</span><span class="n">ConstantSDRAM</span><span class="p">(</span>
-                <span class="n">CONFIG_SIZE</span> <span class="o">+</span> <span class="n">SDRAM_FOR_MISSING_SDP_SEQ_NUMS</span> <span class="o">+</span>
-                <span class="n">SIZE_DATA_IN_CHIP_TO_KEY_SPACE</span> <span class="o">+</span> <span class="n">_PROVENANCE_DATA_SIZE</span><span class="p">),</span>
-            <span class="n">iptags</span><span class="o">=</span><span class="p">[</span><span class="n">IPtagResource</span><span class="p">(</span>
-                <span class="n">port</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">_TAG_INITIAL_PORT</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                <span class="n">ip_address</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">traffic_identifier</span><span class="o">=</span><span class="s2">&quot;DATA_SPEED_UP&quot;</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_binary_start_type">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractHasAssociatedBinary</span><span class="o">.</span><span class="n">get_binary_start_type</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

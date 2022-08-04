@@ -62,13 +62,13 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitor.create_machine_vertex">
-<span class="sig-name descname"><span class="pre">create_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources_required</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.create_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.create_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a machine vertex from this application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – The slice of atoms that the machine vertex will cover.</p></li>
-<li><p><strong>resources_required</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a>) – The resources used by the machine vertex.</p></li>
+<li><p><strong>sdram</strong> (<em>resourcesAbstractSDRAM</em>) – The sdram used by the machine vertex.</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – human readable label for the machine vertex</p></li>
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)"><em>AbstractConstraint</em></a><em>)</em>) – Constraints to be passed on to the machine vertex.</p></li>
 </ul>
@@ -83,20 +83,15 @@
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitor.get_resources_used_by_atoms">
-<span class="sig-name descname"><span class="pre">get_resources_used_by_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.get_resources_used_by_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.get_resources_used_by_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the separate resource requirements for a range of atoms.</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitor.get_sdram_used_by_atoms">
+<span class="sig-name descname"><span class="pre">get_sdram_used_by_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/chip_power_monitor.html#ChipPowerMonitor.get_sdram_used_by_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitor.get_sdram_used_by_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the separate sdram requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a resource container that contains a
-<code class="xref py py-class docutils literal notranslate"><span class="pre">CPUCyclesPerTickResource</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DTCMResource</span></code>
-and <code class="xref py py-class docutils literal notranslate"><span class="pre">SDRAMResource</span></code></p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -258,18 +253,7 @@ buffering</p>
 <dd class="field-odd"><p><strong>sampling_frequency</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v6.0)"><em>VariableSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -281,6 +265,17 @@ buffering</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -530,12 +525,12 @@ position) to be used for provenance error reporting to the user.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -739,6 +734,17 @@ created. If None, there is no such application vertex.</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
+<dd><p>The iptags used by this vertex if any.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable(IPtagResource)</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_application_routing_tables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables" title="Permalink to this definition">¶</a></dt>
@@ -775,12 +781,12 @@ created. If None, there is no such application vertex.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -833,16 +839,6 @@ if <code class="docutils literal notranslate"><span class="pre">is_filename</spa
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_resources_required</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/data_speed_up_packet_gatherer_machine_vertex.html#DataSpeedUpPacketGatherMachineVertex.static_resources_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.static_resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1046,12 +1042,12 @@ if <code class="docutils literal notranslate"><span class="pre">is_filename</spa
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1119,17 +1115,6 @@ if <code class="docutils literal notranslate"><span class="pre">is_filename</spa
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_resources_required">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_resources_required</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/extra_monitor_support_machine_vertex.html#ExtraMonitorSupportMachineVertex.static_resources_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by this vertex.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1279,37 +1264,23 @@ Leave as None to delegate the choice of splitter to the selector.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_cpu_usage">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_cpu_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_cpu_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_cpu_usage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the CPU used by this vertex</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>0</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_dtcm_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_dtcm_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_dtcm_usage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the DTCM used by this vertex</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_sdram_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/live_packet_gather_machine_vertex.html#LivePacketGatherMachineVertex.get_sdram_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the SDRAM used by this vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
+<dd><p>The iptags used by this vertex if any.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable(IPtagResource)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1341,12 +1312,12 @@ position) to be used for provenance error reporting to the user.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1571,16 +1542,6 @@ implements.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_cpu_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_dtcm_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_recorded_region_ids">
 <span class="sig-name descname"><span class="pre">get_recorded_region_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.get_recorded_region_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.get_recorded_region_ids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the recording region IDs that have been recorded using
@@ -1715,12 +1676,12 @@ position) to be used for provenance error reporting to the user.</p></li>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.resources_required">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resources_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.resources_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>The resources required by the vertex</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reverse_iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags" title="Permalink to this definition">¶</a></dt>
+<dd><p>The reverse iptags used by this vertex if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dd class="field-odd"><p>iterable(ReverseIPtagResource)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1732,6 +1693,17 @@ position) to be used for provenance error reporting to the user.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The region to rewind</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.sdram_required">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdram_required</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.sdram_required" title="Permalink to this definition">¶</a></dt>
+<dd><p>The sdram required by the vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1815,13 +1787,13 @@ send injected keys with</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex">
-<span class="sig-name descname"><span class="pre">create_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resources_required</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.create_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_machine_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdram</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constraints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.create_machine_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.create_machine_vertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a machine vertex from this application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – The slice of atoms that the machine vertex will cover.</p></li>
-<li><p><strong>resources_required</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a>) – The resources used by the machine vertex.</p></li>
+<li><p><strong>sdram</strong> (<em>resourcesAbstractSDRAM</em>) – The sdram used by the machine vertex.</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – human readable label for the machine vertex</p></li>
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.constraints/#pacman.model.constraints.AbstractConstraint" title="(in PACMAN v6.0)"><em>AbstractConstraint</em></a><em>)</em>) – Constraints to be passed on to the machine vertex.</p></li>
 </ul>
@@ -1841,20 +1813,15 @@ send injected keys with</p></li>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_resources_used_by_atoms">
-<span class="sig-name descname"><span class="pre">get_resources_used_by_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_resources_used_by_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_resources_used_by_atoms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the separate resource requirements for a range of atoms.</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_sdram_used_by_atoms">
+<span class="sig-name descname"><span class="pre">get_sdram_used_by_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_slice</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_sdram_used_by_atoms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_sdram_used_by_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the separate sdram requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a resource container that contains a
-<code class="xref py py-class docutils literal notranslate"><span class="pre">CPUCyclesPerTickResource</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">DTCMResource</span></code>
-and <code class="xref py py-class docutils literal notranslate"><span class="pre">SDRAMResource</span></code></p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ResourceContainer" title="(in PACMAN v6.0)"><em>ResourceContainer</em></a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
