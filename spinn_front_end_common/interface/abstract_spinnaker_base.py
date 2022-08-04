@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from spinn_front_end_common.data.fec_data_view import FecDataView
 """
 main interface for the SpiNNaker tools
 """
@@ -71,6 +70,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (

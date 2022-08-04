@@ -47,6 +47,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         SetRouterTimeoutProcess, ClearQueueProcess)
+from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -353,6 +354,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
+        # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self._placement = placement
 
@@ -1127,6 +1129,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         routers = [(placement.x, placement.y)]
         fixed_routes = FecDataView.get_fixed_routes()
+        # pylint: disable=unsubscriptable-object
         entry = fixed_routes[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
