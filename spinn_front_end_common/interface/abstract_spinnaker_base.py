@@ -1959,7 +1959,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             # Also used in recover from error where is is not all placements
-            placements_provenance_gatherer(self._data_writer.get_placements())
+            placements_provenance_gatherer(
+                self._data_writer.get_n_placements(),
+                self._data_writer.iterate_placemements())
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -2281,7 +2283,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
                         placements.get_placement_on_processor(x, y, p))
-                placements_provenance_gatherer(finished_placements)
+                placements_provenance_gatherer(
+                    finished_placements.n_placements,
+                    finished_placements.placements)
             except Exception as pro_e:
                 logger.exception(f"Could not read provenance due to {pro_e}")
 
