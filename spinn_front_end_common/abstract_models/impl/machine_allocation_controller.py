@@ -24,8 +24,6 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -89,8 +87,7 @@ class MachineAllocationController(
         return create_transceiver_from_hostname(
             hostname=self.__hostname,
             bmp_connection_data=None,
-            version=5, auto_detect_bmp=False,
-            default_report_directory=report_default_directory())
+            version=5, auto_detect_bmp=False)
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):

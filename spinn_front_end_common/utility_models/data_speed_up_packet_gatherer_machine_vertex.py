@@ -25,8 +25,7 @@ from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import (
-    ConstantSDRAM, IPtagResource, ResourceContainer)
+from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.helpful_functions import (
@@ -327,9 +326,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         time.sleep(self._TRANSMISSION_THROTTLE_TIME)
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return self.static_resources_required()
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
+        return ConstantSDRAM(
+                CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
+                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE)
+
+    @property
+    @overrides(MachineVertex.iptags)
+    def iptags(self):
+        return [IPtagResource(
+            port=self._TAG_INITIAL_PORT, strip_sdp=True,
+            ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
     def update_transaction_id_from_machine(self):
         """ Looks up from the machine what the current transaction ID is\
@@ -338,19 +346,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
-
-    @classmethod
-    def static_resources_required(cls):
-        """
-        :rtype: ~pacman.model.resources.ResourceContainer
-        """
-        return ResourceContainer(
-            sdram=ConstantSDRAM(
-                CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
-                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE),
-            iptags=[IPtagResource(
-                port=cls._TAG_INITIAL_PORT, strip_sdp=True,
-                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

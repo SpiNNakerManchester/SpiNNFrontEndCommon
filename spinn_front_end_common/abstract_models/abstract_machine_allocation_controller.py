@@ -89,3 +89,12 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
 
         :rtype: ~spinnman.connections.abstract_classes.EIEIOReceiver
         """
+
+    @property
+    def _proxying(self):
+        """
+        Whether this is a proxying connection. False unless overridden.
+
+        :rtype: bool
+        """
+        return False

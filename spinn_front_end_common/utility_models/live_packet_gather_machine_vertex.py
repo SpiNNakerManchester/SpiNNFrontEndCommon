@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,8 +17,7 @@ from enum import IntEnum
 import struct
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import (
-    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
+from pacman.model.resources import ConstantSDRAM
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
@@ -97,14 +96,15 @@ class LivePacketGatherMachineVertex(
         return len(self._incoming_sources) * self.KEY_ENTRY_SIZE
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return ResourceContainer(
-            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
-            dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=ConstantSDRAM(self.get_sdram_usage() +
-                                self._get_key_translation_sdram()),
-            iptags=[self._lpg_params.get_iptag_resource()])
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
+        return ConstantSDRAM(
+            self.get_sdram_usage() + self._get_key_translation_sdram())
+
+    @property
+    @overrides(MachineVertex.iptags)
+    def iptags(self):
+        return [self._lpg_params.get_iptag_resource()]
 
     @overrides(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
@@ -240,15 +240,6 @@ class LivePacketGatherMachineVertex(
         spec.write_array(get_simulation_header_array(
             self.get_binary_file_name()))
 
-    @staticmethod
-    def get_cpu_usage():
-        """ Get the CPU used by this vertex
-
-        :return: 0
-        :rtype: int
-        """
-        return 0
-
     @classmethod
     def get_sdram_usage(cls):
         """ Get the SDRAM used by this vertex
@@ -258,14 +249,6 @@ class LivePacketGatherMachineVertex(
         return (
             SYSTEM_BYTES_REQUIREMENT + cls._CONFIG_SIZE +
             cls.get_provenance_data_size(cls._N_ADDITIONAL_PROVENANCE_ITEMS))
-
-    @classmethod
-    def get_dtcm_usage(cls):
-        """ Get the DTCM used by this vertex
-
-        :rtype: int
-        """
-        return cls._CONFIG_SIZE
 
     @property
     def params(self):

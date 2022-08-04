@@ -43,8 +43,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance import (
     BUFFER, ProvenanceWriter)
-from spinn_front_end_common.interface.interface_functions.spalloc_allocator \
-    import SpallocJobController
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -230,7 +228,7 @@ class BufferManager(object):
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
-                vertex = FecDataView.get_placements().get_vertex_on_processor(
+                vertex = FecDataView.get_vertex_on_processor(
                     packet.x, packet.y, packet.p)
                 if vertex in self._sender_vertices:
                     self._send_messages(
@@ -245,7 +243,7 @@ class BufferManager(object):
         mac = None
         if FecDataView.has_allocation_controller():
             mac = FecDataView.get_allocation_controller()
-        if mac and isinstance(mac, SpallocJobController):
+        if mac and mac._proxying:  # pylint: disable=protected-access
             # No trigger message needed
             if not self.__proxied_connection:
                 self.__proxied_connection = mac.open_eieio_listener()

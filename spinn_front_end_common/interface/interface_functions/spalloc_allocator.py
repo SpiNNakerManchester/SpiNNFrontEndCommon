@@ -140,6 +140,11 @@ class SpallocJobController(MachineAllocationController):
     def open_eieio_listener(self):
         return self._job.open_listener_connection()
 
+    @overrides(AbstractMachineAllocationController._proxying)
+    @property
+    def _proxying(self):
+        return True
+
 
 class _OldSpallocJobController(MachineAllocationController):
     __slots__ = (

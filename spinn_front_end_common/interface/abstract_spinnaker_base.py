@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -575,7 +575,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _is_per_timestep_sdram(self):
         for placement in self._data_writer.iterate_placemements():
-            if placement.vertex.resources_required.sdram.per_timestep:
+            if placement.vertex.sdram_required.per_timestep:
                 return True
         return False
 
@@ -634,7 +634,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         usage_by_chip = dict()
 
         for place in self._data_writer.iterate_placemements():
-            sdram = place.vertex.resources_required.sdram
+            sdram = place.vertex.sdram_required
             if (place.x, place.y) in usage_by_chip:
                 usage_by_chip[place.x, place.y] += sdram
             else:
@@ -1979,7 +1979,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             # Also used in recover from error where is is not all placements
-            placements_provenance_gatherer(self._data_writer.get_placements())
+            placements_provenance_gatherer(
+                self._data_writer.get_n_placements(),
+                self._data_writer.iterate_placemements())
 
     def _execute_router_provenance_gatherer(self):
         """
@@ -2302,7 +2304,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 for (x, y, p) in finished_cores:
                     finished_placements.add_placement(
                         placements.get_placement_on_processor(x, y, p))
-                placements_provenance_gatherer(finished_placements)
+                placements_provenance_gatherer(
+                    finished_placements.n_placements,
+                    finished_placements.placements)
             except Exception as pro_e:
                 logger.exception(f"Could not read provenance due to {pro_e}")
 
