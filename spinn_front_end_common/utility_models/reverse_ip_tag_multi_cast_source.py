@@ -19,9 +19,6 @@ import numpy
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, ResourceContainer,
-    ReverseIPtagResource)
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
@@ -129,12 +126,6 @@ class ReverseIpTagMultiCastSource(
         self._prefix_type = prefix_type
         self._check_keys = check_keys
 
-        self._reverse_iptags = None
-        if receive_port is not None or reserve_reverse_ip_tag:
-            self._reverse_iptags = [ReverseIPtagResource(
-                port=receive_port, sdp_port=receive_sdp_port,
-                tag=receive_tag)]
-
         # Store the send buffering details
         self._send_buffer_times = self._validate_send_buffer_times(
             send_buffer_times)
@@ -164,19 +155,11 @@ class ReverseIpTagMultiCastSource(
     def n_atoms(self):
         return self._n_atoms
 
-    @overrides(LegacyPartitionerAPI.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
-
-        container = ResourceContainer(
-            sdram=ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                self.__filtered_send_buffer_times(vertex_slice),
-                self._is_recording, self._receive_rate, vertex_slice.n_atoms),
-            dtcm=DTCMResource(
-                ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
-            cpu_cycles=CPUCyclesPerTickResource(
-                ReverseIPTagMulticastSourceMachineVertex.get_cpu_usage()),
-            reverse_iptags=self._reverse_iptags)
-        return container
+    @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
+    def get_sdram_used_by_atoms(self, vertex_slice):
+        return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
+            self.__filtered_send_buffer_times(vertex_slice),
+            self._is_recording, self._receive_rate, vertex_slice.n_atoms)
 
     @property
     def send_buffer_times(self):
@@ -204,9 +187,7 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice,
-            resources_required,  # @UnusedVariable
-            label=None, constraints=None):
+            self, vertex_slice, sdram, label=None, constraints=None):
         send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
@@ -223,8 +204,8 @@ class ReverseIpTagMultiCastSource(
             injection_partition_id=self._injection_partition_id)
         machine_vertex.enable_recording(self._is_recording)
         # Known issue with ReverseIPTagMulticastSourceMachineVertex
-        if resources_required:
-            assert (resources_required == machine_vertex.resources_required)
+        if sdram:
+            assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
     def __filtered_send_buffer_times(self, vertex_slice):
