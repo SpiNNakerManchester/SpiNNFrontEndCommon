@@ -72,17 +72,13 @@ def _add_structured_provenance(placement, errors):
     if isinstance(placement.vertex, AbstractProvidesProvenanceDataFromMachine):
 
         # Custom provenance presentation from SpiNNCer
-        # write provenance to file here in a useful way
+        # write provenance to database here in a useful way
         columns = ['pop', 'label', 'min_atom', 'max_atom', 'no_atoms',
-                   'fixed_sdram', 'sdram_per_timestep', 'cpu_cycles', 'dtcm']
+                   'fixed_sdram', 'sdram_per_timestep']
 
         pop = placement.vertex.label.split(":")[0]
-        fixed_sdram = placement.vertex.resources_required.sdram.fixed
-        sdram_per_timestep = placement.vertex.resources_required.\
-            sdram.per_timestep
-        cpu_cycles = placement.vertex.resources_required.cpu_cycles.\
-            get_value()
-        dtcm = placement.vertex.resources_required.dtcm.get_value()
+        fixed_sdram = placement.vertex.sdram_required.fixed
+        sdram_per_timestep = placement.vertex.sdram_required.per_timestep
 
         label = placement.vertex.label
         slice = placement.vertex.vertex_slice
@@ -91,8 +87,8 @@ def _add_structured_provenance(placement, errors):
         no_atoms = slice.n_atoms
 
         structured_provenance = [
-            pop, label, min_atom, max_atom, no_atoms,
-            fixed_sdram, sdram_per_timestep, cpu_cycles, dtcm]
+            pop, label, min_atom, max_atom, no_atoms, fixed_sdram,
+            sdram_per_timestep]
 
         # get data
         try:
