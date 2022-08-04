@@ -161,6 +161,7 @@ def test_database_interface():
     assert (
         reader.get_live_output_details(
             app_vertex_1.label, lpg_vertex.label) ==
-        (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag))
+        (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag,
+         tag.destination_x, tag.destination_y))
     assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
     assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)
