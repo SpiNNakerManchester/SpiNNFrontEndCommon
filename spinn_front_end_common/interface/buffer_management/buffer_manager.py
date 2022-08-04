@@ -243,17 +243,18 @@ class BufferManager(object):
         mac = None
         if FecDataView.has_allocation_controller():
             mac = FecDataView.get_allocation_controller()
+        txrx = FecDataView.get_transceiver()
         if mac and mac.proxying:
             # No trigger message needed
             if not self.__proxied_connection:
                 self.__proxied_connection = mac.open_eieio_listener()
-                FecDataView.get_transceiver().register_existing_udp_listener(
+                txrx.register_existing_udp_listener(
                     self._receive_buffer_command_message,
                     self.__proxied_connection)
             connection = self.__proxied_connection
             connection.update_tag_by_ip(tag.ip_address, tag.tag)
         else:
-            connection = FecDataView.get_transceiver().register_udp_listener(
+            connection = txrx.register_udp_listener(
                 self._receive_buffer_command_message, EIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
             utility_functions.send_port_trigger_message(

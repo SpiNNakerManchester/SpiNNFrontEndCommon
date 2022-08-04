@@ -46,7 +46,8 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         os.chdir(path)
         interface = AbstractSpinnakerBase()
         mock_contoller = Close_Once()
-        interface._machine_allocation_controller = mock_contoller
+        # pylint: disable=protected-access
+        interface._data_writer.set_allocation_controller(mock_contoller)
         self.assertFalse(mock_contoller.closed)
         interface.stop()
         self.assertTrue(mock_contoller.closed)
