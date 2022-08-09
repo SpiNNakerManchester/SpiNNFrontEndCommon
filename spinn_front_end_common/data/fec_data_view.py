@@ -494,7 +494,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls.__fec_data._n_chips_required
         if cls.__fec_data._n_chips_in_graph:
             return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_requiredr")
+        raise cls._exception("n_chips_required")
 
     @classmethod
     def has_n_chips_needed(cls):
@@ -509,6 +509,17 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._n_chips_required is not None:
             return True
         return cls.__fec_data._n_chips_in_graph is not None
+
+    @classmethod
+    def has_required_size(cls):
+        """
+        Detects if the n_chip_required or n)boards_required has been set
+
+        :rtype: bool
+        """
+        if cls.__fec_data._n_boards_required is None:
+            return cls.__fec_data._n_chips_required is not None
+        return True
 
     @classmethod
     def get_timestamp_dir_path(cls):

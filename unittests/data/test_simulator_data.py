@@ -376,16 +376,18 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             self.assertIsNone(FecDataView.get_n_chips_needed())
         self.assertFalse(FecDataView.has_n_chips_needed())
+        self.assertFalse(FecDataView.has_required_size())
 
         # required higher than in graph
         writer.set_n_required(None, 20)
         self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertTrue(FecDataView.has_required_size())
         writer.set_n_chips_in_graph(15)
         self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())
 
-        # required higher than in graph
+        # required lower than in graph
         writer.set_n_chips_in_graph(25)
         self.assertFalse(FecDataView.has_n_boards_required())
         self.assertEquals(20, FecDataView.get_n_chips_needed())

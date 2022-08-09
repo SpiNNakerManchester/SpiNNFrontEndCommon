@@ -223,7 +223,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
 
-        self._data_writer.set_machine_generator(self._get_machine)
+        self._get_fixed_machine()
         self._run_timer = None
 
     def _hard_reset(self):
@@ -670,7 +670,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set then "machine" value
         """
         with FecTimer(GET_MACHINE, "Virtual machine generator"):
-            self._data_writer.set_machine(virtual_machine_generator())
+            self._data_writer.set_machine(virtual_machine_generator(), True)
             self._data_writer.set_ipaddress("virtual")
 
     def _execute_allocator(self, category, total_run_time):
@@ -686,14 +686,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         :rtype: tuple(str, int, object, bool, bool, object, object,
             MachineAllocationController)
         """
-        if self._data_writer.has_machine():
-            return None
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
                 return spalloc_allocator()
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(total_run_time)
+        raise NotImplementedError("Unexpected allocator")
 
     def _execute_machine_generator(self, category, allocator_data):
         """
@@ -740,36 +739,53 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
-    def _get_known_machine(self, total_run_time=0.0):
-        """ The python machine description object.
+    def _get_fixed_machine(self, total_run_time=0.0):
+        if get_config_bool("Machine", "virtual_board"):
+            return self._execute_get_virtual_machine()
+        machine_name = get_config_str("Machine", "machine_name")
+        if machine_name is not None:
+            self._data_writer.set_ipaddress(machine_name)
+            bmp_details = get_config_str("Machine", "bmp_names")
+            auto_detect_bmp = get_config_bool(
+                "Machine", "auto_detect_bmp")
+            scamp_connection_data = None
+            reset_machine = get_config_bool(
+                "Machine", "reset_machine_on_startup")
+            board_version = get_config_int(
+                "Machine", "version")
+        elif self._data_writer.has_required_size():
+            allocator_data = self._execute_allocator(
+                GET_MACHINE, total_run_time)
+            (ipaddress, board_version, bmp_details,
+             reset_machine, auto_detect_bmp, scamp_connection_data,
+             self._machine_allocation_controller
+             ) = allocator_data
+            self._data_writer.set_ipaddress(ipaddress)
+        else:
+            return
+        with FecTimer(GET_MACHINE, "Machine generator"):
+            machine, transceiver = machine_generator(
+                bmp_details, board_version,
+                auto_detect_bmp, scamp_connection_data, reset_machine)
+            self._data_writer.set_transceiver(transceiver)
+            self._data_writer.set_machine(machine, True)
 
-        :param float total_run_time: The total run time to request
-        :rtype: ~spinn_machine.Machine
-        """
-        if not self._data_writer.has_machine():
-            if get_config_bool("Machine", "virtual_board"):
-                self._execute_get_virtual_machine()
-            else:
-                allocator_data = self._execute_allocator(
-                    GET_MACHINE, total_run_time)
-                self._execute_machine_generator(GET_MACHINE, allocator_data)
-
-    def _get_machine(self):
-        """ The factory method to get a machine
-
-        :rtype: ~spinn_machine.Machine
-        """
-        if self._data_writer.is_user_mode() and \
-                self._data_writer.is_soft_reset():
-            # Make the reset hard
-            logger.warning(
-                "Calling Get machine after a reset force a hard reset and "
-                "therefore generate a new machine")
-            self._hard_reset()
-        self._get_known_machine()
-        if not self._data_writer.has_machine():
-            raise ConfigurationException(
-                "Not enough information provided to supply a machine")
+    def _get_flexible_machine(self, total_run_time=0.0):
+        if self._data_writer.has_machine():
+            return
+        allocator_data = self._execute_allocator(
+            MAPPING, total_run_time)
+        (ipaddress, board_version, bmp_details,
+         reset_machine, auto_detect_bmp, scamp_connection_data,
+         self._machine_allocation_controller
+         ) = allocator_data
+        self._data_writer.set_ipaddress(ipaddress)
+        with FecTimer(MAPPING, "Machine generator"):
+            machine, transceiver = machine_generator(
+                bmp_details, board_version,
+                auto_detect_bmp, scamp_connection_data, reset_machine)
+            self._data_writer.set_transceiver(transceiver)
+            self._data_writer.set_machine(machine, False)
 
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
@@ -1324,8 +1340,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
-        allocator_data = self._execute_allocator(MAPPING, total_run_time)
-        self._execute_machine_generator(MAPPING, allocator_data)
+        self._get_flexible_machine(total_run_time)
         self._json_machine()
         self._report_board_chip()
 
