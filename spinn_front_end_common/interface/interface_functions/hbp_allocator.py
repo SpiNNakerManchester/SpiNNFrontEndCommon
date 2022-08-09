@@ -21,7 +21,6 @@ from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
-from spinn_front_end_common.data import FecDataView
 from pacman.exceptions import PacmanConfigurationException
 
 

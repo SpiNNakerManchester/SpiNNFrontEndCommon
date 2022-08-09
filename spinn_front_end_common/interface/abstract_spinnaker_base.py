@@ -699,7 +699,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
                 return hbp_allocator(
-                    n_boards_required, n_chips_require,total_run_time)
+                    n_boards_required, n_chips_require, total_run_time)
         raise NotImplementedError("Unexpected allocator")
 
     def _execute_machine_generator(self, category, allocator_data):
