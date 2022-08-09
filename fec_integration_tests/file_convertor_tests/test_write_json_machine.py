@@ -145,10 +145,9 @@ class TestWriteJson(unittest.TestCase):
         set_config("Machine", "spalloc_port", self.spin2Port)
 
         writer = FecDataWriter.mock()
-        writer.set_n_chips_in_graph(20)
         try:
             (hostname, version, _, _, _, _, m_allocation_controller) = \
-                spalloc_allocator()
+                spalloc_allocator(None, 20)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

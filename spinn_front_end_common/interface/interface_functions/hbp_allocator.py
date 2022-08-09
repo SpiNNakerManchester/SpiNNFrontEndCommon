@@ -110,10 +110,16 @@ class _HBPJobController(MachineAllocationController):
         return self._check_lease(self._WAIT_TIME_MS)["allocated"]
 
 
-def hbp_allocator(total_run_time):
+def hbp_allocator(n_boards_required, n_chips_require, total_run_time):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips.
 
+    :param n_boards_required: specific number of boards needed
+        or None to use chips
+    :type n_boards_required: None or int
+    :param n_chips_required: specific number of chips needed.
+        Ignored if n_boards_required otherwise may not be None
+    :type n_chips_required: None or int
     :param int total_run_time: The total run time to request
     :return: machine name, machine version, BMP details (if any),
         reset on startup flag, auto-detect BMP, SCAMP connection details,
@@ -128,7 +134,8 @@ def hbp_allocator(total_run_time):
     if url.endswith("/"):
         url = url[:-1]
 
-    machine = _get_machine(url, total_run_time)
+    machine = _get_machine(
+        url, n_boards_required, n_chips_require, total_run_time)
     hbp_job_controller = _HBPJobController(url, machine["machineName"])
 
     bmp_details = None
@@ -140,19 +147,21 @@ def hbp_allocator(total_run_time):
         bmp_details, False, False, None, hbp_job_controller)
 
 
-def _get_machine(url, total_run_time):
+def _get_machine(url, n_boards_required, n_chips_required, total_run_time):
     """
     :param str url:
+    :type n_boards_required: None or int
+    :type n_chips_required: None or int
     :param int total_run_time:
     :rtype: dict
     """
-    if FecDataView.has_n_boards_required():
+    if n_boards_required:
         get_machine_request = requests.get(
-            url, params={"nBoards": FecDataView.get_n_boards_required(),
+            url, params={"nBoards": n_boards_required,
                          "runTime": total_run_time})
-    elif FecDataView.has_n_chips_needed():
+    elif n_chips_required:
         get_machine_request = requests.get(
-            url, params={"nChips": FecDataView.get_n_chips_needed(),
+            url, params={"nChips": n_chips_required,
                          "runTime": total_run_time})
     else:
         raise PacmanConfigurationException(

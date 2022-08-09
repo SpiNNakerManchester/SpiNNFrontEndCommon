@@ -111,29 +111,31 @@ class _SpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator():
+def spalloc_allocator(n_boards_required, n_chips_required):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
+    :param n_boards_required: specific number of boards needed
+        or None to use chips
+    :type n_boards_required: None or int
+    :param n_chips_required: specific number of chips needed.
+        Ignored if n_boards_required otherwise may not be None
     :rtype: tuple(str, int, None, bool, bool, None, None,
         MachineAllocationController)
     """
 
     # Work out how many boards are needed
 
-    if FecDataView.has_n_boards_required():
-        n_boards = FecDataView.get_n_boards_required()
-    else:
-        n_chips = FecDataView.get_n_chips_needed()
-        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+    if not n_boards_required:
+        n_boards_float = float(n_chips_required) / CALC_CHIPS_PER_BOARD
         logger.info("{:.2f} Boards Required for {} chips",
-                    n_boards_float, n_chips)
+                    n_boards_float, n_chips_required)
         # If the number of boards rounded up is less than 50% of a board
         # bigger than the actual number of boards,
         # add another board just in case.
-        n_boards = int(math.ceil(n_boards_float))
-        if n_boards - n_boards_float < 0.5:
-            n_boards += 1
+        n_boards_required = int(math.ceil(n_boards_float))
+        if n_boards_required - n_boards_float < 0.5:
+            n_boards_required += 1
 
     spalloc_kw_args = {
         'hostname': get_config_str("Machine", "spalloc_server"),
@@ -148,7 +150,7 @@ def spalloc_allocator():
         spalloc_kw_args['machine'] = spalloc_machine
 
     job, hostname, scamp_connection_data = _launch_checked_job(
-        n_boards, spalloc_kw_args)
+        n_boards_required, spalloc_kw_args)
     machine_allocation_controller = _SpallocJobController(job)
 
     return (

@@ -178,7 +178,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "_multicast_routes_loaded"
     ]
 
-    def __init__(self, data_writer_cls=None):
+    def __init__(
+            self, n_boards_required, n_chips_required, data_writer_cls=None):
         """
         :param int n_chips_required:
             Overrides the number of chips to allocate from spalloc
@@ -223,7 +224,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
 
-        self._get_fixed_machine()
+        self._get_fixed_machine(n_boards_required, n_chips_required)
         self._run_timer = None
 
     def _hard_reset(self):
@@ -673,10 +674,16 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_machine(virtual_machine_generator(), True)
             self._data_writer.set_ipaddress("virtual")
 
-    def _execute_allocator(self, category, total_run_time):
+    def _execute_allocator(self, category, n_boards_required, n_chips_require,
+                           total_run_time):
         """
         Runs, times and logs the SpallocAllocator or HBPAllocator if required
 
+        :param n_boards_required: specific number of boards needed
+            or None to use chips
+        :type n_boards_required: None or int
+         :param n_chips_required: specific number of chips needed.
+            Ignored if n_boards_required otherwise may not be None
         :param str category: Algorithm category for provenance
         :param total_run_time: The total run time to request
         type total_run_time: int or None
@@ -688,10 +695,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer(category, "SpallocAllocator"):
-                return spalloc_allocator()
+                return spalloc_allocator(n_boards_required, n_chips_require)
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer(category, "HBPAllocator"):
-                return hbp_allocator(total_run_time)
+                return hbp_allocator(
+                    n_boards_required, n_chips_require,total_run_time)
         raise NotImplementedError("Unexpected allocator")
 
     def _execute_machine_generator(self, category, allocator_data):
@@ -739,7 +747,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
-    def _get_fixed_machine(self, total_run_time=0.0):
+    def _get_fixed_machine(self, n_boards_required, n_chips_required,
+                           total_run_time=0.0):
         if get_config_bool("Machine", "virtual_board"):
             return self._execute_get_virtual_machine()
         machine_name = get_config_str("Machine", "machine_name")
@@ -753,9 +762,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Machine", "reset_machine_on_startup")
             board_version = get_config_int(
                 "Machine", "version")
-        elif self._data_writer.has_required_size():
+        elif n_boards_required or n_chips_required:
             allocator_data = self._execute_allocator(
-                GET_MACHINE, total_run_time)
+                GET_MACHINE, n_boards_required, n_chips_required,
+                total_run_time)
             (ipaddress, board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
              self._machine_allocation_controller
@@ -770,11 +780,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine, True)
 
-    def _get_flexible_machine(self, total_run_time=0.0):
+    def _get_flexible_machine(self, n_chips_required, total_run_time=0.0):
         if self._data_writer.has_machine():
             return
         allocator_data = self._execute_allocator(
-            MAPPING, total_run_time)
+            MAPPING, None, n_chips_required, total_run_time)
         (ipaddress, board_version, bmp_details,
          reset_machine, auto_detect_bmp, scamp_connection_data,
          self._machine_allocation_controller
@@ -874,7 +884,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.get_n_vertices() == 0:
             return
         with FecTimer(MAPPING, "Splitter partitioner"):
-            self._data_writer.set_n_chips_in_graph(splitter_partitioner())
+            return splitter_partitioner()
 
     def _execute_insert_chip_power_monitors(self, system_placements):
         """
@@ -1339,8 +1349,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_selector()
         self._execute_delay_support_adder()
 
-        self._execute_splitter_partitioner()
-        self._get_flexible_machine(total_run_time)
+        n_chips_required = self._execute_splitter_partitioner()
+        self._get_flexible_machine(n_chips_required, total_run_time)
         self._json_machine()
         self._report_board_chip()
 

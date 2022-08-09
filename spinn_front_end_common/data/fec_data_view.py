@@ -66,9 +66,6 @@ class _FecDataModel(object):
         "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
-        "_n_boards_required",
-        "_n_chips_required",
-        "_n_chips_in_graph",
         "_next_sync_signal",
         "_none_labelled_edge_count",
         "_notification_protocol",
@@ -106,8 +103,6 @@ class _FecDataModel(object):
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
         self._java_caller = None
-        self._n_boards_required = None
-        self._n_chips_required = None
         self._none_labelled_edge_count = 0
         self._run_number = None
         self._simulation_time_step_ms = None
@@ -132,7 +127,6 @@ class _FecDataModel(object):
         self._fixed_routes = None
         self._gatherer_map = None
         self._ipaddress = None
-        self._n_chips_in_graph = None
         self._next_sync_signal = Signal.SYNC0
         self._notification_protocol = None
         self._max_run_time_steps = None
@@ -444,82 +438,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # Report directories
     # There are NO has or get methods for directories
     # This allows directories to be created on the fly
-
-    # n_boards/chips required
-
-    @classmethod
-    def has_n_boards_required(cls):
-        """
-        Reports if a user has sets the number of boards requested during setup
-
-        :rtype: bool
-        :raises SpiNNUtilsException:
-            If n_boards_required is not set or set to None
-        """
-        return cls.__fec_data._n_boards_required is not None
-
-    @classmethod
-    def get_n_boards_required(cls):
-        """
-        Gets the number of boards requested by the user during setup if known.
-
-        Guaranteed to be positive
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the n_boards_required is currently unavailable
-        """
-        if cls.__fec_data._n_boards_required is None:
-            raise cls._exception("n_boards_requiredr")
-        return cls.__fec_data._n_boards_required
-
-    @classmethod
-    def get_n_chips_needed(cls):
-        """
-        Gets the number of chips needed if set
-
-        This will be the number of chips requested by the user during setup,
-        even if this is less that what the partitioner reported.
-
-        If the partitioner has run and the user has not specified a number,
-        this will be what the partitioner requested.
-
-        Guaranteed to be positive if set
-
-        :rtype: int
-        :raises SpiNNUtilsException:
-            If data for n_chips_needed is not available
-        """
-        if cls.__fec_data._n_chips_required:
-            return cls.__fec_data._n_chips_required
-        if cls.__fec_data._n_chips_in_graph:
-            return cls.__fec_data._n_chips_in_graph
-        raise cls._exception("n_chips_required")
-
-    @classmethod
-    def has_n_chips_needed(cls):
-        """
-        Detects if the number of chips needed has been set.
-
-        This will be the number of chips requested by the use during setup or
-        what the partitioner requested.
-
-        :rtype: bool
-        """
-        if cls.__fec_data._n_chips_required is not None:
-            return True
-        return cls.__fec_data._n_chips_in_graph is not None
-
-    @classmethod
-    def has_required_size(cls):
-        """
-        Detects if the n_chip_required or n)boards_required has been set
-
-        :rtype: bool
-        """
-        if cls.__fec_data._n_boards_required is None:
-            return cls.__fec_data._n_chips_required is not None
-        return True
 
     @classmethod
     def get_timestamp_dir_path(cls):

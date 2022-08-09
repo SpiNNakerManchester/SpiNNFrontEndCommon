@@ -44,7 +44,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase()
+        interface = AbstractSpinnakerBase(None, None)
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -57,7 +57,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase()
+        AbstractSpinnakerBase(None, None)
 
 
 if __name__ == "__main__":
