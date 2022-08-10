@@ -2435,7 +2435,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if clearing routing table entries, clear
         if get_config_bool("Machine", "clear_routing_tables"):
-            machine = self._data_writer.get_machine()
             for router_table in self._data_writer.get_uncompressed():
                 transceiver.clear_multicast_routes(
                     router_table.x, router_table.y)
