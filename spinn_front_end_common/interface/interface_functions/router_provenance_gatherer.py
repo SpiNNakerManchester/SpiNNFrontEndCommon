@@ -57,7 +57,7 @@ class _RouterProvenanceGatherer(object):
         # Get what info we can for chips where there are problems or no table
         for chip in progress.over(sorted(
                 FecDataView.get_machine().chips, key=lambda c: (c.x, c.y))):
-            if not chip.virtual and (chip.x, chip.y) not in seen_chips:
+            if (chip.x, chip.y) not in seen_chips:
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
 
@@ -68,17 +68,16 @@ class _RouterProvenanceGatherer(object):
         """
         x = table.x
         y = table.y
-        if not FecDataView.get_chip_at(x, y).virtual:
-            try:
-                transceiver = FecDataView.get_transceiver()
-                diagnostics = transceiver.get_router_diagnostics(x, y)
-            except SpinnmanException:
-                logger.warning(
-                    "Could not read routing diagnostics from {}, {}",
-                    x, y, exc_info=True)
-                return
-            status = self.__get_status(reinjection_data, x, y)
-            self.__router_diagnostics(x, y, diagnostics, status, True, table)
+        try:
+            transceiver = FecDataView.get_transceiver()
+            diagnostics = transceiver.get_router_diagnostics(x, y)
+        except SpinnmanException:
+            logger.warning(
+                "Could not read routing diagnostics from {}, {}",
+                x, y, exc_info=True)
+            return
+        status = self.__get_status(reinjection_data, x, y)
+        self.__router_diagnostics(x, y, diagnostics, status, True, table)
         return x, y
 
     def _add_unseen_router_chip_diagnostic(self, chip, reinjection_data):
@@ -270,8 +269,7 @@ class _RouterProvenanceGatherer(object):
 
             db.insert_router(
                 x, y, "Dumped_from_a_Link", status.n_link_dumps, expected)
-            if status.n_link_dumps > 0 and (
-                    self.__has_virtual_chip_connected(x, y)):
+            if status.n_link_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
                     f"{status.n_link_dumps} packets were dumped from an "
@@ -294,14 +292,3 @@ class _RouterProvenanceGatherer(object):
                     "core taking too long to process each packet. These "
                     "packets were reinjected and so this number is likely an "
                     "overestimate.")
-
-    def __has_virtual_chip_connected(self, x, y):
-        """
-        :param int x:
-        :param int y:
-        :rtype: bool
-        """
-        return any(
-            FecDataView.get_chip_at(
-                link.destination_x, link.destination_y).virtual
-            for link in FecDataView.get_chip_at(x, y).router.links)

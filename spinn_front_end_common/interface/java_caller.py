@@ -161,10 +161,9 @@ class JavaCaller(object):
         self._chipxy_by_ethernet = defaultdict(list)
         machine = FecDataView.get_machine()
         for chip in machine.chips:
-            if not chip.virtual:
-                chip_xy = (chip.x, chip.y)
-                ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-                self._chipxy_by_ethernet[ethernet].append(chip_xy)
+            chip_xy = (chip.x, chip.y)
+            ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+            self._chipxy_by_ethernet[ethernet].append(chip_xy)
 
     def _machine_json(self):
         """ Converts the machine in this class to JSON.
