@@ -24,6 +24,7 @@ from spinn_utilities.exceptions import (
     DataNotYetAvialable, NotSetupException)
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
+from spinn_machine import virtual_machine
 from spinnman.model import ExecutableTargets
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
@@ -368,11 +369,12 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_system_multicast_router_timeout_keys()
 
-    def test_ipaddress(self):
+    def test_ipaddress_flex(self):
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_ipaddress())
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_ipaddress()
+        writer.set_machine(virtual_machine(2, 2), False)
         writer.set_ipaddress("127.0.0.0")
         self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
         self.assertTrue(FecDataView.has_ipaddress())
@@ -384,6 +386,17 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_ipaddress()
         with self.assertRaises(TypeError):
             writer.set_ipaddress(127)
+
+    def test_ipaddress_fixed(self):
+        writer = FecDataWriter.setup()
+        writer.set_machine(virtual_machine(2, 2), True)
+        writer.set_ipaddress("127.0.0.0")
+        writer.start_run()
+        writer.finish_run()
+        writer.hard_reset()
+        # as IP address added at same time as machine
+        self.assertEqual("127.0.0.0", FecDataView.get_ipaddress())
+        self.assertTrue(FecDataView.has_ipaddress())
 
     def test_fixed_routes(self):
         writer = FecDataWriter.setup()

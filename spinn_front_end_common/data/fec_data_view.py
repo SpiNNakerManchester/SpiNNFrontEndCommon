@@ -101,6 +101,7 @@ class _FecDataModel(object):
         self._executable_types = None
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
+        self._ipaddress = None
         self._live_packet_recorder_params = None
         self._java_caller = None
         self._none_labelled_edge_count = 0
@@ -126,7 +127,8 @@ class _FecDataModel(object):
         self._executable_targets = None
         self._fixed_routes = None
         self._gatherer_map = None
-        self._ipaddress = None
+        if not SpiNNManDataView.has_fixed_machine():
+            self._ipaddress = None
         self._next_sync_signal = Signal.SYNC0
         self._notification_protocol = None
         self._max_run_time_steps = None

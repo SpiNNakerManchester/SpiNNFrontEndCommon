@@ -233,7 +233,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         """
         if self._data_writer.has_transceiver():
-            self._data_writer.get_transceiver().stop_application(
+            if not self._data_writer.has_fixed_machine():
+                self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.hard_reset()
         self._multicast_routes_loaded = False
