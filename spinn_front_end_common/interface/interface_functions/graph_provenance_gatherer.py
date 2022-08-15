@@ -14,51 +14,27 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesLocalProvenanceData)
 
 
-def graph_provenance_gatherer(machine_graph, application_graph=None):
-    """ Gets provenance information from the graphs.
+def graph_provenance_gatherer():
+    """ Gets provenance information from the graph.
 
-    :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-        The machine graph to inspect
-    :param application_graph: The optional application graph
-    :type application_graph:
-        ~pacman.model.graphs.application.ApplicationGraph
-    """
-    _get_machine_graph_provenance(machine_graph)
-    _get_app_graph_provenance(application_graph)
-
-
-def _get_machine_graph_provenance(machine_graph):
+     """
     progress = ProgressBar(
-        machine_graph.n_vertices +
-        machine_graph.n_outgoing_edge_partitions,
-        "Getting provenance data from machine graph")
-
-    for vertex in progress.over(machine_graph.vertices, False):
-        if isinstance(vertex, AbstractProvidesLocalProvenanceData):
-            vertex.get_local_provenance_data()
-
-    for partition in progress.over(machine_graph.outgoing_edge_partitions):
-        for edge in partition.edges:
-            if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                edge.get_local_provenance_data()
-
-
-def _get_app_graph_provenance(application_graph):
-    progress = ProgressBar(
-        application_graph.n_vertices +
-        application_graph.n_outgoing_edge_partitions,
+        FecDataView.get_n_vertices() +
+        FecDataView.get_n_partitions(),
         "Getting provenance data from application graph")
-
-    for vertex in progress.over(application_graph.vertices, False):
+    for vertex in progress.over(FecDataView.iterate_vertices(), False):
         if isinstance(vertex, AbstractProvidesLocalProvenanceData):
             vertex.get_local_provenance_data()
-
+            for m_vertex in vertex.machine_vertices:
+                if isinstance(m_vertex, AbstractProvidesLocalProvenanceData):
+                    m_vertex.get_local_provenance_data()
     for partition in progress.over(
-            application_graph.outgoing_edge_partitions):
+            FecDataView.iterate_partitions()):
         for edge in partition.edges:
             if isinstance(edge, AbstractProvidesLocalProvenanceData):
                 edge.get_local_provenance_data()

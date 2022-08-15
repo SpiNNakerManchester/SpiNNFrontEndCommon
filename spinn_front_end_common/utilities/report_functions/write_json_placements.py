@@ -21,22 +21,22 @@ from spinn_utilities.progress_bar import ProgressBar
 from pacman.utilities import file_format_schemas
 from pacman.utilities.json_utils import placements_to_json
 from jsonschema.exceptions import ValidationError
+from spinn_front_end_common.data import FecDataView
 
 PLACEMENTS_FILENAME = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def write_json_placements(placements, json_folder):
+def write_json_placements():
     """ Runs the code to write the placements in JSON.
 
-    :param Placements placements: The placements to write.
-    :param str json_folder: The folder to which the JSON are being written.
     """
     # Steps are tojson, validate and writefile
     progress = ProgressBar(3, "Converting to JSON Placements")
 
-    file_path = os.path.join(json_folder, PLACEMENTS_FILENAME)
-    json_obj = placements_to_json(placements)
+    file_path = os.path.join(
+        FecDataView.get_json_dir_path(), PLACEMENTS_FILENAME)
+    json_obj = placements_to_json()
 
     # validate the schema
     try:
@@ -49,7 +49,7 @@ def write_json_placements(placements, json_folder):
     progress.update()
 
     # dump to json file
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(json_obj, f)
 
     progress.end()

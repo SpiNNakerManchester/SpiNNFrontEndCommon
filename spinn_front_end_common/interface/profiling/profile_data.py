@@ -18,8 +18,7 @@ import numpy
 import math
 import scipy.stats
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.globals_variables import (
-    machine_time_step_ms)
+from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -34,7 +33,6 @@ _DURATION = 1
 class ProfileData(object):
     """ A container for profile data
     """
-    # pylint: disable=assignment-from-no-return
 
     START_TIME = _START_TIME
     DURATION = _DURATION
@@ -171,9 +169,10 @@ class ProfileData(object):
         :param str tag: The tag to get the data for
         :rtype: float
         """
+        time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms())
-        endpoint = n_points * machine_time_step_ms()
+            self._max_time / time_step_ms)
+        endpoint = n_points * time_step_ms
         bins = numpy.linspace(0, endpoint, n_points + 1)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
@@ -185,9 +184,10 @@ class ProfileData(object):
         :param str tag: The tag to get the data for
         :rtype: float
         """
+        time_step_ms = FecDataView.get_simulation_time_step_ms()
         n_points = math.ceil(
-            self._max_time / machine_time_step_ms())
-        endpoint = n_points * machine_time_step_ms()
+            self._max_time / time_step_ms)
+        endpoint = n_points * time_step_ms
         bins = numpy.linspace(0, endpoint, n_points + 1)
         mean_per_ts = scipy.stats.binned_statistic(
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],

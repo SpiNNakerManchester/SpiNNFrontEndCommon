@@ -20,6 +20,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -30,8 +31,9 @@ _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
 
 
-def chip_provenance_updater(txrx, app_id, all_core_subsets):
-    updater = _ChipProvenanceUpdater(txrx, app_id, all_core_subsets)
+def chip_provenance_updater(all_core_subsets):
+    updater = _ChipProvenanceUpdater(all_core_subsets)
+    # pylint: disable=protected-access
     updater._run()
 
 
@@ -41,15 +43,13 @@ class _ChipProvenanceUpdater(object):
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
 
-    def __init__(self, txrx, app_id, all_core_subsets):
+    def __init__(self, all_core_subsets):
         """
-        :param ~spinnman.transceiver.Transceiver txrx:
-        :param int app_id:
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
         self.__all_cores = all_core_subsets
-        self.__app_id = app_id
-        self.__txrx = txrx
+        self.__app_id = FecDataView.get_app_id()
+        self.__txrx = FecDataView.get_transceiver()
 
     def _run(self):
         # check that the right number of processors are in sync

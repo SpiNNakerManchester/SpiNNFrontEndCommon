@@ -22,6 +22,7 @@ from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     DatabaseConfirmation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -36,19 +37,11 @@ class NotificationProtocol(AbstractContextManager):
     __slots__ = [
         "__database_message_connections",
         "__sent_visualisation_confirmation",
-        "__socket_addresses",
         "__wait_for_read_confirmation",
         "__wait_futures",
         "__wait_pool"]
 
-    def __init__(self, socket_addresses):
-        """
-        :param socket_addresses: Where to notify.
-        :type socket_addresses:
-            set(~spinn_utilities.socket_address.SocketAddress)
-        """
-        self.__socket_addresses = socket_addresses
-
+    def __init__(self):
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
@@ -57,7 +50,7 @@ class NotificationProtocol(AbstractContextManager):
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
         self.__database_message_connections = list()
-        for socket_address in socket_addresses:
+        for socket_address in FecDataView.iterate_database_socket_addresses():
             self.__database_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
@@ -115,18 +108,18 @@ class NotificationProtocol(AbstractContextManager):
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     # noinspection PyPep8
-    def send_read_notification(self, database_path):
+    def send_read_notification(self):
         """ Sends notifications to all devices which have expressed an\
             interest in when the database has been written
 
         :param str database_path: the path to the database file
         """
         notification_thread = self.__wait_pool.submit(
-                self._send_read_notification, database_path)
+            self._send_read_notification)
         if self.__wait_for_read_confirmation:
             self.__wait_futures.append(notification_thread)
 
-    def _send_read_notification(self, database_path):
+    def _send_read_notification(self):
         """ Sends notifications to a list of socket addresses that the\
             database has been written. Message also includes the path to the\
             database
@@ -135,12 +128,13 @@ class NotificationProtocol(AbstractContextManager):
         """
         # noinspection PyBroadException
         try:
-            self.__do_read_notify(database_path)
+            self.__do_read_notify()
         except Exception:  # pylint: disable=broad-except
             logger.warning("problem when sending DB notification",
                            exc_info=True)
 
-    def __do_read_notify(self, database_path):
+    def __do_read_notify(self):
+        database_path = FecDataView.get_database_file_path()
         # add file path to database into command message.
         if (database_path is not None and
                 len(database_path) > MAX_DATABASE_PATH_LENGTH):

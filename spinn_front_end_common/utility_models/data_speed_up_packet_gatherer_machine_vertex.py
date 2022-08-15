@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,16 +27,10 @@ from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
-from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import (
-    ConstantSDRAM, IPtagResource, ResourceContainer)
+from pacman.model.resources import ConstantSDRAM, IPtagResource
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    get_simulator, report_default_directory)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
@@ -49,6 +43,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
+from spinn_front_end_common.utilities.utility_calls import (
+    get_region_base_address_offset)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
@@ -199,12 +195,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_coord_word",
         # transaction id
         "_transaction_id",
-        # app id
-        "_app_id",
         # socket
         "_connection",
-        # store of the extra monitors to location. helpful in data in
-        "_extra_monitors_by_chip",
         # path for the data in report
         "_in_report_path",
         # ipaddress
@@ -244,9 +236,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # throttle on the transmission
     _TRANSMISSION_THROTTLE_TIME = 0.000001
 
-    # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
-    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
-
     #: report name for tracking used routers
     OUT_REPORT_NAME = "routers_used_in_speed_up_process.rpt"
     #: report name for tracking performance gains
@@ -279,15 +268,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(
-            self, x, y, extra_monitors_by_chip, ip_address,
-            app_vertex=None, constraints=None):
+    def __init__(self, x, y, ip_address, app_vertex=None, constraints=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
-        :param extra_monitors_by_chip: UNUSED
-        :type extra_monitors_by_chip:
-            dict(tuple(int,int), ExtraMonitorSupportMachineVertex)
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
         :param constraints:
@@ -307,10 +291,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
+
         self._transaction_id = 0
 
-        # store of the extra monitors to location. helpful in data in
-        self._extra_monitors_by_chip = extra_monitors_by_chip
         self._missing_seq_nums_data_in = list()
 
         # Create a connection to be used
@@ -324,14 +307,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._run = 0
         self._placement = None
-        self._app_id = None
 
         # create report if it doesn't already exist
 
-        self._out_report_path = \
-            os.path.join(report_default_directory(), self.OUT_REPORT_NAME)
-        self._in_report_path = \
-            os.path.join(report_default_directory(), self.IN_REPORT_NAME)
+        dir_path = FecDataView.get_run_dir_path()
+        self._out_report_path = os.path.join(dir_path, self.OUT_REPORT_NAME)
+        self._in_report_path = os.path.join(dir_path, self.IN_REPORT_NAME)
 
         # Stored reinjection status for resetting timeouts
         self._last_status = None
@@ -347,88 +328,45 @@ class DataSpeedUpPacketGatherMachineVertex(
         time.sleep(self._TRANSMISSION_THROTTLE_TIME)
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return self.static_resources_required()
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
+        return ConstantSDRAM(
+                CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
+                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE)
 
-    def update_transaction_id_from_machine(self, txrx):
+    @property
+    @overrides(MachineVertex.iptags)
+    def iptags(self):
+        return [IPtagResource(
+            port=self._TAG_INITIAL_PORT, strip_sdp=True,
+            ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
+
+    def update_transaction_id_from_machine(self):
         """ Looks up from the machine what the current transaction ID is\
             and updates the data speed up gatherer.
 
-        :param ~spinnman.transceiver.Transceiver txrx: SpiNNMan instance
         """
-        self._transaction_id = txrx.read_user_1(
+        self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
-
-    @classmethod
-    def static_resources_required(cls):
-        """
-        :rtype: ~pacman.model.resources.ResourceContainer
-        """
-        return ResourceContainer(
-            sdram=ConstantSDRAM(
-                CONFIG_SIZE + SDRAM_FOR_MISSING_SDP_SEQ_NUMS +
-                SIZE_DATA_IN_CHIP_TO_KEY_SPACE + _PROVENANCE_DATA_SIZE),
-            iptags=[IPtagResource(
-                port=cls._TAG_INITIAL_PORT, strip_sdp=True,
-                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return ExecutableType.SYSTEM
 
-    @inject_items({
-        "machine_graph": "MachineGraph",
-        "routing_info": "RoutingInfos",
-        "tags": "Tags",
-        "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-        "machine": "ExtendedMachine",
-        "app_id": "APPID",
-        "router_timeout_key": "SystemMulticastRouterTimeoutKeys"
-    })
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={
-            "machine_graph", "routing_info", "tags",
-            "mc_data_chips_to_keys", "machine", "app_id",
-            "router_timeout_key"
-        })
-    def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
-            mc_data_chips_to_keys, machine, app_id, router_timeout_key):
-        """
-        :param ~pacman.model.graphs.machine.MachineGraph machine_graph:
-            (injected)
-        :param ~pacman.model.routing_info.RoutingInfo routing_info: (injected)
-        :param ~pacman.model.tags.Tags tags: (injected)
-        :param dict(tuple(int,int),int) mc_data_chips_to_keys: (injected)
-        :param ~spinn_machine.Machine machine: (injected)
-        :param int app_id: (injected)
-        :param dict(tuple(int,int),int) router_timeout_key: (injected)
-        """
-        # pylint: disable=too-many-arguments, arguments-differ
-
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         # update my placement for future knowledge
         self._placement = placement
-        self._app_id = app_id
 
         # Create the data regions for hello world
         self._reserve_memory_regions(spec)
 
         # the keys for the special cases
-        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_ending_at_vertex(self))[0])
-            new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
-            first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
-            end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
-            transaction_id_key = base_key + self.TRANSACTION_ID_KEY_OFFSET
-        else:
-            new_seq_key = self.NEW_SEQ_KEY
-            first_data_key = self.FIRST_DATA_KEY
-            end_flag_key = self.END_FLAG_KEY
-            base_key = self.BASE_KEY
-            transaction_id_key = self.TRANSACTION_ID_KEY
+        new_seq_key = self.NEW_SEQ_KEY
+        first_data_key = self.FIRST_DATA_KEY
+        end_flag_key = self.END_FLAG_KEY
+        base_key = self.BASE_KEY
+        transaction_id_key = self.TRANSACTION_ID_KEY
 
         spec.switch_write_focus(_DATA_REGIONS.CONFIG)
         spec.write_value(new_seq_key)
@@ -439,12 +377,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # locate the tag ID for our data and update with a port
         # Note: The port doesn't matter as we are going to override this later
-        iptags = tags.get_ip_tags_for_vertex(self)
+        iptags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         iptag = iptags[0]
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag
 
         # write mc chip key map
+        machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chips_on_board = list(machine.get_existing_xys_on_board(
             machine.get_chip_at(placement.x, placement.y)))
@@ -453,9 +392,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(len(chips_on_board))
 
         # write the broad cast keys for timeouts
+        router_timeout_key = (
+            FecDataView.get_system_multicast_router_timeout_keys())
         reinjection_base_key = router_timeout_key[(placement.x, placement.y)]
         spec.write_value(reinjection_base_key)
 
+        mc_data_chips_to_keys = (
+            FecDataView.get_data_in_multicast_key_to_chip_map())
         # write each chip x and y and base key
         for chip_xy in chips_on_board:
             board_chip_x, board_chip_y = machine.get_local_xy(
@@ -493,14 +436,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def locate_correct_write_data_function_for_chip_location(
-            uses_advanced_monitors, machine, x, y, transceiver,
+            uses_advanced_monitors, x, y, transceiver,
             extra_monitor_cores_to_ethernet_connection_map):
         """ Supports other components figuring out which gatherer and function\
             to call for writing data onto SpiNNaker.
 
         :param bool uses_advanced_monitors:
             Whether the system is using advanced monitors
-        :param ~spinn_machine.Machine machine: the SpiNNMachine instance
         :param int x: the chip x coordinate to write data to
         :param int y: the chip y coordinate to write data to
         :param ~spinnman.transceiver.Transceiver transceiver:
@@ -515,8 +457,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if not uses_advanced_monitors:
             return transceiver.write_memory
 
-        chip = machine.get_chip_at(x, y)
-        ethernet_connected_chip = machine.get_chip_at(
+        chip = FecDataView.get_chip_at(x, y)
+        ethernet_connected_chip = FecDataView.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         gatherer = extra_monitor_cores_to_ethernet_connection_map[
             ethernet_connected_chip.x, ethernet_connected_chip.y]
@@ -540,7 +482,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
-            with open(self._in_report_path, "w") as writer:
+            with open(self._in_report_path, "w", encoding="utf-8") as writer:
                 writer.write(
                     "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
                     " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
@@ -557,7 +499,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             mbs = megabits / (float(time_took_ms) / 100000.0)
 
-        with open(self._in_report_path, "a") as writer:
+        with open(self._in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
                 "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took_ms,
@@ -587,23 +529,23 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             with open(data, "rb") as reader:
                 # n_bytes=None already means 'read everything'
-                data = reader.read(n_bytes)  # pylint: disable=no-member
+                data = reader.read(n_bytes)
             # Number of bytes to write is now length of buffer we have
             n_bytes = len(data)
         elif n_bytes is None:
             n_bytes = len(data)
-        transceiver = get_simulator().transceiver
 
         # start time recording
         start = datetime.datetime.now()
         # send data
         self._send_data_via_extra_monitors(
-            transceiver, x, y, base_address, data[offset:n_bytes + offset])
+            x, y, base_address, data[offset:n_bytes + offset])
         # end time recording
         end = datetime.datetime.now()
 
         if VERIFY_SENT_DATA:
             original_data = bytes(data[offset:n_bytes + offset])
+            transceiver = FecDataView.get_transceiver()
             verified_data = bytes(transceiver.read_memory(
                 x, y, base_address, n_bytes))
             self.__verify_sent_data(
@@ -646,11 +588,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             data=payload)
 
     def _send_data_via_extra_monitors(
-            self, transceiver, destination_chip_x, destination_chip_y,
-            start_address, data_to_write):
+            self, destination_chip_x, destination_chip_y, start_address,
+            data_to_write):
         """ sends data using the extra monitor cores
 
-        :param ~.Transceiver transceiver: the SpiNNMan instance
         :param int destination_chip_x: chip x
         :param int destination_chip_y: chip y
         :param int start_address: start address in SDRAM to write data to
@@ -667,13 +608,13 @@ class DataSpeedUpPacketGatherMachineVertex(
             len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
 
         # determine board chip IDs, as the LPG does not know machine scope IDs
-        machine = transceiver.get_machine_details()
-        chip = machine.get_chip_at(destination_chip_x, destination_chip_y)
+        machine = FecDataView.get_machine()
+        chip = FecDataView.get_chip_at(destination_chip_x, destination_chip_y)
         dest_x, dest_y = machine.get_local_xy(chip)
         self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
         # for safety, check the transaction id from the machine before updating
-        self.update_transaction_id_from_machine(transceiver)
+        self.update_transaction_id_from_machine()
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
         time_out_count = 0
 
@@ -733,7 +674,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     time_out_count += 1
                     if time_out_count > TIMEOUT_RETRY_LIMIT:
                         emergency_recover_state_from_failure(
-                            transceiver, self._app_id, self, self._placement)
+                            self, self._placement)
                         raise SpinnFrontEndException(
                             TIMEOUT_MESSAGE.format(
                                 time_out_count)) from e
@@ -920,150 +861,99 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_tell_flag()
         log.debug("sent end flag")
 
-    def set_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements):
+    def set_cores_for_data_streaming(self):
         """ Helper method for setting the router timeouts to a state usable\
             for data streaming.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
-        lead_monitor = extra_monitor_cores[(0, 0)]
+        lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
-        self._last_status = lead_monitor.get_reinjection_status(
-            placements, transceiver)
+        self._last_status = lead_monitor.get_reinjection_status()
 
         # Set to not inject dropped packets
         lead_monitor.set_reinjection_packets(
-            placements, extra_monitor_cores, transceiver,
             point_to_point=False, multicast=False, nearest_neighbour=False,
             fixed_route=False)
 
         # Clear any outstanding packets from reinjection
-        self.clear_reinjection_queue(transceiver, placements)
+        self.clear_reinjection_queue()
 
         # set time outs
-        self.set_router_wait2_timeout(
-            self._SHORT_TIMEOUT, transceiver, placements)
-        self.set_router_wait1_timeout(
-            self._LONG_TIMEOUT, transceiver, placements)
+        self.set_router_wait2_timeout(self._SHORT_TIMEOUT)
+        self.set_router_wait1_timeout(self._LONG_TIMEOUT)
 
     @staticmethod
-    def load_application_routing_tables(
-            transceiver, extra_monitor_cores, placements):
-        """ Set all chips to have application table loaded in the router.
+    def load_application_routing_tables():
+        """ Set all chips to have application table loaded in the router
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
-        extra_monitor_cores[(0, 0)].load_application_mc_routes(
-            placements, extra_monitor_cores, transceiver)
+        FecDataView.get_monitor_by_xy(0, 0).load_application_mc_routes()
 
     @staticmethod
-    def load_system_routing_tables(
-            transceiver, extra_monitor_cores, placements):
+    def load_system_routing_tables():
         """ Set all chips to have the system table loaded in the router
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
-        extra_monitor_cores[(0, 0)].load_system_mc_routes(
-            placements, extra_monitor_cores, transceiver)
+        FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
-    def set_router_wait1_timeout(self, timeout, transceiver, placements):
+    def set_router_wait1_timeout(self, timeout):
         """ Set the wait1 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
-        core_subsets = convert_vertices_to_core_subset([self], placements)
+        core_subsets = convert_vertices_to_core_subset([self])
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def set_router_wait2_timeout(self, timeout, transceiver, placements):
+    def set_router_wait2_timeout(self, timeout):
         """ Set the wait2 field for a set of routers.
 
         :param tuple(int,int) timeout:
-        :param ~spinnman.transceiver.Transceiver transceiver:
-        :param ~pacman.model.placements.Placements placements:
         """
         mantissa, exponent = timeout
-        core_subsets = convert_vertices_to_core_subset([self], placements)
+        core_subsets = convert_vertices_to_core_subset([self])
         process = SetRouterTimeoutProcess(
-            transceiver.scamp_connection_selector)
+            FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def clear_reinjection_queue(self, transceiver, placements):
+    def clear_reinjection_queue(self):
         """ Clears the queues for reinjection.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         :param ~pacman.model.placements.Placements placements:
             the placements object
         """
-        core_subsets = convert_vertices_to_core_subset([self], placements)
-        process = ClearQueueProcess(transceiver.scamp_connection_selector)
+        core_subsets = convert_vertices_to_core_subset([self])
+        process = ClearQueueProcess(
+            FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
-                transceiver, self._app_id, self,
-                placements.get_placement_of_vertex(self))
+                self, FecDataView.get_placement_of_vertex(self))
             raise
 
-    def unset_cores_for_data_streaming(
-            self, transceiver, extra_monitor_cores, placements):
+    def unset_cores_for_data_streaming(self):
         """ Helper method for restoring the router timeouts to normal after\
             being in a state usable for data streaming.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param extra_monitor_cores:
-            the extra monitor cores to set
-        :type extra_monitor_cores:
-            dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
-        :param ~pacman.model.placements.Placements placements:
-            placements object
         """
         # Set the routers to temporary values
-        self.set_router_wait1_timeout(
-            self._TEMP_TIMEOUT, transceiver, placements)
-        self.set_router_wait2_timeout(
-            self._ZERO_TIMEOUT, transceiver, placements)
+        self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
+        self.set_router_wait2_timeout(self._ZERO_TIMEOUT)
 
         if self._last_status is None:
             log.warning(
@@ -1071,15 +961,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 " unset")
         try:
             self.set_router_wait1_timeout(
-                self._last_status.router_wait1_timeout_parameters,
-                transceiver, placements)
+                self._last_status.router_wait1_timeout_parameters)
             self.set_router_wait2_timeout(
-                self._last_status.router_wait2_timeout_parameters,
-                transceiver, placements)
+                self._last_status.router_wait2_timeout_parameters)
 
-            lead_monitor = extra_monitor_cores[(0, 0)]
+            lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
             lead_monitor.set_reinjection_packets(
-                placements, extra_monitor_cores, transceiver,
                 point_to_point=self._last_status.is_reinjecting_point_to_point,
                 multicast=self._last_status.is_reinjecting_multicast,
                 nearest_neighbour=(
@@ -1089,8 +976,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.exception("Error resetting timeouts")
             log.error("Checking if the cores are OK...")
             core_subsets = convert_vertices_to_core_subset(
-                extra_monitor_cores.values(), placements)
+                FecDataView.iterate_monitors())
             try:
+                transceiver = FecDataView.get_transceiver()
                 error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
                 if error_cores:
@@ -1121,7 +1009,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def get_data(
             self, extra_monitor, placement, memory_address,
-            length_in_bytes, fixed_routes):
+            length_in_bytes):
         """ Gets data from a given core and memory address.
 
         :param ExtraMonitorSupportMachineVertex extra_monitor:
@@ -1130,9 +1018,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             placement object for where to get data from
         :param int memory_address: the address in SDRAM to start reading from
         :param int length_in_bytes: the length of data to read in bytes
-        :param fixed_routes: the fixed routes, used in the report of which
-            chips were used by the speed up process
-        :type fixed_routes: dict(tuple(int,int),~spinn_machine.FixedRouteEntry)
         :return: byte array of the data
         :rtype: bytearray
         """
@@ -1149,7 +1034,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self._run, "No Extraction time", end - start)
             return data
 
-        transceiver = get_simulator().transceiver
+        transceiver = FecDataView.get_transceiver()
 
         # Update the IP Tag to work through a NAT firewall
         connection = SCAMPConnection(
@@ -1201,8 +1086,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
             routers_been_in_use = self._determine_which_routers_were_used(
-                placement, fixed_routes,
-                transceiver.get_machine_details())
+                placement)
             self._write_routers_used_into_report(
                 self._out_report_path, routers_been_in_use,
                 placement)
@@ -1253,25 +1137,23 @@ class DataSpeedUpPacketGatherMachineVertex(
         return lost_seq_nums
 
     @staticmethod
-    def _determine_which_routers_were_used(placement, fixed_routes, machine):
+    def _determine_which_routers_were_used(placement):
         """ Traverse the fixed route paths from a given location to its\
             destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
-        :param dict(tuple(int,int),~.MulticastRoutingEntry) fixed_routes:
-            the fixed routes for each router
-        :param ~.Machine machine: the spinnMachine instance
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
         routers = [(placement.x, placement.y)]
+        fixed_routes = FecDataView.get_fixed_routes()
         entry = fixed_routes[placement.x, placement.y]
         chip_x = placement.x
         chip_y = placement.y
         while len(entry.processor_ids) == 0:
             # can assume one link, as its a minimum spanning tree going to
             # the root
-            machine_link = machine.get_chip_at(
+            machine_link = FecDataView.get_chip_at(
                 chip_x, chip_y).router.get_link(next(iter(entry.link_ids)))
             chip_x = machine_link.destination_x
             chip_y = machine_link.destination_y
@@ -1293,7 +1175,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if os.path.isfile(report_path):
             writer_behaviour = "a"
 
-        with open(report_path, writer_behaviour) as writer:
+        with open(report_path, writer_behaviour, encoding="utf-8") as writer:
             writer.write("[{}:{}:{}] = {}\n".format(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 
@@ -1321,8 +1203,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: whether all packets are transmitted
         :rtype: bool
         """
-        # pylint: disable=too-many-locals
-
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
 
@@ -1592,8 +1472,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesProvenanceDataFromMachine
                .get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, transceiver, placement):
+    def get_provenance_data_from_machine(self, placement):
         # Get the App Data for the core
+        transceiver = FecDataView.get_transceiver()
         region_table_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 

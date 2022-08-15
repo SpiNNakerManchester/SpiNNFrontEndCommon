@@ -14,13 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .dpri_flags import DPRIFlags
-from .executable_finder import ExecutableFinder
 from .executable_type import ExecutableType
 from .live_packet_gather_parameters import LivePacketGatherParameters
 from .power_used import PowerUsed
 from .reinjection_status import ReInjectionStatus
 
 __all__ = [
-    "DPRIFlags", "ExecutableFinder",
-    "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
+    "DPRIFlags", "ExecutableType", "LivePacketGatherParameters", "PowerUsed",
     "ReInjectionStatus"]

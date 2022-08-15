@@ -15,6 +15,7 @@
 
 import unittest
 from spinn_machine.virtual_machine import virtual_machine
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
@@ -25,9 +26,9 @@ class TestDataSpecificationTargets(unittest.TestCase):
         unittest_setup()
 
     def test_dict(self):
-        machine = virtual_machine(2, 2)
+        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         check = dict()
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
         foo = bytearray(b"foo")
         with db.create_data_spec(0, 0, 0) as writer:
             writer.write(foo)

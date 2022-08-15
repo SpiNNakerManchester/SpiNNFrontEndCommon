@@ -18,7 +18,7 @@ import os
 import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -60,7 +60,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         if database_file is None and not memory:
             database_file = os.path.join(
-                globals_variables.provenance_file_path(), PROVENANCE_DB)
+                FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
         self._database_file = database_file
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
 
@@ -94,13 +94,12 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, n_run, n_loop):
+    def insert_category_timing(self, category, timedelta, n_loop):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithms run
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param int n_run: The end user run number
         :param n_loop: The run loop within the ned user run
         :type n_loop: int or None
         """
@@ -115,17 +114,16 @@ class ProvenanceWriter(SQLiteDB):
                     category, the_value, n_run, n_loop)
                 VALUES(?, ?, ?, ?)
                 """,
-                [category, the_value, n_run, n_loop])
+                [category, the_value, FecDataView.get_run_number(), n_loop])
 
     def insert_timing(
-            self, category, algorithm, the_value, n_run, n_loop, skip_reason):
+            self, category, algorithm, the_value, n_loop, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithm
         :param str algorithm: Algorithm name
         :param int the_value: Runtime
-        :param int n_run: The end user run number
         :param n_loop: The run loop within the ned user run
         :type n_loop: int or None
         :param skip_reason: The reason the algorthm was skipped or None if
@@ -139,7 +137,8 @@ class ProvenanceWriter(SQLiteDB):
                     category, algorithm, the_value, n_run, n_loop, skip_reason)
                 VALUES(?, ?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, the_value, n_run, n_loop, skip_reason])
+                [category, algorithm, the_value, FecDataView.get_run_number(),
+                 n_loop, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """
@@ -160,7 +159,7 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, [category, description, the_value])
 
-    def insert_gatherer(self, x, y, address, bytes, run, description,
+    def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
         """
         Records provenance into the gatherer_provenance
@@ -168,7 +167,7 @@ class ProvenanceWriter(SQLiteDB):
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
         :param int address: sdram address read from
-        :param int bytes: number of bytes read
+        :param int bytes_read: number of bytes read
         :param int run: run number
         :param str description: type of value
         :param float the_value: data
@@ -179,7 +178,7 @@ class ProvenanceWriter(SQLiteDB):
                 INSERT INTO gatherer_provenance(
                     x, y, address, bytes, run, description, the_value)
                 VALUES(?, ?, ?, ?, ?, ?, ?)
-                """, [x, y, address, bytes, run, description, the_value])
+                """, [x, y, address, bytes_read, run, description, the_value])
 
     def insert_monitor(self, x, y, description, the_value):
         """

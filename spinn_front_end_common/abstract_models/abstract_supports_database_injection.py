@@ -32,3 +32,10 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
 
         :rtype: bool
         """
+
+    @abstractproperty
+    def injection_partition_id(self):
+        """ The partition that packets are being injected with
+
+        :rtype: str
+        """

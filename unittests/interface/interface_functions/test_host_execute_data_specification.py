@@ -17,13 +17,14 @@ import struct
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
-from spinn_machine.virtual_machine import virtual_machine
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
+from pacman.model.placements import Placements
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -32,7 +33,7 @@ from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -64,10 +65,14 @@ class _MockTransceiver(object):
     @overrides(Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False, get_sum=False):
         if isinstance(data, int):
             data = struct.pack("<I", data)
         self._regions_written.append((base_address, data))
+
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
 
 
 class TestHostExecuteDataSpecification(unittest.TestCase):
@@ -77,10 +82,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         set_config("Machine", "enable_advanced_monitor_support", "False")
 
     def test_call(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
         with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
@@ -100,14 +107,16 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        execute_application_data_specs(
-            transceiver, machine, 30, db, targets)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
+
+        execute_application_data_specs()
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
         # The space between regions should be as allocated regardless of
         # how much data is written
-        header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
+        header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
         regions = transceiver._regions_written
         self.assertEqual(len(regions), 4)
 
@@ -136,15 +145,19 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions[0][1]), 4)
 
         _, memory_used, memory_written = db.get_write_info(0, 0, 0)
-        self.assertEqual(memory_used, 436)
-        self.assertEqual(memory_written, 152)
+        # We reserved 3 regions at 100 each
+        self.assertEqual(memory_used, header_and_table_size + 300)
+        # We wrote 4 words
+        self.assertEqual(memory_written, header_and_table_size + 16)
 
     def test_multi_spec_with_references(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
 
         with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -176,15 +189,17 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
-        execute_application_data_specs(
-            transceiver, machine, 30, db, targets)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
+
+        execute_application_data_specs()
 
         # User 0 for each spec (3) + header and table for each spec (3)
         # + 1 actual region (as rest are references)
         regions = transceiver.regions_written
         self.assertEqual(len(regions), 7)
 
-        header_and_table_size = (MAX_MEM_REGIONS + 2) * BYTES_PER_WORD
+        header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
 
         _, memory_used, memory_written = db.get_write_info(0, 0, 0)
         self.assertEqual(memory_used, header_and_table_size)
@@ -210,19 +225,21 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         for base_addr, data in regions:
             for core, addr in base_addresses.items():
                 if base_addr == addr:
-                    header_data[core] = struct.unpack("<34I", data)
+                    header_data[core] = struct.unpack("<98I", data)
 
         # Check the references - core 0 and 2 pointer 0 (position 2 because
         # of header) should be equal to core 1
-        self.assertEqual(header_data[0][2], header_data[1][2])
-        self.assertEqual(header_data[2][2], header_data[1][2])
+        self.assertEqual(header_data[0][2 * 3], header_data[1][2 * 3])
+        self.assertEqual(header_data[2][2 * 3], header_data[1][2 * 3])
 
     def test_multispec_with_reference_error(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
 
         with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -245,18 +262,21 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because one of the regions can't be found
         with self.assertRaises(ValueError):
-            execute_application_data_specs(
-                transceiver, machine, 30, db, targets)
+            execute_application_data_specs()
 
     def test_multispec_with_double_reference(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
 
         with db.create_data_spec(0, 0, 1) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -271,18 +291,21 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         targets = ExecutableTargets()
         targets.add_processor(
             "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because regions have same reference
         with self.assertRaises(ValueError):
-            execute_application_data_specs(
-                transceiver, machine, 30, db, targets)
+            execute_application_data_specs()
 
     def test_multispec_with_wrong_chip_reference(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
 
         with db.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -305,18 +328,21 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            execute_application_data_specs(
-                transceiver, machine, 30, db, targets)
+            execute_application_data_specs()
 
     def test_multispec_with_wrong_chip_reference_on_close(self):
+        writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000})
-        machine = virtual_machine(2, 2)
+        writer.set_transceiver(transceiver)
+        writer.set_placements(Placements([]))
 
-        db = DsSqlliteDatabase(machine)
+        db = DsSqlliteDatabase()
 
         with db.create_data_spec(1, 1, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
@@ -339,11 +365,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
         targets.add_processor(
             "text.aplx", 1, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        writer.set_executable_targets(targets)
+        writer.set_dsg_targets(db)
 
         # ValueError because the reference is on a different chip
         with self.assertRaises(ValueError):
-            execute_application_data_specs(
-                transceiver, machine, 30, db, targets)
+            execute_application_data_specs()
 
 
 if __name__ == "__main__":

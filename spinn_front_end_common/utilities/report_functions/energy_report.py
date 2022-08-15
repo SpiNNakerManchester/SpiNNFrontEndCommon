@@ -18,18 +18,15 @@ import logging
 import os
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     APPLICATION_RUNNER, LOADING, ProvenanceReader)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.globals_variables import (
-    report_default_directory)
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (JOULES_PER_SPIKE, MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
             MILLIWATTS_PER_FRAME_ACTIVE_COST, MILLIWATTS_PER_FPGA,
             MILLIWATTS_PER_IDLE_CHIP)
-from spinn_front_end_common.utilities.globals_variables import (
-    time_scale_factor)
 from spinn_machine.machine import Machine
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -49,51 +46,42 @@ class EnergyReport(object):
     _DETAILED_FILENAME = "detailed_energy_report.rpt"
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
-    def write_energy_report(
-            self, placements, machine, runtime, buffer_manager, power_used):
+    def write_energy_report(self, power_used):
         """ Writes the report.
 
-        :param ~pacman.model.placements.Placements placements: the placements
         :param ~spinn_machine.Machine machine: the machine
-        :param int runtime:
-        :param BufferManager buffer_manager:
         :param PowerUsed power_used:
         :rtype: None
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-        if buffer_manager is None:
-            logger.info("Skipping Energy report as no buffer_manager set")
-            return
+        report_dir = FecDataView.get_run_dir_path()
 
-        report_dir = report_default_directory()
         # detailed report path
         detailed_report = os.path.join(report_dir, self._DETAILED_FILENAME)
 
         # summary report path
         summary_report = os.path.join(report_dir, self._SUMMARY_FILENAME)
 
-        # figure runtime in milliseconds with time scale factor
-        runtime_total_ms = runtime * time_scale_factor()
-
         # create detailed report
-        with open(detailed_report, "w") as f:
-            self._write_detailed_report(
-                placements, machine, power_used, f, runtime_total_ms)
+        with open(detailed_report, "w", encoding="utf-8") as f:
+            self._write_detailed_report(power_used, f)
 
         # create summary report
-        with open(summary_report, "w") as f:
-            self._write_summary_report(runtime_total_ms, f, power_used)
+        with open(summary_report, "w", encoding="utf-8") as f:
+            self._write_summary_report(f, power_used)
 
     @classmethod
-    def _write_summary_report(cls, runtime_total_ms, f, power_used):
+    def _write_summary_report(cls, f, power_used):
         """ Write summary file
 
-        :param int runtime_total_ms:
-            Runtime with time scale factor taken into account
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
         # pylint: disable=too-many-arguments, too-many-locals
+
+        # figure runtime in milliseconds with time scale factor
+        runtime_total_ms = (
+                FecDataView.get_current_run_time_ms() *
+                FecDataView.get_time_scale_factor())
 
         # write summary data
         f.write("Summary energy file\n-------------------\n\n")
@@ -157,18 +145,15 @@ class EnergyReport(object):
         else:
             return "(over {} seconds)".format(time)
 
-    def _write_detailed_report(
-            self, placements, machine, power_used, f, runtime_total_ms):
+    def _write_detailed_report(self, power_used, f):
         """ Write detailed report and calculate costs
 
-        :param ~.Placements placements: placements
-        :param ~.Machine machine: machine representation
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
-        :param float runtime_total_ms:
-            total runtime with time scale factor taken into account
         """
-        # pylint: disable=too-many-arguments, too-many-locals
+        runtime_total_ms = (
+                FecDataView.get_current_run_time_ms() *
+                FecDataView.get_time_scale_factor())
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -188,7 +173,7 @@ class EnergyReport(object):
 
         # sort what to report by chip
         active_chips = defaultdict(dict)
-        for placement in placements:
+        for placement in FecDataView.iterate_placemements():
             vertex = placement.vertex
             if not isinstance(vertex, ChipPowerMonitorMachineVertex):
                 labels = active_chips[placement.x, placement.y]
@@ -232,18 +217,17 @@ class EnergyReport(object):
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
         """
-
         version = get_config_int("Machine", "version")
         # if not spalloc, then could be any type of board
         if (not get_config_str("Machine", "spalloc_server") and
                 not get_config_str("Machine", "remote_spinnaker_url")):
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if int(version) in (2, 3):
+            if version in (2, 3):
                 f.write(
-                    f"A SpiNN-{version} board does not contain any FPGA's,"
-                    f" and so its energy cost is 0 \n")
+                    f"A SpiNN-{version} board does not contain any FPGA's, "
+                    f"and so its energy cost is 0 \n")
                 return
-            elif int(version) not in (4, 5):
+            elif version not in (4, 5):
                 # no idea where we are; version unrecognised
                 raise ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "

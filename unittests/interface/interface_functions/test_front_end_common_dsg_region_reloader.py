@@ -19,15 +19,15 @@ from spinn_utilities.overrides import overrides
 from spinn_machine import SDRAM
 from pacman.model.placements import Placements, Placement
 from data_specification.constants import MAX_MEM_REGIONS
-from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.config_setup import unittest_setup
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     dsg_region_reloader)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_front_end_common.utilities.helpful_functions import n_word_struct
+from spinn_front_end_common.utilities.helpful_functions import (
+    get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
 from spinnman.model import CPUInfo
@@ -81,7 +81,7 @@ class _MockCPUInfo(object):
         return [self._user_0]
 
 
-class _MockTransceiver(object):
+class _MockTransceiver(Transceiver):
     """ Pretend transceiver
     """
     # pylint: disable=unused-argument
@@ -99,14 +99,19 @@ class _MockTransceiver(object):
 
     @overrides(Transceiver.read_memory)
     def read_memory(self, x, y, base_address, length, cpu=0):
-        addresses = [i + base_address for i in range(MAX_MEM_REGIONS)]
-        return n_word_struct(MAX_MEM_REGIONS).pack(*addresses)
+        addresses = [(i + base_address, 0, 0) for i in range(MAX_MEM_REGIONS)]
+        addresses = [j for lst in addresses for j in lst]
+        return n_word_struct(MAX_MEM_REGIONS * 3).pack(*addresses)
 
     @overrides(Transceiver.write_memory)
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):
+            cpu=0, is_filename=False, get_sum=False):
         self._regions_rewritten.append((base_address, data))
+
+    @overrides(Transceiver.close)
+    def close(self):
+        pass
 
 
 class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
@@ -118,6 +123,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         """ Test that an application vertex's data is rewritten correctly
         """
         # Create a default SDRAM to set the max to default
+        writer = FecDataWriter.mock()
         SDRAM()
         m_vertex_1 = _TestMachineVertex()
         m_vertex_2 = _TestMachineVertex()
@@ -132,8 +138,10 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             for i, placement in enumerate(placements.placements)
         }
         transceiver = _MockTransceiver(user_0_addresses)
-
-        dsg_region_reloader(transceiver, placements, "localhost")
+        writer.set_transceiver(transceiver)
+        writer.set_placements(placements)
+        writer.set_ipaddress("localhost")
+        dsg_region_reloader()
 
         regions_rewritten = transceiver._regions_rewritten
 

@@ -18,17 +18,17 @@ import os
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.json_machine import to_json
 from pacman.utilities import file_format_schemas
+from spinn_front_end_common.data import FecDataView
 
 MACHINE_FILENAME = "machine.json"
 
 
-def write_json_machine(machine, json_folder, progress_bar):
+def write_json_machine(json_folder=None, progress_bar=True):
     """ Runs the code to write the machine in Java readable JSON.
 
     .. warning::
          The file in this folder will be overwritten!
 
-    :param ~spinn_machine.Machine machine: Machine to convert
     :param str json_folder: the folder to which the JSON are being written
     :param bool progress_bar: Flag if Progress Bar should be shown
     :return: the name of the generated file
@@ -40,10 +40,11 @@ def write_json_machine(machine, json_folder, progress_bar):
         progress = ProgressBar(3, "Converting to JSON machine")
     else:
         progress = None
-
+    if json_folder is None:
+        json_folder = FecDataView.get_json_dir_path()
     file_path = os.path.join(json_folder, MACHINE_FILENAME)
     if not os.path.exists(file_path):
-        json_obj = to_json(machine)
+        json_obj = to_json()
 
         if progress:
             progress.update()
@@ -56,7 +57,7 @@ def write_json_machine(machine, json_folder, progress_bar):
             progress.end()
 
         # dump to json file
-        with open(file_path, "w") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(json_obj, f)
 
     if progress:

@@ -17,9 +17,9 @@ import os
 import sys
 import time
 from datetime import timedelta
-# pylint: disable=no-name-in-module
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
 
@@ -52,6 +52,7 @@ else:
 
 _simulator = None
 _provenance_path = None
+_print_timings = False
 
 
 class FecTimer(object):
@@ -70,11 +71,12 @@ class FecTimer(object):
 
     @classmethod
     def setup(cls, simulator):
+        # pylint: disable=global-statement, protected-access
         global _simulator, _provenance_path, _print_timings
         _simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
             _provenance_path = os.path.join(
-                simulator._report_default_directory,
+                FecDataView.get_run_dir_path(),
                 "algorithm_timings.rpt")
         else:
             _provenance_path = None
@@ -92,8 +94,8 @@ class FecTimer(object):
 
     def _report(self, message):
         if _provenance_path is not None:
-            with open(_provenance_path, "a") as provenance_file:
-                provenance_file.write(f"{message}\n")
+            with open(_provenance_path, "a", encoding="utf-8") as p_file:
+                p_file.write(f"{message}\n")
         if _print_timings:
             logger.info(message)
 
@@ -103,7 +105,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -114,8 +116,8 @@ class FecTimer(object):
             return True
 
     def skip_if_virtual_board(self):
-        if _simulator.use_virtual_board:
-            self.skip("simulator.use_virtual_board")
+        if get_config_bool("Machine", "virtual_board"):
+            self.skip("virtual_board")
             return True
         else:
             return False
@@ -153,7 +155,7 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, reason)
+                _simulator.n_loops, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -167,19 +169,19 @@ class FecTimer(object):
         self._start_time = None
         return _convert_to_timedelta(diff)
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback):
         if self._start_time is None:
             return False
         time_taken = self._stop_timer()
-        if type is None:
+        if exc_type is None:
             message = f"{self._algorithm} took {time_taken} "
             skip = None
         else:
             try:
-                message = f"{self._algorithm} exited with {type.__name__} " \
-                          f"after {time_taken}"
-                skip = type.__name__
-            except Exception as ex:
+                message = (f"{self._algorithm} exited with "
+                           f"{exc_type.__name__} after {time_taken}")
+                skip = exc_type.__name__
+            except Exception as ex:  # pylint: disable=broad-except
                 message = f"{self._algorithm} exited with an exception" \
                           f"after {time_taken}"
                 skip = f"Exception {ex}"
@@ -187,6 +189,6 @@ class FecTimer(object):
         with ProvenanceWriter() as db:
             db.insert_timing(
                 self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_calls_to_run, _simulator.n_loops, skip)
+                _simulator.n_loops, skip)
         self._report(message)
         return False

@@ -15,24 +15,24 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
+from pacman.data import PacmanDataView
 from pacman.model.partitioner_splitters import (
-    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterSliceLegacy)
+    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource, LivePacketGather, ChipPowerMonitor)
+    ReverseIpTagMultiCastSource, ChipPowerMonitor)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def splitter_selector(app_graph):
+def splitter_selector():
     """ basic selector which puts the legacy splitter object on\
         everything without a splitter object
 
-    :param ApplicationGraph app_graph: app graph
     :rtype: None
     """
-    for app_vertex in app_graph.vertices:
+    for app_vertex in PacmanDataView.iterate_vertices():
         if app_vertex.splitter is None:
             vertex_selector(app_vertex)
 
@@ -50,14 +50,12 @@ def vertex_selector(app_vertex):
     if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
         app_vertex.splitter = SplitterOneAppOneMachine()
     elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
-        app_vertex.splitter = SplitterSliceLegacy()
-    elif isinstance(app_vertex, LivePacketGather):
-        app_vertex.splitter = SplitterOneToOneLegacy()
+        app_vertex.splitter = SplitterFixedLegacy()
     elif isinstance(app_vertex, ChipPowerMonitor):
         app_vertex.splitter = SplitterOneToOneLegacy()
     else:
         logger.warning(
             f"The SplitterSelector has not seen the {app_vertex} vertex "
             f"before. Therefore there is no known splitter to allocate to "
-            f"this app vertex and so will use the SplitterSliceLegacy.")
-        app_vertex.splitter = SplitterSliceLegacy()
+            f"this app vertex and so will use the SplitterFixedLegacy.")
+        app_vertex.splitter = SplitterFixedLegacy()

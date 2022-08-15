@@ -18,33 +18,23 @@ class StreamingContextManager(object):
     """ The implementation of the context manager object for streaming \
         configuration control.
     """
-    __slots__ = ["_gatherers", "_monitors", "_placements", "_txrx"]
+    __slots__ = ["_gatherers"]
 
-    def __init__(self, gatherers, txrx, monitors, placements):
+    def __init__(self, gatherers):
         """
         :param iterable(DataSpeedUpPacketGatherMachineVertex) gatherers:
-        :param ~spinnman.transceiver.Transceiver txrx:
-        :param dict(tuple(int,int),ExtraMonitorSupportMachineVertex)) monitors:
-        :param ~pacman.model.placements.Placements placements:
         """
         self._gatherers = list(gatherers)
-        self._txrx = txrx
-        self._monitors = monitors
-        self._placements = placements
 
     def __enter__(self):
         for gatherer in self._gatherers:
-            gatherer.load_system_routing_tables(
-                self._txrx, self._monitors, self._placements)
+            gatherer.load_system_routing_tables()
         for gatherer in self._gatherers:
-            gatherer.set_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+            gatherer.set_cores_for_data_streaming()
 
     def __exit__(self, _type, _value, _tb):
         for gatherer in self._gatherers:
-            gatherer.unset_cores_for_data_streaming(
-                self._txrx, self._monitors, self._placements)
+            gatherer.unset_cores_for_data_streaming()
         for gatherer in self._gatherers:
-            gatherer.load_application_routing_tables(
-                self._txrx, self._monitors, self._placements)
+            gatherer.load_application_routing_tables()
         return False

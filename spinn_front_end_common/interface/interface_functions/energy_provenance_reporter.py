@@ -33,13 +33,11 @@ _BASIC_PROPERTIES = (
 _PROV_KEY = "power_provenance"
 
 
-def energy_provenance_reporter(power_used, placements):
+def energy_provenance_reporter(power_used):
     """ Converts the power usage information into provenance data.
 
     :param PowerUsed power_used:
         The computed basic power consumption information
-    :param ~pacman.model.placements.Placements placements:
-        Used for describing what a core was actually doing
     """
     with ProvenanceWriter() as db:
         for prop in _BASIC_PROPERTIES:
@@ -61,20 +59,6 @@ def __prop_name(name):
     name = name.capitalize()
     name = re.sub(r"_time_secs$", r" time (seconds)", name)
     return re.sub(r"(_energy)?_joules", r" energy (Joules)", name)
-
-
-def __core_name(placements, x, y, p):
-    """
-    :param ~.Placements placements:
-    :rtype: str
-    """
-    if p == 0:
-        # SCAMP always runs on virtual core zero, by definition
-        return "SCAMP(OS)@{},{},{} energy (Joules)".format(x, y, p)
-    if placements.is_processor_occupied(x, y, p):
-        vtx = placements.get_vertex_on_processor(x, y, p)
-        return "{} energy (Joules)".format(vtx.label)
-    return "core@{},{},{} energy (Joules)".format(x, y, p)
 
 
 def __router_name(x, y):

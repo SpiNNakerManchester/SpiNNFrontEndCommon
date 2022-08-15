@@ -27,6 +27,10 @@ typedef struct key_atom_pair_t {
     uint32_t key;
     //! Number of atoms for the key.
     uint32_t n_atoms;
+    //! Core shift
+    uint32_t core_shift: 5;
+    //! Number of atoms per core
+    uint32_t n_atoms_per_core: 27;
 } key_atom_pair_t;
 
 //! \brief A mapping from multicast keys to sections of a contiguous range of

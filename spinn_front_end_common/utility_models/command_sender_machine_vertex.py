@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,15 +15,14 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
-from pacman.model.resources import ConstantSDRAM, ResourceContainer
+from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from spinn_front_end_common.abstract_models import (
-    AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
-    AbstractGeneratesDataSpecification)
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
@@ -37,8 +36,7 @@ from spinn_front_end_common.utilities.utility_objs import (
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification):
     """ Machine vertex for injecting packets at particular times or in \
         response to particular events into a SpiNNaker application.
     """
@@ -90,7 +88,6 @@ class CommandSenderMachineVertex(
         self._timed_commands = list()
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
-        self._partition_id_to_keys = dict()
         self._keys_to_partition_id = dict()
         self._edge_partition_id_counter = 0
         self._vertex_to_key_map = dict()
@@ -129,11 +126,15 @@ class CommandSenderMachineVertex(
 
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
-
-            partition_id = "COMMANDS{}".format(self._edge_partition_id_counter)
-            self._keys_to_partition_id[key] = partition_id
-            self._partition_id_to_keys[partition_id] = key
-            self._edge_partition_id_counter += 1
+            if key not in self._keys_to_partition_id:
+                partition_id = "COMMANDS{}".format(
+                    self._edge_partition_id_counter)
+                self._keys_to_partition_id[key] = partition_id
+                self._edge_partition_id_counter += 1
+                self.app_vertex.add_constraint(
+                    FixedKeyAndMaskConstraint(
+                        [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)],
+                        partition=partition_id))
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -146,8 +147,8 @@ class CommandSenderMachineVertex(
         return 1
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
+    @overrides(MachineVertex.sdram_required)
+    def sdram_required(self):
         sdram = (
             self.get_timed_commands_bytes() +
             self.get_n_command_bytes(self._commands_at_start_resume) +
@@ -156,19 +157,16 @@ class CommandSenderMachineVertex(
             self.get_provenance_data_size(self._n_additional_data_items))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=ConstantSDRAM(sdram))
+        return ConstantSDRAM(sdram)
 
-    @inject_items({"routing_infos": "RoutingInfos"})
     @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"routing_infos"})
-    def generate_data_specification(
-            self, spec, placement, routing_infos):
+        AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         """
         :param ~pacman.model.routing_info.RoutingInfo routing_infos:
             the routing infos
         """
-        # pylint: disable=too-many-arguments, arguments-differ
+        routing_infos = FecDataView.get_routing_infos()
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
                 self, self._keys_to_partition_id[mc_key])
@@ -315,15 +313,7 @@ class CommandSenderMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        return [FixedKeyAndMaskConstraint([
-            BaseKeyAndMask(
-                self._partition_id_to_keys[partition.identifier],
-                self._DEFAULT_COMMAND_MASK)])]
-
-    def _get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
+    def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
         """ Construct edges from this vertex to the vertices that this vertex\
             knows how to target (and has keys allocated for).
 
@@ -360,7 +350,7 @@ class CommandSenderMachineVertex(
         :rtype:
             tuple(list(~pacman.model.graphs.machine.MachineEdge), list(str))
         """
-        return self._get_edges_and_partitions(self, MachineVertex, MachineEdge)
+        return self.get_edges_and_partitions(self, MachineVertex, MachineEdge)
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                parse_extra_provenance_items)

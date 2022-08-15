@@ -19,6 +19,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import (
@@ -28,22 +29,17 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 _ONE_WORD = struct.Struct("<I")
 
 
-def application_finisher(app_id, txrx, executable_types):
+def application_finisher():
     """ Handles finishing the running of an application, collecting the\
         status of the cores that the application was running on.
 
-    :param int app_id:
-    :param ~spinnman.transceiver.Transceiver txrx:
-    :param executable_types:
-    :type executable_types:
-        dict(ExecutableType,~spinn_machine.CoreSubsets)
     :raises ExecutableFailedToStopException:
     """
-
-    total_processors = \
-        len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
-    all_core_subsets = \
-        executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
+    app_id = FecDataView.get_app_id()
+    txrx = FecDataView.get_transceiver()
+    all_core_subsets = FecDataView.get_executable_types()[
+        ExecutableType.USES_SIMULATION_INTERFACE]
+    total_processors = len(all_core_subsets)
 
     progress = ProgressBar(
         total_processors,

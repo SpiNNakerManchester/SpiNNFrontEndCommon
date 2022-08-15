@@ -25,10 +25,16 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinn_front_end_common.abstract_models.impl import (
     MachineAllocationController)
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
+
+#: The number of chips per board to use in calculations to ensure that
+#: the number of boards allocated is enough.  This is 2 less than the maximum
+#: as there are a few boards with 2 down chips in the big machine.
+CALC_CHIPS_PER_BOARD = Machine.MAX_CHIPS_PER_48_BOARD - 2
 
 
 class _SpallocJobController(MachineAllocationController):
@@ -105,28 +111,29 @@ class _SpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(n_chips=None, n_boards=None):
+def spalloc_allocator():
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips.
 
-    :param n_chips: The number of chips required.
-        IGNORED if n_boards is not None
-    :type n_chips: int or None
-    :param int n_boards: The number of boards required
-    :type n_boards: int or None
     :rtype: tuple(str, int, None, bool, bool, None, None,
         MachineAllocationController)
     """
 
     # Work out how many boards are needed
-    if n_boards is None:
-        n_boards = float(n_chips) / Machine.MAX_CHIPS_PER_48_BOARD
-        # If the number of boards rounded up is less than 10% of a board
+
+    if FecDataView.has_n_boards_required():
+        n_boards = FecDataView.get_n_boards_required()
+    else:
+        n_chips = FecDataView.get_n_chips_needed()
+        n_boards_float = float(n_chips) / CALC_CHIPS_PER_BOARD
+        logger.info("{:.2f} Boards Required for {} chips",
+                    n_boards_float, n_chips)
+        # If the number of boards rounded up is less than 50% of a board
         # bigger than the actual number of boards,
         # add another board just in case.
-        if math.ceil(n_boards) - n_boards < 0.1:
+        n_boards = int(math.ceil(n_boards_float))
+        if n_boards - n_boards_float < 0.5:
             n_boards += 1
-        n_boards = int(math.ceil(n_boards))
 
     spalloc_kw_args = {
         'hostname': get_config_str("Machine", "spalloc_server"),
