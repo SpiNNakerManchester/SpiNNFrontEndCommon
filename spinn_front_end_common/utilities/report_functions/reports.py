@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -374,72 +374,45 @@ def _write_one_chip_application_placement(f, chip):
     """
     written_header = False
     total_sdram = None
-    placements = FecDataView.get_placements()
-    for processor in chip.processors:
-        if placements.is_processor_occupied(
-                chip.x, chip.y, processor.processor_id):
-            if not written_header:
-                f.write("**** Chip: ({}, {})\n".format(chip.x, chip.y))
-                f.write("Application cores: {}\n".format(
-                    len(list(chip.processors))))
-                written_header = True
-            pro_id = processor.processor_id
-            vertex = placements.get_vertex_on_processor(
-                chip.x, chip.y, processor.processor_id)
-            app_vertex = vertex.app_vertex
-            if app_vertex is not None:
-                vertex_label = app_vertex.label
-                vertex_model = app_vertex.__class__.__name__
-                vertex_atoms = app_vertex.n_atoms
-                lo_atom = vertex.vertex_slice.lo_atom
-                hi_atom = vertex.vertex_slice.hi_atom
-                num_atoms = vertex.vertex_slice.n_atoms
-                f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
-                    pro_id, vertex_label, vertex_atoms))
-                f.write("              Slice on this core: {}:{} ({} atoms)\n"
-                        .format(lo_atom, hi_atom, num_atoms))
-                f.write("              Model: {}\n".format(vertex_model))
-            else:
-                f.write("  Processor {}: System Vertex: '{}'\n".format(
-                    pro_id, vertex.label))
-                f.write("              Model: {}\n".format(
-                    vertex.__class__.__name__))
+    for placement in FecDataView.iterate_placements_on_core(chip.x, chip.y):
+        if not written_header:
+            f.write("**** Chip: ({}, {})\n".format(chip.x, chip.y))
+            f.write("Application cores: {}\n".format(
+                len(list(chip.processors))))
+            written_header = True
+        pro_id = placement.p
+        vertex = placement.vertex
+        app_vertex = vertex.app_vertex
+        if app_vertex is not None:
+            vertex_label = app_vertex.label
+            vertex_model = app_vertex.__class__.__name__
+            vertex_atoms = app_vertex.n_atoms
+            lo_atom = vertex.vertex_slice.lo_atom
+            hi_atom = vertex.vertex_slice.hi_atom
+            num_atoms = vertex.vertex_slice.n_atoms
+            f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
+                pro_id, vertex_label, vertex_atoms))
+            f.write("              Slice on this core: {}:{} ({} atoms)\n"
+                    .format(lo_atom, hi_atom, num_atoms))
+            f.write("              Model: {}\n".format(vertex_model))
+        else:
+            f.write("  Processor {}: System Vertex: '{}'\n".format(
+                pro_id, vertex.label))
+            f.write("              Model: {}\n".format(
+                vertex.__class__.__name__))
 
-            sdram = vertex.resources_required.sdram
-            f.write("              SDRAM required: {}; {} per timestep\n\n"
-                    .format(sdram.fixed, sdram.per_timestep))
-            if total_sdram is None:
-                total_sdram = sdram
-            else:
-                total_sdram += sdram
+        sdram = vertex.sdram_required
+        f.write("              SDRAM required: {}; {} per timestep\n\n"
+                .format(sdram.fixed, sdram.per_timestep))
+        if total_sdram is None:
+            total_sdram = sdram
+        else:
+            total_sdram += sdram
 
     if total_sdram is not None:
         f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
                 .format(chip.sdram.size, total_sdram.fixed,
                         total_sdram.per_timestep))
-
-
-def _write_one_chip_machine_placement(f, c, placements):
-    """
-    :param ~io.FileIO f:
-    :param ~spinn_machine.Chip c:
-    :param Placements placements:
-    """
-    written_header = False
-    for pr in c.processors:
-        if placements.is_processor_occupied(c.x, c.y, pr.processor_id):
-            if not written_header:
-                f.write("**** Chip: ({}, {})\n".format(c.x, c.y))
-                f.write("Application cores: {}\n".format(
-                    len(list(c.processors))))
-                written_header = True
-            vertex = placements.get_vertex_on_processor(
-                c.x, c.y, pr.processor_id)
-            f.write("  Processor {}: Vertex: '{}' \n".format(
-                pr.processor_id, vertex.label))
-            f.write("              Model: {}\n\n".format(
-                vertex.__class__.__name__))
-            f.write("\n")
 
 
 def sdram_usage_report_per_chip():
@@ -487,7 +460,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     placements = sorted(
         FecDataView.iterate_placemements(), key=lambda x: x.vertex.label)
     for placement in progress.over(placements, False):
-        vertex_sdram = placement.vertex.resources_required.sdram
+        vertex_sdram = placement.vertex.sdram_required
         core_sdram = vertex_sdram.get_total_sdram(timesteps)
         x, y, p = placement.x, placement.y, placement.p
         if details:

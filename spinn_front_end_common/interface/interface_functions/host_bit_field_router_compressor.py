@@ -268,16 +268,11 @@ class _HostBasedBitFieldRouterCompressor(object):
         # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
-        placements = FecDataView.get_placements()
-        for p in range(0, Machine.max_cores_per_chip()):
-            if placements.is_processor_occupied(chip_x, chip_y, p):
-                vertex = placements.get_vertex_on_processor(
-                    chip_x, chip_y, p)
-
-                if isinstance(
-                        vertex, AbstractSupportsBitFieldRoutingCompression):
-                    base_addresses[p] = vertex.bit_field_base_address(
-                        FecDataView.get_placement_of_vertex(vertex))
+        for placement in FecDataView.iterate_placements_with_vertex_type(
+                chip_x, chip_y, AbstractSupportsBitFieldRoutingCompression):
+            vertex = placement.vertex
+            base_addresses[placement.p] = vertex.bit_field_base_address(
+                FecDataView.get_placement_of_vertex(vertex))
         return base_addresses
 
     def _run(
