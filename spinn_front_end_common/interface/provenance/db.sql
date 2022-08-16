@@ -245,4 +245,4 @@ CREATE VIEW IF NOT EXISTS p_log_view AS
         message
     FROM p_log_provenance left join log_level_names
     ON p_log_provenance.level = log_level_names.level
-    ORDER BY log_provenance.log_id;
+    ORDER BY p_log_provenance.log_id;
