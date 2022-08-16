@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import logging
 import os
 import re
@@ -318,21 +319,23 @@ class ProvenanceWriter(SQLiteDB):
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
 
-    def store_log(self, level, message):
+    def store_log(self, level, message, timestamp=None):
         """
         Stores log messages into the database
 
         :param int level:
         :param str message:
         """
+        if timestamp is None:
+            timestamp = datetime.now()
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO p_log_provenance(
-                    level, message)
-                VALUES(?, ?)
+                    timestamp, level, message)
+                VALUES(?, ?, ?)
                 """,
-                [level, message])
+                [timestamp, level, message])
 
     def _test_log_locked(self, text):
         """

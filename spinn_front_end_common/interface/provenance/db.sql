@@ -223,6 +223,7 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
 -- A table to store log.info
 CREATE TABLE IF NOT EXISTS p_log_provenance(
     log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TIMESTAMP NOT NULL,
     level INTEGER NOT NULL,
     message STRING NOT NULL);
 
@@ -241,6 +242,7 @@ VALUES
 
 CREATE VIEW IF NOT EXISTS p_log_view AS
     SELECT
+        timestamp,
 		name,
         message
     FROM p_log_provenance left join log_level_names

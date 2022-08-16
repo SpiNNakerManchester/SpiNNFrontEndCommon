@@ -23,10 +23,10 @@ from .provenance_reader import ProvenanceReader
 class LogStoreDB(LogStore):
 
     @overrides(LogStore.store_log)
-    def store_log(self, level, message):
+    def store_log(self, level, message, timestamp=None):
         try:
             with ProvenanceWriter() as db:
-                db.store_log(level, message)
+                db.store_log(level, message, timestamp)
         except sqlite3.OperationalError as ex:
             if "database is locked" in ex.args:
                 # Ok ignore this one
