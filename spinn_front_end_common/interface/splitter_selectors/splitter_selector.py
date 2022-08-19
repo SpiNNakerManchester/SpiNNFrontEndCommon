@@ -21,7 +21,7 @@ from pacman.model.partitioner_splitters import (
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource, ChipPowerMonitor)
+    ReverseIpTagMultiCastSource)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -51,8 +51,6 @@ def vertex_selector(app_vertex):
         app_vertex.splitter = SplitterOneAppOneMachine()
     elif isinstance(app_vertex, ReverseIpTagMultiCastSource):
         app_vertex.splitter = SplitterFixedLegacy()
-    elif isinstance(app_vertex, ChipPowerMonitor):
-        app_vertex.splitter = SplitterOneToOneLegacy()
     else:
         logger.warning(
             f"The SplitterSelector has not seen the {app_vertex} vertex "

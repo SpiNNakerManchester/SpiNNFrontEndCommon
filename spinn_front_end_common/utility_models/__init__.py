@@ -13,7 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .chip_power_monitor import ChipPowerMonitor
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 from .command_sender import CommandSender
 from .command_sender_machine_vertex import CommandSenderMachineVertex
@@ -31,7 +30,7 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
 from .streaming_context_manager import StreamingContextManager
 
 __all__ = ["CommandSender", "CommandSenderMachineVertex",
-           "ChipPowerMonitor", "ChipPowerMonitorMachineVertex",
+           "ChipPowerMonitorMachineVertex",
            "DataSpeedUpPacketGather", "DataSpeedUpPacketGatherMachineVertex",
            "ExtraMonitorSupportMachineVertex",
            "LivePacketGather", "LivePacketGatherMachineVertex",
