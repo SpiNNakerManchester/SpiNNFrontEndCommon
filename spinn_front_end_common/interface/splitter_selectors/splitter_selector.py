@@ -17,7 +17,7 @@ import logging
 from spinn_utilities.log import FormatAdapter
 from pacman.data import PacmanDataView
 from pacman.model.partitioner_splitters import (
-    SplitterOneAppOneMachine, SplitterOneToOneLegacy, SplitterFixedLegacy)
+    SplitterOneAppOneMachine, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from spinn_front_end_common.utility_models import (
