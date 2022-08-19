@@ -434,6 +434,7 @@
         <span class="c1"># write the broad cast keys for timeouts</span>
         <span class="n">router_timeout_key</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_system_multicast_router_timeout_keys</span><span class="p">())</span>
+        <span class="c1"># pylint: disable=unsubscriptable-object</span>
         <span class="n">reinjection_base_key</span> <span class="o">=</span> <span class="n">router_timeout_key</span><span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">reinjection_base_key</span><span class="p">)</span>
 
@@ -1187,6 +1188,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">)]</span>
         <span class="n">fixed_routes</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_fixed_routes</span><span class="p">()</span>
+        <span class="c1"># pylint: disable=unsubscriptable-object</span>
         <span class="n">entry</span> <span class="o">=</span> <span class="n">fixed_routes</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
         <span class="n">chip_x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>
         <span class="n">chip_y</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span>
