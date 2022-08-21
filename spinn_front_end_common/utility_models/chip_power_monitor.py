@@ -37,7 +37,7 @@ class ChipPowerMonitor(ApplicationVertex, LegacyPartitionerAPI):
         self._sampling_frequency = sampling_frequency
 
     @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return 1
 
