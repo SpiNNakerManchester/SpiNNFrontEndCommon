@@ -17,7 +17,7 @@ from spinn_machine.tags.iptag import IPTag
 from pacman.model.graphs.application import (
     ApplicationVertex, ApplicationEdge)
 from pacman.model.graphs.machine import SimpleMachineVertex
-from pacman.model.resources import ResourceContainer
+from pacman.model.resources import ConstantSDRAM
 from pacman.model.placements import Placements, Placement
 from pacman.model.routing_info import (
     RoutingInfo, MachineVertexRoutingInfo, AppVertexRoutingInfo)
@@ -73,7 +73,7 @@ class TestAppVertex(ApplicationVertex):
 def _make_m_vertices(app_vertex, n_m_vertices, atoms_per_core):
     for i in range(n_m_vertices):
         m_vertex = SimpleMachineVertex(
-            ResourceContainer(), label=f"{app_vertex.label}_{i}",
+            ConstantSDRAM(0), label=f"{app_vertex.label}_{i}",
             vertex_slice=Slice(
                 i * atoms_per_core, ((i + 1) * atoms_per_core) - 1),
             app_vertex=app_vertex)
@@ -152,15 +152,15 @@ def test_database_interface():
     print(db_path)
 
     reader = DatabaseReader(db_path)
-    assert(reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address)
-    assert(all(db_p == placements.get_placement_of_vertex(m_vertex).location
+    assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
+    assert all(db_p == placements.get_placement_of_vertex(m_vertex).location
                for db_p, m_vertex in zip(
                    reader.get_placements(app_vertex_1.label),
-                   app_vertex_1.machine_vertices)))
-    assert(reader.get_configuration_parameter_value("runtime") == 1000)
-    assert(
+                   app_vertex_1.machine_vertices))
+    assert reader.get_configuration_parameter_value("runtime") == 1000
+    assert (
         reader.get_live_output_details(
             app_vertex_1.label, lpg_vertex.label) ==
         (tag.ip_address, tag.port, tag.strip_sdp, tag.board_address, tag.tag))
-    assert(reader.get_atom_id_to_key_mapping(app_vertex_1.label))
-    assert(reader.get_key_to_atom_id_mapping(app_vertex_1.label))
+    assert reader.get_atom_id_to_key_mapping(app_vertex_1.label)
+    assert reader.get_key_to_atom_id_mapping(app_vertex_1.label)

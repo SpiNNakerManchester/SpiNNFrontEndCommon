@@ -52,7 +52,6 @@ def host_based_bit_field_router_compressor():
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
-    app_graph = FecDataView.get_runtime_graph()
     # create progress bar
     progress = ProgressBar(
         len(routing_tables) * 2,
@@ -71,7 +70,7 @@ def host_based_bit_field_router_compressor():
     key_atom_map = generate_key_to_atom_map()
 
     most_costly_cores = defaultdict(lambda: defaultdict(int))
-    for partition in app_graph.outgoing_edge_partitions:
+    for partition in FecDataView.iterate_partitions():
         for edge in partition.edges:
             splitter = edge.post_vertex.splitter
             for vertex, _ in splitter.get_source_specific_in_coming_vertices(
@@ -107,10 +106,9 @@ def generate_key_to_atom_map():
     :rtype: dict(int,int)
     """
     # build key to n atoms map
-    app_graph = FecDataView.get_runtime_graph()
     routing_infos = FecDataView.get_routing_infos()
     key_to_n_atoms_map = dict()
-    for partition in app_graph.outgoing_edge_partitions:
+    for partition in FecDataView.iterate_partitions():
         for vertex in partition.pre_vertex.splitter.get_out_going_vertices(
                 partition.identifier):
             key = routing_infos.get_first_key_from_pre_vertex(
@@ -270,16 +268,11 @@ class _HostBasedBitFieldRouterCompressor(object):
         # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
-        placements = FecDataView.get_placements()
-        for p in range(0, Machine.max_cores_per_chip()):
-            if placements.is_processor_occupied(chip_x, chip_y, p):
-                vertex = placements.get_vertex_on_processor(
-                    chip_x, chip_y, p)
-
-                if isinstance(
-                        vertex, AbstractSupportsBitFieldRoutingCompression):
-                    base_addresses[p] = vertex.bit_field_base_address(
-                        FecDataView.get_placement_of_vertex(vertex))
+        for placement in FecDataView.iterate_placements_with_vertex_type(
+                chip_x, chip_y, AbstractSupportsBitFieldRoutingCompression):
+            vertex = placement.vertex
+            base_addresses[placement.p] = vertex.bit_field_base_address(
+                FecDataView.get_placement_of_vertex(vertex))
         return base_addresses
 
     def _run(
