@@ -43,11 +43,8 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
-from pacman.model.graphs.application import (
-    ApplicationEdge, ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
-from pacman.model.graphs import (
-    AbstractVirtual, AbstractFPGA, AbstractSpiNNakerLink)
-from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
+from pacman.model.graphs.application import ApplicationEdge
+from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.operations.fixed_route_router import fixed_route_router
@@ -65,13 +62,10 @@ from pacman.operations.routing_info_allocator_algorithms.\
 from pacman.operations.routing_table_generators import (
     basic_routing_table_generator, merged_routing_table_generator)
 from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
-from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
-
 
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
-    AbstractSendMeMulticastCommandsVertex,
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
     AbstractCanReset)
 from spinn_front_end_common.data import FecTimer
@@ -96,7 +90,7 @@ from spinn_front_end_common.interface.interface_functions import (
     routing_setup, routing_table_loader,
     sdram_outgoing_partition_allocator, spalloc_allocator,
     system_multicast_routing_generator,
-    tags_loader, virtual_machine_generator)
+    tags_loader, virtual_machine_generator, add_command_senders)
 from spinn_front_end_common.interface.interface_functions.\
     machine_bit_field_router_compressor import (
         machine_bit_field_ordered_covering_compressor,
@@ -123,7 +117,7 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -574,66 +568,14 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return True
         return False
 
-    def _add_commands_to_command_sender(self):
-        command_sender = None
-        for vertex in self._data_writer.iterate_vertices():
-            if isinstance(vertex, CommandSender):
-                command_sender = vertex
+    def _add_commands_to_command_sender(self, system_placements):
+        """
+        Runs, times and logs the VirtualMachineGenerator if required
 
-        for vertex in self._data_writer.iterate_vertices():
-            if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
-                constraints = []
-                machine = self._data_writer.get_machine()
-
-                # Decide if a constraint is needed
-                if isinstance(vertex, ApplicationFPGAVertex):
-                    fpga = vertex.outgoing_fpga_connection
-                    if fpga is not None:
-                        link_data = machine.get_fpga_link_with_id(
-                            fpga.fpga_id, fpga.fpga_link_id,
-                            fpga.board_address, fpga.chip_coords)
-                        constraints.append(ChipAndCoreConstraint(
-                            link_data.connected_chip_x,
-                            link_data.connected_chip_y))
-                elif isinstance(vertex, AbstractFPGA):
-                    link_data = machine.get_fpga_link_with_id(
-                            vertex.fpga_id, vertex.fpga_link_id,
-                            vertex.board_address, fpga.linked_chip_coordinates)
-                    constraints.append(ChipAndCoreConstraint(
-                        link_data.connected_chip_x,
-                        link_data.connected_chip_y))
-                elif isinstance(vertex, ApplicationSpiNNakerLinkVertex):
-                    link_data = machine.get_spinnaker_link_with_id(
-                        vertex.spinnaker_link_id, vertex.board_address)
-                    constraints.append(ChipAndCoreConstraint(
-                        link_data.connected_chip_x,
-                        link_data.connected_chip_y))
-                elif isinstance(vertex, AbstractSpiNNakerLink):
-                    link_data = machine.get_spinnaker_link_with_id(
-                        vertex.spinnaker_link_id, vertex.board_address)
-                    constraints.append(ChipAndCoreConstraint(
-                        link_data.connected_chip_x,
-                        link_data.connected_chip_y))
-
-                if command_sender is None:
-                    # Build a command sender
-                    label = f"CommandSender for {vertex.label}"
-                    command_sender = CommandSender(label, constraints)
-                    command_sender.splitter = SplitterOneAppOneMachine()
-
-                # allow the command sender to create key to partition map
-                command_sender.add_commands(
-                    vertex.start_resume_commands,
-                    vertex.pause_stop_commands,
-                    vertex.timed_commands, vertex)
-
-        # add the edges from the command sender to the dependent vertices
-        if command_sender is not None:
-            if not command_sender.addedToGraph():
-                self._data_writer.add_vertex(command_sender)
-            edges, partition_ids = command_sender.edges_and_partitions()
-            for edge, partition_id in zip(edges, partition_ids):
-                self._data_writer.add_edge(edge, partition_id)
+        May set then "machine" value
+        """
+        with FecTimer(MAPPING, "Command Sender Adder"):
+            add_command_senders(system_placements)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         # cache vertices to allow insertion during iteration
@@ -1370,10 +1312,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         allocator_data = self._execute_allocator(MAPPING, total_run_time)
         self._execute_machine_generator(MAPPING, allocator_data)
         self._json_machine()
-        self._add_commands_to_command_sender()
         self._report_board_chip()
 
         system_placements = Placements()
+        self._add_commands_to_command_sender(system_placements)
         self._execute_split_lpg_vertices(system_placements)
         self._execute_insert_chip_power_monitors(system_placements)
         self._execute_insert_extra_monitor_vertices(system_placements)
