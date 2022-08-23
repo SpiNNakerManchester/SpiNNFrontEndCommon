@@ -350,7 +350,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Get a mask and maximum number of keys for the number of keys
         # requested
-        self._mask = self._calculate_mask(n_keys)
+        self._mask = self.calculate_mask(n_keys)
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the
@@ -526,7 +526,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return (virtual_key >> 16) & 0xFFFF
 
     @staticmethod
-    def _calculate_mask(n_neurons):
+    def calculate_mask(n_neurons):
         """
         :param int n_neurons:
         :rtype: int

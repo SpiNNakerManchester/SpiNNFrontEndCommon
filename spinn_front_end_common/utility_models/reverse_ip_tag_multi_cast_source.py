@@ -237,6 +237,6 @@ class ReverseIpTagMultiCastSource(
     def get_fixed_key_and_mask(self, partition_id):
         if self._virtual_key is None:
             return None
-        mask = ReverseIPTagMulticastSourceMachineVertex._calculate_mask(
+        mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(
             self.get_max_atoms_per_core())
         return BaseKeyAndMask(self._virtual_key, mask)
