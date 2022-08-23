@@ -23,6 +23,7 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 
 class ReverseIpTagMultiCastSource(
@@ -231,3 +232,11 @@ class ReverseIpTagMultiCastSource(
 
     def __repr__(self):
         return self._label
+
+    @overrides(ApplicationVertex.get_fixed_key_and_mask)
+    def get_fixed_key_and_mask(self, partition_id):
+        if self._virtual_key is None:
+            return None
+        mask = ReverseIPTagMulticastSourceMachineVertex._calculate_mask(
+            self.get_max_atoms_per_core())
+        return BaseKeyAndMask(self._virtual_key, mask)

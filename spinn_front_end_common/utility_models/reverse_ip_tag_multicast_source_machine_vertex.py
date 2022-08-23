@@ -22,10 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
-from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.utilities.utility_calls import get_field_based_keys
@@ -354,8 +351,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Get a mask and maximum number of keys for the number of keys
         # requested
         self._mask = self._calculate_mask(n_keys)
-        self.app_vertex.add_constraint(FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(self._virtual_key, self._mask)]))
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the

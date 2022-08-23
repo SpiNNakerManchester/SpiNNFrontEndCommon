@@ -15,8 +15,6 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
@@ -89,6 +87,7 @@ class CommandSenderMachineVertex(
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
         self._keys_to_partition_id = dict()
+        self._partition_id_keys = dict()
         self._edge_partition_id_counter = 0
         self._vertex_to_key_map = dict()
 
@@ -130,11 +129,17 @@ class CommandSenderMachineVertex(
                 partition_id = "COMMANDS{}".format(
                     self._edge_partition_id_counter)
                 self._keys_to_partition_id[key] = partition_id
+                self._partition_id_keys[partition_id] = key
                 self._edge_partition_id_counter += 1
-                self.app_vertex.add_constraint(
-                    FixedKeyAndMaskConstraint(
-                        [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)],
-                        partition=partition_id))
+
+    def get_fixed_key_and_mask(self, partition_id):
+        """ Get the key and mask for the given partition
+
+        :param str partition_id: The partition to get the key for
+        :rtype: BaseKeyAndMask
+        """
+        return BaseKeyAndMask(
+            self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
