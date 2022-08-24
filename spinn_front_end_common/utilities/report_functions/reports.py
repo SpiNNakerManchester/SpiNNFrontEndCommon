@@ -318,11 +318,15 @@ def _write_one_vertex_application_placement(f, vertex):
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
         if isinstance(sv, AbstractSpiNNakerLink):
-            f.write("  Slice {} on SpiNNaker Link {} \n"
-                    .format(sv.vertex_slice, sv.spinnaker_link_id))
+            f.write("  Slice {} on SpiNNaker Link {}, board {},"
+                    " linked to chip {}\n"
+                    .format(sv.vertex_slice, sv.spinnaker_link_id,
+                            sv.board_address, sv.linked_chip_coordinates))
         elif isinstance(sv, AbstractFPGA):
-            f.write("  Slice {} on FGPA {}, {}) \n"
-                    .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id))
+            f.write("  Slice {} on FGPA {}, FPGA link {}, board {},"
+                    " linked to chip {}\n"
+                    .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id,
+                            sv.board_address, sv.linked_chip_coordinates))
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
