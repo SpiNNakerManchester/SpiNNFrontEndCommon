@@ -59,14 +59,7 @@ class CommandSenderAdder(object):
                         link_data = machine.get_fpga_link_with_id(
                             fpga.fpga_id, fpga.fpga_link_id,
                             fpga.board_address, fpga.chip_coords)
-                elif isinstance(vertex, AbstractFPGA):
-                    link_data = machine.get_fpga_link_with_id(
-                            vertex.fpga_id, vertex.fpga_link_id,
-                            vertex.board_address, fpga.linked_chip_coordinates)
                 elif isinstance(vertex, ApplicationSpiNNakerLinkVertex):
-                    link_data = machine.get_spinnaker_link_with_id(
-                        vertex.spinnaker_link_id, vertex.board_address)
-                elif isinstance(vertex, AbstractSpiNNakerLink):
                     link_data = machine.get_spinnaker_link_with_id(
                         vertex.spinnaker_link_id, vertex.board_address)
 
