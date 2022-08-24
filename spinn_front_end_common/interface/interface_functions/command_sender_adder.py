@@ -18,7 +18,6 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utility_models import CommandSender
 from pacman.model.graphs.application import (
     ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
-from pacman.model.graphs import AbstractFPGA, AbstractSpiNNakerLink
 from pacman.model.placements import Placement
 from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from spinn_utilities.progress_bar import ProgressBar
