@@ -16,7 +16,6 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
