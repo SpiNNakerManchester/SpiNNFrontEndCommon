@@ -238,5 +238,5 @@ class ReverseIpTagMultiCastSource(
         if self._virtual_key is None:
             return None
         mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(
-            self.get_max_atoms_per_core())
+            min(self.n_atoms, self.get_max_atoms_per_core()))
         return BaseKeyAndMask(self._virtual_key, mask)
