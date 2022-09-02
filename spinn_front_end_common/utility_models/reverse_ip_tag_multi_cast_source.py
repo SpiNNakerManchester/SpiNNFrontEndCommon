@@ -215,7 +215,7 @@ class ReverseIpTagMultiCastSource(
         n_buffer_times = 0
         if send_buffer_times is not None:
             # If there is at least one array element, and that element is
-            # itself and array
+            # itself an array
             if (len(send_buffer_times) and
                     hasattr(send_buffer_times[0], "__len__")):
                 send_buffer_times = send_buffer_times[ids]
