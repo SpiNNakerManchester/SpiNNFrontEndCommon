@@ -20,7 +20,8 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
 from pacman import exceptions
-from pacman.model.graphs import AbstractSpiNNakerLink, AbstractFPGA
+from pacman.model.graphs.machine import (
+    MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
@@ -317,12 +318,12 @@ def _write_one_vertex_application_placement(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        if isinstance(sv, AbstractSpiNNakerLink):
+        if isinstance(sv, MachineSpiNNakerLinkVertex):
             f.write("  Slice {} on SpiNNaker Link {}, board {},"
                     " linked to chip {}\n"
                     .format(sv.vertex_slice, sv.spinnaker_link_id,
                             sv.board_address, sv.linked_chip_coordinates))
-        elif isinstance(sv, AbstractFPGA):
+        elif isinstance(sv, MachineFPGAVertex):
             f.write("  Slice {} on FGPA {}, FPGA link {}, board {},"
                     " linked to chip {}\n"
                     .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id,
@@ -685,14 +686,14 @@ def _search_route(source_placement, key_and_mask):
     machine = FecDataView.get_machine()
     source_vertex = source_placement.vertex
     text = ""
-    if isinstance(source_vertex, AbstractSpiNNakerLink):
+    if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
         text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
-    elif isinstance(source_vertex, AbstractFPGA):
+    elif isinstance(source_vertex, MachineFPGAVertex):
         text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
         flink = machine.get_fpga_link_with_id(
