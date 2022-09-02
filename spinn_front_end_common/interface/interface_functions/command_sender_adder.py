@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,8 +16,7 @@ from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex)
 from spinn_front_end_common.utility_models import CommandSender
-from pacman.model.graphs.application import (
-    ApplicationFPGAVertex, ApplicationSpiNNakerLinkVertex)
+from pacman.model.graphs.application import ApplicationVirtualVertex
 from pacman.model.placements import Placement
 from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from spinn_utilities.progress_bar import ProgressBar
@@ -52,15 +51,8 @@ class CommandSenderAdder(object):
                 link_data = None
 
                 # See if we need a specific placement for a device
-                if isinstance(vertex, ApplicationFPGAVertex):
-                    fpga = vertex.outgoing_fpga_connection
-                    if fpga is not None:
-                        link_data = machine.get_fpga_link_with_id(
-                            fpga.fpga_id, fpga.fpga_link_id,
-                            fpga.board_address, fpga.chip_coords)
-                elif isinstance(vertex, ApplicationSpiNNakerLinkVertex):
-                    link_data = machine.get_spinnaker_link_with_id(
-                        vertex.spinnaker_link_id, vertex.board_address)
+                if isinstance(vertex, ApplicationVirtualVertex):
+                    link_data = vertex.get_link_data(machine)
 
                 command_sender = self.__get_command_sender(link_data)
 
@@ -89,7 +81,8 @@ class CommandSenderAdder(object):
     def __get_command_sender(self, link_data):
         if link_data is None:
             if self.__general_command_sender is None:
-                self.__general_command_sender = self.__new_command_sender()
+                self.__general_command_sender = self.__new_command_sender(
+                    "General command sender")
             return self.__general_command_sender
 
         x = link_data.connected_chip_x
@@ -97,7 +90,8 @@ class CommandSenderAdder(object):
 
         command_sender = self.__command_sender_for_chip.get((x, y))
         if command_sender is None:
-            command_sender = self.__new_command_sender()
+            command_sender = self.__new_command_sender(
+                f"Command Sender on {x}, {y}")
             self.__command_sender_for_chip[(x, y)] = command_sender
             cores = self.__cores(x, y)
             p = cores[self.__system_placements.n_placements_on_chip(x, y)]
@@ -105,7 +99,7 @@ class CommandSenderAdder(object):
                 Placement(command_sender.machine_vertex, x, y, p))
         return command_sender
 
-    def __new_command_sender(self):
-        command_sender = CommandSender("Command Sender", None)
+    def __new_command_sender(self, label):
+        command_sender = CommandSender(label, None)
         command_sender.splitter = SplitterOneAppOneMachine()
         return command_sender
