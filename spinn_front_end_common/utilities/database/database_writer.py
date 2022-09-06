@@ -15,7 +15,6 @@
 
 import logging
 import os
-import numpy
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -141,9 +140,6 @@ class DatabaseWriter(SQLiteDB):
         with self.transaction() as cur:
             # add vertices
             for vertex in FecDataView.iterate_vertices():
-                max_atoms = vertex.get_max_atoms_per_core()
-                if not isinstance(max_atoms, int):
-                    max_atoms = int(numpy.prod(max_atoms))
                 vertex_id = self.__insert(
                     cur,
                     "INSERT INTO Application_vertices(vertex_label) VALUES(?)",
