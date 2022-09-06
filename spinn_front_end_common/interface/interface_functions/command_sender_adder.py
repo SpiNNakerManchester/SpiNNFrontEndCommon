@@ -52,7 +52,7 @@ class CommandSenderAdder(object):
 
                 # See if we need a specific placement for a device
                 if isinstance(vertex, ApplicationVirtualVertex):
-                    link_data = vertex.get_link_data(machine)
+                    link_data = vertex.get_outgoing_link_data(machine)
 
                 command_sender = self.__get_command_sender(link_data)
 
