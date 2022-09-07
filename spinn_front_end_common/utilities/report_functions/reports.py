@@ -268,7 +268,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write("  Slice {}\n".format(sv.vertex_slice))
+        f.write(f"  Slice {sv.vertex_slice}\n")
     f.write("\n")
 
 
