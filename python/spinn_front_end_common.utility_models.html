@@ -262,6 +262,24 @@ running</p></li>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSender.get_fixed_key_and_mask">
+<span class="sig-name descname"><span class="pre">get_fixed_key_and_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender.html#CommandSender.get_fixed_key_and_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSender.get_fixed_key_and_mask" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get a fixed key and mask for the application vertex or None if not</dt><dd><p>fixed (the default).  See get_machine_gixed_key_and_mask for the
+conditions.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the partition to get the key for</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>BaseKeyAndMask or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -410,6 +428,20 @@ running</p></li>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<em>AbstractEdge</em>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_fixed_key_and_mask">
+<span class="sig-name descname"><span class="pre">get_fixed_key_and_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/command_sender_machine_vertex.html#CommandSenderMachineVertex.get_fixed_key_and_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_fixed_key_and_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the key and mask for the given partition</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The partition to get the key for</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>BaseKeyAndMask</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1072,8 +1104,11 @@ and updates the extra monitor.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The optional name of the vertex.</p></li>
 <li><p><strong>constraints</strong> (<em>iterable</em><em>(</em><em>AbstractConstraint</em><em>)</em>) – The optional initial constraints of the vertex.</p></li>
-<li><p><strong>max_atoms_per_core</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The max number of atoms that can be
-placed on a core, used in partitioning.</p></li>
+<li><p><strong>max_atoms_per_core</strong> (<em>None</em><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>tuple.</em>) – The max number of atoms that can be
+placed on a core for each dimension, used in partitioning.
+If the vertex is n-dimensional, with n &gt; 1, the value must be a
+tuple with a value for each dimension.  If it is single-dimensional
+the value can be a 1-tuple or an int.</p></li>
 <li><p><strong>splitter</strong> (<em>None</em><em> or
 </em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.partitioner_interfaces/#pacman.model.partitioner_interfaces.AbstractSplitterPartitioner" title="(in PACMAN v6.0)"><em>AbstractSplitterPartitioner</em></a>) – The splitter object needed for this vertex.
 Leave as None to delegate the choice of splitter to the selector.</p></li>
@@ -1408,6 +1443,19 @@ implements.</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.calculate_mask">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_neurons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.calculate_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.calculate_mask" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_neurons</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.enable_recording">
 <span class="sig-name descname"><span class="pre">enable_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multicast_source_machine_vertex.html#ReverseIPTagMulticastSourceMachineVertex.enable_recording"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.enable_recording" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable recording of the keys sent.</p>
@@ -1727,6 +1775,24 @@ send injected keys with</p></li>
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.enable_recording">
 <span class="sig-name descname"><span class="pre">enable_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.enable_recording"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.enable_recording" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_fixed_key_and_mask">
+<span class="sig-name descname"><span class="pre">get_fixed_key_and_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/reverse_ip_tag_multi_cast_source.html#ReverseIpTagMultiCastSource.get_fixed_key_and_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_fixed_key_and_mask" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get a fixed key and mask for the application vertex or None if not</dt><dd><p>fixed (the default).  See get_machine_gixed_key_and_mask for the
+conditions.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the partition to get the key for</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>BaseKeyAndMask or None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_sdram_used_by_atoms">

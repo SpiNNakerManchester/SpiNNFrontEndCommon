@@ -57,6 +57,7 @@
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application.abstract</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.command_sender_machine_vertex</span> <span class="kn">import</span> <span class="n">CommandSenderMachineVertex</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 
 
 <span class="k">class</span> <span class="nc">CommandSender</span><span class="p">(</span>
@@ -107,6 +108,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_edges_and_partitions</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">ApplicationEdge</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CommandSender.get_fixed_key_and_mask"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.get_fixed_key_and_mask">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractOneAppOneMachineVertex</span><span class="o">.</span><span class="n">get_fixed_key_and_mask</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">get_fixed_key_and_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_vertex</span><span class="o">.</span><span class="n">get_fixed_key_and_mask</span><span class="p">(</span><span class="n">partition_id</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

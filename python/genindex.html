@@ -91,8 +91,6 @@
 </li>
       <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData">AbstractProvidesLocalProvenanceData (class in spinn_front_end_common.interface.provenance)</a>
 </li>
-      <li><a href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractProvidesOutgoingPartitionConstraints">AbstractProvidesOutgoingPartitionConstraints() (in module spinn_front_end_common.abstract_models)</a>
-</li>
       <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine">AbstractProvidesProvenanceDataFromMachine (class in spinn_front_end_common.interface.provenance)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost">AbstractReceiveBuffersToHost (class in spinn_front_end_common.interface.buffer_management.buffer_models)</a>
@@ -118,6 +116,8 @@
       <li><a href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.active_routers">active_routers (spinn_front_end_common.utilities.utility_objs.PowerUsed property)</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">add_application_vertices() (spinn_front_end_common.utilities.database.DatabaseWriter method)</a>
+</li>
+      <li><a href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.add_command_senders">add_command_senders() (in module spinn_front_end_common.interface.interface_functions)</a>
 </li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.add_commands">add_commands() (spinn_front_end_common.utility_models.CommandSender method)</a>
 
@@ -178,8 +178,6 @@
       <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">add_system_params() (spinn_front_end_common.utilities.database.DatabaseWriter method)</a>
 </li>
       <li><a href="spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">add_tags() (spinn_front_end_common.utilities.database.DatabaseWriter method)</a>
-</li>
-      <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_vertex">add_vertex() (spinn_front_end_common.data.FecDataView class method)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items">app_items() (spinn_front_end_common.interface.ds.DsSqlliteDatabase method)</a>
 </li>
@@ -267,6 +265,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.calculate_mask">calculate_mask() (spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex static method)</a>
+</li>
       <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.calculate_max_seq_num">calculate_max_seq_num() (spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex method)</a>
 </li>
       <li><a href="spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED">CALLBACK_QUEUE_OVERLOADED (spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES attribute)</a>
@@ -665,6 +665,14 @@
 </li>
       <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_first_machine_time_step">get_first_machine_time_step() (spinn_front_end_common.data.FecDataView class method)</a>
 </li>
+      <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.get_fixed_key_and_mask">get_fixed_key_and_mask() (spinn_front_end_common.utility_models.CommandSender method)</a>
+
+      <ul>
+        <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_fixed_key_and_mask">(spinn_front_end_common.utility_models.CommandSenderMachineVertex method)</a>
+</li>
+        <li><a href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource.get_fixed_key_and_mask">(spinn_front_end_common.utility_models.ReverseIpTagMultiCastSource method)</a>
+</li>
+      </ul></li>
       <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_fixed_routes">get_fixed_routes() (spinn_front_end_common.data.FecDataView class method)</a>
 </li>
       <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_gatherer_by_xy">get_gatherer_by_xy() (spinn_front_end_common.data.FecDataView class method)</a>
@@ -719,10 +727,10 @@
 </li>
       <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_database_socket_addresses">get_n_database_socket_addresses() (spinn_front_end_common.data.FecDataView class method)</a>
 </li>
-      <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_gathers">get_n_gathers() (spinn_front_end_common.data.FecDataView class method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_gathers">get_n_gathers() (spinn_front_end_common.data.FecDataView class method)</a>
+</li>
       <li><a href="spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys">get_n_keys() (spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion method)</a>
 </li>
       <li><a href="spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_monitors">get_n_monitors() (spinn_front_end_common.data.FecDataView class method)</a>

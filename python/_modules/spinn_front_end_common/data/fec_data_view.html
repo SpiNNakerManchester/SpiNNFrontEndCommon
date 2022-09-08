@@ -55,7 +55,6 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.socket_address</span> <span class="kn">import</span> <span class="n">SocketAddress</span>
 <span class="kn">from</span> <span class="nn">spinnman.data</span> <span class="kn">import</span> <span class="n">SpiNNManDataView</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.scp.enums.signal</span> <span class="kn">import</span> <span class="n">Signal</span>
@@ -211,19 +210,6 @@
     <span class="n">__fec_data</span> <span class="o">=</span> <span class="n">_FecDataModel</span><span class="p">()</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="c1"># override PacmanDataView with extra safety</span>
-
-<div class="viewcode-block" id="FecDataView.add_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_vertex">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">PacmanDataView</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">add_vertex</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
-        <span class="c1"># UGLY but needed to avoid circular imports</span>
-        <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="n">CommandSender</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">CommandSender</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                <span class="s2">&quot;Please contact spinnker team as adding a CommandSender &quot;</span>
-                <span class="s2">&quot;currently disabled&quot;</span><span class="p">)</span>
-        <span class="n">PacmanDataView</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span></div>
 
     <span class="c1"># current_run_timesteps and first_machine_time_step</span>
 

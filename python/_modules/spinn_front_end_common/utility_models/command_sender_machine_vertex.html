@@ -55,8 +55,6 @@
 
 <span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">IntEnum</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.overrides</span> <span class="kn">import</span> <span class="n">overrides</span>
-<span class="kn">from</span> <span class="nn">pacman.model.constraints.key_allocator_constraints</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">FixedKeyAndMaskConstraint</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">MachineEdge</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span>
 <span class="kn">from</span> <span class="nn">pacman.model.routing_info</span> <span class="kn">import</span> <span class="n">BaseKeyAndMask</span>
@@ -111,9 +109,9 @@
 
     <span class="n">_NOT_GOT_KEY_ERROR_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s2">&quot;The command sender </span><span class="si">{}</span><span class="s2"> has requested key </span><span class="si">{}</span><span class="s2"> for outgoing &quot;</span>
-        <span class="s2">&quot;partition </span><span class="si">{}</span><span class="s2">, but the keys allocated to it do not match. this will &quot;</span>
-        <span class="s2">&quot;cause errors in the external devices support and therefore needs &quot;</span>
-        <span class="s2">&quot;fixing&quot;</span><span class="p">)</span>
+        <span class="s2">&quot;partition </span><span class="si">{}</span><span class="s2">, but the keys allocated to it (</span><span class="si">{}</span><span class="s2">) do not match. this &quot;</span>
+        <span class="s2">&quot;will cause errors in the external devices support and therefore &quot;</span>
+        <span class="s2">&quot;needs fixing&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -129,6 +127,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_keys</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_vertex_to_key_map</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
@@ -170,11 +169,17 @@
                 <span class="n">partition_id</span> <span class="o">=</span> <span class="s2">&quot;COMMANDS</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">partition_id</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">app_vertex</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span>
-                    <span class="n">FixedKeyAndMaskConstraint</span><span class="p">(</span>
-                        <span class="p">[</span><span class="n">BaseKeyAndMask</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)],</span>
-                        <span class="n">partition</span><span class="o">=</span><span class="n">partition_id</span><span class="p">))</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_keys</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="CommandSenderMachineVertex.get_fixed_key_and_mask"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_fixed_key_and_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_fixed_key_and_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Get the key and mask for the given partition</span>
+
+<span class="sd">        :param str partition_id: The partition to get the key for</span>
+<span class="sd">        :rtype: BaseKeyAndMask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">BaseKeyAndMask</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_keys</span><span class="p">[</span><span class="n">partition_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="nd">@overrides</span><span class="p">(</span><span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="o">.</span><span class="n">_provenance_region_id</span><span class="p">)</span>
@@ -209,12 +214,13 @@
         <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">mc_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">allocated_mc_key</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_first_key_from_pre_vertex</span><span class="p">(</span>
-                <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">allocated_mc_key</span> <span class="o">!=</span> <span class="n">mc_key</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_NOT_GOT_KEY_ERROR_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span> <span class="n">mc_key</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">]))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">],</span>
+                        <span class="n">allocated_mc_key</span><span class="p">))</span>
 
         <span class="n">timed_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span>
         <span class="n">start_resume_commands_size</span> <span class="o">=</span> \
