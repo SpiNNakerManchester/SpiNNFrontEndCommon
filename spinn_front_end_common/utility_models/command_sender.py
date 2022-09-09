@@ -17,6 +17,7 @@ from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
+from spinn_utilities.overrides import overrides
 
 
 class CommandSender(
@@ -67,3 +68,7 @@ class CommandSender(
         """
         return self._machine_vertex.get_edges_and_partitions(
             self, ApplicationVertex, ApplicationEdge)
+
+    @overrides(AbstractOneAppOneMachineVertex.get_fixed_key_and_mask)
+    def get_fixed_key_and_mask(self, partition_id):
+        return self._machine_vertex.get_fixed_key_and_mask(partition_id)
