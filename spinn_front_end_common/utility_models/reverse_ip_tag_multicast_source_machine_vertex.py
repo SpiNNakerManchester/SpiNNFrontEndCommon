@@ -22,12 +22,10 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
-from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
+from pacman.utilities.utility_calls import get_field_based_keys
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement)
@@ -263,7 +261,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :rtype: int
         """
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
-            counts = numpy.bincount(numpy.concatenate(send_buffer_times))
+            counts = numpy.bincount(
+                numpy.concatenate(send_buffer_times).astype("int"))
             if len(counts):
                 return max(counts)
             return 0
@@ -351,9 +350,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Get a mask and maximum number of keys for the number of keys
         # requested
-        self._mask = self._calculate_mask(n_keys)
-        self.app_vertex.add_constraint(FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(self._virtual_key, self._mask)]))
+        self._mask = self.calculate_mask(n_keys)
 
         if self._prefix is not None:
             # Check that the prefix doesn't change the virtual key in the
@@ -498,10 +495,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
+        keys = get_field_based_keys(key_base, self._vertex_slice)
         for key in range(self._n_keys):
             for tick in sorted(self._send_buffer_times[key]):
                 if self._is_in_range(tick, first_time_step, n_time_steps):
-                    self._send_buffer.add_key(tick, key_base + key)
+                    self._send_buffer.add_key(tick, keys[key])
 
     def __fill_send_buffer_1d(
             self, key_base, first_time_step, n_time_steps):
@@ -510,7 +508,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param int first_time_step:
         :param int n_time_steps:
         """
-        key_list = [key + key_base for key in range(self._n_keys)]
+        keys = get_field_based_keys(key_base, self._vertex_slice)
+        key_list = [keys[key] for key in range(self._n_keys)]
         for tick in sorted(self._send_buffer_times):
             if self._is_in_range(tick, first_time_step, n_time_steps):
                 self._send_buffer.add_keys(tick, key_list)
@@ -527,7 +526,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return (virtual_key >> 16) & 0xFFFF
 
     @staticmethod
-    def _calculate_mask(n_neurons):
+    def calculate_mask(n_neurons):
         """
         :param int n_neurons:
         :rtype: int
