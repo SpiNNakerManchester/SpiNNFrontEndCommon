@@ -203,7 +203,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             logger.warning("not locked")
         logger.warning("this wis fine")
         # the use of class variables and tests run in parallel dont work.
-        if "JENKINS_HOME" not in os.environ:
+        if "JENKINS_URL" not in os.environ:
             self.assertListEqual(
                 ["this works", "not locked", "this wis fine"],
                 ls.retreive_log_messages(20))
