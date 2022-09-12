@@ -205,8 +205,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._state_condition = Condition()
         self._n_loops = None
 
-        globals_variables.set_simulator(self)
-
         # folders
         self._set_up_report_specifics()
 
