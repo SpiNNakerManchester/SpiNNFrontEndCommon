@@ -18,8 +18,6 @@ from .abstract_generates_data_specification import (
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 from .abstract_machine_allocation_controller import (
     AbstractMachineAllocationController)
-from .abstract_provides_outgoing_partition_constraints import (
-    AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_rewrites_data_specification import (
     AbstractRewritesDataSpecification)
 from .abstract_send_me_multicast_commands_vertex import (
@@ -38,7 +36,6 @@ from .has_custom_atom_key_map import HasCustomAtomKeyMap
 __all__ = ["AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
            "AbstractMachineAllocationController",
-           "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
