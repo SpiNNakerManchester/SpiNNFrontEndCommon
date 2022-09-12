@@ -20,8 +20,6 @@ from spinnman.config_setup import add_spinnman_cfg
 from pacman.config_setup import add_pacman_cfg
 from data_specification.config_setup import add_data_specification_cfg
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
-from spinn_front_end_common.utilities.globals_variables import (
-    setup_for_unittest)
 
 BASE_CONFIG_FILE = "spinnaker.cfg"
 
@@ -38,7 +36,6 @@ def unittest_setup():
         This file should only be called from spinn_front_end_common tests
 
     """
-    setup_for_unittest()
     clear_cfg_files(True)
     add_spinnaker_cfg()
     FecDataWriter.mock()
