@@ -86,7 +86,7 @@ def local_tdma_builder():
         Y is pop1 firing
 
     """
-    if FecDataView.get_n_vertices == 0:
+    if FecDataView.get_n_vertices() == 0:
         return
     # get config params
     us_per_cycle = FecDataView.get_hardware_time_step_us()

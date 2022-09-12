@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
+import numpy
 
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
@@ -22,6 +23,7 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 
 class ReverseIpTagMultiCastSource(
@@ -146,7 +148,8 @@ class ReverseIpTagMultiCastSource(
                     "The array or arrays of times {} does not have the "
                     "expected length of {}".format(
                         send_buffer_times, self._n_atoms))
-        return send_buffer_times
+            return numpy.array(send_buffer_times, dtype="object")
+        return numpy.array(send_buffer_times)
 
     @property
     @overrides(LegacyPartitionerAPI.n_atoms)
@@ -155,25 +158,9 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
     def get_sdram_used_by_atoms(self, vertex_slice):
-        send_buffer_times = self._send_buffer_times
-        if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-                # Check the buffer times on the slice are not empty
-                n_buffer_times = 0
-                for i in send_buffer_times:
-                    if hasattr(i, "__len__"):
-                        n_buffer_times += len(i)
-                    else:
-                        # assuming this must be a single integer
-                        n_buffer_times += 1
-                if n_buffer_times == 0:
-                    send_buffer_times = None
-
         return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-            send_buffer_times, self._is_recording,
-            self._receive_rate, vertex_slice.n_atoms)
+            self.__filtered_send_buffer_times(vertex_slice),
+            self._is_recording, self._receive_rate, vertex_slice.n_atoms)
 
     @property
     def send_buffer_times(self):
@@ -202,11 +189,7 @@ class ReverseIpTagMultiCastSource(
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, sdram, label=None, constraints=None):
-        send_buffer_times = self._send_buffer_times
-        if send_buffer_times is not None and len(send_buffer_times):
-            if hasattr(send_buffer_times[0], "__len__"):
-                send_buffer_times = send_buffer_times[
-                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+        send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, constraints=constraints, app_vertex=self,
@@ -226,5 +209,34 @@ class ReverseIpTagMultiCastSource(
             assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
+    def __filtered_send_buffer_times(self, vertex_slice):
+        ids = vertex_slice.get_raster_ids(self.atoms_shape)
+        send_buffer_times = self._send_buffer_times
+        n_buffer_times = 0
+        if send_buffer_times is not None:
+            # If there is at least one array element, and that element is
+            # itself an array
+            if (len(send_buffer_times) and
+                    hasattr(send_buffer_times[0], "__len__")):
+                send_buffer_times = send_buffer_times[ids]
+            # Check the buffer times are not empty
+            for i in send_buffer_times:
+                if hasattr(i, "__len__"):
+                    n_buffer_times += len(i)
+                else:
+                    # assuming this must be a single integer
+                    n_buffer_times += 1
+        if n_buffer_times == 0:
+            return None
+        return send_buffer_times
+
     def __repr__(self):
         return self._label
+
+    @overrides(ApplicationVertex.get_fixed_key_and_mask)
+    def get_fixed_key_and_mask(self, partition_id):
+        if self._virtual_key is None:
+            return None
+        mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(
+            min(self.n_atoms, self.get_max_atoms_per_core()))
+        return BaseKeyAndMask(self._virtual_key, mask)
