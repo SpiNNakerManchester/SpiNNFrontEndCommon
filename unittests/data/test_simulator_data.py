@@ -38,7 +38,7 @@ from spinn_front_end_common.utilities.notification_protocol import (
 from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.utility_models import (
-    CommandSender, DataSpeedUpPacketGatherMachineVertex,
+    DataSpeedUpPacketGatherMachineVertex,
     ExtraMonitorSupportMachineVertex)
 
 
@@ -721,14 +721,3 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(protocol2.is_closed)
         with self.assertRaises(TypeError):
             writer.set_notification_protocol([])
-
-    def test_command_sender_safety(self):
-        writer = FecDataWriter.setup()
-        app1 = SimpleTestVertex(12, "app1")
-        cs = CommandSender("test", [])
-        writer.add_vertex(app1)
-        with self.assertRaises(NotImplementedError):
-            FecDataView.add_vertex((cs))
-        self.assertEqual(1, FecDataView.get_n_vertices())
-        writer.add_vertex(cs)
-        self.assertEqual(2, FecDataView.get_n_vertices())
