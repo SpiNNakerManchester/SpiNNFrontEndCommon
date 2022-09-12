@@ -20,7 +20,8 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
 from pacman import exceptions
-from pacman.model.graphs import AbstractSpiNNakerLink, AbstractFPGA
+from pacman.model.graphs.machine import (
+    MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
@@ -267,9 +268,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write("  Slice {}:{} ({} atoms) \n".format(
-            sv.vertex_slice.lo_atom, sv.vertex_slice.hi_atom,
-            sv.vertex_slice.n_atoms))
+        f.write(f"  Slice {sv.vertex_slice}\n")
     f.write("\n")
 
 
@@ -319,21 +318,21 @@ def _write_one_vertex_application_placement(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda vert: vert.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        lo_atom = sv.vertex_slice.lo_atom
-        hi_atom = sv.vertex_slice.hi_atom
-        num_atoms = sv.vertex_slice.n_atoms
-        if isinstance(sv, AbstractSpiNNakerLink):
-            f.write("  Slice {}:{} ({} atoms) on SpiNNaker Link {} \n"
-                    .format(lo_atom, hi_atom, num_atoms, sv.spinnaker_link_id))
-        elif isinstance(sv, AbstractFPGA):
-            f.write("  Slice {}:{} ({} atoms) on FGPA {}, {}) \n"
-                    .format(lo_atom, hi_atom, num_atoms, sv.fpga_id,
-                            sv.fpga_link_id))
+        if isinstance(sv, MachineSpiNNakerLinkVertex):
+            f.write("  Slice {} on SpiNNaker Link {}, board {},"
+                    " linked to chip {}\n"
+                    .format(sv.vertex_slice, sv.spinnaker_link_id,
+                            sv.board_address, sv.linked_chip_coordinates))
+        elif isinstance(sv, MachineFPGAVertex):
+            f.write("  Slice {} on FGPA {}, FPGA link {}, board {},"
+                    " linked to chip {}\n"
+                    .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id,
+                            sv.board_address, sv.linked_chip_coordinates))
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write("  Slice {}:{} ({} atoms) on core ({}, {}, {}) \n"
-                    .format(lo_atom, hi_atom, num_atoms, x, y, p))
+            f.write("  Slice {} on core ({}, {}, {}) \n"
+                    .format(sv.vertex_slice, x, y, p))
     f.write("\n")
 
 
@@ -387,13 +386,10 @@ def _write_one_chip_application_placement(f, chip):
             vertex_label = app_vertex.label
             vertex_model = app_vertex.__class__.__name__
             vertex_atoms = app_vertex.n_atoms
-            lo_atom = vertex.vertex_slice.lo_atom
-            hi_atom = vertex.vertex_slice.hi_atom
-            num_atoms = vertex.vertex_slice.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}:{} ({} atoms)\n"
-                    .format(lo_atom, hi_atom, num_atoms))
+            f.write("              Slice on this core: {}\n"
+                    .format(vertex.vertex_slice))
             f.write("              Model: {}\n".format(vertex_model))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
@@ -690,14 +686,14 @@ def _search_route(source_placement, key_and_mask):
     machine = FecDataView.get_machine()
     source_vertex = source_placement.vertex
     text = ""
-    if isinstance(source_vertex, AbstractSpiNNakerLink):
+    if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
         text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
-    elif isinstance(source_vertex, AbstractFPGA):
+    elif isinstance(source_vertex, MachineFPGAVertex):
         text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
         flink = machine.get_fpga_link_with_id(
