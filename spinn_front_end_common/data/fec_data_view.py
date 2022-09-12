@@ -16,7 +16,6 @@
 import logging
 import os
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.overrides import overrides
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
@@ -172,19 +171,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     __fec_data = _FecDataModel()
 
     __slots__ = []
-
-    # override PacmanDataView with extra safety
-
-    @classmethod
-    @overrides(PacmanDataView.add_vertex)
-    def add_vertex(cls, vertex):
-        # UGLY but needed to avoid circular imports
-        from spinn_front_end_common.utility_models import CommandSender
-        if isinstance(vertex, CommandSender):
-            raise NotImplementedError(
-                "Please contact spinnker team as adding a CommandSender "
-                "currently disabled")
-        PacmanDataView.add_vertex(vertex)
 
     # current_run_timesteps and first_machine_time_step
 
