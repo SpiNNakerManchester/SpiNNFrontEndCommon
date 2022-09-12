@@ -362,61 +362,6 @@ for the application hash.</p>
 </dd></dl>
 
 </section>
-<section id="module-spinn_front_end_common.utilities.globals_variables">
-<span id="spinn-front-end-common-utilities-globals-variables-module"></span><h2>spinn_front_end_common.utilities.globals_variables module<a class="headerlink" href="#module-spinn_front_end_common.utilities.globals_variables" title="Permalink to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.get_last_simulator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">get_last_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_last_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_last_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the last simulator object setup.</p>
-<dl class="simple">
-<dt>Unlike get_simulator this method will also return a simulator that has</dt><dd><p>been shutdown.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>AbstractSpinnakerBase</em></p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p>SimulatorNotSetupException</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.get_simulator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">get_simulator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#get_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.get_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the current simulator object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>AbstractSpinnakerBase</em></p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p>SimulatorNotSetupException, SimulatorShutdownException</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.set_simulator">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">set_simulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_simulator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#set_simulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.set_simulator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the current simulator object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>new_simulator</strong> (<em>AbstractSpinnakerBase</em>) – The simulator to set.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="spinn_front_end_common.utilities.globals_variables.setup_for_unittest">
-<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.globals_variables.</span></span><span class="sig-name descname"><span class="pre">setup_for_unittest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/globals_variables.html#setup_for_unittest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.globals_variables.setup_for_unittest" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes the link to the previous simulator and clears injection</p>
-<p>This will also delete any temp_dir from previous tests.</p>
-<p>As this call is not required before calling set_simulator
-so should only be called by unittest_setup.</p>
-</dd></dl>
-
-</section>
 <section id="module-spinn_front_end_common.utilities.helpful_functions">
 <span id="spinn-front-end-common-utilities-helpful-functions-module"></span><h2>spinn_front_end_common.utilities.helpful_functions module<a class="headerlink" href="#module-spinn_front_end_common.utilities.helpful_functions" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
@@ -861,7 +806,6 @@ forever</p></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.constants">spinn_front_end_common.utilities.constants module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.exceptions">spinn_front_end_common.utilities.exceptions module</a></li>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.globals_variables">spinn_front_end_common.utilities.globals_variables module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.helpful_functions">spinn_front_end_common.utilities.helpful_functions module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.sqlite_db">spinn_front_end_common.utilities.sqlite_db module</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.system_control_logic">spinn_front_end_common.utilities.system_control_logic module</a></li>

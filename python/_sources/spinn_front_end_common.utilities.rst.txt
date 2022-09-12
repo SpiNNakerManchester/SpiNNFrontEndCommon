@@ -33,14 +33,6 @@ spinn\_front\_end\_common.utilities.exceptions module
    :undoc-members:
    :show-inheritance:
 
-spinn\_front\_end\_common.utilities.globals\_variables module
--------------------------------------------------------------
-
-.. automodule:: spinn_front_end_common.utilities.globals_variables
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 spinn\_front\_end\_common.utilities.helpful\_functions module
 -------------------------------------------------------------
 

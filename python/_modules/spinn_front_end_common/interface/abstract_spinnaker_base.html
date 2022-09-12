@@ -143,7 +143,6 @@
     <span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">LOADING</span><span class="p">,</span>
     <span class="n">ProvenanceWriter</span><span class="p">,</span> <span class="n">MAPPING</span><span class="p">,</span> <span class="n">RUN_LOOP</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.java_caller</span> <span class="kn">import</span> <span class="n">JavaCaller</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities</span> <span class="kn">import</span> <span class="n">globals_variables</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">bitfield_compressor_report</span><span class="p">,</span> <span class="n">board_chip_report</span><span class="p">,</span> <span class="n">EnergyReport</span><span class="p">,</span>
@@ -250,8 +249,6 @@
 
         <span class="c1"># Setup for signal handling</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_raise_keyboard_interrupt</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="n">globals_variables</span><span class="o">.</span><span class="n">set_simulator</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_create_version_provenance</span><span class="p">()</span>
 
