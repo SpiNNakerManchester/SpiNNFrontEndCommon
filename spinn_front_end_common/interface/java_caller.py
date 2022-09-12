@@ -21,6 +21,7 @@ import subprocess
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
+from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions import (
     write_json_machine)
@@ -259,10 +260,12 @@ class JavaCaller(object):
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
         for placement in recording_placements:
-            chip = FecDataView.get_chip_at(placement.x, placement.y)
-            chip_xy = (placement.x, placement.y)
-            ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-            by_ethernet[ethernet][chip_xy].append(placement)
+            if not isinstance(placement.vertex, AbstractVirtual):
+                machine = FecDataView.get_machine()
+                chip = machine.get_chip_at(placement.x, placement.y)
+                chip_xy = (placement.x, placement.y)
+                ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+                by_ethernet[ethernet][chip_xy].append(placement)
         return by_ethernet
 
     def _write_gather(self, used_placements, path):
@@ -316,9 +319,10 @@ class JavaCaller(object):
         # Read back the regions
         json_obj = list()
         for placement in used_placements:
-            json_p = self._json_placement(placement)
-            if json_p:
-                json_obj.append(json_p)
+            if not isinstance(placement.vertex, AbstractVirtual):
+                json_p = self._json_placement(placement)
+                if json_p:
+                    json_obj.append(json_p)
 
         # dump to json file
         with open(path, "w", encoding="utf-8") as f:
