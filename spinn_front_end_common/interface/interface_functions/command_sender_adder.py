@@ -100,6 +100,6 @@ class CommandSenderAdder(object):
         return command_sender
 
     def __new_command_sender(self, label):
-        command_sender = CommandSender(label, None)
+        command_sender = CommandSender(label)
         command_sender.splitter = SplitterOneAppOneMachine()
         return command_sender
