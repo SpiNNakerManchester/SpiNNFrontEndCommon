@@ -132,7 +132,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         # pylint: disable=too-many-arguments
         super().__init__(
-            label="SYSTEM:ExtraMonitor", constraints=None, app_vertex=None)
+            label="SYSTEM:ExtraMonitor", app_vertex=None)
 
         self._reinject_multicast = get_config_bool(
             "Machine", "enable_reinjection")
