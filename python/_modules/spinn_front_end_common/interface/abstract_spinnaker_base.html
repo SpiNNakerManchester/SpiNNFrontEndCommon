@@ -105,7 +105,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">fec_version</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common</span> <span class="kn">import</span> <span class="n">common_model_binaries</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">,</span>
+    <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecTimer</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
@@ -480,8 +480,8 @@
 
         <span class="c1"># If we have never run before, or the graph has changed,</span>
         <span class="c1"># start by performing mapping</span>
-        <span class="n">graph_changed</span><span class="p">,</span> <span class="n">data_changed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detect_if_graph_has_changed</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">graph_changed</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_last</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_last</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
                 <span class="s2">&quot;The network cannot be changed between runs without&quot;</span>
@@ -489,19 +489,16 @@
 
         <span class="c1"># If we have reset and the graph has changed, stop any running</span>
         <span class="c1"># application</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">graph_changed</span> <span class="ow">or</span> <span class="n">data_changed</span><span class="p">)</span> <span class="ow">and</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_transceiver</span><span class="p">():</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_data_generation</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_transceiver</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">reset_sync_signal</span><span class="p">()</span>
         <span class="c1"># build the graphs to modify with system requirements</span>
-        <span class="k">if</span> <span class="n">graph_changed</span><span class="p">:</span>
-            <span class="c1"># Reset the machine if the graph has changed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_soft_reset</span><span class="p">():</span>
-                <span class="c1"># wipe out stuff associated with a given machine, as these need</span>
-                <span class="c1"># to be rebuilt.</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_hard_reset</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
+                <span class="c1"># wipe out stuff associated with past mapping</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
             <span class="n">FecTimer</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">()</span>
@@ -552,11 +549,9 @@
             <span class="c1"># more than once</span>
             <span class="n">steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_steps</span><span class="p">(</span><span class="n">n_machine_time_steps</span><span class="p">)</span>
 
-        <span class="c1"># If we have never run before, or the graph has changed, or data has</span>
-        <span class="c1"># been changed, generate and load the data</span>
-        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">()</span> <span class="ow">or</span> <span class="n">graph_changed</span> <span class="ow">or</span>
-                <span class="n">data_changed</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_do_load</span><span class="p">(</span><span class="n">graph_changed</span><span class="p">)</span>
+        <span class="c1"># requires data_generation includes never run and requires_mapping</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_data_generation</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_do_load</span><span class="p">()</span>
 
         <span class="c1"># Run for each of the given steps</span>
         <span class="k">if</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -564,16 +559,16 @@
                         <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">run_time</span><span class="p">)</span>
             <span class="k">for</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">elif</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running until complete&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
         <span class="k">elif</span> <span class="p">(</span><span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span>
                 <span class="s2">&quot;Buffers&quot;</span><span class="p">,</span> <span class="s2">&quot;use_auto_pause_and_resume&quot;</span><span class="p">)</span> <span class="ow">or</span>
                 <span class="ow">not</span> <span class="n">is_per_timestep_sdram</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running forever&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Waiting for stop request&quot;</span><span class="p">)</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="p">:</span>
                 <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_no_stop_requested</span><span class="p">():</span>
@@ -585,8 +580,7 @@
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_no_stop_requested</span><span class="p">():</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">(),</span> <span class="n">graph_changed</span><span class="p">,</span>
-                    <span class="n">n_sync_steps</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">(),</span> <span class="n">n_sync_steps</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># Indicate that the signal handler needs to act</span>
@@ -611,7 +605,13 @@
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Command Sender Adder&quot;</span><span class="p">):</span>
-            <span class="n">add_command_senders</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
+            <span class="n">all_command_senders</span> <span class="o">=</span> <span class="n">add_command_senders</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
+            <span class="c1"># add the edges from the command senders to the dependent vertices</span>
+            <span class="k">for</span> <span class="n">command_sender</span> <span class="ow">in</span> <span class="n">all_command_senders</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">command_sender</span><span class="p">)</span>
+                <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span> <span class="o">=</span> <span class="n">command_sender</span><span class="o">.</span><span class="n">edges_and_partitions</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_add_dependent_verts_and_edges_for_application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># cache vertices to allow insertion during iteration</span>
@@ -1897,17 +1897,16 @@
                 <span class="k">return</span>
             <span class="n">load_app_images</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the load algotithms</span>
 
-<span class="sd">        :param bool graph_changed: Flag to say the graph changed,</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># set up timing</span>
         <span class="n">load_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
         <span class="n">load_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">graph_changed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_routing_setup</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_graph_binary_gatherer</span><span class="p">()</span>
         <span class="c1"># loading_algorithms</span>
@@ -1918,7 +1917,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_data_generation</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_control_sync</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">graph_changed</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">():</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_load_fixed_routes</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_system_data_specification</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_load_system_executable_images</span><span class="p">()</span>
@@ -1932,7 +1931,7 @@
 
         <span class="c1"># TODO Was master correct to run the report first?</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_tags_from_machine_report</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">graph_changed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_memory_on_host</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_memory_on_chip</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_compressed</span><span class="p">(</span><span class="n">compressed</span><span class="p">)</span>
@@ -2172,7 +2171,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_energy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_provenance_reports</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">__do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the do run steps.</span>
 
@@ -2180,7 +2179,6 @@
 <span class="sd">        :type n_machine_time_steps: int or None</span>
 <span class="sd">        :param int n_sync_steps:</span>
 <span class="sd">            The number of timesteps between synchronisations</span>
-<span class="sd">        :param bool graph_changed: Flag to say the graph changed,</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO virtual board</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
@@ -2194,10 +2192,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_sdram_usage_report_per_chip</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_drift</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">graph_changed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_create_database_interface</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_create_notifiaction_protocol</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">graph_changed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_dsg_region_reloader</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_runtime_update</span><span class="p">(</span><span class="n">n_sync_steps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_runner</span><span class="p">(</span><span class="n">n_sync_steps</span><span class="p">,</span> <span class="n">run_time</span><span class="p">)</span>
@@ -2207,7 +2206,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_drift</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_control_sync</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the do run steps.</span>
 
@@ -2215,11 +2214,9 @@
 <span class="sd">        :type n_machine_time_steps: int or None</span>
 <span class="sd">        :param int n_sync_steps:</span>
 <span class="sd">            The number of timesteps between synchronisations</span>
-<span class="sd">        :param bool graph_changed: Flag to say the graph changed,</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__do_run</span><span class="p">(</span>
-                <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">graph_changed</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__do_run</span><span class="p">(</span><span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;User has aborted the simulation&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
@@ -2370,47 +2367,6 @@
 
         <span class="c1"># Reset the graph off the machine, to set things to time 0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span></div>
-
-    <span class="k">def</span> <span class="nf">_detect_if_graph_has_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Iterates though the original graphs looking for changes.</span>
-
-<span class="sd">        :param bool reset_flags:</span>
-<span class="sd">        :return: mapping_changed, data_changed</span>
-<span class="sd">        :rtype: tuple(bool, bool)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Set changed - note that we can&#39;t return yet as we still have to</span>
-        <span class="c1"># mark vertices as not changed, otherwise they will keep reporting</span>
-        <span class="c1"># that they have changed when they haven&#39;t</span>
-        <span class="n">changed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_vertices_or_edges_added</span><span class="p">()</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_hard_reset</span><span class="p">():</span>
-            <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">data_changed</span> <span class="o">=</span> <span class="kc">False</span>
-
-        <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_vertices</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">vertex</span><span class="o">.</span><span class="n">requires_mapping</span><span class="p">:</span>
-                    <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="k">if</span> <span class="n">vertex</span><span class="o">.</span><span class="n">requires_data_generation</span><span class="p">:</span>
-                    <span class="n">data_changed</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="n">vertex</span><span class="o">.</span><span class="n">mark_no_changes</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">machine_vertex</span> <span class="ow">in</span> <span class="n">vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">machine_vertex</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">requires_mapping</span><span class="p">:</span>
-                        <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="k">if</span> <span class="n">machine_vertex</span><span class="o">.</span><span class="n">requires_data_generation</span><span class="p">:</span>
-                        <span class="n">data_changed</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">machine_vertex</span><span class="o">.</span><span class="n">mark_no_changes</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> \
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_partitions</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">partition</span><span class="o">.</span><span class="n">edges</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">AbstractChangableAfterRun</span><span class="p">):</span>
-                    <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">requires_mapping</span><span class="p">:</span>
-                        <span class="n">changed</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="k">if</span> <span class="n">edge</span><span class="o">.</span><span class="n">requires_data_generation</span><span class="p">:</span>
-                        <span class="n">data_changed</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="n">edge</span><span class="o">.</span><span class="n">mark_no_changes</span><span class="p">()</span>
-
-        <span class="k">return</span> <span class="n">changed</span><span class="p">,</span> <span class="n">data_changed</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_loops</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
