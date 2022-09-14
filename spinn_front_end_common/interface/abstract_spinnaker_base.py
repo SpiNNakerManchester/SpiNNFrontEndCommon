@@ -66,7 +66,7 @@ from pacman.operations.tag_allocator_algorithms import basic_tag_allocator
 from spinn_front_end_common import __version__ as fec_version
 from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun,
+    AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
 from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_handler import ConfigHandler
@@ -441,8 +441,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        graph_changed, data_changed = self._detect_if_graph_has_changed()
-        if graph_changed and self._data_writer.is_ran_last():
+        if (self._data_writer.get_requires_mapping() and
+                self._data_writer.is_ran_last()):
             self.stop()
             raise NotImplementedError(
                 "The network cannot be changed between runs without"
@@ -450,19 +450,16 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # If we have reset and the graph has changed, stop any running
         # application
-        if (graph_changed or data_changed) and \
-                self._data_writer.has_transceiver():
+        if (self._data_writer.get_requires_data_generation() and
+                self._data_writer.has_transceiver()):
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
-        if graph_changed:
-            # Reset the machine if the graph has changed
+        if self._data_writer.get_requires_mapping():
             if self._data_writer.is_soft_reset():
-                # wipe out stuff associated with a given machine, as these need
-                # to be rebuilt.
-                if not self._data_writer.is_hard_reset():
-                    self._hard_reset()
+                # wipe out stuff associated with past mapping
+                self._hard_reset()
             FecTimer.setup(self)
 
             self._add_dependent_verts_and_edges_for_application_graph()
@@ -513,11 +510,9 @@ class AbstractSpinnakerBase(ConfigHandler):
             # more than once
             steps = self._generate_steps(n_machine_time_steps)
 
-        # If we have never run before, or the graph has changed, or data has
-        # been changed, generate and load the data
-        if (not self._data_writer.is_ran_ever() or graph_changed or
-                data_changed):
-            self._do_load(graph_changed)
+        # requires data_generation includes never run and requires_mapping
+        if self._data_writer.get_requires_data_generation():
+            self._do_load()
 
         # Run for each of the given steps
         if run_time is not None:
@@ -525,16 +520,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                         len(steps), run_time)
             for self._n_loops, step in enumerate(steps):
                 logger.info("Run {} of {}", self._n_loops + 1, len(steps))
-                self._do_run(step, graph_changed, n_sync_steps)
+                self._do_run(step, n_sync_steps)
             self._n_loops = None
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
-            self._do_run(None, graph_changed, n_sync_steps)
+            self._do_run(None, n_sync_steps)
         elif (not get_config_bool(
                 "Buffers", "use_auto_pause_and_resume") or
                 not is_per_timestep_sdram):
             logger.info("Running forever")
-            self._do_run(None, graph_changed, n_sync_steps)
+            self._do_run(None, n_sync_steps)
             logger.info("Waiting for stop request")
             with self._state_condition:
                 while self._data_writer.is_no_stop_requested():
@@ -546,8 +541,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             while self._data_writer.is_no_stop_requested():
                 logger.info("Run {}".format(self._n_loops))
                 self._do_run(
-                    self._data_writer.get_max_run_time_steps(), graph_changed,
-                    n_sync_steps)
+                    self._data_writer.get_max_run_time_steps(), n_sync_steps)
                 self._n_loops += 1
 
         # Indicate that the signal handler needs to act
@@ -572,7 +566,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set then "machine" value
         """
         with FecTimer(MAPPING, "Command Sender Adder"):
-            add_command_senders(system_placements)
+            all_command_senders = add_command_senders(system_placements)
+            # add the edges from the command senders to the dependent vertices
+            for command_sender in all_command_senders:
+                self._data_writer.add_vertex(command_sender)
+                edges, partition_ids = command_sender.edges_and_partitions()
+                for edge, partition_id in zip(edges, partition_ids):
+                    self._data_writer.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         # cache vertices to allow insertion during iteration
@@ -1858,17 +1858,16 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_app_images()
 
-    def _do_load(self, graph_changed):
+    def _do_load(self):
         """
         Runs, times and logs the load algotithms
 
-        :param bool graph_changed: Flag to say the graph changed,
         """
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
 
-        if graph_changed:
+        if self._data_writer.get_requires_mapping():
             self._execute_routing_setup()
             self._execute_graph_binary_gatherer()
         # loading_algorithms
@@ -1879,7 +1878,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_data_generation()
 
         self._execute_control_sync(False)
-        if graph_changed or not self._data_writer.is_ran_ever():
+        if self._data_writer.get_requires_mapping():
             self._execute_load_fixed_routes()
         self._execute_system_data_specification()
         self._execute_load_system_executable_images()
@@ -1893,7 +1892,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
-        if graph_changed:
+        if self._data_writer.get_requires_mapping():
             self._report_memory_on_host()
             self._report_memory_on_chip()
             self._report_compressed(compressed)
@@ -2133,7 +2132,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_energy()
         self._do_provenance_reports()
 
-    def __do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+    def __do_run(self, n_machine_time_steps, n_sync_steps):
         """
         Runs, times and logs the do run steps.
 
@@ -2141,7 +2140,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type n_machine_time_steps: int or None
         :param int n_sync_steps:
             The number of timesteps between synchronisations
-        :param bool graph_changed: Flag to say the graph changed,
         """
         # TODO virtual board
         self._run_timer = Timer()
@@ -2155,10 +2153,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_sdram_usage_report_per_chip()
         self._report_drift(start=True)
-        if graph_changed:
+        if self._data_writer.get_requires_mapping():
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
-        if self._data_writer.is_ran_ever() and not graph_changed:
+        if (self._data_writer.is_ran_ever() and
+                not self._data_writer.get_requires_mapping()):
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
@@ -2168,7 +2167,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_drift(start=False)
         self._execute_control_sync(True)
 
-    def _do_run(self, n_machine_time_steps, graph_changed, n_sync_steps):
+    def _do_run(self, n_machine_time_steps, n_sync_steps):
         """
         Runs, times and logs the do run steps.
 
@@ -2176,11 +2175,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :type n_machine_time_steps: int or None
         :param int n_sync_steps:
             The number of timesteps between synchronisations
-        :param bool graph_changed: Flag to say the graph changed,
         """
         try:
-            self.__do_run(
-                n_machine_time_steps, graph_changed, n_sync_steps)
+            self.__do_run(n_machine_time_steps, n_sync_steps)
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
             self._shutdown()
@@ -2331,47 +2328,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
-
-    def _detect_if_graph_has_changed(self):
-        """ Iterates though the original graphs looking for changes.
-
-        :param bool reset_flags:
-        :return: mapping_changed, data_changed
-        :rtype: tuple(bool, bool)
-        """
-        # Set changed - note that we can't return yet as we still have to
-        # mark vertices as not changed, otherwise they will keep reporting
-        # that they have changed when they haven't
-        changed = self._data_writer.get_vertices_or_edges_added()
-        if self._data_writer.is_hard_reset():
-            changed = True
-        data_changed = False
-
-        for vertex in self._data_writer.iterate_vertices():
-            if isinstance(vertex, AbstractChangableAfterRun):
-                if vertex.requires_mapping:
-                    changed = True
-                if vertex.requires_data_generation:
-                    data_changed = True
-                vertex.mark_no_changes()
-            for machine_vertex in vertex.machine_vertices:
-                if isinstance(machine_vertex, AbstractChangableAfterRun):
-                    if machine_vertex.requires_mapping:
-                        changed = True
-                    if machine_vertex.requires_data_generation:
-                        data_changed = True
-                    machine_vertex.mark_no_changes()
-        for partition in \
-                self._data_writer.iterate_partitions():
-            for edge in partition.edges:
-                if isinstance(edge, AbstractChangableAfterRun):
-                    if edge.requires_mapping:
-                        changed = True
-                    if edge.requires_data_generation:
-                        data_changed = True
-                    edge.mark_no_changes()
-
-        return changed, data_changed
 
     @property
     def n_loops(self):
