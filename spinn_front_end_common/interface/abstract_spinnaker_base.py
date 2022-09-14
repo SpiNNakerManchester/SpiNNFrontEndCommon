@@ -566,7 +566,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set then "machine" value
         """
         with FecTimer(MAPPING, "Command Sender Adder"):
-            add_command_senders(system_placements)
+            all_command_senders = add_command_senders(system_placements)
+            # add the edges from the command senders to the dependent vertices
+            for command_sender in all_command_senders:
+                self._data_writer.add_vertex(command_sender)
+                edges, partition_ids = command_sender.edges_and_partitions()
+                for edge, partition_id in zip(edges, partition_ids):
+                    self._data_writer.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         # cache vertices to allow insertion during iteration
