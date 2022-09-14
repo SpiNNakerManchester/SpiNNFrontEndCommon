@@ -15,8 +15,6 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints import (
-    FixedKeyAndMaskConstraint)
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
@@ -71,9 +69,9 @@ class CommandSenderMachineVertex(
 
     _NOT_GOT_KEY_ERROR_MESSAGE = (
         "The command sender {} has requested key {} for outgoing "
-        "partition {}, but the keys allocated to it do not match. this will "
-        "cause errors in the external devices support and therefore needs "
-        "fixing")
+        "partition {}, but the keys allocated to it ({}) do not match. this "
+        "will cause errors in the external devices support and therefore "
+        "needs fixing")
 
     def __init__(self, label, constraints, app_vertex=None):
         """
@@ -89,6 +87,7 @@ class CommandSenderMachineVertex(
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
         self._keys_to_partition_id = dict()
+        self._partition_id_keys = dict()
         self._edge_partition_id_counter = 0
         self._vertex_to_key_map = dict()
 
@@ -130,11 +129,17 @@ class CommandSenderMachineVertex(
                 partition_id = "COMMANDS{}".format(
                     self._edge_partition_id_counter)
                 self._keys_to_partition_id[key] = partition_id
+                self._partition_id_keys[partition_id] = key
                 self._edge_partition_id_counter += 1
-                self.app_vertex.add_constraint(
-                    FixedKeyAndMaskConstraint(
-                        [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)],
-                        partition=partition_id))
+
+    def get_fixed_key_and_mask(self, partition_id):
+        """ Get the key and mask for the given partition
+
+        :param str partition_id: The partition to get the key for
+        :rtype: BaseKeyAndMask
+        """
+        return BaseKeyAndMask(
+            self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -169,12 +174,13 @@ class CommandSenderMachineVertex(
         routing_infos = FecDataView.get_routing_infos()
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(
-                self, self._keys_to_partition_id[mc_key])
+                self.app_vertex, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
                 raise ConfigurationException(
                     self._NOT_GOT_KEY_ERROR_MESSAGE.format(
                         self._label, mc_key,
-                        self._keys_to_partition_id[mc_key]))
+                        self._keys_to_partition_id[mc_key],
+                        allocated_mc_key))
 
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \

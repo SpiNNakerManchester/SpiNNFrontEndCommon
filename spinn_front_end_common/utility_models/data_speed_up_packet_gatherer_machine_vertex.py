@@ -394,6 +394,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write the broad cast keys for timeouts
         router_timeout_key = (
             FecDataView.get_system_multicast_router_timeout_keys())
+        # pylint: disable=unsubscriptable-object
         reinjection_base_key = router_timeout_key[(placement.x, placement.y)]
         spec.write_value(reinjection_base_key)
 
