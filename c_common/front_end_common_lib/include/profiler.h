@@ -98,7 +98,7 @@ extern struct profiler_state profiler_state;
 //! Requires two words of profiler storage to record an entry, one for the
 //! high-resolution timestamp and one for the tag.
 static inline void profiler_write_entry(uint32_t tag) {
-    if (profiler_samples_remaining > 0) {
+    if (profiler_state.samples_remaining > 0) {
         *profiler_state.output++ = tc[T2_COUNT];
         *profiler_state.output++ = tag;
         profiler_state.samples_remaining--;
