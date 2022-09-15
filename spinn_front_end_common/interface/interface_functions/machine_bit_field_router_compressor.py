@@ -233,8 +233,7 @@ class _MachineBitFieldRouterCompressor(object):
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
-                if (not view.get_chip_at(table.x, table.y).virtual
-                        and table.multicast_routing_entries):
+                if table.multicast_routing_entries:
                     transceiver.clear_multicast_routes(table.x, table.y)
                     transceiver.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
@@ -375,39 +374,37 @@ class _MachineBitFieldRouterCompressor(object):
         :rtype: list(tuple(int,int))
         """
         run_by_host = list()
-        view = FecDataView()
         for table in routing_tables.routing_tables:
-            if not view.get_chip_at(table.x, table.y).virtual:
-                try:
-                    self._load_routing_table_data(
-                        table, app_id, transceiver,
-                        routing_table_compressor_app_id, progress_bar, cores,
-                        matrix_addresses_and_size[(table.x, table.y)])
+            try:
+                self._load_routing_table_data(
+                    table, app_id, transceiver,
+                    routing_table_compressor_app_id, progress_bar, cores,
+                    matrix_addresses_and_size[(table.x, table.y)])
 
-                    comms_sdram = transceiver.malloc_sdram(
-                        table.x, table.y, SIZE_OF_COMMS_SDRAM,
-                        routing_table_compressor_app_id,
-                        BIT_FIELD_COMMS_SDRAM_TAG)
+                comms_sdram = transceiver.malloc_sdram(
+                    table.x, table.y, SIZE_OF_COMMS_SDRAM,
+                    routing_table_compressor_app_id,
+                    BIT_FIELD_COMMS_SDRAM_TAG)
 
-                    self._load_address_data(
-                        addresses, table.x, table.y, transceiver,
-                        routing_table_compressor_app_id,
-                        cores, matrix_addresses_and_size[(table.x, table.y)],
-                        bit_field_compressor_executable_path,
-                        bit_field_sorter_executable_path, comms_sdram,
-                        retry_count)
+                self._load_address_data(
+                    addresses, table.x, table.y, transceiver,
+                    routing_table_compressor_app_id,
+                    cores, matrix_addresses_and_size[(table.x, table.y)],
+                    bit_field_compressor_executable_path,
+                    bit_field_sorter_executable_path, comms_sdram,
+                    retry_count)
 
-                    self._load_usable_sdram(
-                        matrix_addresses_and_size[(table.x, table.y)], table.x,
-                        table.y, transceiver, routing_table_compressor_app_id,
-                        cores)
+                self._load_usable_sdram(
+                    matrix_addresses_and_size[(table.x, table.y)], table.x,
+                    table.y, transceiver, routing_table_compressor_app_id,
+                    cores)
 
-                    self._load_compressor_data(
-                        table.x, table.y, transceiver,
-                        bit_field_compressor_executable_path, cores,
-                        compress_as_much_as_possible, comms_sdram)
-                except CantFindSDRAMToUseException:
-                    run_by_host.append((table.x, table.y))
+                self._load_compressor_data(
+                    table.x, table.y, transceiver,
+                    bit_field_compressor_executable_path, cores,
+                    compress_as_much_as_possible, comms_sdram)
+            except CantFindSDRAMToUseException:
+                run_by_host.append((table.x, table.y))
 
         return run_by_host
 
