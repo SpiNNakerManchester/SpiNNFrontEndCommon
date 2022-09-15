@@ -155,14 +155,6 @@
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
                 <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO Machine_chip(</span>
-<span class="sd">                    no_processors, chip_x, chip_y, machine_id)</span>
-<span class="sd">                VALUES (?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span>
-                    <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">n_processors</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span> <span class="k">if</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">))</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO Machine_chip(</span>
 <span class="sd">                    no_processors, chip_x, chip_y, machine_id,</span>
 <span class="sd">                    ip_address, nearest_ethernet_x, nearest_ethernet_y)</span>
 <span class="sd">                VALUES (?, ?, ?, ?, ?, ?, ?)</span>
@@ -170,7 +162,7 @@
                     <span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">n_processors</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span><span class="p">,</span>
                      <span class="n">chip</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span>
                      <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">nearest_ethernet_y</span><span class="p">)</span>
-                    <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">chip</span><span class="o">.</span><span class="n">virtual</span><span class="p">))</span></div>
+                    <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_application_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Stores the main application graph description (vertices, edges).</span>

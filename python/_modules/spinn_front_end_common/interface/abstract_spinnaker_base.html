@@ -2413,12 +2413,9 @@
 
         <span class="c1"># if clearing routing table entries, clear</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;clear_routing_tables&quot;</span><span class="p">):</span>
-            <span class="n">machine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
             <span class="k">for</span> <span class="n">router_table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">():</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
-                        <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">virtual</span><span class="p">:</span>
-                    <span class="n">transceiver</span><span class="o">.</span><span class="n">clear_multicast_routes</span><span class="p">(</span>
-                        <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+                <span class="n">transceiver</span><span class="o">.</span><span class="n">clear_multicast_routes</span><span class="p">(</span>
+                    <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__close_allocation_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
