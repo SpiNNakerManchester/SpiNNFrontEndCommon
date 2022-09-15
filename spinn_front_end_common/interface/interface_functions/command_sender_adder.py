@@ -25,7 +25,7 @@ from spinn_utilities.progress_bar import ProgressBar
 def add_command_senders(system_placements):
     """ Add command senders
     """
-    CommandSenderAdder(system_placements).add_command_senders()
+    return CommandSenderAdder(system_placements).add_command_senders()
 
 
 class CommandSenderAdder(object):
@@ -66,12 +66,7 @@ class CommandSenderAdder(object):
         if self.__general_command_sender is not None:
             all_command_senders.append(self.__general_command_sender)
 
-        # add the edges from the command senders to the dependent vertices
-        for command_sender in all_command_senders:
-            FecDataView.add_vertex(command_sender)
-            edges, partition_ids = command_sender.edges_and_partitions()
-            for edge, partition_id in zip(edges, partition_ids):
-                FecDataView.add_edge(edge, partition_id)
+        return all_command_senders
 
     def __cores(self, x, y):
         return [p.processor_id
