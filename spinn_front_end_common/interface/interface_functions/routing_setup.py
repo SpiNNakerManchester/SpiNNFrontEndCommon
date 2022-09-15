@@ -36,18 +36,17 @@ def routing_setup():
     # Clear the routing table for each router that needs to be set up
     # and set up the diagnostics
     for router_table in progress.over(routing_tables):
-        if not FecDataView.get_chip_at(router_table.x, router_table.y).virtual:
-            transceiver.clear_multicast_routes(
-                router_table.x, router_table.y)
-            transceiver.clear_router_diagnostic_counters(
-                router_table.x, router_table.y)
+        transceiver.clear_multicast_routes(
+            router_table.x, router_table.y)
+        transceiver.clear_router_diagnostic_counters(
+            router_table.x, router_table.y)
 
-            # set the router diagnostic for user 3 to catch local default
-            # routed packets. This can only occur when the source router
-            # has no router entry, and therefore should be detected a bad
-            # dropped packet.
-            __set_router_diagnostic_filters(
-                router_table.x, router_table.y, transceiver)
+        # set the router diagnostic for user 3 to catch local default
+        # routed packets. This can only occur when the source router
+        # has no router entry, and therefore should be detected a bad
+        # dropped packet.
+        __set_router_diagnostic_filters(
+            router_table.x, router_table.y, transceiver)
 
 
 def __set_router_diagnostic_filters(x, y, transceiver):

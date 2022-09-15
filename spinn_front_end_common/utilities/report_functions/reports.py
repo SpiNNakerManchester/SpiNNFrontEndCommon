@@ -726,9 +726,6 @@ def _recursive_trace_to_destinations(
 
     chip = FecDataView.get_chip_at(chip_x, chip_y)
 
-    if chip.virtual:
-        return "-> Virtual Chip {}, {}".format(chip_x, chip_y)
-
     text = "-> Chip {}:{}".format(chip_x, chip_y)
     routing_tables = FecDataView.get_uncompressed()
     table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)

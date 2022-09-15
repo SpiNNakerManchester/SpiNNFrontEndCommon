@@ -125,7 +125,6 @@ class TestWriteJson(unittest.TestCase):
         chip = machine.get_chip_at(1, 1)
         chip._sdram._size = chip._sdram._size - 100
         chip._router._n_available_multicast_entries -= 10
-        chip._virtual = not chip._virtual
         chip = machine.get_chip_at(1, 2)
         chip._sdram._size = chip._sdram._size - 101
 
