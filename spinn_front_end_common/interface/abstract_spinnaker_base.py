@@ -48,6 +48,8 @@ from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
 from pacman.model.placements import Placements
 from pacman.operations.fixed_route_router import fixed_route_router
+from pacman.operations.multi_cast_router_check_functionality.\
+    valid_routes_checker import validate_routes
 from pacman.operations.partition_algorithms import splitter_partitioner
 from pacman.operations.placer_algorithms import place_application_graph
 from pacman.operations.router_algorithms import (
@@ -1334,6 +1336,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_router_info()
         self._do_routing_table_generator()
         self._report_uncompressed_routing_table()
+        self._check_uncompressed_routing_table()
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
@@ -1695,6 +1698,17 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             router_report_from_router_tables()
 
+    def _check_uncompressed_routing_table(self):
+        """
+        Runs, times and logs the checking of uncompressed table
+        """
+        with FecTimer(
+                LOADING, "Validating Uncompressed routing table") as timer:
+            #if timer.skip_if_cfg_false(
+            #        "Reports", "validate_routes_uncompressed"):
+            #    return
+            validate_routes(self._data_writer.get_uncompressed())
+
     def _report_bit_field_compressor(self):
         """
         Runs, times and logs the BitFieldCompressorReport if requested
@@ -1834,6 +1848,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_compressed_summary_report(compressed)
 
             routing_table_from_machine_report(compressed)
+
+            validate_routes(compressed)
 
     def _report_fixed_routes(self):
         """
