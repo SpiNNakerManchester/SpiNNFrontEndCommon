@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['dma_5fburst_5fsize_3875',['DMA_BURST_SIZE',['../extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586',1,'extra_monitor_support.c']]]
+  ['dma_5fburst_5fsize_3876',['DMA_BURST_SIZE',['../extra__monitor__support_8c.html#a1770d428fd0221aabcda7aad57a9b586',1,'extra_monitor_support.c']]]
 ];

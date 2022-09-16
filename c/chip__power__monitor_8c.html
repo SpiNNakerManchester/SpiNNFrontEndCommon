@@ -132,6 +132,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hre
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#a55f1469122ed14dc99104dcceda648ba">reset_core_counters</a> (void)</td></tr>
 <tr class="memdesc:a55f1469122ed14dc99104dcceda648ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Resets the state of the core_counters and the sample_count variables to zero. <br /></td></tr>
 <tr class="separator:a55f1469122ed14dc99104dcceda648ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b840e76ff7209369adb6e5ddd45b3ff"><td class="memItemLeft" align="right" valign="top"><a id="a7b840e76ff7209369adb6e5ddd45b3ff"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#a7b840e76ff7209369adb6e5ddd45b3ff">rescale_sim_ticks</a> (void)</td></tr>
+<tr class="memdesc:a7b840e76ff7209369adb6e5ddd45b3ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Change simulation ticks to be a number related to sampling frequency. <br /></td></tr>
+<tr class="separator:a7b840e76ff7209369adb6e5ddd45b3ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afb40f588131f69f1d033283921f1a811"><td class="memItemLeft" align="right" valign="top"><a id="afb40f588131f69f1d033283921f1a811"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="chip__power__monitor_8c.html#afb40f588131f69f1d033283921f1a811">resume_callback</a> (void)</td></tr>
 <tr class="memdesc:afb40f588131f69f1d033283921f1a811"><td class="mdescLeft">&#160;</td><td class="mdescRight">The function to call when resuming a simulation. <br /></td></tr>
@@ -394,7 +398,7 @@ The fundamental sampling frequency. </td></tr>
 <p>Accumulate a count of how active each core on the current chip is. The counter for the core is incremented if the core is active. </p>
 <p>Uses <a class="el" href="chip__power__monitor_8c.html#a766cca800c4544225b024ca3f36932aa" title="Read which cores on the chip are asleep right now.">get_sample()</a> to obtain the state of the cores. </p>
 
-<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00147">147</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00153">153</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -441,7 +445,7 @@ The fundamental sampling frequency. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00160">160</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00166">166</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -478,7 +482,7 @@ The fundamental sampling frequency. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the read was successful. (Does not currently fail.) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00201">201</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00205">205</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -509,7 +513,7 @@ The fundamental sampling frequency. </td></tr>
 <p>Initialises the program. </p>
 <dl class="section return"><dt>Returns</dt><dd>True if initialisation succeeded, false if it failed. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00211">211</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00215">215</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>
@@ -532,7 +536,7 @@ The fundamental sampling frequency. </td></tr>
 <p>The application entry point. </p>
 <p>Initialises the application state, installs all required callbacks, and runs the "simulation" loop until told to terminate. </p>
 
-<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00237">237</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="chip__power__monitor_8c_source.html#l00241">241</a> of file <a class="el" href="chip__power__monitor_8c_source.html">chip_power_monitor.c</a>.</p>
 
 </div>
 </div>

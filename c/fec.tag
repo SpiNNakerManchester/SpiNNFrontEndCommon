@@ -2338,6 +2338,13 @@
     </member>
     <member kind="function" static="yes">
       <type>static void</type>
+      <name>rescale_sim_ticks</name>
+      <anchorfile>chip__power__monitor_8c.html</anchorfile>
+      <anchor>a7b840e76ff7209369adb6e5ddd45b3ff</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
       <name>resume_callback</name>
       <anchorfile>chip__power__monitor_8c.html</anchorfile>
       <anchor>afb40f588131f69f1d033283921f1a811</anchor>
