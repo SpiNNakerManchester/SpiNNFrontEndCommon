@@ -884,8 +884,7 @@ static void initialise(void) {
     end_flag_key = config->end_flag_key;
     basic_data_key = config->basic_data_key;
 
-    log_info(
-            "new seq key = %d, first data key = %d, transaction id key = %d, "
+    log_info("new seq key = %d, first data key = %d, transaction id key = %d, "
             "end flag key = %d, basic_data_key = %d",
             new_sequence_key, first_data_key, transaction_id_key,
             end_flag_key, basic_data_key);
