@@ -557,7 +557,7 @@ static bool initialize(uint32_t *timer_period) {
 //! \brief Sets up the AER EIEIO data message.
 //! \return bool where True was successful init and  false otherwise.
 static bool configure_sdp_msg(void) {
-    log_info("configure_sdp_msg");
+    log_debug("configure_sdp_msg");
 
     switch (config->packet_type) {
     case NO_PAYLOAD_16:

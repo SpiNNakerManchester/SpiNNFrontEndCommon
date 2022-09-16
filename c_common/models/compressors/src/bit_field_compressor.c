@@ -65,8 +65,8 @@ compressor_states previous_compressor_state = UNUSED_CORE;
 //! SDRAM are used for communication between sorter and THIS compressor
 comms_sdram_t *restrict comms_sdram;
 
-// DEBUG stuff
-#if 0
+// DEBUG stuff please leave
+#ifdef DEBUG_COMPRESSOR
 bool hack_malloc_failed = false;
 #endif
 // ---------------------------------------------------------------------
@@ -78,19 +78,17 @@ void start_compression_process(void) {
     // restart timer (also puts us in running state)
     spin1_resume(SYNC_NOWAIT);
 
-    // DEBUG Stuff please leave
-#if 0
+#ifdef DEBUG_COMPRESSOR
     if (comms_sdram->mid_point >= 100) {
-        log_info("HACK fail at 100 plus bitfeilds!");
+        log_warning("HACK fail at 100 plus bitfeilds!");
         comms_sdram->compressor_state = FAILED_TO_COMPRESS;
         return;
     }
 #endif
 
-    // DEBUG stuff
-#if 0
+#ifdef DEBUG_COMPRESSOR
     if ((comms_sdram->mid_point > 0) || (!hack_malloc_failed)) {
-        log_info("HACK malloc fail!");
+        log_warning("HACK malloc fail!");
         hack_malloc_failed = true;
         comms_sdram->compressor_state = FAILED_MALLOC;
         return;
@@ -99,7 +97,7 @@ void start_compression_process(void) {
 
     // run compression
     bool success = run_compressor(
-        compress_as_much_as_possible, &failed_by_malloc, &stop_compressing);
+            compress_as_much_as_possible, &failed_by_malloc, &stop_compressing);
 
     // turn off timer and set us into pause state
     spin1_pause();
@@ -149,12 +147,12 @@ void setup_routing_tables(void) {
 void run_compression_process(void) {
     if (comms_sdram->mid_point > 0) {
         log_info("Run with %d tables and %d mid_point out of %d bitfields",
-            comms_sdram->routing_tables->n_sub_tables,
-            comms_sdram->mid_point,
-            comms_sdram->sorted_bit_fields->n_bit_fields);
+                comms_sdram->routing_tables->n_sub_tables,
+                comms_sdram->mid_point,
+                comms_sdram->sorted_bit_fields->n_bit_fields);
     } else {
         log_info("Run with %d tables and no bitfields",
-            comms_sdram->routing_tables->n_sub_tables);
+                comms_sdram->routing_tables->n_sub_tables);
     }
     log_debug("setting up fake heap for sdram usage");
     malloc_extras_initialise_with_fake_heap(comms_sdram->fake_heap_data);
@@ -167,7 +165,7 @@ void run_compression_process(void) {
 
     setup_routing_tables();
 
-    log_info("starting compression attempt with %d entries",
+    log_debug("starting compression attempt with %d entries",
             routing_table_get_n_entries());
 
     // start compression process
@@ -303,7 +301,7 @@ static void wait_for_instructions(UNUSED uint unused0, UNUSED uint unused1) {
         users_match = (compressor_state == UNUSED_CORE);
         break;
     case DO_NOT_USE:
-        log_info("DO_NOT_USE detected exiting wait");
+        log_warning("DO_NOT_USE detected exiting wait");
         spin1_pause();
         return;
     }
@@ -339,8 +337,9 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
         } else if (comms_sdram->sorter_instruction == DO_NOT_USE) {
             log_info("Compressor no longer to be used");
         } else {
-            log_info("timer weirdness %d %d",
-            comms_sdram->sorter_instruction, comms_sdram->compressor_state);
+            log_warning("timer weirdness %d %d",
+                    comms_sdram->sorter_instruction,
+                    comms_sdram->compressor_state);
         }
         spin1_pause();
     }
@@ -350,7 +349,7 @@ static void timer_callback(UNUSED uint unused0, UNUSED uint unused1) {
 static void initialise(void) {
     log_info("Setting up stuff to allow bitfield compressor to occur.");
 
-    log_info("reading time_for_compression_attempt");
+    log_debug("reading time_for_compression_attempt");
     vcpu_t *restrict sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     vcpu_t *restrict this_vcpu_info =
             &sark_virtual_processor_info[spin1_get_core_id()];
@@ -359,8 +358,7 @@ static void initialise(void) {
     log_info("time_for_compression_attempt = %d",
             time_for_compression_attempt);
 
-    // bit 0 = compress_only_when_needed
-    // bit 1 = compress_as_much_as_possible
+    // 0 = compress_only_when_needed, 1 = compress_as_much_as_possible
     uint32_t int_value = this_vcpu_info->user2;
     if (int_value & 1) {
         compress_as_much_as_possible = true;
@@ -392,7 +390,7 @@ bool standalone(void) {
 
 //! \brief the main entrance.
 void c_main(void) {
-    log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
+    log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
 
     // set up params
     initialise();
@@ -402,7 +400,7 @@ void c_main(void) {
             wait_for_instructions, 0, 0, COMPRESSION_START_PRIORITY);
 
     // go
-    log_debug("waiting for synchronisation %d %d",
+    log_info("waiting for synchronisation %d %d",
             comms_sdram->sorter_instruction, comms_sdram->compressor_state);
     spin1_start(SYNC_WAIT);
 }

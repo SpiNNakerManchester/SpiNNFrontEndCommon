@@ -131,14 +131,13 @@ static inline void sort_by_key(
 static inline void print_structs(
         sorted_bit_fields_t *restrict sorted_bit_fields) {
     // useful for debugging
-    for (int index = 0; index < sorted_bit_fields->n_bit_fields; index++) {
-        log_info("index %u processor: %u, key: %u, data %u redundant %u "
-                "order %u", index,
-                sorted_bit_fields->processor_ids[index],
-                sorted_bit_fields->bit_fields[index]->key,
-                sorted_bit_fields->bit_fields[index]->data,
-                n_redundant(sorted_bit_fields->bit_fields[index]),
-                sorted_bit_fields->sort_order[index]);
+    for (int i = 0; i < sorted_bit_fields->n_bit_fields; i++) {
+        log_debug("index %u processor: %u, key: %u, data %u redundant %u order %u",
+                i, sorted_bit_fields->processor_ids[i],
+                sorted_bit_fields->bit_fields[i]->key,
+                sorted_bit_fields->bit_fields[i]->data,
+                n_redundant(sorted_bit_fields->bit_fields[i]),
+                sorted_bit_fields->sort_order[i]);
     }
 }
 
@@ -277,7 +276,7 @@ static inline sorted_bit_fields_t * bit_field_reader_initialise(
             n_usable += !filters[f_id].all_ones;
         }
         n_bit_fields += n_usable;
-        log_info("Core %d has %u bitfields of which %u have redundancy",
+        log_debug("Core %d has %u bitfields of which %u have redundancy",
                 region_addresses->processors[r_id].processor,
                 filter->n_filters, n_usable);
     }

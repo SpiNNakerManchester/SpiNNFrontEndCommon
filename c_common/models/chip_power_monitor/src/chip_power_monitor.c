@@ -119,16 +119,22 @@ static inline void reset_core_counters(void) {
     sample_count = 0;
 }
 
+//! \brief Change simulation ticks to be a number related to sampling frequency.
+static inline void rescale_sim_ticks(void) {
+    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+    log_info("resume total_sim_ticks = %d timer %d sample_frequency %d time %d",
+            simulation_ticks, timer, sample_frequency, time);
+}
+
 //! \brief The function to call when resuming a simulation.
 static void resume_callback(void) {
     // change simulation ticks to be a number related to sampling frequency
     if (time == UINT32_MAX) {
-        log_info("resume_skipped as time still zero");
+        log_debug("resume_skipped as time still zero");
     } else {
+        rescale_sim_ticks();
+        // Also rescale time appropriately
         reset_core_counters();
-        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        // The time value also needs to be (re)calculated in the same manner,
-        // but remember that we subtracted 1 off it at the end of the previous run...
         time++;
         time = (time * timer) / sample_frequency;
         // Subtract 1 again now so that this starts at the "correct" value on the next tick
@@ -136,7 +142,7 @@ static void resume_callback(void) {
         log_info("resume total_sim_ticks = %d timer %d sample_frequency %d time %d",
                 simulation_ticks, timer, sample_frequency, time);
         recording_reset();
-        log_info("resume_callback");
+        log_debug("resume_callback");
     }
 }
 
@@ -162,9 +168,7 @@ static void sample_in_slot(UNUSED uint unused0, UNUSED uint unused1) {
 
     // handle the situation when the first time update is sent
     if (time == 0) {
-        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
-        log_info("start total_sim_ticks = %d timer %d sample_frequency %d time %d",
-                simulation_ticks, timer, sample_frequency, time);
+        rescale_sim_ticks();
     }
     // check if the simulation has run to completion
     if (simulation_is_finished()) {
