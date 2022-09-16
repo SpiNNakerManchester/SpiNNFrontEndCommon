@@ -2374,12 +2374,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # if clearing routing table entries, clear
         if get_config_bool("Machine", "clear_routing_tables"):
-            machine = self._data_writer.get_machine()
             for router_table in self._data_writer.get_uncompressed():
-                if not machine.get_chip_at(
-                        router_table.x, router_table.y).virtual:
-                    transceiver.clear_multicast_routes(
-                        router_table.x, router_table.y)
+                transceiver.clear_multicast_routes(
+                    router_table.x, router_table.y)
 
     def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
