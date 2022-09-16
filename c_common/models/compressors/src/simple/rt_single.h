@@ -104,10 +104,10 @@ entry_t* routing_table_get_entry(uint32_t entry_id_to_find) {
 //! \brief Print the header object for debug purposes
 //! \param[in] header: the header to print
 void print_header(header_t *header) {
-    log_info("app_id = %d", header->app_id);
-    log_info("compress_as_much_as_possible = %d",
+    log_debug("app_id = %d", header->app_id);
+    log_debug("compress_as_much_as_possible = %d",
             header->compress_as_much_as_possible);
-    log_info("table_size = %d", header->table_size);
+    log_debug("table_size = %d", header->table_size);
 }
 
 //! \brief Read a new copy of the routing table from SDRAM.
@@ -135,7 +135,7 @@ bool load_routing_table(uint32_t app_id) {
     // Try to allocate sufficient room for the routing table.
     uint32_t entry_id = rtr_alloc_id(table->size, app_id);
     if (entry_id == 0) {
-        log_info("Unable to allocate routing table of size %u\n", table->size);
+        log_error("Unable to allocate routing table of size %u\n", table->size);
         return FALSE;
     }
 
@@ -149,9 +149,8 @@ bool load_routing_table(uint32_t app_id) {
         uint success = rtr_mc_set(
             entry_id + i, entry.key_mask.key, entry.key_mask.mask, route);
         if (success == RTR_MC_SET_FAILED) {
-            log_error(
-                "failed to set a router table entry at index %d",
-                entry_id + i);
+            log_warning("failed to set a router table entry at index %d",
+                    entry_id + i);
         }
     }
 

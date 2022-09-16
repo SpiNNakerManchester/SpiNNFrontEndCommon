@@ -244,7 +244,7 @@ static inline void bit_field_table_generator_create_bit_field_router_tables(
 void print_table(table_t *table) {
    entry_t *entries = table->entries;
    for (uint32_t i = 0; i < table->size; i++) {
-        log_info("i %u, key %u, mask %u, route %u, source %u",
+        log_debug("i %u, key %u, mask %u, route %u, source %u",
                 i, entries[i].key_mask.key, entries[i].key_mask.mask,
                 entries[i].route, entries[i].source);
    }

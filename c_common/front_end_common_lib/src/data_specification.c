@@ -76,12 +76,12 @@ bool data_specification_read_header(
         data_specification_metadata_t *ds_regions) {
     // Check for the magic number
     if (ds_regions->magic_number != DATA_SPECIFICATION_MAGIC_NUMBER) {
-        log_error("Magic number is incorrect: %08x", ds_regions->magic_number);
+        log_error("[ERROR] Magic number is incorrect: %08x", ds_regions->magic_number);
         return false;
     }
 
     if (ds_regions->version != DATA_SPECIFICATION_VERSION) {
-        log_error("Version number is incorrect: %08x", ds_regions->version);
+        log_error("[ERROR] Version number is incorrect: %08x", ds_regions->version);
         return false;
     }
 
@@ -107,7 +107,7 @@ bool data_specification_read_header(
             sum += data[i];
         }
         if (sum != checksum) {
-            log_error("Region %u with %u words starting at 0x%08x: "
+            log_error("[ERROR] Region %u with %u words starting at 0x%08x: "
                     "checksum %u does not match computed sum %u",
                     region, n_words, data, checksum, sum);
             return false;
