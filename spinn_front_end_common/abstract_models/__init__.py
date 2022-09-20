@@ -13,14 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .abstract_changable_after_run import AbstractChangableAfterRun
 from .abstract_generates_data_specification import (
     AbstractGeneratesDataSpecification)
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 from .abstract_machine_allocation_controller import (
     AbstractMachineAllocationController)
-from .abstract_provides_outgoing_partition_constraints import (
-    AbstractProvidesOutgoingPartitionConstraints)
 from .abstract_rewrites_data_specification import (
     AbstractRewritesDataSpecification)
 from .abstract_send_me_multicast_commands_vertex import (
@@ -36,10 +33,9 @@ from .abstract_supports_bit_field_routing_compression import (
 from .abstract_can_reset import AbstractCanReset
 from .has_custom_atom_key_map import HasCustomAtomKeyMap
 
-__all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
+__all__ = ["AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
            "AbstractMachineAllocationController",
-           "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
            "AbstractSupportsDatabaseInjection",
