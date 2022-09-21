@@ -71,7 +71,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
-    application_finisher, application_runner, buffer_extractor,
+    application_finisher, application_runner,
     buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
@@ -2111,7 +2111,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(RUN_LOOP, "Buffer extractor") as timer:
             if timer.skip_if_virtual_board():
                 return
-            buffer_extractor()
+            bm = self._data_writer.get_buffer_manager()
+            bm.get_placement_data()
 
     def _do_extract_from_machine(self):
         """

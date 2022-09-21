@@ -529,33 +529,47 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
-    def get_data_for_placements(self, recording_placements, progress=None):
+    def __count_regions(self):
         """
-        :param ~pacman.model.placements.Placements recording_placements:
-            Where to get the data from. May not be all placements
-        :param progress: How to measure/display the progress.
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
+        :rtype: tuple(int, list(~.Placement))
         """
-        if self._java_caller is not None:
-            self._java_caller.set_placements(recording_placements)
+        # Count the regions to be read
+        n_regions_to_read = 0
+        recording_placements = list()
+        for placement in FecDataView.iterate_placements_by_vertex_type(
+                AbstractReceiveBuffersToHost):
+            vertex = placement.vertex
+            n_regions_to_read += len(vertex.get_recorded_region_ids())
+            recording_placements.append(placement)
+        return n_regions_to_read, recording_placements
 
+    def get_placement_data(self):
         timer = Timer()
         with timer:
             with self._thread_lock_buffer_out:
                 if self._java_caller is not None:
-                    self._java_caller.get_all_data()
-                    if progress:
-                        progress.end()
-                elif get_config_bool(
-                        "Machine", "enable_advanced_monitor_support"):
-                    self.__old_get_data_for_placements_with_monitors(
-                        recording_placements, progress)
+                    self.__get_data_for_placements_using_java()
                 else:
-                    self.__old_get_data_for_placements(
-                        recording_placements, progress)
+                    n_regions, recording_placements = self.__count_regions()
+                    progress = ProgressBar(
+                        n_regions,  "Extracting buffers from the last run")
+                    if get_config_bool(
+                        "Machine", "enable_advanced_monitor_support"):
+                        self.__old_get_data_for_placements_with_monitors(
+                            recording_placements, progress)
+                    else:
+                        self.__old_get_data_for_placements(
+                            recording_placements, progress)
         with ProvenanceWriter() as db:
             db.insert_category_timing(BUFFER, timer.measured_interval, None)
 
+    def __get_data_for_placements_using_java(self):
+        logger.info("Starting buffer extraction using Java")
+        self._java_caller.set_placements(
+            FecDataView.iterate_placements_by_vertex_type(
+                AbstractReceiveBuffersToHost))
+        self._java_caller.get_all_data()
+        
     def __old_get_data_for_placements_with_monitors(
             self, recording_placements, progress):
         """
@@ -589,8 +603,7 @@ class BufferManager(object):
             vertex = placement.vertex
             for recording_region_id in vertex.get_recorded_region_ids():
                 self._retreive_by_placement(placement, recording_region_id)
-                if progress is not None:
-                    progress.update()
+                progress.update()
 
     def get_data_by_placement(self, placement, recording_region_id):
         """ Get the data container for all the data retrieved\
