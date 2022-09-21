@@ -192,7 +192,7 @@
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="nd">@overrides</span><span class="p">(</span><span class="n">LegacyPartitionerAPI</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
+    <span class="nd">@overrides</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">n_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span>
 
