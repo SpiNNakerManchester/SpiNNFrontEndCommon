@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import logging
 import os
 import re
@@ -62,7 +63,7 @@ class ProvenanceWriter(SQLiteDB):
             database_file = os.path.join(
                 FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
         self._database_file = database_file
-        super().__init__(database_file, ddl_file=_DDL_FILE)
+        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
 
     def insert_version(self, description, the_value):
         """
@@ -270,12 +271,12 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?)
                 """, [message])
             recorded = cur.lastrowid
-            cutoff = get_config_int("Reports", "provenance_report_cutoff")
-            if cutoff is None or recorded < cutoff:
-                logger.warning(message)
-            elif recorded == cutoff:
-                logger.warning(f"Additional interesting provenace items in "
-                               f"{self._database_file}")
+        cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        if cutoff is None or recorded < cutoff:
+            logger.warning(message)
+        elif recorded == cutoff:
+            logger.warning(f"Additional interesting provenace items in "
+                           f"{self._database_file}")
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
@@ -317,3 +318,38 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
+
+    def store_log(self, level, message, timestamp=None):
+        """
+        Stores log messages into the database
+
+        :param int level:
+        :param str message:
+        """
+        if timestamp is None:
+            timestamp = datetime.now()
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO p_log_provenance(
+                    timestamp, level, message)
+                VALUES(?, ?, ?)
+                """,
+                [timestamp, level, message])
+
+    def _test_log_locked(self, text):
+        """
+        THIS IS A TESTING METHOD.
+
+        This will lock the database and then try to do a log
+        """
+        with self.transaction() as cur:
+            # lock the database
+            cur.execute(
+                """
+                INSERT INTO reports(message)
+                VALUES(?)
+                """, [text])
+            cur.lastrowid
+            # try logging and storing while locked.
+            logger.warning(text)
