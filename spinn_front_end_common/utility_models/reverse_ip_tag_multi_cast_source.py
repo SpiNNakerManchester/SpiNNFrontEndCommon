@@ -152,7 +152,7 @@ class ReverseIpTagMultiCastSource(
         return numpy.array(send_buffer_times)
 
     @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return self._n_atoms
 
