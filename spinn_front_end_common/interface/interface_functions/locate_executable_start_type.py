@@ -27,19 +27,16 @@ def locate_executable_start_type():
     """
     binary_start_types = dict()
 
-    progress = ProgressBar(
-        FecDataView.get_n_placements(), "Finding executable start types")
-    for placement in progress.over(FecDataView.iterate_placemements()):
+    for placement in FecDataView.iterate_placements_by_vertex_type(
+            AbstractHasAssociatedBinary):
+        bin_type = placement.vertex.get_binary_start_type()
+        # update core subset with location of the vertex on the
+        # machine
+        if bin_type not in binary_start_types:
+            binary_start_types[bin_type] = CoreSubsets()
 
-        if isinstance(placement.vertex, AbstractHasAssociatedBinary):
-            bin_type = placement.vertex.get_binary_start_type()
-            # update core subset with location of the vertex on the
-            # machine
-            if bin_type not in binary_start_types:
-                binary_start_types[bin_type] = CoreSubsets()
-
-            __add_vertex_to_subset(
-                placement, binary_start_types[bin_type])
+        __add_vertex_to_subset(
+            placement, binary_start_types[bin_type])
 
     # only got apps with no binary, such as external devices.
     # return no app
