@@ -554,7 +554,7 @@ class BufferManager(object):
                     progress = ProgressBar(
                         n_regions,  "Extracting buffers from the last run")
                     if get_config_bool(
-                        "Machine", "enable_advanced_monitor_support"):
+                            "Machine", "enable_advanced_monitor_support"):
                         self.__old_get_data_for_placements_with_monitors(
                             recording_placements, progress)
                     else:
@@ -569,7 +569,7 @@ class BufferManager(object):
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
         self._java_caller.get_all_data()
-        
+
     def __old_get_data_for_placements_with_monitors(
             self, recording_placements, progress):
         """
