@@ -79,8 +79,8 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_provenance_data_path&quot;</span><span class="p">]</span>
 
-<div class="viewcode-block" id="ProvenanceReader.get_last_run_database_path"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">get_last_run_database_path</span><span class="p">():</span>
+<div class="viewcode-block" id="ProvenanceReader.get_last_run_database_path"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_last_run_database_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the path of the current provenance database of the last run</span>
 
 <span class="sd">       .. warning::</span>
@@ -408,6 +408,21 @@
 <span class="s2">             FROM reports</span>
 <span class="s2">             &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[])</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.retreive_log_messages"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages">[docs]</a>    <span class="k">def</span> <span class="nf">retreive_log_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all log messages at or above the min_level</span>
+
+<span class="sd">        :param int min_level:</span>
+<span class="sd">        :rtype: list(tuple(int, str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT message</span>
+<span class="s2">            FROM p_log_provenance</span>
+<span class="s2">            WHERE level &gt;= ?</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">min_level</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">messages</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.demo"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.demo">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">demo</span><span class="p">():</span>
