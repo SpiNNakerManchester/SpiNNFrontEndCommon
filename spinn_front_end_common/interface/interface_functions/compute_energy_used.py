@@ -166,7 +166,7 @@ def _compute_energy_consumption(
 def __find_monitor_placements():
     return [placement
             for placement in FecDataView.iterate_placements_by_vertex_type(
-            ChipPowerMonitorMachineVertex)]
+                ChipPowerMonitorMachineVertex)]
 
 
 _COST_PER_TYPE = {
