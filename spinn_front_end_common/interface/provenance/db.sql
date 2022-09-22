@@ -1,4 +1,4 @@
--- Copyright (c) 2018-2019 The University of Manchester
+-- Copyright (c) 2018-2022 The University of Manchester
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL);
 
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+---------------------------------------------------------------------
 -- A table LUT provenance
 CREATE TABLE IF NOT EXISTS lut_provenance(
     connector_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -228,3 +228,33 @@ CREATE TABLE IF NOT EXISTS lut_provenance(
     the_type  STRING NOT NULL,
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
+
+---------------------------------------------------------------------
+-- A table to store log.info
+CREATE TABLE IF NOT EXISTS p_log_provenance(
+    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TIMESTAMP NOT NULL,
+    level INTEGER NOT NULL,
+    message STRING NOT NULL);
+
+CREATE TABLE IF NOT EXISTS log_level_names(
+    level INTEGER PRIMARY KEY NOT NULL,
+    name STRING NOT NULL);
+
+INSERT OR IGNORE INTO log_level_names
+    (level, name)
+VALUES
+    (50, "CRITICAL"),
+    (40, "ERROR"),
+    (30, "WARNING"),
+    (20, "INFO"),
+    (10, "DEBUG");
+
+CREATE VIEW IF NOT EXISTS p_log_view AS
+    SELECT
+        timestamp,
+		name,
+        message
+    FROM p_log_provenance left join log_level_names
+    ON p_log_provenance.level = log_level_names.level
+    ORDER BY p_log_provenance.log_id;
