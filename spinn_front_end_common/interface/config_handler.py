@@ -22,6 +22,7 @@ from spinn_machine import Machine
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
     get_config_str, get_config_str_list, set_config)
+from spinn_front_end_common.interface.provenance import LogStoreDB
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
@@ -65,6 +66,7 @@ class ConfigHandler(object):
             self._data_writer = data_writer_cls.setup()
         else:
             self._data_writer = FecDataWriter.setup()
+        logger.set_log_store(LogStoreDB())
 
         # set up machine targeted data
         self._debug_configs()
@@ -198,11 +200,6 @@ class ConfigHandler(object):
         _, timestamp = os.path.split(timestamp_dir_path)
         with open(time_of_run_file_name, "w", encoding="utf-8") as f:
             f.writelines(timestamp)
-
-        if get_config_bool("Logging", "warnings_at_end_to_file"):
-            log_report_file = os.path.join(
-                self._data_writer.get_run_dir_path(), WARNING_LOGS_FILENAME)
-            logger.set_report_File(log_report_file)
 
     def __write_named_file(self, file_name):
         app_file_name = os.path.join(
