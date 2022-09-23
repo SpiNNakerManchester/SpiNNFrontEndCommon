@@ -117,3 +117,4 @@ class LPGSplitter(AbstractSplitterCommon):
     @overrides(AbstractSplitterCommon.reset_called)
     def reset_called(self):
         self.__m_vertices_by_ethernet = dict()
+        self.__targeted_lpgs = set()
