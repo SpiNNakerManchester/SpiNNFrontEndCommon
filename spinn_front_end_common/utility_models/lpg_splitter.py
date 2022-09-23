@@ -12,7 +12,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from collections import defaultdict
 from spinn_utilities.overrides import overrides
 from pacman.model.partitioner_splitters.abstract_splitters import (
     AbstractSplitterCommon)
@@ -80,19 +79,19 @@ class LPGSplitter(AbstractSplitterCommon):
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
             self, source_vertex, partition_id):
-        # Find the nearest placement for each machine vertex of the source
-        target_map = defaultdict(list)
+        # Find the nearest placement for the first machine vertex of the source
+        m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
+            partition_id)))
+        x, y = vertex_xy(m_vertex)
+        chip = FecDataView.get_chip_at(x, y)
+        lpg_vertex = self.__m_vertices_by_ethernet[
+            chip.nearest_ethernet_x, chip.nearest_ethernet_y]
         for m_vertex in source_vertex.splitter.get_out_going_vertices(
                 partition_id):
-            x, y = vertex_xy(m_vertex)
-            chip = FecDataView.get_chip_at(x, y)
-            lpg_vertex = self.__m_vertices_by_ethernet[
-                chip.nearest_ethernet_x, chip.nearest_ethernet_y]
-            target_map[lpg_vertex].append(m_vertex)
             self.__targeted_lpgs.add(
                 (lpg_vertex, m_vertex, partition_id))
             lpg_vertex.add_incoming_source(m_vertex, partition_id)
-        return [(tgt, sources) for tgt, sources in target_map.items()]
+        return [(lpg_vertex, [source_vertex])]
 
     @property
     def targeted_lpgs(self):
