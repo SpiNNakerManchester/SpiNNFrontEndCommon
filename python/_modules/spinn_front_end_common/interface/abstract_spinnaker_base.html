@@ -1989,6 +1989,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="c1"># Also used in recover from error where is is not all placements</span>
+
             <span class="n">placements_provenance_gatherer</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_placements</span><span class="p">(),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">())</span>
@@ -2309,10 +2310,13 @@
                 <span class="n">finished_cores</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span>
                     <span class="n">non_rte_core_subsets</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">)</span>
                 <span class="n">finished_placements</span> <span class="o">=</span> <span class="n">Placements</span><span class="p">()</span>
-                <span class="n">placements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_placements</span><span class="p">()</span>
                 <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="ow">in</span> <span class="n">finished_cores</span><span class="p">:</span>
-                    <span class="n">finished_placements</span><span class="o">.</span><span class="n">add_placement</span><span class="p">(</span>
-                        <span class="n">placements</span><span class="o">.</span><span class="n">get_placement_on_processor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">placement</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span>\
+                            <span class="n">get_placement_on_processor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                        <span class="n">finished_placements</span><span class="o">.</span><span class="n">add_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>   <span class="c1"># pylint: disable=broad-except</span>
+                        <span class="k">pass</span>  <span class="c1"># already recovering from error</span>
                 <span class="n">placements_provenance_gatherer</span><span class="p">(</span>
                     <span class="n">finished_placements</span><span class="o">.</span><span class="n">n_placements</span><span class="p">,</span>
                     <span class="n">finished_placements</span><span class="o">.</span><span class="n">placements</span><span class="p">)</span>

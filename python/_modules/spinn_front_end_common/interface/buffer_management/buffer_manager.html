@@ -260,8 +260,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_finished</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_in</span><span class="p">:</span>
-                <span class="n">vertex</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_vertex_on_processor</span><span class="p">(</span>
-                    <span class="n">packet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+                <span class="n">vertex</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_on_processor</span><span class="p">(</span>
+                    <span class="n">packet</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">packet</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">vertex</span>
                 <span class="k">if</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sender_vertices</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_send_messages</span><span class="p">(</span>
                         <span class="n">packet</span><span class="o">.</span><span class="n">space_available</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span>
