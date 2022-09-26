@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.utility_models package" href="spinn_front_end_common.utility_models.html" />
@@ -276,7 +277,39 @@ See the SpiNNaker datasheet for details.</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ClearQueueProcess"><code class="docutils literal notranslate"><span class="pre">ClearQueueProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ClearQueueProcess.reset_counters"><code class="docutils literal notranslate"><span class="pre">ClearQueueProcess.reset_counters()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.LoadApplicationMCRoutesProcess"><code class="docutils literal notranslate"><span class="pre">LoadApplicationMCRoutesProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.LoadApplicationMCRoutesProcess.load_application_mc_routes"><code class="docutils literal notranslate"><span class="pre">LoadApplicationMCRoutesProcess.load_application_mc_routes()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.LoadSystemMCRoutesProcess"><code class="docutils literal notranslate"><span class="pre">LoadSystemMCRoutesProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.LoadSystemMCRoutesProcess.load_system_mc_routes"><code class="docutils literal notranslate"><span class="pre">LoadSystemMCRoutesProcess.load_system_mc_routes()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess"><code class="docutils literal notranslate"><span class="pre">ReadStatusProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess.get_reinjection_status"><code class="docutils literal notranslate"><span class="pre">ReadStatusProcess.get_reinjection_status()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ReadStatusProcess.get_reinjection_status_for_core_subsets"><code class="docutils literal notranslate"><span class="pre">ReadStatusProcess.get_reinjection_status_for_core_subsets()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess"><code class="docutils literal notranslate"><span class="pre">ResetCountersProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.ResetCountersProcess.reset_counters"><code class="docutils literal notranslate"><span class="pre">ResetCountersProcess.reset_counters()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetPacketTypesProcess"><code class="docutils literal notranslate"><span class="pre">SetPacketTypesProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetPacketTypesProcess.set_packet_types"><code class="docutils literal notranslate"><span class="pre">SetPacketTypesProcess.set_packet_types()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess"><code class="docutils literal notranslate"><span class="pre">SetRouterTimeoutProcess</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait1_timeout"><code class="docutils literal notranslate"><span class="pre">SetRouterTimeoutProcess.set_wait1_timeout()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait2_timeout"><code class="docutils literal notranslate"><span class="pre">SetRouterTimeoutProcess.set_wait2_timeout()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -338,7 +371,7 @@ See the SpiNNaker datasheet for details.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

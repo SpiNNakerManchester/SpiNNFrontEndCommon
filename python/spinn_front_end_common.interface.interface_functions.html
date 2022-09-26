@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.profiling package" href="spinn_front_end_common.interface.profiling.html" />
@@ -590,7 +591,54 @@ board-locn-to-timeout-key map</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.interface_functions package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed"><code class="docutils literal notranslate"><span class="pre">FindApplicationChipsUsed</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed.__call__"><code class="docutils literal notranslate"><span class="pre">FindApplicationChipsUsed.__call__()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.add_command_senders"><code class="docutils literal notranslate"><span class="pre">add_command_senders()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.application_finisher"><code class="docutils literal notranslate"><span class="pre">application_finisher()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.application_runner"><code class="docutils literal notranslate"><span class="pre">application_runner()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.buffer_extractor"><code class="docutils literal notranslate"><span class="pre">buffer_extractor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.buffer_manager_creator"><code class="docutils literal notranslate"><span class="pre">buffer_manager_creator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_clearer"><code class="docutils literal notranslate"><span class="pre">chip_io_buf_clearer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_extractor"><code class="docutils literal notranslate"><span class="pre">chip_io_buf_extractor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.chip_provenance_updater"><code class="docutils literal notranslate"><span class="pre">chip_provenance_updater()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.chip_runtime_updater"><code class="docutils literal notranslate"><span class="pre">chip_runtime_updater()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.compute_energy_used"><code class="docutils literal notranslate"><span class="pre">compute_energy_used()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.create_notification_protocol"><code class="docutils literal notranslate"><span class="pre">create_notification_protocol()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.database_interface"><code class="docutils literal notranslate"><span class="pre">database_interface()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.dsg_region_reloader"><code class="docutils literal notranslate"><span class="pre">dsg_region_reloader()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.energy_provenance_reporter"><code class="docutils literal notranslate"><span class="pre">energy_provenance_reporter()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.execute_application_data_specs"><code class="docutils literal notranslate"><span class="pre">execute_application_data_specs()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.execute_system_data_specs"><code class="docutils literal notranslate"><span class="pre">execute_system_data_specs()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.graph_binary_gatherer"><code class="docutils literal notranslate"><span class="pre">graph_binary_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.graph_data_specification_writer"><code class="docutils literal notranslate"><span class="pre">graph_data_specification_writer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.graph_provenance_gatherer"><code class="docutils literal notranslate"><span class="pre">graph_provenance_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.hbp_allocator"><code class="docutils literal notranslate"><span class="pre">hbp_allocator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.host_based_bit_field_router_compressor"><code class="docutils literal notranslate"><span class="pre">host_based_bit_field_router_compressor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.insert_chip_power_monitors_to_graphs"><code class="docutils literal notranslate"><span class="pre">insert_chip_power_monitors_to_graphs()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs"><code class="docutils literal notranslate"><span class="pre">insert_extra_monitor_vertices_to_graphs()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.load_app_images"><code class="docutils literal notranslate"><span class="pre">load_app_images()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.load_fixed_routes"><code class="docutils literal notranslate"><span class="pre">load_fixed_routes()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.load_sys_images"><code class="docutils literal notranslate"><span class="pre">load_sys_images()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.local_tdma_builder"><code class="docutils literal notranslate"><span class="pre">local_tdma_builder()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.locate_executable_start_type"><code class="docutils literal notranslate"><span class="pre">locate_executable_start_type()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.machine_generator"><code class="docutils literal notranslate"><span class="pre">machine_generator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer"><code class="docutils literal notranslate"><span class="pre">placements_provenance_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.profile_data_gatherer"><code class="docutils literal notranslate"><span class="pre">profile_data_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.read_routing_tables_from_machine"><code class="docutils literal notranslate"><span class="pre">read_routing_tables_from_machine()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.router_provenance_gatherer"><code class="docutils literal notranslate"><span class="pre">router_provenance_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.routing_setup"><code class="docutils literal notranslate"><span class="pre">routing_setup()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.routing_table_loader"><code class="docutils literal notranslate"><span class="pre">routing_table_loader()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.sdram_outgoing_partition_allocator"><code class="docutils literal notranslate"><span class="pre">sdram_outgoing_partition_allocator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.spalloc_allocator"><code class="docutils literal notranslate"><span class="pre">spalloc_allocator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.split_lpg_vertices"><code class="docutils literal notranslate"><span class="pre">split_lpg_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator"><code class="docutils literal notranslate"><span class="pre">system_multicast_routing_generator()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.tags_loader"><code class="docutils literal notranslate"><span class="pre">tags_loader()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.virtual_machine_generator"><code class="docutils literal notranslate"><span class="pre">virtual_machine_generator()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -651,7 +699,7 @@ board-locn-to-timeout-key map</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

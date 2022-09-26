@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.utilities.scp package" href="spinn_front_end_common.utilities.scp.html" />
@@ -342,7 +343,38 @@ os.mkdir(folder_name)</p>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.report_functions package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions.energy_report">spinn_front_end_common.utilities.report_functions.energy_report module</a></li>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_merged"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.average_per_chip_merged</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_to_merge"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.average_per_chip_to_merge</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.low_to_merge_per_chip"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.low_to_merge_per_chip</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.lowest_per_chip"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.lowest_per_chip</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_per_chip"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.max_per_chip</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.max_to_merge_per_chip"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.max_to_merge_per_chip</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_merged"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.total_merged</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.total_to_merge"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.total_to_merge</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.EnergyReport"><code class="docutils literal notranslate"><span class="pre">EnergyReport</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.EnergyReport.JOULES_TO_KILOWATT_HOURS"><code class="docutils literal notranslate"><span class="pre">EnergyReport.JOULES_TO_KILOWATT_HOURS</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report"><code class="docutils literal notranslate"><span class="pre">EnergyReport.write_energy_report()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.bitfield_compressor_report"><code class="docutils literal notranslate"><span class="pre">bitfield_compressor_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.board_chip_report"><code class="docutils literal notranslate"><span class="pre">board_chip_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.drift_report"><code class="docutils literal notranslate"><span class="pre">drift_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.fixed_route_from_machine_report"><code class="docutils literal notranslate"><span class="pre">fixed_route_from_machine_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.memory_map_on_host_chip_report"><code class="docutils literal notranslate"><span class="pre">memory_map_on_host_chip_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.memory_map_on_host_report"><code class="docutils literal notranslate"><span class="pre">memory_map_on_host_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.network_specification"><code class="docutils literal notranslate"><span class="pre">network_specification()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_collision_potential_report"><code class="docutils literal notranslate"><span class="pre">router_collision_potential_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.routing_table_from_machine_report"><code class="docutils literal notranslate"><span class="pre">routing_table_from_machine_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.tags_from_machine_report"><code class="docutils literal notranslate"><span class="pre">tags_from_machine_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.write_json_machine"><code class="docutils literal notranslate"><span class="pre">write_json_machine()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.write_json_placements"><code class="docutils literal notranslate"><span class="pre">write_json_placements()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.write_json_routing_tables"><code class="docutils literal notranslate"><span class="pre">write_json_routing_tables()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -403,7 +435,7 @@ os.mkdir(folder_name)</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

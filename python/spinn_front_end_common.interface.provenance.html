@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.simulation package" href="spinn_front_end_common.interface.simulation.html" />
@@ -875,7 +876,78 @@ position) to be used for provenance error reporting to the user.</p></li>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.provenance package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.provenance">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.provenance">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData"><code class="docutils literal notranslate"><span class="pre">AbstractProvidesLocalProvenanceData</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data"><code class="docutils literal notranslate"><span class="pre">AbstractProvidesLocalProvenanceData.get_local_provenance_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine"><code class="docutils literal notranslate"><span class="pre">AbstractProvidesProvenanceDataFromMachine</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><code class="docutils literal notranslate"><span class="pre">AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB"><code class="docutils literal notranslate"><span class="pre">LogStoreDB</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.get_location"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.get_location()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.retreive_log_messages()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.store_log"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.store_log()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.cores_with_late_spikes()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.demo"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.demo()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_category_timer_sum()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_cores_with_provenace()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_database_handle()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_last_run_database_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_monitor_by_chip"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_monitor_by_chip()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_router"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_provenance_for_router()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_router_by_chip"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_router_by_chip()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_run_time_of_BufferExtractor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_run_times()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_provenance()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_algorithm()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.messages()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.retreive_log_messages()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.run_query()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.add_core_name()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_board_provenance()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_category_timing()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_connector"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_connector()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_core"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_core()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_gatherer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_monitor"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_monitor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_other()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_power()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_report"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_router"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_router()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_timing()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_version"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_version()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.store_log"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.store_log()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.MAX_NUMBER_OF_TIMER_TIC_OVERRUN"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.MAX_NUMBER_OF_TIMER_TIC_OVERRUN</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.USER_QUEUE_OVERLOADED"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.USER_QUEUE_OVERLOADED</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.get_provenance_data_from_machine()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.get_provenance_data_size()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -936,7 +1008,7 @@ position) to be used for provenance error reporting to the user.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

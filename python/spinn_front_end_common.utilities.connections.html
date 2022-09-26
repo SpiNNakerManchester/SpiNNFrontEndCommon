@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.utilities.database package" href="spinn_front_end_common.utilities.database.html" />
@@ -275,7 +276,25 @@ directly</p></li>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.connections package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.connections">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.connections">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_init_callback"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_init_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_pause_stop_callback"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_pause_stop_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_receive_callback"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_receive_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_receive_label"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_receive_label()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_send_label"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_send_label()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_callback"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_start_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_resume_callback"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.add_start_resume_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.close"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.close()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_eieio_message"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.send_eieio_message()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.send_event()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event_with_payload"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.send_event_with_payload()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.send_events()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events_with_payloads"><code class="docutils literal notranslate"><span class="pre">LiveEventConnection.send_events_with_payloads()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -336,7 +355,7 @@ directly</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

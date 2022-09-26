@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.utilities.notification_protocol package" href="spinn_front_end_common.utilities.notification_protocol.html" />
@@ -343,7 +344,35 @@ or case-insensitive (default).</p></li>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.database package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.database">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.database">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseConnection"><code class="docutils literal notranslate"><span class="pre">DatabaseConnection</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback"><code class="docutils literal notranslate"><span class="pre">DatabaseConnection.add_database_callback()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseConnection.close"><code class="docutils literal notranslate"><span class="pre">DatabaseConnection.close()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader"><code class="docutils literal notranslate"><span class="pre">DatabaseReader</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_atom_id_to_key_mapping()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_configuration_parameter_value()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_ip_address()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_key_to_atom_id_mapping()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_live_output_details()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placements"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_placements()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_application_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_lpg_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_lpg_mapping()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_machine_objects()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_placements()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_system_params()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_tags()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.auto_detect_database()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.create_atom_to_event_id_mapping()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.database_path"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.database_path</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -404,7 +433,7 @@ or case-insensitive (default).</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

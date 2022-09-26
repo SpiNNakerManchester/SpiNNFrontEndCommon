@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.buffer_management.storage_objects package" href="spinn_front_end_common.interface.buffer_management.storage_objects.html" />
@@ -395,7 +396,38 @@ buffering</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.buffer_models package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.buffer_models">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.buffer_models">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost"><code class="docutils literal notranslate"><span class="pre">AbstractReceiveBuffersToHost</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recorded_region_ids"><code class="docutils literal notranslate"><span class="pre">AbstractReceiveBuffersToHost.get_recorded_region_ids()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractReceiveBuffersToHost.get_recording_region_base_address"><code class="docutils literal notranslate"><span class="pre">AbstractReceiveBuffersToHost.get_recording_region_base_address()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.buffering_input"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.buffering_input()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_key"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.get_next_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_timestamp"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.get_next_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_region_buffer_size"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.get_region_buffer_size()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_regions"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.get_regions()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_empty"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.is_empty()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_key"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.is_next_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_timestamp"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.is_next_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.rewind"><code class="docutils literal notranslate"><span class="pre">AbstractSendsBuffersFromHost.rewind()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.buffering_input"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.buffering_input()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_key"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.get_next_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_next_timestamp"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.get_next_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.get_regions"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.get_regions()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_empty"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.is_empty()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_key"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.is_next_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.is_next_timestamp"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.is_next_timestamp()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.rewind"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.rewind()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.buffer_models.SendsBuffersFromHostPreBufferedImpl.send_buffers"><code class="docutils literal notranslate"><span class="pre">SendsBuffersFromHostPreBufferedImpl.send_buffers</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -457,7 +489,7 @@ buffering</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

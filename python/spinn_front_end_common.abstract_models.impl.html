@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.common_model_binaries package" href="spinn_front_end_common.common_model_binaries.html" />
@@ -246,7 +247,28 @@ placed on a core, used in partitioning.</p></li>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.abstract_models.impl package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.abstract_models.impl">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.abstract_models.impl">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController.close"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.close()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex"><code class="docutils literal notranslate"><span class="pre">MachineDataSpecableVertex</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_data_specification"><code class="docutils literal notranslate"><span class="pre">MachineDataSpecableVertex.generate_data_specification()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex.generate_machine_data_specification"><code class="docutils literal notranslate"><span class="pre">MachineDataSpecableVertex.generate_machine_data_specification()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.generate_tdma_data_specification_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_cores"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.get_n_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.get_n_phases()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.get_tdma_provenance_item()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_initial_offset"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.set_initial_offset()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_other_timings"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.set_other_timings()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.tdma_sdram_size_in_bytes"><code class="docutils literal notranslate"><span class="pre">TDMAAwareApplicationVertex.tdma_sdram_size_in_bytes</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -307,7 +329,7 @@ placed on a core, used in partitioning.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

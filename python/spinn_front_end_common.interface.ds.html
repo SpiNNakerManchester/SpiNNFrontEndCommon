@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.interface_functions package" href="spinn_front_end_common.interface.interface_functions.html" />
@@ -404,7 +405,43 @@ and memory_written</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.ds package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.ds">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.ds">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter"><code class="docutils literal notranslate"><span class="pre">DataRowWriter</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.close"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.close()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.fileno"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.fileno()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.readable"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.readable()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.seekable"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.seekable()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.truncate"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.truncate()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.writable"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.writable()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter.write"><code class="docutils literal notranslate"><span class="pre">DataRowWriter.write()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.app_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_ds"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.clear_ds()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.clear_write_info()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.create_data_spec()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_get_app_id()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_mark_as_system()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_app_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_system_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_ds()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_write_info()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.info_iteritems()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_n_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.info_n_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.items"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.keys"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.keys()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.mark_system_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.mark_system_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.set_app_id()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_size_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.set_size_info()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.set_write_info()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.system_items"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.system_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.write_data_spec()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -465,7 +502,7 @@ and memory_written</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

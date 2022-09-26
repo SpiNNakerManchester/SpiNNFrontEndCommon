@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface package" href="spinn_front_end_common.interface.html" />
@@ -949,7 +950,81 @@ There is never a case when some are known and others not</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.data package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.data">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.data">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView"><code class="docutils literal notranslate"><span class="pre">FecDataView</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_database_socket_address"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_database_socket_address()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_database_socket_addresses"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_database_socket_addresses()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_live_packet_gatherer_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_app_provenance_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_buffer_manager"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_buffer_manager()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_current_run_time_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_current_run_time_ms()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_current_run_timesteps"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_current_run_timesteps()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_data_in_multicast_key_to_chip_map"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_data_in_multicast_key_to_chip_map()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_data_in_multicast_routing_tables"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_data_in_multicast_routing_tables()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_database_file_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_database_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_dsg_targets"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_dsg_targets()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_executable_targets"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_executable_targets()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_executable_types"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_executable_types()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_first_machine_time_step"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_first_machine_time_step()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_fixed_routes"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_fixed_routes()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_gatherer_by_xy"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_gatherer_by_xy()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_hardware_time_step_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_hardware_time_step_ms()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_hardware_time_step_us"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_hardware_time_step_us()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_ipaddress"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_ipaddress()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_java_caller"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_java_caller()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_json_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_json_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_live_packet_recorder_params"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_live_packet_recorder_params()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_max_run_time_steps"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_max_run_time_steps()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_monitor_by_xy"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_monitor_by_xy()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_n_boards_required"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_n_boards_required()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_n_chips_needed"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_n_chips_needed()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_n_database_socket_addresses"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_n_database_socket_addresses()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_n_gathers"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_n_gathers()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_n_monitors"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_n_monitors()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_next_none_labelled_edge_number"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_next_none_labelled_edge_number()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_next_sync_signal"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_next_sync_signal()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_notification_protocol"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_notification_protocol()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_provenance_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_run_number"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_run_number()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_ms()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_per_ms()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_s"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_per_s()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_s"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_s()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_us"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_us()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_system_multicast_router_timeout_keys"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_system_multicast_router_timeout_keys()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_system_provenance_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_time_scale_factor"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_time_scale_factor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_timestamp_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_timestamp_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_buffer_manager"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_buffer_manager()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_ipaddress"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_ipaddress()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_java_caller"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_java_caller()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_live_packet_recorder_params"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_live_packet_recorder_params()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_max_run_time_steps"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_max_run_time_steps()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_monitors"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_monitors()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_n_boards_required"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_n_boards_required()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_n_chips_needed"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_n_chips_needed()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_time_scale_factor"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_time_scale_factor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.has_time_step"><code class="docutils literal notranslate"><span class="pre">FecDataView.has_time_step()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_database_socket_addresses"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_database_socket_addresses()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_gather_items"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_gather_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_gathers"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_gathers()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitor_items"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitor_items()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitors"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitors()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer"><code class="docutils literal notranslate"><span class="pre">FecTimer</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.error"><code class="docutils literal notranslate"><span class="pre">FecTimer.error()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.setup"><code class="docutils literal notranslate"><span class="pre">FecTimer.setup()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_cfg_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfg_false()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_cfgs_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfgs_false()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_empty"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_empty()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_has_not_run"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_has_not_run()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_virtual_board"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_virtual_board()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -1009,7 +1084,7 @@ There is never a case when some are known and others not</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.provenance package" href="spinn_front_end_common.interface.provenance.html" />
@@ -189,7 +190,24 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.profiling package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.profiling">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.profiling">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData"><code class="docutils literal notranslate"><span class="pre">AbstractHasProfileData</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data"><code class="docutils literal notranslate"><span class="pre">AbstractHasProfileData.get_profile_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData"><code class="docutils literal notranslate"><span class="pre">ProfileData</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.DURATION"><code class="docutils literal notranslate"><span class="pre">ProfileData.DURATION</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.START_TIME"><code class="docutils literal notranslate"><span class="pre">ProfileData.START_TIME</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.add_data"><code class="docutils literal notranslate"><span class="pre">ProfileData.add_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms"><code class="docutils literal notranslate"><span class="pre">ProfileData.get_mean_ms()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms_per_ts"><code class="docutils literal notranslate"><span class="pre">ProfileData.get_mean_ms_per_ts()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.get_mean_n_calls_per_ts"><code class="docutils literal notranslate"><span class="pre">ProfileData.get_mean_n_calls_per_ts()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.get_n_calls"><code class="docutils literal notranslate"><span class="pre">ProfileData.get_n_calls()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData.tags"><code class="docutils literal notranslate"><span class="pre">ProfileData.tags</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -250,7 +268,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>

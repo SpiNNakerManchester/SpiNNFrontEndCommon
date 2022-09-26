@@ -14,6 +14,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="spinn_front_end_common.interface.ds package" href="spinn_front_end_common.interface.ds.html" />
@@ -653,7 +654,60 @@ necessarily shorter than 1GB.</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.storage_objects package</a><ul>
-<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects">Module contents</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects">Module contents</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.clear()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.clear_region()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.close()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.get_region_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.store_data_in_region_buffer()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.clear()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.get_region_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.get_region_information()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.has_region_information()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.is_data_from_region_flushed()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.reset()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.resume()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.store_data_in_region_buffer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.store_region_information()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.add_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.add_keys()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.clear()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.current_timestamp"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.current_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.get_n_keys()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.is_next_key()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_timestamp"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.is_next_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.n_timestamps"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.n_timestamps</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_key"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.next_key</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.next_timestamp"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.next_timestamp</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.rewind()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.timestamps"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion.timestamps</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.add_message_to_send()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.is_empty()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_full"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.is_full</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.messages</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.send_stop_message()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.update_last_received_sequence_number()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.clear()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.clear_region()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.get_region_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.store_data_in_region_buffer()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -715,7 +769,7 @@ necessarily shorter than 1GB.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
     </div>
   </body>
 </html>
