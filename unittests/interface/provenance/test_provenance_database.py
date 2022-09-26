@@ -13,13 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+import os
+from spinn_utilities.log import FormatAdapter
 from datetime import timedelta
 from testfixtures.logcapture import LogCapture
 import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceWriter, ProvenanceReader)
+    LogStoreDB, ProvenanceWriter, ProvenanceReader)
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class TestProvenanceDatabase(unittest.TestCase):
@@ -182,3 +187,32 @@ class TestProvenanceDatabase(unittest.TestCase):
         data = reader.run_query("Select * from app_vertex_provenance")
         expected = [(1, 'pop', 'type', 'description', 0.5)]
         self.assertListEqual(expected, data)
+
+    def test_log(self):
+        db1 = LogStoreDB()
+        db2 = LogStoreDB()
+        db1.store_log(30, "this is a warning")
+        db2.store_log(10, "this is a debug")
+        db1.store_log(20, "this is an info")
+        self.assertListEqual(
+            ["this is a warning", "this is a debug", "this is an info"],
+            db2.retreive_log_messages())
+        self.assertListEqual(
+            ["this is a warning", "this is an info"],
+            db1.retreive_log_messages(20))
+        db2.get_location()
+
+    def test_database_locked(self):
+        ls = LogStoreDB()
+        logger.set_log_store(ls)
+        logger.warning("this works")
+        with ProvenanceWriter() as db:
+            db._test_log_locked("locked")
+            logger.warning("not locked")
+        logger.warning("this wis fine")
+        # the use of class variables and tests run in parallel dont work.
+        if "JENKINS_URL" not in os.environ:
+            self.assertListEqual(
+                ["this works", "not locked", "this wis fine"],
+                ls.retreive_log_messages(20))
+        logger.set_log_store(None)
