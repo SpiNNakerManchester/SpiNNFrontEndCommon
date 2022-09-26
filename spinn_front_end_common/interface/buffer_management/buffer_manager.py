@@ -220,8 +220,8 @@ class BufferManager(object):
         """
         if not self._finished:
             with self._thread_lock_buffer_in:
-                vertex = FecDataView.get_vertex_on_processor(
-                    packet.x, packet.y, packet.p)
+                vertex = FecDataView.get_placement_on_processor(
+                    packet.x, packet.y, packet.p).vertex
                 if vertex in self._sender_vertices:
                     self._send_messages(
                         packet.space_available, vertex,
