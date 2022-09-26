@@ -1949,6 +1949,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return []
             # Also used in recover from error where is is not all placements
+
             placements_provenance_gatherer(
                 self._data_writer.get_n_placements(),
                 self._data_writer.iterate_placemements())
@@ -2269,10 +2270,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 finished_cores = transceiver.get_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
-                placements = self._data_writer.get_placements()
                 for (x, y, p) in finished_cores:
-                    finished_placements.add_placement(
-                        placements.get_placement_on_processor(x, y, p))
+                    try:
+                        placement = self._data_writer.\
+                            get_placement_on_processor(x, y, p)
+                        finished_placements.add_placement(placement)
+                    except Exception:   # pylint: disable=broad-except
+                        pass  # already recovering from error
                 placements_provenance_gatherer(
                     finished_placements.n_placements,
                     finished_placements.placements)
