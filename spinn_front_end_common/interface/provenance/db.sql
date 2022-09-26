@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS app_vertex_provenance(
     label STRING NOT NULL,
     the_type STRING NOT NULL,
     description STRING NOT NULL,
-    the_value FLOAT NOT NULL);=======
+    the_value FLOAT NOT NULL);
 
 ---------------------------------------------------------------------
 -- A table to store log.info
