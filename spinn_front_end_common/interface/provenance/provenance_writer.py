@@ -105,7 +105,7 @@ class ProvenanceWriter(SQLiteDB):
             or some of the time
         """
         time_taken = (
-                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
         with self.transaction() as cur:
@@ -132,7 +132,7 @@ class ProvenanceWriter(SQLiteDB):
         :tpye skip_reason: str or None
         """
         time_taken = (
-                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
         with self.transaction() as cur:
             cur.execute(
