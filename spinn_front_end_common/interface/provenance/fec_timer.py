@@ -76,6 +76,7 @@ class FecTimer(object):
     TURN_ON = "Turing on Machine"
     MAPPING = "Mapping"
     RUNNING = "Running"
+    EXTRACTING = "Extracting data"
     RESETTING = "Resetting"
     SHUTTING_DOWN = "Shutting down"
     ERROR = "Error"

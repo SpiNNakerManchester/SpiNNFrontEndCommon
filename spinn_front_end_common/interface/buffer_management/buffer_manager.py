@@ -42,7 +42,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance import (
-    BUFFER, ProvenanceWriter)
+    FecTimer, ProvenanceWriter)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -536,25 +536,24 @@ class BufferManager(object):
         :param progress: How to measure/display the progress.
         :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
+        FecTimer.start_category(FecTimer.EXTRACTING)
         if self._java_caller is not None:
             self._java_caller.set_placements(recording_placements)
 
-        timer = Timer()
-        with timer:
-            with self._thread_lock_buffer_out:
-                if self._java_caller is not None:
-                    self._java_caller.get_all_data()
-                    if progress:
-                        progress.end()
-                elif get_config_bool(
-                        "Machine", "enable_advanced_monitor_support"):
-                    self.__old_get_data_for_placements_with_monitors(
-                        recording_placements, progress)
-                else:
-                    self.__old_get_data_for_placements(
-                        recording_placements, progress)
-        with ProvenanceWriter() as db:
-            db.insert_category_timing(BUFFER, timer.measured_interval, None)
+        with self._thread_lock_buffer_out:
+            if self._java_caller is not None:
+                self._java_caller.get_all_data()
+                if progress:
+                    progress.end()
+            elif get_config_bool(
+                    "Machine", "enable_advanced_monitor_support"):
+                self.__old_get_data_for_placements_with_monitors(
+                    recording_placements, progress)
+            else:
+                self.__old_get_data_for_placements(
+                    recording_placements, progress)
+
+        FecTimer.end_category(FecTimer.EXTRACTING)
 
     def __old_get_data_for_placements_with_monitors(
             self, recording_placements, progress):
