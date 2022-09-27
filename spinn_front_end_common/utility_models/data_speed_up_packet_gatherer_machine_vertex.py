@@ -268,15 +268,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(self, x, y, ip_address, app_vertex=None, constraints=None):
+    def __init__(self, x, y, ip_address, app_vertex=None):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param constraints:
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint) or None
         :param app_vertex:
             The application vertex that caused this machine vertex to be
             created. If None, there is no such application vertex.
@@ -284,8 +281,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super().__init__(
-            label=f"SYSTEM:PacketGatherer({x},{y})",
-            constraints=constraints, app_vertex=app_vertex)
+            label=f"SYSTEM:PacketGatherer({x},{y})", app_vertex=app_vertex)
 
         # data holders for the output, and sequence numbers
         self._view = None
