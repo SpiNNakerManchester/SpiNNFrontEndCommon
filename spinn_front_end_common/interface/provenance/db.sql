@@ -53,8 +53,9 @@ CREATE VIEW IF NOT EXISTS timer_view AS
 CREATE TABLE IF NOT EXISTS category_timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
-    the_value INTEGER NOT NULL,
-    n_run INTEGER,
+    timedelta INTEGER NOT NULL,
+    machine_on BOOL NOT NULL,
+    n_run INTEGER NOT NULL,
     n_loop INTEGER);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

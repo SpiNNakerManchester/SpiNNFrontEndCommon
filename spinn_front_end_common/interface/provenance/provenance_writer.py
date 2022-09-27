@@ -95,14 +95,14 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, n_loop):
+    def insert_category_timing(self, category, timedelta, machine_on):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithms run
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param bool machine_on: If the machine was done during all
+            or some of the time
         """
         the_value = (
                 (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
@@ -112,10 +112,13 @@ class ProvenanceWriter(SQLiteDB):
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
-                    category, the_value, n_run, n_loop)
+                    category, timedelta, machine_on, n_run)
                 VALUES(?, ?, ?, ?)
                 """,
-                [category, the_value, FecDataView.get_run_number(), n_loop])
+                [category, the_value, machine_on,
+                 FecDataView.get_run_number()])
+
+
 
     def insert_timing(
             self, category, algorithm, the_value, n_loop, skip_reason):

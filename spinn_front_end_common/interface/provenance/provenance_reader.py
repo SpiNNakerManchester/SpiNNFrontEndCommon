@@ -309,7 +309,7 @@ class ProvenanceReader(object):
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
+             SELECT sum(timedelta)
              FROM category_timer_provenance
              WHERE category = ?
              """
@@ -318,6 +318,33 @@ class ProvenanceReader(object):
             return data[0][0]
         except IndexError:
             return None
+
+    def get_category_timer_sums(self, category):
+        """
+        Get the runtime for one category of algorithms
+        split machine on, machine off
+
+        :param str category:
+        :return: total on and off time of instances with this category
+        :rtype: int
+        """
+        on = 0
+        off = 0
+        query = """
+             SELECT sum(timedelta), machine_on
+             FROM category_timer_provenance
+             WHERE category = ?
+             GROUP BY machine_on
+             """
+        try:
+            for data in self.run_query(query, [category]):
+                if data[1]:
+                    on = data[0]
+                else:
+                    off = data[0]
+        except IndexError:
+            pass
+        return on, off
 
     def get_timer_sum_by_category(self, category):
         """

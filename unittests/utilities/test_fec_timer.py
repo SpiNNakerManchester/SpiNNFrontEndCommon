@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
 import tempfile
 import unittest
 from testfixtures import LogCapture
-from spinn_front_end_common.interface.provenance import FecTimer
+from spinn_front_end_common.interface.provenance import (
+    FecTimer, ProvenanceReader)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -42,14 +43,17 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.setup(MockSimulator())
 
     def test_simple(self):
+        FecTimer.start_category("Test")
         with FecTimer("cat", "test"):
             pass
 
     def test_skip(self):
+        FecTimer.start_category("Test")
         with FecTimer("cat", "test") as ft:
             ft.skip("why not")
 
     def test_error(self):
+        FecTimer.start_category("Test")
         with LogCapture() as lc:
             try:
                 with FecTimer("cat", "oops"):
@@ -61,6 +65,33 @@ class TestFecTimer(unittest.TestCase):
                 if "oops" in str(record.msg):
                     found = True
             assert found
+
+    def test_nested(self):
+        FecTimer.start_category(FecTimer.WAITING)
+        FecTimer.start_category(FecTimer.RUN_OTHER)
+        FecTimer.start_category(FecTimer.MAPPING)
+        FecTimer.start_category(FecTimer.TURN_ON, True)
+        FecTimer.end_category(FecTimer.TURN_ON)
+        FecTimer.end_category(FecTimer.MAPPING)
+        FecTimer.end_category(FecTimer.RUN_OTHER)
+        on, off = ProvenanceReader().get_category_timer_sums(
+            FecTimer.RUN_OTHER)
+        total = ProvenanceReader().get_category_timer_sum(
+            FecTimer.RUN_OTHER)
+        self.assertGreater(on, 0)
+        self.assertGreater(off, 0)
+        self.assertEqual(total, on + off)
+        on, off = ProvenanceReader().get_category_timer_sums(
+            FecTimer.MAPPING)
+        self.assertGreater(on, 0)
+        self.assertGreater(off, 0)
+
+    def test_mess(self):
+        FecTimer.end_category(FecTimer.WAITING)
+        FecTimer.start_category(FecTimer.RUN_OTHER)
+        FecTimer.start_category(FecTimer.MAPPING)
+        FecTimer.end_category(FecTimer.RUN_OTHER)
+        FecTimer.end_category(FecTimer.MAPPING)
 
 
 if __name__ == '__main__':
