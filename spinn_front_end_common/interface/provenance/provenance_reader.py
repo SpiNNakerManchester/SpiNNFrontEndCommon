@@ -144,7 +144,7 @@ class ProvenanceReader(object):
         results = []
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
             with db.transaction() as cur:
-                for row in cur.execute(query, params):
+                  for row in cur.execute(query, params):
                     results.append(row)
         return results
 
@@ -179,7 +179,7 @@ class ProvenanceReader(object):
         :rtype: str
         """
         query = """
-            SELECT algorithm, the_value AS "value"
+            SELECT algorithm, time_taken
             FROM timer_provenance
             WHERE algorithm LIKE ?
             """
@@ -199,9 +199,7 @@ class ProvenanceReader(object):
         """
         # We know the database actually stores microseconds for durations
         query = """
-            SELECT
-                description,
-                SUM(the_value) / 1000000.0 AS "value"
+            SELECT description, SUM(time_taken) / 1000000.0
             FROM timer_provenance
             GROUP BY description
             ORDER BY the_value
@@ -309,7 +307,7 @@ class ProvenanceReader(object):
         :rtype: int
         """
         query = """
-             SELECT sum(timedelta)
+             SELECT sum(time_taken)
              FROM category_timer_provenance
              WHERE category = ?
              """
@@ -331,7 +329,7 @@ class ProvenanceReader(object):
         on = 0
         off = 0
         query = """
-             SELECT sum(timedelta), machine_on
+             SELECT sum(time_taken), machine_on
              FROM category_timer_provenance
              WHERE category = ?
              GROUP BY machine_on
@@ -355,7 +353,7 @@ class ProvenanceReader(object):
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
+             SELECT sum(time_taken)
              FROM timer_provenance
              WHERE category = ?
              """
@@ -374,7 +372,7 @@ class ProvenanceReader(object):
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
+             SELECT sum(time_taken)
              FROM timer_provenance
              WHERE algorithm = ?
              """

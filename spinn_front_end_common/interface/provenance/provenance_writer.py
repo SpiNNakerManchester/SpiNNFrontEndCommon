@@ -104,7 +104,7 @@ class ProvenanceWriter(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        the_value = (
+        time_taken = (
                 (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
@@ -112,37 +112,37 @@ class ProvenanceWriter(SQLiteDB):
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
-                    category, timedelta, machine_on, n_run)
+                    category, time_taken, machine_on, n_run)
                 VALUES(?, ?, ?, ?)
                 """,
-                [category, the_value, machine_on,
+                [category, time_taken, machine_on,
                  FecDataView.get_run_number()])
 
-
-
     def insert_timing(
-            self, category, algorithm, the_value, n_loop, skip_reason):
+            self, category, algorithm, work, timedelta, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
         :param str category: Category of the Algorithm
         :param str algorithm: Algorithm name
-        :param int the_value: Runtime
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param str work: Type of work being done
+        :param ~datetime.timedelta timedelta: Time to be recorded
         :param skip_reason: The reason the algorthm was skipped or None if
             it was not skipped
         :tpye skip_reason: str or None
         """
+        time_taken = (
+                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
-                    category, algorithm, the_value, n_run, n_loop, skip_reason)
+                    category, algorithm, work, time_taken, n_run, skip_reason)
                 VALUES(?, ?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, the_value, FecDataView.get_run_number(),
-                 n_loop, skip_reason])
+                [category, algorithm, work, time_taken,
+                 FecDataView.get_run_number(), skip_reason])
 
     def insert_other(self, category, description, the_value):
         """
