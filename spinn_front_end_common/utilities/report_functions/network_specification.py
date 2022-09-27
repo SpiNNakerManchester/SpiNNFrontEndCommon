@@ -54,10 +54,8 @@ def _write_report(f, vertex):
         f.write("Vertex {}, model: {}\n".format(
             vertex.label, vertex.__class__.__name__))
 
-    f.write("    Constraints:\n")
-    for constraint in vertex.constraints:
-        f.write("        {}\n".format(
-            str(constraint)))
+    if vertex.get_fixed_location():
+        f.write(f"    Fixed at:{vertex.get_fixed_location()}\n")
 
     f.write("    Outgoing Edge Partitions:\n")
     for partition in \
