@@ -16,7 +16,7 @@
 import tempfile
 import unittest
 from testfixtures import LogCapture
-from spinn_front_end_common.data import FecTimer
+from spinn_front_end_common.interface.provenance import FecTimer
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -44,6 +44,10 @@ class TestFecTimer(unittest.TestCase):
     def test_simple(self):
         with FecTimer("cat", "test"):
             pass
+
+    def test_skip(self):
+        with FecTimer("cat", "test") as ft:
+            ft.skip("why not")
 
     def test_error(self):
         with LogCapture() as lc:

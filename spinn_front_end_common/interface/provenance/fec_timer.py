@@ -53,6 +53,7 @@ else:
 _simulator = None
 _provenance_path = None
 _print_timings = False
+_category = None
 
 
 class FecTimer(object):
@@ -63,10 +64,7 @@ class FecTimer(object):
         "_start_time",
 
         # Name of algorithm what is being timed
-        "_algorithm",
-
-        # Name of category what is being timed
-        "_category",
+        "_algorithm"
         ]
 
     @classmethod
@@ -84,8 +82,9 @@ class FecTimer(object):
             "Reports", "display_algorithm_timings")
 
     def __init__(self, category, algorithm):
+        global _category
         self._start_time = None
-        self._category = category
+        _category = category
         self._algorithm = algorithm
 
     def __enter__(self):
@@ -104,7 +103,7 @@ class FecTimer(object):
         time_taken = self._stop_timer()
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
+                _category, self._algorithm, time_taken.microseconds,
                 _simulator.n_loops, reason)
         self._report(message)
 
@@ -154,7 +153,7 @@ class FecTimer(object):
         message = f"{self._algorithm} failed after {time_taken} as {reason}"
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
+                _category, self._algorithm, time_taken.microseconds,
                 _simulator.n_loops, reason)
         self._report(message)
 
@@ -188,7 +187,7 @@ class FecTimer(object):
 
         with ProvenanceWriter() as db:
             db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
+                _category, self._algorithm, time_taken.microseconds,
                 _simulator.n_loops, skip)
         self._report(message)
         return False

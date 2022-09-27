@@ -68,7 +68,6 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
-from spinn_front_end_common.data import FecTimer
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner, buffer_extractor,
@@ -98,6 +97,7 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
+from spinn_front_end_common.interface.provenance import FecTimer
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.provenance import (
