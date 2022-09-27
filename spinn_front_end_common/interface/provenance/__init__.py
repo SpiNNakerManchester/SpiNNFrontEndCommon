@@ -34,7 +34,7 @@ RUN_LOOP = "running"
 APPLICATION_RUNNER = "Application runner"
 BUFFER = "BufferExtraction"
 
-__all__ = ["AbstractProvidesLocalProvenanceData",
+__all__ = ["AbstractProvidesLocalProvenanceData", "FecTimer",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
            "ProvidesProvenanceDataFromMachineImpl"]

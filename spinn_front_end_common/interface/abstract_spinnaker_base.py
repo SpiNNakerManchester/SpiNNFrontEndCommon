@@ -28,7 +28,6 @@ from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, set_config)
 from spinn_utilities.log import FormatAdapter
-from spinn_utilities.timer import Timer
 
 from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets, Machine

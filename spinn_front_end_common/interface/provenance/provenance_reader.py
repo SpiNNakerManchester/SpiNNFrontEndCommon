@@ -144,7 +144,7 @@ class ProvenanceReader(object):
         results = []
         with self.get_database_handle(read_only, use_sqlite_rows) as db:
             with db.transaction() as cur:
-                  for row in cur.execute(query, params):
+                for row in cur.execute(query, params):
                     results.append(row)
         return results
 
