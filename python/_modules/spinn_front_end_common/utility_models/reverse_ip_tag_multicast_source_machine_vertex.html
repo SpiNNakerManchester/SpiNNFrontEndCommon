@@ -121,8 +121,6 @@
 <span class="sd">    :type app_vertex: ReverseIpTagMultiCastSource or None</span>
 <span class="sd">    :param int n_keys: The number of keys to be sent via this mulitcast source</span>
 <span class="sd">        (can&#39;t be None if vertex_slice is also None)</span>
-<span class="sd">    :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:</span>
-<span class="sd">        Any initial constraints to this vertex</span>
 <span class="sd">    :param str board_address:</span>
 <span class="sd">        The IP address of the board on which to place this vertex if receiving</span>
 <span class="sd">        data, either buffered or live (by default, any board is chosen)</span>
@@ -193,7 +191,6 @@
             <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">n_keys</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 
             <span class="c1"># Live input parameters</span>
             <span class="n">receive_port</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -227,7 +224,7 @@
                 <span class="s2">&quot;Can&#39;t specify both send_buffer_partition_id and&quot;</span>
                 <span class="s2">&quot; injection_partition_id&quot;</span><span class="p">)</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_reverse_iptags</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_keys</span> <span class="o">=</span> <span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span>

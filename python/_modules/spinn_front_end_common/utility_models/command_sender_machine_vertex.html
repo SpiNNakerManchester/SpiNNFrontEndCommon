@@ -114,15 +114,12 @@
         <span class="s2">&quot;will cause errors in the external devices support and therefore &quot;</span>
         <span class="s2">&quot;needs fixing&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str label: The label of this vertex</span>
-<span class="sd">        :param constraints: Any initial constraints to this vertex</span>
-<span class="sd">        :type constraints:</span>
-<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint)</span>
 <span class="sd">        :param CommandSender app_vertex:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_timed_commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>

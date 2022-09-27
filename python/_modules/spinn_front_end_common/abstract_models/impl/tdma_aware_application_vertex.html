@@ -76,23 +76,17 @@
 
     <span class="n">_TDMA_MISSED_SLOTS_NAME</span> <span class="o">=</span> <span class="s2">&quot;Number_of_times_the_tdma_fell_behind&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param label: The name of the vertex.</span>
 <span class="sd">        :type label: str or None</span>
-<span class="sd">        :param constraints: The initial constraints of the vertex.</span>
-<span class="sd">        :type constraints:</span>
-<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint) or None</span>
 <span class="sd">        :param int max_atoms_per_core: The max number of atoms that can be</span>
 <span class="sd">            placed on a core, used in partitioning.</span>
 <span class="sd">        :type splitter:</span>
 <span class="sd">            ~pacman.model.partitioner_interfaces.AbstractSplitterCommon</span>
 <span class="sd">            or None</span>
-<span class="sd">        :raise PacmanInvalidParameterException:</span>
-<span class="sd">            If one of the constraints is not valid</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="p">,</span> <span class="n">constraints</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__clocks_between_cores</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__n_slots</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__clocks_between_spikes</span> <span class="o">=</span> <span class="kc">None</span>

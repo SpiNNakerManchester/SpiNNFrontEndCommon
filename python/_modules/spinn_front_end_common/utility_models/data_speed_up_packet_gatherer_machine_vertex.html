@@ -309,15 +309,12 @@
     <span class="c1"># Initial port for the reverse IP tag (to be replaced later)</span>
     <span class="n">_TAG_INITIAL_PORT</span> <span class="o">=</span> <span class="mi">10000</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">constraints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int x: Where this gatherer is.</span>
 <span class="sd">        :param int y: Where this gatherer is.</span>
 <span class="sd">        :param str ip_address:</span>
 <span class="sd">            How to talk directly to the chip where the gatherer is.</span>
-<span class="sd">        :param constraints:</span>
-<span class="sd">        :type constraints:</span>
-<span class="sd">            iterable(~pacman.model.constraints.AbstractConstraint) or None</span>
 <span class="sd">        :param app_vertex:</span>
 <span class="sd">            The application vertex that caused this machine vertex to be</span>
 <span class="sd">            created. If None, there is no such application vertex.</span>
@@ -325,8 +322,7 @@
 <span class="sd">            ~pacman.model.graphs.application.ApplicationVertex or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span>
-            <span class="n">constraints</span><span class="o">=</span><span class="n">constraints</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
 
         <span class="c1"># data holders for the output, and sequence numbers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
