@@ -33,7 +33,7 @@ class _TestAppVertexWithBinary(AbstractOneAppOneMachineVertex):
     def __init__(self, binary_file_name, binary_start_type):
         AbstractOneAppOneMachineVertex.__init__(
             self, _TestVertexWithBinary(binary_file_name, binary_start_type),
-            label=None, constraints=[])
+            label=None)
 
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
@@ -56,7 +56,7 @@ class _TestSimpleAppVertex(AbstractOneAppOneMachineVertex):
 
     def __init__(self):
         AbstractOneAppOneMachineVertex.__init__(
-            self, SimpleMachineVertex(None), label=None, constraints=[])
+            self, SimpleMachineVertex(None), label=None)
 
 
 class _TestExecutableFinder(object):

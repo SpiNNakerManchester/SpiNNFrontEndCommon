@@ -36,23 +36,17 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
 
-    def __init__(self, label, constraints, max_atoms_per_core, splitter=None):
+    def __init__(self, label, max_atoms_per_core, splitter=None):
         """
         :param label: The name of the vertex.
         :type label: str or None
-        :param constraints: The initial constraints of the vertex.
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint) or None
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
         :type splitter:
             ~pacman.model.partitioner_interfaces.AbstractSplitterCommon
             or None
-        :raise PacmanInvalidParameterException:
-            If one of the constraints is not valid
         """
-        super().__init__(
-            label, constraints, max_atoms_per_core, splitter=splitter)
+        super().__init__(label, max_atoms_per_core, splitter=splitter)
         self.__clocks_between_cores = None
         self.__n_slots = None
         self.__clocks_between_spikes = None
