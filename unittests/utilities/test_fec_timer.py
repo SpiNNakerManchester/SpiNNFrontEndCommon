@@ -44,19 +44,19 @@ class TestFecTimer(unittest.TestCase):
 
     def test_simple(self):
         FecTimer.start_category("Test")
-        with FecTimer("cat", "test"):
+        with FecTimer("test", FecTimer.OTHER):
             pass
 
     def test_skip(self):
         FecTimer.start_category("Test")
-        with FecTimer("cat", "test") as ft:
+        with FecTimer("test", FecTimer.OTHER) as ft:
             ft.skip("why not")
 
     def test_error(self):
         FecTimer.start_category("Test")
         with LogCapture() as lc:
             try:
-                with FecTimer("cat", "oops"):
+                with FecTimer("oops", FecTimer.OTHER):
                     1/0
             except ZeroDivisionError:
                 pass

@@ -76,20 +76,32 @@ class FecTimer(object):
     WAITING = "Waiting"
     SETTING_UP = "In Setup"
     RUN_OTHER = "In run other"
-    TURN_ON = "Turing on Machine"
-    MAPPING = "Mapping"
-    RUNNING = "Running"
-    EXTRACTING = "Extracting data"
+    TURN_ON = "Turning on Machine"
+    DO_LOAD ="Loading Stage"
+    MAPPING = "Mapping Stage"
+    RUN_LOOP = "Running Stage"
     RESETTING = "Resetting"
     SHUTTING_DOWN = "Shutting down"
     ERROR = "Error"
 
+    CATEGORIES = [WAITING, SETTING_UP, RUN_OTHER, TURN_ON, MAPPING, DO_LOAD,
+                  RUN_LOOP, RESETTING, SHUTTING_DOWN, ERROR]
+
     # Work Type Constants
     OTHER = "Other"
     LOADING = "Loading"
+    BITFIELD ="BitField work"
+    # Only for on Machine Compression
+    COMPRESSING = "Compressing"
+    CONTROL = "Control"
+    SYNAPSE ="Expanding Synapse"
     RUNNING = "Running"
     EXTRACTING = "Extracting"
     REPORT = "Reporting"
+
+    WORK_TYPES = [
+        OTHER, TURN_ON, LOADING, BITFIELD, CONTROL, SYNAPSE, RUNNING,
+        EXTRACTING, REPORT]
 
     @classmethod
     def setup(cls, simulator):
@@ -104,11 +116,11 @@ class FecTimer(object):
         cls._print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
 
-    def __init__(self, category, algorithm):
+    def __init__(self, algorithm, work):
         global _category
         self._start_time = None
         self._algorithm = algorithm
-        self._work = "TODO"
+        self._work = work
 
     def __enter__(self):
         self._start_time = _now()
