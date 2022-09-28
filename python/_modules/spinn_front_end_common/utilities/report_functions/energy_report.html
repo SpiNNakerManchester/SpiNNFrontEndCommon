@@ -213,11 +213,10 @@
 
         <span class="c1"># sort what to report by chip</span>
         <span class="n">active_chips</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">():</span>
-            <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">):</span>
-                <span class="n">labels</span> <span class="o">=</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
-                <span class="n">labels</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
+        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placements_by_vertex_type</span><span class="p">(</span>
+                <span class="n">ChipPowerMonitorMachineVertex</span><span class="p">):</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span>
+            <span class="n">labels</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
         <span class="k">for</span> <span class="n">xy</span> <span class="ow">in</span> <span class="n">active_chips</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_chips_active_cost</span><span class="p">(</span>
                 <span class="n">xy</span><span class="p">,</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">xy</span><span class="p">],</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
@@ -432,7 +431,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
     </div>
   </body>
 </html>

@@ -111,7 +111,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecTimer</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span> <span class="n">buffer_extractor</span><span class="p">,</span>
+    <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span>
     <span class="n">buffer_manager_creator</span><span class="p">,</span> <span class="n">chip_io_buf_clearer</span><span class="p">,</span> <span class="n">chip_io_buf_extractor</span><span class="p">,</span>
     <span class="n">chip_provenance_updater</span><span class="p">,</span> <span class="n">chip_runtime_updater</span><span class="p">,</span> <span class="n">compute_energy_used</span><span class="p">,</span>
     <span class="n">create_notification_protocol</span><span class="p">,</span> <span class="n">database_interface</span><span class="p">,</span>
@@ -2152,7 +2152,8 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Buffer extractor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">buffer_extractor</span><span class="p">()</span>
+            <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_buffer_manager</span><span class="p">()</span>
+            <span class="n">bm</span><span class="o">.</span><span class="n">get_placement_data</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_do_extract_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2567,7 +2568,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
     </div>
   </body>
 </html>

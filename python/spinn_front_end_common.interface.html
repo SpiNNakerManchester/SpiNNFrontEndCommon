@@ -71,7 +71,7 @@
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.add_sender_vertex"><code class="docutils literal notranslate"><span class="pre">BufferManager.add_sender_vertex()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data"><code class="docutils literal notranslate"><span class="pre">BufferManager.clear_recorded_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement"><code class="docutils literal notranslate"><span class="pre">BufferManager.get_data_by_placement()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_for_placements"><code class="docutils literal notranslate"><span class="pre">BufferManager.get_data_for_placements()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_placement_data"><code class="docutils literal notranslate"><span class="pre">BufferManager.get_placement_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers"><code class="docutils literal notranslate"><span class="pre">BufferManager.load_initial_buffers()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.reset"><code class="docutils literal notranslate"><span class="pre">BufferManager.reset()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.resume"><code class="docutils literal notranslate"><span class="pre">BufferManager.resume()</span></code></a></li>
@@ -132,7 +132,6 @@
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.add_command_senders"><code class="docutils literal notranslate"><span class="pre">add_command_senders()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.application_finisher"><code class="docutils literal notranslate"><span class="pre">application_finisher()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.application_runner"><code class="docutils literal notranslate"><span class="pre">application_runner()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.buffer_extractor"><code class="docutils literal notranslate"><span class="pre">buffer_extractor()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.buffer_manager_creator"><code class="docutils literal notranslate"><span class="pre">buffer_manager_creator()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.chip_io_buf_clearer"><code class="docutils literal notranslate"><span class="pre">chip_io_buf_clearer()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.chip_io_buf_extractor"><code class="docutils literal notranslate"><span class="pre">chip_io_buf_extractor()</span></code></a></li>
@@ -284,10 +283,10 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="spinn-front-end-common-interface-abstract-spinnaker-base-module">
-<h2>spinn_front_end_common.interface.abstract_spinnaker_base module<a class="headerlink" href="#spinn-front-end-common-interface-abstract-spinnaker-base-module" title="Permalink to this heading">¶</a></h2>
+<section id="module-spinn_front_end_common.interface.abstract_spinnaker_base">
+<span id="spinn-front-end-common-interface-abstract-spinnaker-base-module"></span><h2>spinn_front_end_common.interface.abstract_spinnaker_base module<a class="headerlink" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base" title="Permalink to this heading">¶</a></h2>
 <p>main interface for the SpiNNaker tools</p>
-<span class="target" id="module-spinn_front_end_common.interface.abstract_spinnaker_base"></span><dl class="py class">
+<dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.abstract_spinnaker_base.</span></span><span class="sig-name descname"><span class="pre">AbstractSpinnakerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_writer_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="spinn_front_end_common.interface.config_handler.ConfigHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigHandler</span></code></a></p>
@@ -591,7 +590,7 @@ write.</p>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#spinn-front-end-common-interface-abstract-spinnaker-base-module">spinn_front_end_common.interface.abstract_spinnaker_base module</a><ul>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.abstract_spinnaker_base">spinn_front_end_common.interface.abstract_spinnaker_base module</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase"><code class="docutils literal notranslate"><span class="pre">AbstractSpinnakerBase</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.check_machine_specifics"><code class="docutils literal notranslate"><span class="pre">AbstractSpinnakerBase.check_machine_specifics()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation"><code class="docutils literal notranslate"><span class="pre">AbstractSpinnakerBase.continue_simulation()</span></code></a></li>
@@ -689,7 +688,7 @@ write.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
     </div>
   </body>
 </html>
