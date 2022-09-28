@@ -313,9 +313,12 @@ class ProvenanceReader(object):
              """
         data = self.run_query(query, [category])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
 
     def get_category_timer_sums(self, category):
         """
@@ -359,9 +362,12 @@ class ProvenanceReader(object):
              """
         data = self.run_query(query, [category])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
 
     def get_timer_sum_by_algorithm(self, algorithm):
         """
@@ -378,9 +384,12 @@ class ProvenanceReader(object):
              """
         data = self.run_query(query, [algorithm])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
 
     def messages(self):
         """
