@@ -35,26 +35,29 @@ CREATE TABLE IF NOT EXISTS power_provenance(
 -- A table holding the values for algorithm timings
 CREATE TABLE IF NOT EXISTS timer_provenance(
     timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
+    category_id INTEGER NOT NULL,
     algorithm STRING NOT NULL,
     work STRING NOT NULL,
     time_taken INTEGER NOT NULL,
-    n_run INTEGER NOT NULL,
-    n_loop INTEGER,
     skip_reason STRING);
 
+CREATE VIEW IF NOT EXISTS full_timer_view AS
+    SELECT timer_id, category, algorithm, work, machine_on, time_taken, n_run, n_loop
+    FROM timer_provenance NATURAL JOIN category_timer_provenance
+    ORDER BY timer_id;
+
 CREATE VIEW IF NOT EXISTS timer_view AS
-    SELECT category, algorithm, work, time_taken, n_run, n_loop
-    FROM timer_provenance
+    SELECT category, algorithm, work, machine_on, time_taken, n_run, n_loop
+    FROM full_timer_view
     WHERE skip_reason is NULL
     ORDER BY timer_id;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for category timings
 CREATE TABLE IF NOT EXISTS category_timer_provenance(
-    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category STRING NOT NULL,
-    time_taken INTEGER NOT NULL,
+    time_taken INTEGER,
     machine_on BOOL NOT NULL,
     n_run INTEGER NOT NULL,
     n_loop INTEGER);

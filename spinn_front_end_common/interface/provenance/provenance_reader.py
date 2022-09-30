@@ -357,7 +357,7 @@ class ProvenanceReader(object):
         """
         query = """
              SELECT sum(time_taken)
-             FROM timer_provenance
+             FROM full_timer_view
              WHERE category = ?
              """
         data = self.run_query(query, [category])

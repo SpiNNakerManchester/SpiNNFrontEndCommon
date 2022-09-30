@@ -95,15 +95,32 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, machine_on):
+    def insert_category(self, category, machine_on):
         """
-        Inserts algorithms run times into the timer_provenance table
+        Inserts category into the category_timer_provenance  returning id
 
-        :param str category: Category of the Algorithms run
-        :param ~datetime.timedelta timedelta: Time to be recorded
+        :param str category: Name of Category starting
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, machine_on, n_run)
+                VALUES(?, ?, ?)
+                """,
+                [category, machine_on, FecDataView.get_run_number()])
+            return cur.lastrowid
+
+
+    def insert_category_timing(self, category_id, timedelta):
+        """
+        Inserts run time into the category
+
+        :param int category_id: id of the Category finished
+        :param ~datetime.timedelta timedelta: Time to be recorded
+       """
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
@@ -111,19 +128,18 @@ class ProvenanceWriter(SQLiteDB):
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO category_timer_provenance(
-                    category, time_taken, machine_on, n_run)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category, time_taken, machine_on,
-                 FecDataView.get_run_number()])
+                UPDATE category_timer_provenance
+                SET
+                    time_taken = ?
+                WHERE category_id = ?
+                """, (category_id, time_taken))
 
     def insert_timing(
             self, category, algorithm, work, timedelta, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
-        :param str category: Category of the Algorithm
+        :param int category: Category Id of the Algorithm
         :param str algorithm: Algorithm name
         :param str work: Type of work being done
         :param ~datetime.timedelta timedelta: Time to be recorded
@@ -138,11 +154,10 @@ class ProvenanceWriter(SQLiteDB):
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
-                    category, algorithm, work, time_taken, n_run, skip_reason)
-                VALUES(?, ?, ?, ?, ?, ?)
+                    category_id, algorithm, work, time_taken, skip_reason)
+                VALUES(?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, work, time_taken,
-                 FecDataView.get_run_number(), skip_reason])
+                [category, algorithm, work, time_taken, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """

@@ -232,12 +232,12 @@ class FecTimer(object):
         :param str category: Category to switch to
         """
         time_now = _now()
-        if cls._category:
-            diff = _convert_to_timedelta(time_now - cls._category_time)
-            with ProvenanceWriter() as db:
-                db.insert_category_timing(cls._category, diff, cls._machine_on)
+        with ProvenanceWriter() as db:
+            if cls._category:
+                diff = _convert_to_timedelta(time_now - cls._category_time)
+                db.insert_category_timing(cls._category, diff)
+            cls._category = db.insert_category(category, cls._machine_on)
         cls._category_time = time_now
-        cls._category = category
 
     @classmethod
     def start_category(cls, category, machine_on=None):
