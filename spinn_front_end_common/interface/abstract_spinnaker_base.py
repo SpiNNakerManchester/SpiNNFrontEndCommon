@@ -155,9 +155,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         #
         "_raise_keyboard_interrupt",
 
-        # The loop number for the this/next loop in the end_user run
-        "_n_loops",
-
         # A dict of live packet gather params to Application LGP vertices
         "_lpg_vertices",
 
@@ -198,7 +195,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # holder for timing and running related values
         self._run_until_complete = False
         self._state_condition = Condition()
-        self._n_loops = None
 
         # folders
         self._set_up_report_specifics()
@@ -486,10 +482,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         if run_time is not None:
             logger.info("Running for {} steps for a total of {}ms",
                         len(steps), run_time)
-            for self._n_loops, step in enumerate(steps):
-                logger.info("Run {} of {}", self._n_loops + 1, len(steps))
+            for step in steps:
+                run_step = self._data_writer.next_run_step()
+                logger.info(f"Run {run_step} of {len(steps)}")
                 self._do_run(step, n_sync_steps)
-            self._n_loops = None
+            self._data_writer.clear_run_steps()
         elif run_time is None and self._run_until_complete:
             logger.info("Running until complete")
             self._do_run(None, n_sync_steps)
@@ -505,12 +502,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             logger.info("Running forever in steps of {}ms".format(
                 self._data_writer.get_max_run_time_steps()))
-            self._n_loops = 1
             while self._data_writer.is_no_stop_requested():
-                logger.info("Run {}".format(self._n_loops))
+                logger.info(f"Run {self._data_writer.next_run_step()}")
                 self._do_run(
                     self._data_writer.get_max_run_time_steps(), n_sync_steps)
-                self._n_loops += 1
+            self._data_writer.clear_run_steps()
 
         # Indicate that the signal handler needs to act
         # pylint: disable=protected-access
@@ -518,8 +514,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
-
-        self._n_loops = None
 
     def _is_per_timestep_sdram(self):
         for placement in self._data_writer.iterate_placemements():
@@ -2294,15 +2288,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
         FecTimer.end_category(FecTimer.RESETTING)
-
-    @property
-    def n_loops(self):
-        """
-        The number for this or the net loop within an end_user run
-
-        :rtype: int or None
-        """
-        return self._n_loops
 
     def __repr__(self):
         if self._data_writer.has_ipaddress():

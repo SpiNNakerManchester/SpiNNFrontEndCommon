@@ -107,10 +107,11 @@ class ProvenanceWriter(SQLiteDB):
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
-                    category, machine_on, n_run)
-                VALUES(?, ?, ?)
+                    category, machine_on, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
                 """,
-                [category, machine_on, FecDataView.get_run_number()])
+                [category, machine_on, FecDataView.get_run_number(),
+                 FecDataView.get_run_step()])
             return cur.lastrowid
 
     def insert_category_timing(self, category_id, timedelta):
