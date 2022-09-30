@@ -542,7 +542,7 @@ class BufferManager(object):
         return n_regions_to_read, recording_placements
 
     def get_placement_data(self):
-        FecTimer.start_category(FecTimer.EXTRACTING)
+        FecTimer.start_category(FecTimer.BUFFER)
         with self._thread_lock_buffer_out:
             if self._java_caller is not None:
                 self.__get_data_for_placements_using_java()

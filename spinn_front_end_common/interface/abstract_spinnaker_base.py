@@ -96,12 +96,10 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
-from spinn_front_end_common.interface.provenance import FecTimer
+from spinn_front_end_common.interface.provenance import (
+    FecTimer, ProvenanceWriter)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
-from spinn_front_end_common.interface.provenance import (
-    APPLICATION_RUNNER, DATA_GENERATION, GET_MACHINE, LOADING,
-    ProvenanceWriter, MAPPING, RUN_LOOP)
 from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
@@ -676,7 +674,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             return
 
-        with FecTimer("Machine generator", FecTimer.TURN_ON):
+        with FecTimer("Machine generator", FecTimer.GET_MACHINE):
             machine, transceiver = machine_generator(
                 bmp_details, board_version,
                 auto_detect_bmp, scamp_connection_data, reset_machine)
@@ -701,7 +699,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :rtype: ~spinn_machine.Machine
         """
-        FecTimer.start_category(FecTimer.TURN_ON, True)
+        FecTimer.start_category(FecTimer.GET_MACHINE, True)
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
             # Make the reset hard
@@ -713,7 +711,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._data_writer.has_machine():
             raise ConfigurationException(
                 "Not enough information provided to supply a machine")
-        FecTimer.end_category(FecTimer.TURN_ON)
+        FecTimer.end_category(FecTimer.GET_MACHINE)
 
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
@@ -1306,7 +1304,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_buffer_manager_creator()
         self._execute_sdram_outgoing_partition_allocator()
 
-        FecTimer.end_category(MAPPING)
+        FecTimer.end_category(FecTimer.MAPPING)
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -1822,7 +1820,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the load algotithms
 
         """
-        FecTimer.start_category(FecTimer.DO_LOAD)
+        FecTimer.start_category(FecTimer.LOADING)
 
         if self._data_writer.get_requires_mapping():
             self._execute_routing_setup()
@@ -1856,7 +1854,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._report_fixed_routes()
         self._execute_application_load_executables()
 
-        FecTimer.end_category(FecTimer.DO_LOAD)
+        FecTimer.end_category(FecTimer.LOADING)
 
     def _report_sdram_usage_per_chip(self):
         # TODO why in do run
@@ -2036,7 +2034,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int run_time: the run duration in milliseconds.
         :return:
         """
-        with FecTimer(APPLICATION_RUNNER, FecTimer.RUNNING) as timer:
+        with FecTimer(FecTimer.APPLICATION_RUNNER, FecTimer.RUNNING) as timer:
             if timer.skip_if_virtual_board():
                 return
             # Don't timeout if a stepped mode is in operation

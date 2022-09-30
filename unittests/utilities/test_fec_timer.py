@@ -70,8 +70,8 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(FecTimer.WAITING)
         FecTimer.start_category(FecTimer.RUN_OTHER)
         FecTimer.start_category(FecTimer.MAPPING)
-        FecTimer.start_category(FecTimer.TURN_ON, True)
-        FecTimer.end_category(FecTimer.TURN_ON)
+        FecTimer.start_category(FecTimer.GET_MACHINE, True)
+        FecTimer.end_category(FecTimer.GET_MACHINE)
         FecTimer.end_category(FecTimer.MAPPING)
         FecTimer.end_category(FecTimer.RUN_OTHER)
         on, off = ProvenanceReader().get_category_timer_sums(

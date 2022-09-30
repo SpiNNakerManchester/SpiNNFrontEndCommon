@@ -77,20 +77,22 @@ class FecTimer(object):
     WAITING = "Waiting"
     SETTING_UP = "In Setup"
     RUN_OTHER = "In run other"
-    TURN_ON = "Turning on Machine"
-    DO_LOAD ="Loading Stage"
+    GET_MACHINE = "Turning on Machine"
+    LOADING = "Loading Stage"
+    DATA_GENERATION = "data_generation"
     MAPPING = "Mapping Stage"
     RUN_LOOP = "Running Stage"
+    BUFFER = "BufferExtraction"
     RESETTING = "Resetting"
     SHUTTING_DOWN = "Shutting down"
     ERROR = "Error"
 
-    CATEGORIES = [WAITING, SETTING_UP, RUN_OTHER, TURN_ON, MAPPING, DO_LOAD,
-                  RUN_LOOP, RESETTING, SHUTTING_DOWN, ERROR]
+    CATEGORIES = [WAITING, SETTING_UP, RUN_OTHER, GET_MACHINE, MAPPING,
+                  LOADING, RUN_LOOP, BUFFER, RESETTING, SHUTTING_DOWN, ERROR]
 
     # Work Type Constants
     OTHER = "Other"
-    LOADING = "Loading"
+    # LOADING
     BITFIELD ="BitField work"
     # Only for on Machine Compression
     COMPRESSING = "Compressing"
@@ -101,8 +103,11 @@ class FecTimer(object):
     REPORT = "Reporting"
 
     WORK_TYPES = [
-        OTHER, TURN_ON, LOADING, BITFIELD, CONTROL, SYNAPSE, RUNNING,
+        OTHER, GET_MACHINE, LOADING, BITFIELD, CONTROL, SYNAPSE, RUNNING,
         EXTRACTING, REPORT]
+
+    # Algorithm Names used elsewhere
+    APPLICATION_RUNNER = "Application runner"
 
     @classmethod
     def setup(cls, simulator):
