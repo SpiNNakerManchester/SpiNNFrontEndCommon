@@ -586,8 +586,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
-                self._virtual_key = rinfo.first_key
-                self._mask = rinfo.first_mask
+                self._virtual_key = rinfo.key
+                self._mask = rinfo.mask
 
         if self._virtual_key is not None and self._prefix is None:
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD

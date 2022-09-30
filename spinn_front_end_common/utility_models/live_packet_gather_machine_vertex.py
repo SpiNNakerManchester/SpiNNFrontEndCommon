@@ -222,8 +222,8 @@ class LivePacketGatherMachineVertex(
             for vertex, partition_id in self._incoming_sources:
                 r_info = routing_info.get_routing_info_from_pre_vertex(
                     vertex, partition_id)
-                spec.write_value(r_info.first_key)
-                spec.write_value(r_info.first_mask)
+                spec.write_value(r_info.key)
+                spec.write_value(r_info.mask)
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
