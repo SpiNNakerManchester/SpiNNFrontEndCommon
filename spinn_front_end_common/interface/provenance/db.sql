@@ -42,8 +42,9 @@ CREATE TABLE IF NOT EXISTS timer_provenance(
     skip_reason STRING);
 
 CREATE VIEW IF NOT EXISTS full_timer_view AS
-    SELECT timer_id, category, algorithm, work, machine_on, time_taken, n_run, n_loop
-    FROM timer_provenance NATURAL JOIN category_timer_provenance
+    SELECT timer_id, category, algorithm, work, machine_on, timer_provenance.time_taken, n_run, n_loop
+    FROM timer_provenance ,category_timer_provenance
+	WHERE timer_provenance.category_id = category_timer_provenance.category_id
     ORDER BY timer_id;
 
 CREATE VIEW IF NOT EXISTS timer_view AS

@@ -63,42 +63,48 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self):
         with ProvenanceWriter() as db:
+            mapping_id = db.insert_category("mapping", False)
             db.insert_timing(
-                "mapping", "compressor", "test", timedelta(milliseconds=12),
+                mapping_id, "compressor", "test", timedelta(milliseconds=12),
                 None)
             db.insert_timing(
-                "mapping", "router_report", "test2",
+                mapping_id, "router_report", "test2",
                 timedelta(milliseconds=123), "cfg says no")
+            execute_id = db.insert_category("execute", False)
             db.insert_timing(
-                "execute", "run", "test", timedelta(milliseconds=134), None)
+                execute_id, "run", "test", timedelta(milliseconds=134), None)
             db.insert_timing(
-                "execute", "run", "test2", timedelta(milliseconds=344), None)
+                execute_id, "run", "test2", timedelta(milliseconds=344), None)
             db.insert_timing(
-                "execute", "clear", "test", timedelta(milliseconds=4), None)
+                execute_id, "clear", "test", timedelta(milliseconds=4), None)
         reader = ProvenanceReader()
         data = reader.get_timer_sum_by_category("mapping")
         self.assertEqual(12 + 123, data)
         data = reader.get_timer_sum_by_category("execute")
         self.assertEqual(134 + 344 + 4, data)
         data = reader.get_timer_sum_by_category("bacon")
-        self.assertIsNone(data)
+        self.assertEquals(0, data)
         data = reader.get_timer_sum_by_algorithm("router_report")
         self.assertEqual(123, data)
         data = reader.get_timer_sum_by_algorithm("clear")
         self.assertEqual(4, data)
         data = reader.get_timer_sum_by_algorithm("junk")
-        self.assertIsNone(data)
+        self.assertEqual(0, data)
 
     def test_category_timings(self):
         with ProvenanceWriter() as db:
-            db.insert_category_timing(
-                "mapping", timedelta(milliseconds=12), False)
-            db.insert_category_timing(
-                "mapping", timedelta(milliseconds=123), True)
-            db.insert_category_timing(
-                "execute", timedelta(milliseconds=134), True)
-            db.insert_category_timing(
-                "execute", timedelta(milliseconds=344), False)
+            id = db.insert_category("mapping", False)
+            db.insert_category_timing(id, timedelta(milliseconds=12))
+
+            id = db.insert_category("mapping", True)
+            db.insert_category_timing(id, timedelta(milliseconds=123))
+
+            id = db.insert_category("execute", True)
+            db.insert_category_timing(id, timedelta(milliseconds=134))
+
+            id = db.insert_category("execute", False)
+            db.insert_category_timing(id, timedelta(milliseconds=344))
+
         reader = ProvenanceReader()
         data = reader.get_category_timer_sum("mapping")
         self.assertEqual(12 + 123, data)

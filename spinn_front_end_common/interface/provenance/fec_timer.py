@@ -56,7 +56,8 @@ class FecTimer(object):
     _simulator = None
     _provenance_path = None
     _print_timings = False
-    _category = None
+    _category_id = None
+    _category_name = None
     _category_time = None
     _machine_on = False
     _previous = []
@@ -117,7 +118,6 @@ class FecTimer(object):
             "Reports", "display_algorithm_timings")
 
     def __init__(self, algorithm, work):
-        global _category
         self._start_time = None
         self._algorithm = algorithm
         self._work = work
@@ -137,8 +137,8 @@ class FecTimer(object):
         message = f"{self._algorithm} skipped as {reason}"
         timedelta = self._stop_timer()
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, self._work, timedelta, reason)
+            db.insert_timing(self._category_id, self._algorithm, self._work,
+                             timedelta, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -186,8 +186,8 @@ class FecTimer(object):
         timedelta = self._stop_timer()
         message = f"{self._algorithm} failed after {timedelta} as {reason}"
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, self._work, timedelta, reason)
+            db.insert_timing(self._category_id, self._algorithm,
+                             self._work, timedelta, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -219,13 +219,13 @@ class FecTimer(object):
                 skip = f"Exception {ex}"
 
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, self._work, timedelta, skip)
+            db.insert_timing(self._category_id, self._algorithm, self._work,
+                             timedelta, skip)
         self._report(message)
         return False
 
     @classmethod
-    def _change_category(cls, category):
+    def _change_category(cls, category_name):
         """
         This method should only be called via the View!
 
@@ -233,14 +233,16 @@ class FecTimer(object):
         """
         time_now = _now()
         with ProvenanceWriter() as db:
-            if cls._category:
+            if cls._category_id:
                 diff = _convert_to_timedelta(time_now - cls._category_time)
-                db.insert_category_timing(cls._category, diff)
-            cls._category = db.insert_category(category, cls._machine_on)
+                db.insert_category_timing(cls._category_id, diff)
+            cls._category_id = db.insert_category(
+                category_name, cls._machine_on)
+        cls._category_name = category_name
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category, machine_on=None):
+    def start_category(cls, category_name, machine_on=None):
         """
         This method should only be called via the View!
 
@@ -249,29 +251,32 @@ class FecTimer(object):
             Or None to leave as is
         :type machine_on: None or bool
         """
-        cls._previous.append(cls._category)
-        cls._change_category(category)
+        cls._previous.append(cls._category_name)
+        cls._change_category(category_name)
         if machine_on is not None:
             cls._machine_on = machine_on
 
     @classmethod
-    def end_category(cls, category):
+    def end_category(cls, category_name):
         """
         This method should only be
         called via the View!
 
         :param SimulatorStage category: Stage to end
         """
-        if cls._category != category:
-            if cls._category != cls.ERROR:
-                logger.exception(f"Incorrect end of category: {category}"
-                                 f" when in category{cls._category}")
+        if cls._category_name != category_name:
+            if cls._category_name != cls.ERROR:
+                logger.exception(f"Incorrect end of category: {category_name}"
+                                 f" when in category{cls._category_name}")
             cls._previous = []
             cls._change_category(cls.ERROR)
         else:
             try:
-                cls._change_category(cls._previous.pop())
+                previous = cls._previous.pop()
+                if previous is None:
+                    previous = cls.ERROR
+                cls._change_category(previous)
             except IndexError:
                 logger.exception(
-                    f"End of category: {category} with no previous state")
+                    f"End of category: {category_name} with no previous state")
                 cls._change_category(cls.ERROR)

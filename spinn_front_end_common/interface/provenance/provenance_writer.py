@@ -113,7 +113,6 @@ class ProvenanceWriter(SQLiteDB):
                 [category, machine_on, FecDataView.get_run_number()])
             return cur.lastrowid
 
-
     def insert_category_timing(self, category_id, timedelta):
         """
         Inserts run time into the category
@@ -132,7 +131,7 @@ class ProvenanceWriter(SQLiteDB):
                 SET
                     time_taken = ?
                 WHERE category_id = ?
-                """, (category_id, time_taken))
+                """, (time_taken, category_id))
 
     def insert_timing(
             self, category, algorithm, work, timedelta, skip_reason):
