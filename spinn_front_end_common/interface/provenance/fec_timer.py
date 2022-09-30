@@ -93,11 +93,11 @@ class FecTimer(object):
     # Work Type Constants
     OTHER = "Other"
     # LOADING
-    BITFIELD ="BitField work"
+    BITFIELD = "BitField work"
     # Only for on Machine Compression
     COMPRESSING = "Compressing"
     CONTROL = "Control"
-    SYNAPSE ="Expanding Synapse"
+    SYNAPSE = "Expanding Synapse"
     RUNNING = "Running"
     EXTRACTING = "Extracting"
     REPORT = "Reporting"
