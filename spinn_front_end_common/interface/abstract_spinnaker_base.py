@@ -692,7 +692,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._execute_get_virtual_machine()
             else:
                 allocator_data = self._execute_allocator(total_run_time)
-                self._execute_machine_generator(GET_MACHINE, allocator_data)
+                self._execute_machine_generator(allocator_data)
 
     def _get_machine(self):
         """ The factory method to get a machine
@@ -747,7 +747,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the Network Specification report is requested
 
         """
-        with FecTimer("Network Specification report", FecTimer.REPORT) as timer:
+        with FecTimer(
+                "Network Specification report", FecTimer.REPORT) as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_network_specification_report"):
                 return
@@ -1489,7 +1490,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: None
         :rtype: None
         """
-        with FecTimer("Pair on chip router compression", FecTimer.COMPRESSING) as timer:
+        with FecTimer("Pair on chip router compression",
+                      FecTimer.COMPRESSING) as timer:
             if timer.skip_if_virtual_board():
                 return None
             precompressed = self._data_writer.get_precompressed()
@@ -1689,7 +1691,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and logs the loading of exectuable images
         """
-        with FecTimer("Load executable system Images", FecTimer.LOADING) as timer:
+        with FecTimer(
+                "Load executable system Images", FecTimer.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
             load_sys_images()
@@ -1896,7 +1899,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times and log the PlacementsProvenanceGatherer if requested
         """
-        with FecTimer("Placements provenance gatherer", FecTimer.OTHER) as timer:
+        with FecTimer(
+                "Placements provenance gatherer", FecTimer.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "read_provenance_data"):
                 return []
             if timer.skip_if_virtual_board():
@@ -2021,7 +2025,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the notification_interface data object
         """
-        with FecTimer( "Create notification protocol", FecTimer.OTHER):
+        with FecTimer("Create notification protocol", FecTimer.OTHER):
             self._data_writer.set_notification_protocol(
                 create_notification_protocol())
 
