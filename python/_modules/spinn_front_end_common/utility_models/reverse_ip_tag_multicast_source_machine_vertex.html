@@ -627,8 +627,8 @@
 
             <span class="c1"># if no edge leaving this vertex, no key needed</span>
             <span class="k">if</span> <span class="n">rinfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">first_key</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">first_mask</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">key</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mask</span> <span class="o">=</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">mask</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_virtual_key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_prefix_type</span> <span class="o">=</span> <span class="n">EIEIOPrefix</span><span class="o">.</span><span class="n">UPPER_HALF_WORD</span>
