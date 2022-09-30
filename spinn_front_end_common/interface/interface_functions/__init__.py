@@ -25,7 +25,7 @@ from .compute_energy_used import compute_energy_used
 from .database_interface import database_interface
 from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
-from .dsg_region_reloader import dsg_region_reloader
+from .dsg_region_reloader import reload_dsg_regions
 from .energy_provenance_reporter import energy_provenance_reporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
@@ -69,7 +69,7 @@ __all__ = [
     "chip_io_buf_extractor", "chip_provenance_updater",
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
-    "dsg_region_reloader",
+    "reload_dsg_regions",
     "energy_provenance_reporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",
