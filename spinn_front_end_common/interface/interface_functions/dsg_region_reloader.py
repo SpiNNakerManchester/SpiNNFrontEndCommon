@@ -107,7 +107,7 @@ def regenerate_data_spec(placement, data_dir):
     ptr_table = numpy.frombuffer(txrx.read_memory(
             placement.x, placement.y, start_region, table_size),
         dtype=DataSpecificationExecutor.TABLE_TYPE)
-    _fix_ptr_table_sizes(ptr_table)
+    ptr_table = _fix_ptr_table_sizes(ptr_table)
 
     # Get the data spec executor pointer table; note that this will not
     # have the right pointers since not all regions will be regenerated
@@ -148,6 +148,9 @@ def _fix_ptr_table_sizes(ptr_table):
         0 to avoid checksum checks
     """
     # Fill in the size of regions which have no size
+    fixed_ptr_table = numpy.zeros(
+        MAX_MEM_REGIONS, dtype=DataSpecificationExecutor.TABLE_TYPE)
+    fixed_ptr_table[:] = ptr_table[:]
     last_no_size_region = None
     for i in range(0, MAX_MEM_REGIONS):
 
@@ -157,7 +160,7 @@ def _fix_ptr_table_sizes(ptr_table):
             # If there is a previous region with no size, use this region
             # pointer to find the size of the last one
             if last_no_size_region is not None:
-                ptr_table[last_no_size_region]["n_words"] = (
+                fixed_ptr_table[last_no_size_region]["n_words"] = (
                     ptr_table[i]["pointer"] -
                     ptr_table[last_no_size_region]["pointer"]) / BYTES_PER_WORD
                 last_no_size_region = None
@@ -169,4 +172,5 @@ def _fix_ptr_table_sizes(ptr_table):
     # We can get here and have the last region have no size; this is hard
     # to fix since we don't know where the data for the next region is!
     if last_no_size_region is not None:
-        ptr_table[last_no_size_region]["n_words"] = -1
+        fixed_ptr_table[last_no_size_region]["n_words"] = -1
+    return fixed_ptr_table
