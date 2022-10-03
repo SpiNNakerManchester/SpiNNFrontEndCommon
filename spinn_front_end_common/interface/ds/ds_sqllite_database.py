@@ -38,7 +38,8 @@ class DsSqlliteDatabase(SQLiteDB):
         :param init:
         :type init: bool or None
         """
-        database_file = os.path.join(FecDataView.get_run_dir_path(), DB_NAME)
+        database_file = os.path.join(
+            FecDataView.get_mapping_dir_path(), DB_NAME)
 
         if init is None:
             init = not os.path.exists(database_file)

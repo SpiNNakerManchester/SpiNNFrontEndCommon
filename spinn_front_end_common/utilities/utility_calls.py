@@ -117,7 +117,7 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
         return None
     # initialise the report writer to send down to DSG
     new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), _RPT_DIR)
+        FecDataView.get_mapping_dir_path(), _RPT_DIR)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))

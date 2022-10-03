@@ -40,8 +40,7 @@ class BufferedReceivingData(object):
     ]
 
     def __init__(self):
-        self._db_file = os.path.join(
-            FecDataView.get_run_dir_path(), DB_FILE_NAME)
+        self._db_file = None
         self._db = None
         self.__sizes_and_addresses = None
         self.__data_flushed = None
@@ -50,10 +49,10 @@ class BufferedReceivingData(object):
     def reset(self):
         """ Perform tasks to restart recording from time=0
         """
-        if os.path.exists(self._db_file):
-            if self._db:
-                self._db.close()
-            os.remove(self._db_file)
+        if self._db:
+            self._db.close()
+        self._db_file = os.path.join(
+            FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self._db = SqlLiteDatabase(self._db_file)
         self.__sizes_and_addresses = dict()
         self.__data_flushed = set()

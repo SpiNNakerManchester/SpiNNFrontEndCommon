@@ -643,7 +643,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
 
-        return cls._child_folder(cls.get_run_dir_path(), "json_files")
+        return cls._child_folder(cls.get_mapping_dir_path(), "json_files")
 
     @classmethod
     def get_provenance_dir_path(cls):
@@ -662,7 +662,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         if cls._is_mocked():
             return cls._temporary_dir_path()
-        return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
+        return cls._child_folder(cls.get_mapping_dir_path(), "provenance_data")
 
     @classmethod
     def get_app_provenance_dir_path(cls):

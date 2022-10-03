@@ -49,7 +49,7 @@ class DatabaseWriter(SQLiteDB):
     ]
 
     def __init__(self):
-        self._database_path = os.path.join(FecDataView.get_run_dir_path(),
+        self._database_path = os.path.join(FecDataView.get_mapping_dir_path(),
                                            DB_NAME)
         init_sql_path = os.path.join(os.path.dirname(__file__), INIT_SQL)
 
