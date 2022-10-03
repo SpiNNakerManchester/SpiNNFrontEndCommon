@@ -681,3 +681,20 @@ class BufferManager(object):
         :rtype: iterable(AbstractSendsBuffersFromHost)
         """
         return self._sender_vertices
+
+    def get_recording_address(self, placement, region_id):
+        """ Get the address of the recording region for a core.  Note that
+            this must be called after recording information has been read
+            from the machine.
+
+        :param Placement placement: The placement to get the data for
+        :param int region_id: The recording region to get the address of
+        """
+        if not self._received_data.has_region_information(
+                placement.x, placement.y, placement.p):
+            addr = placement.vertex.get_recording_region_base_address(
+                placement)
+            self._get_region_information(
+                addr, placement.x, placement.y, placement.p)
+        return self._received_data.get_region_information(
+            placement.x, placement.y, placement.p, region_id)
