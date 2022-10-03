@@ -113,8 +113,3 @@ bool data_specification_read_header(
 
     return true;
 }
-
-void *data_specification_get_region(
-        uint32_t region, data_specification_metadata_t *ds_regions) {
-    return ds_regions->regions[region].pointer;
-}

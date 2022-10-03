@@ -79,7 +79,9 @@ bool data_specification_read_header(data_specification_metadata_t *ds_regions);
 //!                        is the caller's job to validate this first.
 //! \return The address of the specified region. This function does not know
 //! the actual type of the region.
-void *data_specification_get_region(
-        uint32_t region, data_specification_metadata_t *ds_regions);
+static inline void *data_specification_get_region(
+        uint32_t region, data_specification_metadata_t *ds_regions) {
+    return ds_regions->regions[region].pointer;
+}
 
 #endif
