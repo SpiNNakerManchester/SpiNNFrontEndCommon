@@ -40,19 +40,6 @@ enum {
 
 #define N_REGIONS 32
 
-data_specification_metadata_t *data_specification_get_data_address(void) {
-    // Get pointer to 1st virtual processor info struct in SRAM
-    vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
-
-    // Get the address this core's DTCM data starts at from the user data
-    // member of the structure associated with this virtual processor
-    uint user0 = virtual_processor_table[spin1_get_core_id()].user0;
-
-    log_debug("SDRAM data begins at address: %08x", user0);
-
-    // Cast to the correct type
-    return (data_specification_metadata_t *) user0;
-}
 
 /**
  * \brief Verify the checksum of a region; on failure, RTE
@@ -87,6 +74,25 @@ static inline void verify_checksum(data_specification_metadata_t *ds_regions,
     ds_regions->regions[region].n_words = 0;
 }
 
+data_specification_metadata_t *data_specification_get_data_address(void) {
+    // Get pointer to 1st virtual processor info struct in SRAM
+    vcpu_t *virtual_processor_table = (vcpu_t*) SV_VCPU;
+
+    // Get the address this core's DTCM data starts at from the user data
+    // member of the structure associated with this virtual processor
+    uint user0 = virtual_processor_table[spin1_get_core_id()].user0;
+
+    log_debug("SDRAM data begins at address: %08x", user0);
+
+    // Cast to the correct type
+    data_specification_metadata_t *ds_regions = (data_specification_metadata_t *) user0;
+    for (uint32_t region = 0; region < N_REGIONS; region++) {
+        verify_checksum(ds_regions, region);
+    }
+
+    return ds_regions;
+}
+
 bool data_specification_read_header(
         data_specification_metadata_t *ds_regions) {
     // Check for the magic number
@@ -110,6 +116,5 @@ bool data_specification_read_header(
 
 void *data_specification_get_region(
         uint32_t region, data_specification_metadata_t *ds_regions) {
-    verify_checksum(ds_regions, region);
     return ds_regions->regions[region].pointer;
 }
