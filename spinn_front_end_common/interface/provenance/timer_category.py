@@ -22,17 +22,16 @@ class TimerCategory(Enum):
 
     """
     # Category Constants
-    WAITING = (1, "Waiting")
-    SETTING_UP = (2, "In Setup")
-    RUN_OTHER = (3, "In run other")
-    GET_MACHINE = (4, "Turning on Machine")
-    LOADING = (5, "Loading Stage")
-    DATA_GENERATION = (6, "data_generation")
-    MAPPING = (7, "Mapping Stage")
-    RUN_LOOP = (8, "Running Stage")
-    BUFFER = (9, "BufferExtraction")
-    RESETTING = (10, "Resetting")
-    SHUTTING_DOWN = (11, "Shutting down")
+    WAITING = (auto(), "Waiting")
+    SETTING_UP = (auto(), "In Setup")
+    RUN_OTHER = (auto(), "In run other")
+    GET_MACHINE = (auto(), "Turning on Machine")
+    LOADING = (auto(), "Loading Stage")
+    DATA_GENERATION = (auto(), "data_generation")
+    MAPPING = (auto(), "Mapping Stage")
+    RUN_LOOP = (auto(), "Running Stage")
+    RESETTING = (auto(), "Resetting")
+    SHUTTING_DOWN = (auto(), "Shutting down")
 
     def __new__(cls, value, category_name):
         # pylint: disable=protected-access
