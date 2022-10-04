@@ -363,10 +363,10 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse', self._machine_json(), FecDataView.get_dsg_dir_path())
         if result != 0:
             log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
+                FecDataView.get_dsg_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
@@ -379,10 +379,10 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse_sys', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse_sys', self._machine_json(), FecDataView.get_dsg_dir_path())
         if result != 0:
             log_file = os.path.join(
-                FecDataView.get_run_dir_path(), "jspin.log")
+                FecDataView.get_dsg_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
@@ -402,14 +402,17 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                FecDataView.get_run_dir_path(), FecDataView.get_run_dir_path())
+                FecDataView.get_dsg_dir_path(), FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'dse_app', self._machine_json(),
-                FecDataView.get_run_dir_path())
+                FecDataView.get_dsg_dir_path())
         if result != 0:
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
+            if not os.path.exists(log_file):
+                log_file = os.path.join(
+                    FecDataView.get_dsg_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")

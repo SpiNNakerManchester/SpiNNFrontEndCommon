@@ -439,15 +439,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         n_sync_steps = self.__timesteps(sync_time)
 
-        # If we have never run before, or the graph has changed,
-        # start by performing mapping
-        if (self._data_writer.get_requires_mapping() and
-                self._data_writer.is_ran_last()):
-            self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
-
         # If we have reset and the graph has changed, stop any running
         # application
         if (self._data_writer.get_requires_data_generation() and
@@ -460,6 +451,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             if self._data_writer.is_soft_reset():
                 # wipe out stuff associated with past mapping
                 self._hard_reset()
+            elif self._data_writer.is_ran_last():
+                self.stop()
+                raise NotImplementedError(
+                    "The network cannot be changed between runs without"
+                    " resetting")
+
             FecTimer.setup(self)
 
             self._add_dependent_verts_and_edges_for_application_graph()
@@ -471,6 +468,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
             self._do_mapping(total_run_time)
+        else:
+            self._do_no_mapping()
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -513,6 +512,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
             self._do_load()
+        else:
+            self._do_no_load()
 
         # Run for each of the given steps
         if run_time is not None:
@@ -1346,6 +1347,17 @@ class AbstractSpinnakerBase(ConfigHandler):
             db.insert_category_timing(
                 MAPPING, mapping_total_timer.take_sample(), self._n_loops)
 
+    def _do_no_mapping(self):
+        path = os.path.join(
+            self._data_writer.get_run_dir_path(), "_no_new_mapping.txt")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("The mapping stage was not rerun\n")
+            f.write("-------------------------------\n\n")
+            f.write(f"All information found in"
+                    f" {self._data_writer.get_mapping_dir_path()} is still"
+                    f" valid unless this directory has a file with the same"
+                    f" name.\n")
+
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
         """
@@ -1371,6 +1383,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         with ProvenanceWriter() as db:
             db.insert_category_timing(
                 DATA_GENERATION, data_gen_timer.take_sample(), self._n_loops)
+
+    def _do_no_load(self):
+        path = os.path.join(
+            self._data_writer.get_run_dir_path(), "_no_new_dsg.txt")
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("The data generation stage was not rerun\n")
+            f.write("-------------------------------\n\n")
+            f.write(f"All information found in"
+                    f" {self._data_writer.get_dsg_dir_path()} is still valid "
+                    f"unless this directory has a file with the same name.\n")
 
     def _execute_routing_setup(self,):
         """
@@ -1866,6 +1888,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
+
+        self._data_writer.update_dsg_dir_path()
 
         if self._data_writer.get_requires_mapping():
             self._execute_routing_setup()

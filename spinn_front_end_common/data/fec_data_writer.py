@@ -76,7 +76,9 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._run_number = 1
         self.__create_reports_directory()
         self.__create_timestamp_directory()
-        self.__create_run_dir_path(True)
+        self.__create_run_dir_path()
+        self.update_dsg_dir_path()
+        self.update_mapping_dir_path()
 
     @overrides(PacmanDataWriter.finish_run)
     def finish_run(self):
@@ -88,20 +90,22 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         PacmanDataWriter._hard_reset(self)
         SpiNNManDataWriter._local_hard_reset(self)
         self.__fec_data._hard_reset()
-        self.__create_run_dir_path(True)
+        self.__create_run_dir_path()
+        self.update_dsg_dir_path()
+        self.update_mapping_dir_path()
 
     @overrides(PacmanDataWriter._soft_reset)
     def _soft_reset(self):
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
-        self.__create_run_dir_path(False)
+        self.__create_run_dir_path()
 
-    def __create_run_dir_path(self, mapping_too):
+    def __create_run_dir_path(self):
         folder = self._child_folder(
             self.__fec_data._timestamp_dir_path,
             f"run_{self.__fec_data._run_number}")
-        self.set_run_dir_path(folder, mapping_too)
+        self.set_run_dir_path(folder)
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(
