@@ -321,18 +321,20 @@ class TestSimulatorData(unittest.TestCase):
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.soft_reset()
         self.assertEqual(3, FecDataView.get_run_number())
-        # run_dir_path only changed on hard reset
-        self.assertIn("run_1", FecDataView.get_run_dir_path())
+        self.assertIn("run_3", FecDataView.get_run_dir_path())
+        # mapping_dir_path only changed on hard reset
+        self.assertIn("run_1", FecDataView.get_mapping_dir_path())
         writer.hard_reset()
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path changed by hard reset
+        self.assertIn("run_3", FecDataView.get_mapping_dir_path())
         self.assertIn("run_3", FecDataView.get_run_dir_path())
         writer.start_run()
         self.assertEqual(3, FecDataView.get_run_number())
         self.assertIn("run_3", FecDataView.get_run_dir_path())
         writer.finish_run()
         self.assertEqual(4, FecDataView.get_run_number())
-        # run_dir_path only changed on hard reset
+        # run_dir_path only changed on reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
 
     def test_system_multicast_routing_data(self):
