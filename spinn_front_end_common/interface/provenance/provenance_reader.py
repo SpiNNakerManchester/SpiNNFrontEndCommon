@@ -302,7 +302,7 @@ class ProvenanceReader(object):
         """
         Get the total runtime for one category of algorithms
 
-        :param  Timer_Category category:
+        :param  TimerCategory category:
         :return: total off all runtimes with this category
         :rtype: int
         """
@@ -325,7 +325,7 @@ class ProvenanceReader(object):
         Get the runtime for one category of algorithms
         split machine on, machine off
 
-        :param Timer_Category category:
+        :param TimerCategory category:
         :return: total on and off time of instances with this category
         :rtype: int
         """
@@ -351,7 +351,7 @@ class ProvenanceReader(object):
         """
         Get the total runtime for one category of algorithms
 
-        :param Timer_Category category:
+        :param TimerCategory category:
         :return: total off all runtimes with this category
         :rtype: int
         """
@@ -361,6 +361,28 @@ class ProvenanceReader(object):
              WHERE category = ?
              """
         data = self.run_query(query, [category.category_name])
+        try:
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
+        except IndexError:
+            return 0
+
+    def get_timer_sum_by_work(self, work):
+        """
+        Get the total runtime for one work type of algorithms
+
+        :param TimerWork work:
+        :return: total off all runtimes with this category
+        :rtype: int
+        """
+        query = """
+             SELECT sum(time_taken)
+             FROM full_timer_view
+             WHERE work = ?
+             """
+        data = self.run_query(query, [work.work_name])
         try:
             info = data[0][0]
             if info is None:

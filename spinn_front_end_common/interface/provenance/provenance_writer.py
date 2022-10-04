@@ -142,7 +142,7 @@ class ProvenanceWriter(SQLiteDB):
 
         :param int category: Category Id of the Algorithm
         :param str algorithm: Algorithm name
-        :param str work: Type of work being done
+        :param TimerWork work: Type of work being done
         :param ~datetime.timedelta timedelta: Time to be recorded
         :param skip_reason: The reason the algorthm was skipped or None if
             it was not skipped
@@ -158,7 +158,7 @@ class ProvenanceWriter(SQLiteDB):
                     category_id, algorithm, work, time_taken, skip_reason)
                 VALUES(?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, work, time_taken, skip_reason])
+                [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """

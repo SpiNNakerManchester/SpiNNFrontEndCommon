@@ -74,29 +74,6 @@ class FecTimer(object):
         "_work"
         ]
 
-    # Category Constants
-    WAITING = "Waiting"
-    SETTING_UP = "In Setup"
-    RUN_OTHER = "In run other"
-
-    # Work Type Constants
-    OTHER = "Other"
-    GET_MACHINE = "Turning on Machine"
-    LOADING = "Loading Stage"
-    # LOADING
-    BITFIELD = "BitField work"
-    # Only for on Machine Compression
-    COMPRESSING = "Compressing"
-    CONTROL = "Control"
-    SYNAPSE = "Expanding Synapse"
-    RUNNING = "Running"
-    EXTRACTING = "Extracting"
-    REPORT = "Reporting"
-
-    WORK_TYPES = [
-        OTHER, GET_MACHINE, LOADING, BITFIELD, CONTROL, SYNAPSE, RUNNING,
-        EXTRACTING, REPORT]
-
     # Algorithm Names used elsewhere
     APPLICATION_RUNNER = "Application runner"
 

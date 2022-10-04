@@ -24,8 +24,10 @@ from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
 from .provenance_writer import ProvenanceWriter
 from .timer_category import TimerCategory
+from .timer_work import TimerWork
 
 __all__ = ["AbstractProvidesLocalProvenanceData", "FecTimer",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
-           "ProvidesProvenanceDataFromMachineImpl", "TimerCategory"]
+           "ProvidesProvenanceDataFromMachineImpl",
+           "TimerCategory", "TimerWork"]

@@ -17,7 +17,7 @@ import itertools
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader, TimerCategory)
+    ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -76,7 +76,7 @@ def compute_energy_used(machine_allocation_controller=None):
     execute_time = db.get_category_timer_sum(TimerCategory.RUN_LOOP)
     # NOTE: this extraction time is part of the execution time; it does not
     #       refer to the time taken in e.g. pop.get_data() or projection.get()
-    extraction_time = db.get_timer_sum_by_category(TimerCategory.BUFFER)
+    extraction_time = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
     load_time = db.get_category_timer_sum(TimerCategory.LOADING)
     mapping_time = db.get_category_timer_sum(TimerCategory.MAPPING)
     # TODO get_machine not include here
@@ -405,8 +405,8 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
     # find time
     # TODO is this what was desired
     total_time_ms = 0
-    buffer_time_ms = ProvenanceReader().get_timer_sum_by_category(
-        TimerCategory.BUFFER)
+    buffer_time_ms = ProvenanceReader().get_timer_sum_by_work(
+        TimerWork.EXTRACT_DATA)
 
     energy_cost = 0
     # NOTE: Buffer time could be None if nothing was set to record
