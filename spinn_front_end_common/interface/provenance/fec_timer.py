@@ -22,6 +22,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
+from .timer_category import TimerCategory
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -57,7 +58,7 @@ class FecTimer(object):
     _provenance_path = None
     _print_timings = False
     _category_id = None
-    _category_name = None
+    _category = None
     _category_time = None
     _machine_on = False
     _previous = []
@@ -77,21 +78,11 @@ class FecTimer(object):
     WAITING = "Waiting"
     SETTING_UP = "In Setup"
     RUN_OTHER = "In run other"
-    GET_MACHINE = "Turning on Machine"
-    LOADING = "Loading Stage"
-    DATA_GENERATION = "data_generation"
-    MAPPING = "Mapping Stage"
-    RUN_LOOP = "Running Stage"
-    BUFFER = "BufferExtraction"
-    RESETTING = "Resetting"
-    SHUTTING_DOWN = "Shutting down"
-    ERROR = "Error"
-
-    CATEGORIES = [WAITING, SETTING_UP, RUN_OTHER, GET_MACHINE, MAPPING,
-                  LOADING, RUN_LOOP, BUFFER, RESETTING, SHUTTING_DOWN, ERROR]
 
     # Work Type Constants
     OTHER = "Other"
+    GET_MACHINE = "Turning on Machine"
+    LOADING = "Loading Stage"
     # LOADING
     BITFIELD = "BitField work"
     # Only for on Machine Compression
@@ -230,58 +221,68 @@ class FecTimer(object):
         return False
 
     @classmethod
-    def _change_category(cls, category_name):
+    def __stop_category(cls):
+        """
+        Stops the current category and logs how long it took
+
+        :return: Time the stop happened
+        """
+        time_now = _now()
+        if cls._category_id:
+            with ProvenanceWriter() as db:
+                diff = _convert_to_timedelta(time_now - cls._category_time)
+                db.insert_category_timing(cls._category_id, diff)
+        return time_now
+
+    @classmethod
+    def _change_category(cls, category):
         """
         This method should only be called via the View!
 
-        :param str category: Category to switch to
+        :param TimerCategory category: Category to switch to
         """
-        time_now = _now()
+        time_now = cls.__stop_category()
         with ProvenanceWriter() as db:
-            if cls._category_id:
-                diff = _convert_to_timedelta(time_now - cls._category_time)
-                db.insert_category_timing(cls._category_id, diff)
-            cls._category_id = db.insert_category(
-                category_name, cls._machine_on)
-        cls._category_name = category_name
+            cls._category_id = db.insert_category(category, cls._machine_on)
+        cls._category = category
         cls._category_time = time_now
 
     @classmethod
-    def start_category(cls, category_name, machine_on=None):
+    def start_category(cls, category, machine_on=None):
         """
         This method should only be called via the View!
 
-        :param SimulatorStage category: Stage to switch to
+        :param TimerCategory category: category to switch to
         :param machine_on: What to change machine on too.
             Or None to leave as is
         :type machine_on: None or bool
         """
-        cls._previous.append(cls._category_name)
-        cls._change_category(category_name)
+        cls._previous.append(cls._category)
+        cls._change_category(category)
         if machine_on is not None:
             cls._machine_on = machine_on
 
     @classmethod
-    def end_category(cls, category_name):
+    def end_category(cls, category):
         """
         This method should only be
         called via the View!
 
         :param SimulatorStage category: Stage to end
         """
-        if cls._category_name != category_name:
-            if cls._category_name != cls.ERROR:
-                logger.exception(f"Incorrect end of category: {category_name}"
-                                 f" when in category{cls._category_name}")
-            cls._previous = []
-            cls._change_category(cls.ERROR)
-        else:
-            try:
-                previous = cls._previous.pop()
-                if previous is None:
-                    previous = cls.ERROR
-                cls._change_category(previous)
-            except IndexError:
-                logger.exception(
-                    f"End of category: {category_name} with no previous state")
-                cls._change_category(cls.ERROR)
+        if cls._category != category:
+            raise ValueError(
+                f"Current category is {cls._category} not {category}")
+        previous = cls._previous.pop()
+        if previous is None:
+            raise NotImplementedError(
+                "Use stop_category_timing to end the last category")
+        cls._change_category(previous)
+
+    @classmethod
+    def stop_category_timing(cls):
+        cls.__stop_category()
+        cls._previous = []
+        cls._category = None
+        cls._category_id = None
+

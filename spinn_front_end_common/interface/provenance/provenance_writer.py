@@ -99,7 +99,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         Inserts category into the category_timer_provenance  returning id
 
-        :param str category: Name of Category starting
+        :param TimerCategory category: Name of Category starting
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
@@ -110,7 +110,8 @@ class ProvenanceWriter(SQLiteDB):
                     category, machine_on, n_run, n_loop)
                 VALUES(?, ?, ?, ?)
                 """,
-                [category, machine_on, FecDataView.get_run_number(),
+                [category.category_name, machine_on,
+                 FecDataView.get_run_number(),
                  FecDataView.get_run_step()])
             return cur.lastrowid
 

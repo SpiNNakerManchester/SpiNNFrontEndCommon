@@ -22,7 +22,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, ProvenanceWriter, ProvenanceReader)
+    LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -63,14 +63,14 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self):
         with ProvenanceWriter() as db:
-            mapping_id = db.insert_category("mapping", False)
+            mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
                 mapping_id, "compressor", "test", timedelta(milliseconds=12),
                 None)
             db.insert_timing(
                 mapping_id, "router_report", "test2",
                 timedelta(milliseconds=123), "cfg says no")
-            execute_id = db.insert_category("execute", False)
+            execute_id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_timing(
                 execute_id, "run", "test", timedelta(milliseconds=134), None)
             db.insert_timing(
@@ -78,11 +78,11 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_timing(
                 execute_id, "clear", "test", timedelta(milliseconds=4), None)
         reader = ProvenanceReader()
-        data = reader.get_timer_sum_by_category("mapping")
+        data = reader.get_timer_sum_by_category(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
-        data = reader.get_timer_sum_by_category("execute")
+        data = reader.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
         self.assertEqual(134 + 344 + 4, data)
-        data = reader.get_timer_sum_by_category("bacon")
+        data = reader.get_timer_sum_by_category(TimerCategory.SHUTTING_DOWN)
         self.assertEquals(0, data)
         data = reader.get_timer_sum_by_algorithm("router_report")
         self.assertEqual(123, data)
@@ -93,20 +93,20 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_category_timings(self):
         with ProvenanceWriter() as db:
-            id = db.insert_category("mapping", False)
+            id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_category_timing(id, timedelta(milliseconds=12))
 
-            id = db.insert_category("mapping", True)
+            id = db.insert_category(TimerCategory.MAPPING, True)
             db.insert_category_timing(id, timedelta(milliseconds=123))
 
-            id = db.insert_category("execute", True)
+            id = db.insert_category(TimerCategory.RUN_LOOP, True)
             db.insert_category_timing(id, timedelta(milliseconds=134))
 
-            id = db.insert_category("execute", False)
+            id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_category_timing(id, timedelta(milliseconds=344))
 
         reader = ProvenanceReader()
-        data = reader.get_category_timer_sum("mapping")
+        data = reader.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
 
     def test_other(self):

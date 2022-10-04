@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from testfixtures import LogCapture
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader)
+    FecTimer, ProvenanceReader, TimerCategory)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -43,17 +43,17 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.setup(MockSimulator())
 
     def test_simple(self):
-        FecTimer.start_category("Test")
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
         with FecTimer("test", FecTimer.OTHER):
             pass
 
     def test_skip(self):
-        FecTimer.start_category("Test")
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
         with FecTimer("test", FecTimer.OTHER) as ft:
             ft.skip("why not")
 
     def test_error(self):
-        FecTimer.start_category("Test")
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
         with LogCapture() as lc:
             try:
                 with FecTimer("oops", FecTimer.OTHER):
@@ -67,31 +67,78 @@ class TestFecTimer(unittest.TestCase):
             assert found
 
     def test_nested(self):
-        FecTimer.start_category(FecTimer.WAITING)
-        FecTimer.start_category(FecTimer.RUN_OTHER)
-        FecTimer.start_category(FecTimer.MAPPING)
-        FecTimer.start_category(FecTimer.GET_MACHINE, True)
-        FecTimer.end_category(FecTimer.GET_MACHINE)
-        FecTimer.end_category(FecTimer.MAPPING)
-        FecTimer.end_category(FecTimer.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
+        FecTimer.end_category(TimerCategory.GET_MACHINE)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
         on, off = ProvenanceReader().get_category_timer_sums(
-            FecTimer.RUN_OTHER)
+            TimerCategory.RUN_OTHER)
         total = ProvenanceReader().get_category_timer_sum(
-            FecTimer.RUN_OTHER)
+            TimerCategory.RUN_OTHER)
         self.assertGreater(on, 0)
         self.assertGreater(off, 0)
         self.assertEqual(total, on + off)
         on, off = ProvenanceReader().get_category_timer_sums(
-            FecTimer.MAPPING)
+            TimerCategory.MAPPING)
         self.assertGreater(on, 0)
         self.assertGreater(off, 0)
 
     def test_mess(self):
-        FecTimer.end_category(FecTimer.WAITING)
-        FecTimer.start_category(FecTimer.RUN_OTHER)
-        FecTimer.start_category(FecTimer.MAPPING)
-        FecTimer.end_category(FecTimer.RUN_OTHER)
-        FecTimer.end_category(FecTimer.MAPPING)
+        with self.assertRaises(ValueError):
+            FecTimer.end_category(TimerCategory.WAITING)
+
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        with self.assertRaises(ValueError):
+            FecTimer.end_category(TimerCategory.RUN_OTHER)
+
+    def test_stop_category_timing_clean(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        before = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
+        FecTimer.stop_category_timing()
+        total = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.WAITING)
+        self.assertGreater(total, before)
+        other = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.RUN_OTHER)
+        self.assertGreater(other, 0)
+
+    def test_stop_category_timing_messy(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        before = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.stop_category_timing()
+        mapping = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.MAPPING)
+        self.assertGreater(mapping, 0)
+        total = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.WAITING)
+        # As we never ended RUN_OTHER we never got back to WAITING
+        self.assertEqual(total, before)
+        other = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.RUN_OTHER)
+        self.assertGreater(other, 0)
+
+    def test_stop_last_category_blocked(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
+        with self.assertRaises(NotImplementedError):
+            FecTimer.end_category(TimerCategory.WAITING)
 
 
 if __name__ == '__main__':
