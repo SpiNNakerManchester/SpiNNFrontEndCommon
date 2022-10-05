@@ -102,12 +102,8 @@ def regenerate_data_spec(placement, data_dir):
     regions_base_address = txrx.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
     start_region = get_region_base_address_offset(regions_base_address, 0)
-    table_size = get_region_base_address_offset(
-        regions_base_address, MAX_MEM_REGIONS) - start_region
-    ptr_table = numpy.frombuffer(txrx.read_memory(
-            placement.x, placement.y, start_region, table_size),
-        dtype=DataSpecificationExecutor.TABLE_TYPE)
-    ptr_table = _fix_ptr_table_sizes(ptr_table)
+    ptr_table = _get_ptr_table(
+        txrx, placement, regions_base_address, start_region)
 
     # Get the data spec executor pointer table; note that this will not
     # have the right pointers since not all regions will be regenerated
@@ -143,11 +139,23 @@ def regenerate_data_spec(placement, data_dir):
     return True
 
 
-def _fix_ptr_table_sizes(ptr_table):
-    """ Go through the pointer table and fix sizes where they have been set to
-        0 to avoid checksum checks
+def _get_ptr_table(txrx, placement, regions_base_address, start_region):
+    """ Read the pointer table
+
+    :param Transceiver txrx: The transceiver to read with
+    :param Placement placement: Where to read the pointer table from
+    :param int regions_base_address: The start of memory for the given core
+    :param int start_region: The address of the first region address
+    :rtype: numpy.ndarray(DataSpecificationExecutor.TABLE_TYPE)
     """
-    # Fill in the size of regions which have no size
+    # Read the pointer table from the machine
+    table_size = get_region_base_address_offset(
+        regions_base_address, MAX_MEM_REGIONS) - start_region
+    ptr_table = numpy.frombuffer(txrx.read_memory(
+            placement.x, placement.y, start_region, table_size),
+        dtype=DataSpecificationExecutor.TABLE_TYPE)
+
+    # Fill in the size of regions which have no size but which are valid
     fixed_ptr_table = numpy.zeros(
         MAX_MEM_REGIONS, dtype=DataSpecificationExecutor.TABLE_TYPE)
     fixed_ptr_table[:] = ptr_table[:]
