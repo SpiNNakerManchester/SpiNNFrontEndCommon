@@ -40,7 +40,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.provenance import FecTimer
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size

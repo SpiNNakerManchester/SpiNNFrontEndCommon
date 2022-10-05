@@ -22,7 +22,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
-from .timer_category import TimerCategory
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

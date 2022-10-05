@@ -896,7 +896,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         "system_multicast_router_timeout_keys"
         """
         with FecTimer(
-                "System multicast routing generator", TimerWork.OTHER) as timer:
+                "System multicast routing generator",
+                TimerWork.OTHER) as timer:
             if timer.skip_if_cfgs_false(
                     "Machine", "enable_advanced_monitor_support",
                     "enable_reinjection"):
@@ -1192,7 +1193,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Write, time and log the router collision report
         """
         with FecTimer(
-                "Router collision potential report", TimerWork.REPORT) as timer:
+                "Router collision potential report",
+                TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_router_collision_potential_report"):
                 return
@@ -1651,7 +1653,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the router report from router tables if requested
         """
         with FecTimer(
-                "Uncompressed routing table report", TimerWork.REPORT) as timer:
+                "Uncompressed routing table report",
+                TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_routing_table_reports"):
                 return
@@ -1817,7 +1820,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :return:
         """
-        with FecTimer("Load executable app images", TimerWork.LOADING) as timer:
+        with FecTimer("Load executable app images",
+                      TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
             load_app_images()
@@ -1865,7 +1869,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _report_sdram_usage_per_chip(self):
         # TODO why in do run
-        with FecTimer("Sdram usage per chip report", TimerWork.REPORT) as timer:
+        with FecTimer("Sdram usage per chip report",
+                      TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
                     "Reports", "write_sdram_usage_report_per_chip"):
                 return
@@ -2316,7 +2321,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.clear_notification_protocol()
         FecTimer.stop_category_timing()
         self._data_writer.shut_down()
-
 
     def __clear(self):
         if not self._data_writer.has_transceiver():
