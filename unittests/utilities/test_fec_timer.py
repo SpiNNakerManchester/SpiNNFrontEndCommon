@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from testfixtures import LogCapture
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader, TimerCategory)
+    FecTimer, ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -44,19 +44,19 @@ class TestFecTimer(unittest.TestCase):
 
     def test_simple(self):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        with FecTimer("test", FecTimer.OTHER):
+        with FecTimer("test", TimerWork.OTHER):
             pass
 
     def test_skip(self):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        with FecTimer("test", FecTimer.OTHER) as ft:
+        with FecTimer("test", TimerWork.OTHER) as ft:
             ft.skip("why not")
 
     def test_error(self):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with LogCapture() as lc:
             try:
-                with FecTimer("oops", FecTimer.OTHER):
+                with FecTimer("oops", TimerWork.OTHER):
                     1/0
             except ZeroDivisionError:
                 pass

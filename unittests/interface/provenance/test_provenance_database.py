@@ -22,7 +22,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory)
+    LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory, TimerWork)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -65,18 +65,21 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
-                mapping_id, "compressor", "test", timedelta(milliseconds=12),
-                None)
+                mapping_id, "compressor", TimerWork.OTHER,
+                timedelta(milliseconds=12), None)
             db.insert_timing(
-                mapping_id, "router_report", "test2",
+                mapping_id, "router_report", TimerWork.REPORT,
                 timedelta(milliseconds=123), "cfg says no")
             execute_id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_timing(
-                execute_id, "run", "test", timedelta(milliseconds=134), None)
+                execute_id, "run", TimerWork.OTHER,
+                timedelta(milliseconds=134), None)
             db.insert_timing(
-                execute_id, "run", "test2", timedelta(milliseconds=344), None)
+                execute_id, "run", TimerWork.REPORT,
+                timedelta(milliseconds=344), None)
             db.insert_timing(
-                execute_id, "clear", "test", timedelta(milliseconds=4), None)
+                execute_id, "clear", TimerWork.OTHER,
+                timedelta(milliseconds=4), None)
         reader = ProvenanceReader()
         data = reader.get_timer_sum_by_category(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
