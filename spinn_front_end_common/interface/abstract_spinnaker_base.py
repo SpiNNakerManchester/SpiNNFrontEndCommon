@@ -1348,6 +1348,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 MAPPING, mapping_total_timer.take_sample(), self._n_loops)
 
     def _do_no_mapping(self):
+        if (self._data_writer.get_run_dir_path() ==
+                self._data_writer.get_mapping_dir_path()):
+            # second run with no reset
+            return
         path = os.path.join(
             self._data_writer.get_run_dir_path(), "_no_new_mapping.txt")
         with open(path, "w", encoding="utf-8") as f:
@@ -1385,6 +1389,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 DATA_GENERATION, data_gen_timer.take_sample(), self._n_loops)
 
     def _do_no_load(self):
+        if (self._data_writer.get_run_dir_path() ==
+                self._data_writer.get_dsg_dir_path()):
+            # second run with no reset
+            return
         path = os.path.join(
             self._data_writer.get_run_dir_path(), "_no_new_dsg.txt")
         with open(path, "w", encoding="utf-8") as f:
