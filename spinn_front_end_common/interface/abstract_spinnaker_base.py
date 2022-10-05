@@ -2314,6 +2314,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self.__close_allocation_controller()
         self._data_writer.clear_notification_protocol()
+        FecTimer.stop_category_timing()
+        self._data_writer.shut_down()
+
 
     def __clear(self):
         if not self._data_writer.has_transceiver():
@@ -2369,8 +2372,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._shutdown()
 
         self.write_finished_file()
-        FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
-        self._data_writer.shut_down()
+        # No matching FecTimer.end_category as shutdown stops timer
 
     def _execute_application_finisher(self):
         with FecTimer("Application finisher", TimerWork.CONTROL):

@@ -235,7 +235,8 @@ class FecTimer(object):
         :type machine_on: None or bool
         """
         cls._previous.append(cls._category)
-        cls._change_category(category)
+        if cls._category != category:
+            cls._change_category(category)
         if machine_on is not None:
             cls._machine_on = machine_on
 
@@ -254,7 +255,8 @@ class FecTimer(object):
         if previous is None:
             raise NotImplementedError(
                 "Use stop_category_timing to end the last category")
-        cls._change_category(previous)
+        if category != previous:
+            cls._change_category(previous)
 
     @classmethod
     def stop_category_timing(cls):
@@ -262,4 +264,3 @@ class FecTimer(object):
         cls._previous = []
         cls._category = None
         cls._category_id = None
-

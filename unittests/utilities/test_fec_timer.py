@@ -86,6 +86,44 @@ class TestFecTimer(unittest.TestCase):
         self.assertGreater(on, 0)
         self.assertGreater(off, 0)
 
+    def test_repeat_middle(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        # Hack for easy testing/ demonstration only
+        id1 = FecTimer._category_id
+        FecTimer.start_category(TimerCategory.MAPPING)
+        id2 = FecTimer._category_id
+        self.assertEqual(id1, id2)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        id2 = FecTimer._category_id
+        self.assertEqual(id1, id2)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        id3 = FecTimer._category_id
+        self.assertEqual(id1 + 1, id3)
+        FecTimer.end_category(TimerCategory.RUN_OTHER)
+
+    def test_repeat_stopped(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        total = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.SHUTTING_DOWN)
+        self.assertEqual(total, 0)
+        FecTimer.stop_category_timing()
+        total = ProvenanceReader().get_category_timer_sum(
+            TimerCategory.SHUTTING_DOWN)
+        self.assertGreater(total, 0)
+
+    def test_repeat_mess(self):
+        FecTimer.start_category(TimerCategory.WAITING)
+        FecTimer.start_category(TimerCategory.RUN_OTHER)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.MAPPING)
+        with self.assertRaises(ValueError):
+            FecTimer.end_category(TimerCategory.RUN_OTHER)
+
     def test_mess(self):
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.WAITING)
