@@ -696,5 +696,6 @@ class BufferManager(object):
                 placement)
             self._get_region_information(
                 addr, placement.x, placement.y, placement.p)
-        return self._received_data.get_region_information(
+        _size, reg_addr, _missing = self._received_data.get_region_information(
             placement.x, placement.y, placement.p, region_id)
+        return reg_addr
