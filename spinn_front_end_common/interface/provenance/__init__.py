@@ -22,6 +22,7 @@ from .provenance_reader import ProvenanceReader
 from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
 from .provenance_writer import ProvenanceWriter
+from .fec_timer import FecTimer
 
 # TIMER categories
 GET_MACHINE = "machine_generation"
@@ -36,4 +37,4 @@ BUFFER = "BufferExtraction"
 __all__ = ["AbstractProvidesLocalProvenanceData",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
-           "ProvidesProvenanceDataFromMachineImpl"]
+           "ProvidesProvenanceDataFromMachineImpl", "FecTimer"]
