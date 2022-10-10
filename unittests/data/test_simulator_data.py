@@ -267,7 +267,6 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(FecDataView.get_timestamp_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_run_dir_path()))
         self.assertTrue(os.path.exists(FecDataView.get_json_dir_path()))
-        self.assertTrue(os.path.exists(FecDataView.get_provenance_dir_path()))
         self.assertTrue(os.path.exists(
             FecDataView.get_app_provenance_dir_path()))
         self.assertTrue(os.path.exists(
@@ -287,8 +286,6 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_run_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_json_dir_path()
-        with self.assertRaises(NotSetupException):
-            FecDataView.get_provenance_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_app_provenance_dir_path()
         with self.assertRaises(NotSetupException):

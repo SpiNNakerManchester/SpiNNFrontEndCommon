@@ -23,6 +23,7 @@ from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
     LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory, TimerWork)
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -31,6 +32,7 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
+        FecDataWriter.mock()
 
     def test_create(self):
         ProvenanceWriter()
@@ -214,6 +216,9 @@ class TestProvenanceDatabase(unittest.TestCase):
         db2.get_location()
 
     def test_database_locked(self):
+        a = FecDataWriter.get_mapping_dir_path()
+        FecDataWriter.mock()
+        b = FecDataWriter.get_mapping_dir_path()
         ls = LogStoreDB()
         logger.set_log_store(ls)
         logger.warning("this works")
