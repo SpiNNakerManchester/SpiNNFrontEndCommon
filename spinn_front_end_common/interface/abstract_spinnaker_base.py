@@ -2350,11 +2350,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         logger.info("Resetting")
 
-        # rewind the buffers from the buffer manager, to start at the beginning
-        # of the simulation again and clear buffered out
-        if self._data_writer.has_buffer_manager():
-            self._data_writer.get_buffer_manager().reset()
-
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
                 "A reset after a get machine call is always hard and "
@@ -2362,6 +2357,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._hard_reset()
         else:
             self._data_writer.soft_reset()
+
+        # rewind the buffers from the buffer manager, to start at the beginning
+        # of the simulation again and clear buffered out
+        if self._data_writer.has_buffer_manager():
+            self._data_writer.get_buffer_manager().reset()
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
