@@ -20,7 +20,6 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.timer import Timer
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
@@ -41,8 +40,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque, BufferedReceivingData)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.provenance import (
-    BUFFER, ProvenanceWriter)
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
@@ -544,24 +541,20 @@ class BufferManager(object):
         return n_regions_to_read, recording_placements
 
     def get_placement_data(self):
-        timer = Timer()
-        with timer:
-            with self._thread_lock_buffer_out:
-                if self._java_caller is not None:
-                    self.__get_data_for_placements_using_java()
+        with self._thread_lock_buffer_out:
+            if self._java_caller is not None:
+                self.__get_data_for_placements_using_java()
+            else:
+                n_regions, recording_placements = self.__count_regions()
+                progress = ProgressBar(
+                    n_regions,  "Extracting buffers from the last run")
+                if get_config_bool(
+                        "Machine", "enable_advanced_monitor_support"):
+                    self.__old_get_data_for_placements_with_monitors(
+                        recording_placements, progress)
                 else:
-                    n_regions, recording_placements = self.__count_regions()
-                    progress = ProgressBar(
-                        n_regions,  "Extracting buffers from the last run")
-                    if get_config_bool(
-                            "Machine", "enable_advanced_monitor_support"):
-                        self.__old_get_data_for_placements_with_monitors(
-                            recording_placements, progress)
-                    else:
-                        self.__old_get_data_for_placements(
-                            recording_placements, progress)
-        with ProvenanceWriter() as db:
-            db.insert_category_timing(BUFFER, timer.measured_interval, None)
+                    self.__old_get_data_for_placements(
+                        recording_placements, progress)
 
     def __get_data_for_placements_using_java(self):
         logger.info("Starting buffer extraction using Java")
