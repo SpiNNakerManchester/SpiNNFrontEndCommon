@@ -227,19 +227,13 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir)
 
-        dir = FecDataView.get_provenance_dir_path()
+        dir = FecDataView.get_app_provenance_dir_path()
         self.assertTrue(os.path.exists(dir))
         self.assertIn(run_dir, dir)
 
-        dir2 = FecDataView.get_app_provenance_dir_path()
+        dir = FecDataView.get_system_provenance_dir_path()
         self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
-
-        dir2 = FecDataView.get_system_provenance_dir_path()
-        self.assertTrue(os.path.exists(dir))
-        self.assertIn(run_dir, dir2)
-        self.assertIn(dir, dir2)
+        self.assertIn(run_dir, dir)
 
     def test_directories_reset(self):
         writer = FecDataWriter.setup()
