@@ -559,3 +559,29 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def add_vertex(cls, vertex):
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
+
+    def next_run_step(self):
+        """
+        Starts or increases the run step count.
+
+        Run steps start at 1
+
+        :return: The next step number
+        :rtype: int
+        """
+        if self.__fec_data._run_step is None:
+            self.__fec_data._run_step = 1
+        else:
+            self.__fec_data._run_step += 1
+        return self.__fec_data._run_step
+
+    def clear_run_steps(self):
+        """
+        Clears the run step
+
+        get_run_step will go back to returning None
+
+        next_run_step will restart at 1
+
+        """
+        self.__fec_data._run_step = None

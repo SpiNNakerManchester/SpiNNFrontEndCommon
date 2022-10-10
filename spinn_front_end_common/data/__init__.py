@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .fec_data_view import FecDataView
-from .fec_timer import FecTimer
 
 
-__all__ = ["FecTimer", "FecDataView"]
+__all__ = ["FecDataView"]
