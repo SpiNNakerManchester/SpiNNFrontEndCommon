@@ -2422,7 +2422,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         raises SpiNNUtilsException:
             If the stop_run was not expected in the current state.
         """
-        FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
+        # Do not do start category here
+        # as called from a different thread while running
         if self._data_writer.is_stop_already_requested():
             logger.warning(
                 "Second Request to stop_run ignored")
@@ -2430,7 +2431,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         with self._state_condition:
             self._data_writer.request_stop()
             self._state_condition.notify_all()
-        FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
 
     def continue_simulation(self):
         """ Continue a simulation that has been started in stepped mode
