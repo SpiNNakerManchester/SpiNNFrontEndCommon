@@ -60,7 +60,6 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.ordered_set</span> <span class="kn">import</span> <span class="n">OrderedSet</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.progress_bar</span> <span class="kn">import</span> <span class="n">ProgressBar</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.timer</span> <span class="kn">import</span> <span class="n">Timer</span>
 <span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">UDP_MESSAGE_MAX_SIZE</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
@@ -81,8 +80,6 @@
     <span class="kn">import</span> <span class="p">(</span><span class="n">BuffersSentDeque</span><span class="p">,</span> <span class="n">BufferedReceivingData</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> \
     <span class="kn">import</span> <span class="nn">AbstractReceiveBuffersToHost</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">BUFFER</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models.streaming_context_manager</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">StreamingContextManager</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.recording_utilities</span> <span class="kn">import</span> <span class="n">get_recording_header_size</span>
@@ -584,24 +581,20 @@
         <span class="k">return</span> <span class="n">n_regions_to_read</span><span class="p">,</span> <span class="n">recording_placements</span>
 
 <div class="viewcode-block" id="BufferManager.get_placement_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_placement_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_placement_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">timer</span><span class="p">:</span>
-            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__get_data_for_placements_using_java</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_thread_lock_buffer_out</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__get_data_for_placements_using_java</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">n_regions</span><span class="p">,</span> <span class="n">recording_placements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count_regions</span><span class="p">()</span>
+                <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
+                    <span class="n">n_regions</span><span class="p">,</span>  <span class="s2">&quot;Extracting buffers from the last run&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
+                        <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
+                        <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">n_regions</span><span class="p">,</span> <span class="n">recording_placements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count_regions</span><span class="p">()</span>
-                    <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
-                        <span class="n">n_regions</span><span class="p">,</span>  <span class="s2">&quot;Extracting buffers from the last run&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span>
-                            <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements_with_monitors</span><span class="p">(</span>
-                            <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span>
-                            <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span><span class="n">BUFFER</span><span class="p">,</span> <span class="n">timer</span><span class="o">.</span><span class="n">measured_interval</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__old_get_data_for_placements</span><span class="p">(</span>
+                        <span class="n">recording_placements</span><span class="p">,</span> <span class="n">progress</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__get_data_for_placements_using_java</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting buffer extraction using Java&quot;</span><span class="p">)</span>
@@ -759,7 +752,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>

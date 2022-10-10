@@ -219,7 +219,7 @@
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            SELECT algorithm, the_value AS &quot;value&quot;</span>
+<span class="s2">            SELECT algorithm, time_taken</span>
 <span class="s2">            FROM timer_provenance</span>
 <span class="s2">            WHERE algorithm LIKE ?</span>
 <span class="s2">            &quot;&quot;&quot;</span>
@@ -239,9 +239,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># We know the database actually stores microseconds for durations</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">            SELECT</span>
-<span class="s2">                description,</span>
-<span class="s2">                SUM(the_value) / 1000000.0 AS &quot;value&quot;</span>
+<span class="s2">            SELECT description, SUM(time_taken) / 1000000.0</span>
 <span class="s2">            FROM timer_provenance</span>
 <span class="s2">            GROUP BY description</span>
 <span class="s2">            ORDER BY the_value</span>
@@ -344,39 +342,94 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the total runtime for one category of algorithms</span>
 
-<span class="sd">        :param str category:</span>
+<span class="sd">        :param  TimerCategory category:</span>
 <span class="sd">        :return: total off all runtimes with this category</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">             SELECT sum(the_value)</span>
+<span class="s2">             SELECT sum(time_taken)</span>
 <span class="s2">             FROM category_timer_provenance</span>
 <span class="s2">             WHERE category = ?</span>
 <span class="s2">             &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">])</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_category_timer_sums"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums">[docs]</a>    <span class="k">def</span> <span class="nf">get_category_timer_sums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the runtime for one category of algorithms</span>
+<span class="sd">        split machine on, machine off</span>
+
+<span class="sd">        :param TimerCategory category:</span>
+<span class="sd">        :return: total on and off time of instances with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">on</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">off</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken), machine_on</span>
+<span class="s2">             FROM category_timer_provenance</span>
+<span class="s2">             WHERE category = ?</span>
+<span class="s2">             GROUP BY machine_on</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">on</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">off</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.get_timer_sum_by_category"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_category</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the total runtime for one category of algorithms</span>
 
-<span class="sd">        :param str category:</span>
+<span class="sd">        :param TimerCategory category:</span>
 <span class="sd">        :return: total off all runtimes with this category</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">             SELECT sum(the_value)</span>
-<span class="s2">             FROM timer_provenance</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM full_timer_view</span>
 <span class="s2">             WHERE category = ?</span>
 <span class="s2">             &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">])</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ProvenanceReader.get_timer_sum_by_work"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one work type of algorithms</span>
+
+<span class="sd">        :param TimerWork work:</span>
+<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM full_timer_view</span>
+<span class="s2">             WHERE work = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">work</span><span class="o">.</span><span class="n">work_name</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.get_timer_sum_by_algorithm"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -387,15 +440,18 @@
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">             SELECT sum(the_value)</span>
+<span class="s2">             SELECT sum(time_taken)</span>
 <span class="s2">             FROM timer_provenance</span>
 <span class="s2">             WHERE algorithm = ?</span>
 <span class="s2">             &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span></div>
+            <span class="k">return</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="ProvenanceReader.messages"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceReader.messages">[docs]</a>    <span class="k">def</span> <span class="nf">messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -493,7 +549,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>

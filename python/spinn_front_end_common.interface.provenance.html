@@ -86,6 +86,89 @@ the ApplicationGraph</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">FecTimer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.APPLICATION_RUNNER">
+<span class="sig-name descname"><span class="pre">APPLICATION_RUNNER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Application</span> <span class="pre">runner'</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.APPLICATION_RUNNER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.end_category">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.end_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.end_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method should only be
+called via the View!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>category</strong> (<em>SimulatorStage</em>) – Stage to end</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.error">
+<span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.setup">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip">
+<span class="sig-name descname"><span class="pre">skip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfg_false">
+<span class="sig-name descname"><span class="pre">skip_if_cfg_false</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip_if_cfg_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfg_false" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfgs_false">
+<span class="sig-name descname"><span class="pre">skip_if_cfgs_false</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip_if_cfgs_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfgs_false" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip_if_empty">
+<span class="sig-name descname"><span class="pre">skip_if_empty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip_if_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_empty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip_if_has_not_run">
+<span class="sig-name descname"><span class="pre">skip_if_has_not_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip_if_has_not_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_has_not_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.skip_if_virtual_board">
+<span class="sig-name descname"><span class="pre">skip_if_virtual_board</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.skip_if_virtual_board"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_virtual_board" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.start_category">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">start_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_on</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.start_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.start_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method should only be called via the View!</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – category to switch to</p></li>
+<li><p><strong>machine_on</strong> (<em>None</em><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – What to change machine on too.
+Or None to leave as is</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.FecTimer.stop_category_timing">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stop_category_timing</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/fec_timer.html#FecTimer.stop_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.FecTimer.stop_category_timing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.LogStoreDB">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">LogStoreDB</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.LogStoreDB" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LogStore</span></code></p>
@@ -185,10 +268,28 @@ where their where late arriving spikes.</p>
 <dd><p>Get the total runtime for one category of algorithms</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums">
+<span class="sig-name descname"><span class="pre">get_category_timer_sums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_category_timer_sums"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the runtime for one category of algorithms
+split machine on, machine off</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total on and off time of instances with this category</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -399,7 +500,24 @@ like a line <code class="docutils literal notranslate"><span class="pre">algorit
 <dd><p>Get the total runtime for one category of algorithms</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work">
+<span class="sig-name descname"><span class="pre">get_timer_sum_by_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">work</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_timer_sum_by_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one work type of algorithms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>total off all runtimes with this category</p>
@@ -536,15 +654,29 @@ if different.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">
-<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts algorithms run times into the timer_provenance table</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category">
+<span class="sig-name descname"><span class="pre">insert_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_on</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts category into the category_timer_provenance  returning id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Category of the Algorithms run</p></li>
+<li><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – Name of Category starting</p></li>
+<li><p><strong>machine_on</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If the machine was done during all
+or some of the time</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">
+<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts run time into the category</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – id of the Category finished</p></li>
 <li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
-<li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
 </ul>
 </dd>
 </dl>
@@ -682,15 +814,15 @@ cfg provenance_report_cutoff</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">
-<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_loop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts algorithms run times into the timer_provenance table</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Category of the Algorithm</p></li>
+<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Category Id of the Algorithm</p></li>
 <li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
-<li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Runtime</p></li>
-<li><p><strong>n_loop</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The run loop within the ned user run</p></li>
+<li><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – Type of work being done</p></li>
+<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
 <li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
 it was not skipped</p></li>
 </ul>
@@ -862,6 +994,135 @@ position) to be used for provenance error reporting to the user.</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">TimerCategory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Different Categories a FecTimer can be in</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.DATA_GENERATION">
+<span class="sig-name descname"><span class="pre">DATA_GENERATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.DATA_GENERATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.GET_MACHINE">
+<span class="sig-name descname"><span class="pre">GET_MACHINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.GET_MACHINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.LOADING">
+<span class="sig-name descname"><span class="pre">LOADING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.LOADING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.MAPPING">
+<span class="sig-name descname"><span class="pre">MAPPING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.MAPPING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.RESETTING">
+<span class="sig-name descname"><span class="pre">RESETTING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.RESETTING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.RUN_LOOP">
+<span class="sig-name descname"><span class="pre">RUN_LOOP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.RUN_LOOP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.RUN_OTHER">
+<span class="sig-name descname"><span class="pre">RUN_OTHER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.RUN_OTHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.SETTING_UP">
+<span class="sig-name descname"><span class="pre">SETTING_UP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.SETTING_UP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.SHUTTING_DOWN">
+<span class="sig-name descname"><span class="pre">SHUTTING_DOWN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.SHUTTING_DOWN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.WAITING">
+<span class="sig-name descname"><span class="pre">WAITING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.WAITING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerCategory.category_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">category_name</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerCategory.category_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">TimerWork</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Different Work types an Algorithm could be doing</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.BITFIELD">
+<span class="sig-name descname"><span class="pre">BITFIELD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.BITFIELD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.COMPRESSING">
+<span class="sig-name descname"><span class="pre">COMPRESSING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.COMPRESSING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.CONTROL">
+<span class="sig-name descname"><span class="pre">CONTROL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.CONTROL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.EXTRACTING">
+<span class="sig-name descname"><span class="pre">EXTRACTING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.EXTRACTING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.EXTRACT_DATA">
+<span class="sig-name descname"><span class="pre">EXTRACT_DATA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.EXTRACT_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.GET_MACHINE">
+<span class="sig-name descname"><span class="pre">GET_MACHINE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.GET_MACHINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.LOADING">
+<span class="sig-name descname"><span class="pre">LOADING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.LOADING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.OTHER">
+<span class="sig-name descname"><span class="pre">OTHER</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.OTHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.REPORT">
+<span class="sig-name descname"><span class="pre">REPORT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.REPORT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.RUNNING">
+<span class="sig-name descname"><span class="pre">RUNNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.RUNNING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.SYNAPSE">
+<span class="sig-name descname"><span class="pre">SYNAPSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;enum.auto</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.SYNAPSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.TimerWork.work_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">work_name</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.TimerWork.work_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -885,6 +1146,21 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><code class="docutils literal notranslate"><span class="pre">AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer"><code class="docutils literal notranslate"><span class="pre">FecTimer</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.APPLICATION_RUNNER"><code class="docutils literal notranslate"><span class="pre">FecTimer.APPLICATION_RUNNER</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.end_category"><code class="docutils literal notranslate"><span class="pre">FecTimer.end_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.error"><code class="docutils literal notranslate"><span class="pre">FecTimer.error()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.setup"><code class="docutils literal notranslate"><span class="pre">FecTimer.setup()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfg_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfg_false()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_cfgs_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfgs_false()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_empty"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_empty()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_has_not_run"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_has_not_run()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.skip_if_virtual_board"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_virtual_board()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.start_category"><code class="docutils literal notranslate"><span class="pre">FecTimer.start_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.stop_category_timing"><code class="docutils literal notranslate"><span class="pre">FecTimer.stop_category_timing()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB"><code class="docutils literal notranslate"><span class="pre">LogStoreDB</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.get_location"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.get_location()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.retreive_log_messages()</span></code></a></li>
@@ -895,6 +1171,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.cores_with_late_spikes()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.demo"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.demo()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_category_timer_sum()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_category_timer_sums()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_cores_with_provenace()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_database_handle()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_last_run_database_path()</span></code></a></li>
@@ -906,6 +1183,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_provenance()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_algorithm()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_work()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.messages()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.retreive_log_messages()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.run_query()</span></code></a></li>
@@ -914,6 +1192,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.add_core_name()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_board_provenance()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_category()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_category_timing()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_connector"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_connector()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_core"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_core()</span></code></a></li>
@@ -944,6 +1223,35 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.parse_system_provenance_items()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl.reserve_provenance_data_region()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory"><code class="docutils literal notranslate"><span class="pre">TimerCategory</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.DATA_GENERATION"><code class="docutils literal notranslate"><span class="pre">TimerCategory.DATA_GENERATION</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.GET_MACHINE"><code class="docutils literal notranslate"><span class="pre">TimerCategory.GET_MACHINE</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.LOADING"><code class="docutils literal notranslate"><span class="pre">TimerCategory.LOADING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.MAPPING"><code class="docutils literal notranslate"><span class="pre">TimerCategory.MAPPING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.RESETTING"><code class="docutils literal notranslate"><span class="pre">TimerCategory.RESETTING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.RUN_LOOP"><code class="docutils literal notranslate"><span class="pre">TimerCategory.RUN_LOOP</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.RUN_OTHER"><code class="docutils literal notranslate"><span class="pre">TimerCategory.RUN_OTHER</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.SETTING_UP"><code class="docutils literal notranslate"><span class="pre">TimerCategory.SETTING_UP</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.SHUTTING_DOWN"><code class="docutils literal notranslate"><span class="pre">TimerCategory.SHUTTING_DOWN</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.WAITING"><code class="docutils literal notranslate"><span class="pre">TimerCategory.WAITING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory.category_name"><code class="docutils literal notranslate"><span class="pre">TimerCategory.category_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork"><code class="docutils literal notranslate"><span class="pre">TimerWork</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.BITFIELD"><code class="docutils literal notranslate"><span class="pre">TimerWork.BITFIELD</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.COMPRESSING"><code class="docutils literal notranslate"><span class="pre">TimerWork.COMPRESSING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.CONTROL"><code class="docutils literal notranslate"><span class="pre">TimerWork.CONTROL</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.EXTRACTING"><code class="docutils literal notranslate"><span class="pre">TimerWork.EXTRACTING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.EXTRACT_DATA"><code class="docutils literal notranslate"><span class="pre">TimerWork.EXTRACT_DATA</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.GET_MACHINE"><code class="docutils literal notranslate"><span class="pre">TimerWork.GET_MACHINE</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.LOADING"><code class="docutils literal notranslate"><span class="pre">TimerWork.LOADING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.OTHER"><code class="docutils literal notranslate"><span class="pre">TimerWork.OTHER</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.REPORT"><code class="docutils literal notranslate"><span class="pre">TimerWork.REPORT</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.RUNNING"><code class="docutils literal notranslate"><span class="pre">TimerWork.RUNNING</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.SYNAPSE"><code class="docutils literal notranslate"><span class="pre">TimerWork.SYNAPSE</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork.work_name"><code class="docutils literal notranslate"><span class="pre">TimerWork.work_name</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1008,7 +1316,7 @@ position) to be used for provenance error reporting to the user.</p></li>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>

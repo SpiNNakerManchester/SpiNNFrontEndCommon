@@ -557,6 +557,21 @@ shared by all path methods</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_run_step">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_run_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_run_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_run_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the auto pause and resume step currently running if any.</p>
+<p>If and only if currently in an auto pause and resume loop this will
+report the number of the step. Starting at 1</p>
+<p>In most cases this will return None, including when running without
+steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None or <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The simulation time step, in milliseconds</p>
@@ -890,52 +905,6 @@ There is never a case when some are known and others not</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.data.</span></span><span class="sig-name descname"><span class="pre">FecTimer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.data.FecTimer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.error">
-<span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.error" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.setup">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.setup" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip">
-<span class="sig-name descname"><span class="pre">skip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip_if_cfg_false">
-<span class="sig-name descname"><span class="pre">skip_if_cfg_false</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip_if_cfg_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip_if_cfg_false" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip_if_cfgs_false">
-<span class="sig-name descname"><span class="pre">skip_if_cfgs_false</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip_if_cfgs_false"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip_if_cfgs_false" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip_if_empty">
-<span class="sig-name descname"><span class="pre">skip_if_empty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip_if_empty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip_if_empty" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip_if_has_not_run">
-<span class="sig-name descname"><span class="pre">skip_if_has_not_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip_if_has_not_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip_if_has_not_run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.data.FecTimer.skip_if_virtual_board">
-<span class="sig-name descname"><span class="pre">skip_if_virtual_board</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_timer.html#FecTimer.skip_if_virtual_board"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecTimer.skip_if_virtual_board" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 
@@ -986,6 +955,7 @@ There is never a case when some are known and others not</p>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_notification_protocol"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_notification_protocol()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_provenance_dir_path()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_run_number"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_run_number()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_run_step"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_run_step()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_ms()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_per_ms()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_s"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_per_s()</span></code></a></li>
@@ -1010,17 +980,6 @@ There is never a case when some are known and others not</p>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_gathers"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_gathers()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitor_items"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitor_items()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitors"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitors()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer"><code class="docutils literal notranslate"><span class="pre">FecTimer</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.error"><code class="docutils literal notranslate"><span class="pre">FecTimer.error()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.setup"><code class="docutils literal notranslate"><span class="pre">FecTimer.setup()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_cfg_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfg_false()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_cfgs_false"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_cfgs_false()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_empty"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_empty()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_has_not_run"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_has_not_run()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.data.FecTimer.skip_if_virtual_board"><code class="docutils literal notranslate"><span class="pre">FecTimer.skip_if_virtual_board()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -1084,7 +1043,7 @@ There is never a case when some are known and others not</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>

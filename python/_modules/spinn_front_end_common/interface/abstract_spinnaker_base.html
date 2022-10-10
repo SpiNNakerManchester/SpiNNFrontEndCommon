@@ -68,7 +68,6 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span><span class="p">,</span> <span class="n">get_config_str</span><span class="p">,</span> <span class="n">set_config</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.timer</span> <span class="kn">import</span> <span class="n">Timer</span>
 
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spinn_machine_version</span>
 <span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">CoreSubsets</span><span class="p">,</span> <span class="n">Machine</span>
@@ -108,7 +107,6 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecTimer</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span>
@@ -138,11 +136,10 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions.</span>\
     <span class="n">host_no_bitfield_router_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ordered_covering_compression</span><span class="p">,</span> <span class="n">pair_compression</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FecTimer</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">,</span> <span class="n">TimerCategory</span><span class="p">,</span> <span class="n">TimerWork</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.splitter_selectors</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">splitter_selector</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">LOADING</span><span class="p">,</span>
-    <span class="n">ProvenanceWriter</span><span class="p">,</span> <span class="n">MAPPING</span><span class="p">,</span> <span class="n">RUN_LOOP</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.java_caller</span> <span class="kn">import</span> <span class="n">JavaCaller</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.report_functions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -196,15 +193,8 @@
         <span class="c1">#</span>
         <span class="s2">&quot;_raise_keyboard_interrupt&quot;</span><span class="p">,</span>
 
-        <span class="c1"># The loop number for the this/next loop in the end_user run</span>
-        <span class="s2">&quot;_n_loops&quot;</span><span class="p">,</span>
-
         <span class="c1"># A dict of live packet gather params to Application LGP vertices</span>
         <span class="s2">&quot;_lpg_vertices&quot;</span><span class="p">,</span>
-
-        <span class="c1"># the timer used to log the execute time</span>
-        <span class="c1"># TODO energy report cleanup</span>
-        <span class="s2">&quot;_run_timer&quot;</span><span class="p">,</span>
 
         <span class="c1"># Used in exception handling and control c</span>
         <span class="s2">&quot;_last_except_hook&quot;</span><span class="p">,</span>
@@ -229,6 +219,9 @@
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">data_writer_cls</span><span class="p">)</span>
 
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">WAITING</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">SETTING_UP</span><span class="p">)</span>
+
         <span class="c1"># output locations of binaries to be searched for end user info</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="s2">&quot;Will search these locations for binaries: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -243,7 +236,6 @@
         <span class="c1"># holder for timing and running related values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># folders</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_up_report_specifics</span><span class="p">()</span>
@@ -261,7 +253,7 @@
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">common_model_binaries</span><span class="o">.</span><span class="vm">__file__</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_machine_generator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_machine</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">SETTING_UP</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_hard_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -277,36 +269,6 @@
 
     <span class="k">def</span> <span class="nf">_machine_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
-
-<div class="viewcode-block" id="AbstractSpinnakerBase.check_machine_specifics"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.check_machine_specifics">[docs]</a>    <span class="k">def</span> <span class="nf">check_machine_specifics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Checks machine specifics for the different modes of execution.</span>
-
-<span class="sd">        Not this can only be called from a class that sets the config file</span>
-<span class="sd">        to read this data from.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_items_specified</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;machine_name&quot;</span><span class="p">):</span>
-            <span class="n">n_items_specified</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_server&quot;</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_user&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                    <span class="s2">&quot;A spalloc_user must be specified with a spalloc_server&quot;</span><span class="p">)</span>
-            <span class="n">n_items_specified</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;remote_spinnaker_url&quot;</span><span class="p">):</span>
-            <span class="n">n_items_specified</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">):</span>
-            <span class="n">n_items_specified</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">n_items_specified</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="s2">&quot;See http://spinnakermanchester.github.io/spynnaker/&quot;</span>
-                <span class="s2">&quot;PyNNOnSpinnakerInstall.html Configuration Section&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">n_items_specified</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">&quot;Only one of machineName, spalloc_server, &quot;</span>
-                <span class="s2">&quot;remote_spinnaker_url and virtual_board should be specified &quot;</span>
-                <span class="s2">&quot;in your configuration files&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_setup_java_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;use_java&quot;</span><span class="p">):</span>
@@ -362,8 +324,10 @@
 <span class="sd">            requested to run for the given number of steps.  The host will</span>
 <span class="sd">            still wait until the simulation itself says it has completed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Run a simulation for a fixed amount of time</span>
@@ -374,9 +338,11 @@
 <span class="sd">            this duration.  The continue_simulation() method must then be</span>
 <span class="sd">            called for the simulation to continue.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;run after run_until_complete&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">(</span><span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_in_ms</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get a number of timesteps for a given time in milliseconds.</span>
@@ -558,10 +524,11 @@
         <span class="k">if</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running for </span><span class="si">{}</span><span class="s2"> steps for a total of </span><span class="si">{}</span><span class="s2">ms&quot;</span><span class="p">,</span>
                         <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">),</span> <span class="n">run_time</span><span class="p">)</span>
-            <span class="k">for</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">,</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run </span><span class="si">{}</span><span class="s2"> of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="n">steps</span><span class="p">:</span>
+                <span class="n">run_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">next_run_step</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Run </span><span class="si">{</span><span class="n">run_step</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">clear_run_steps</span><span class="p">()</span>
         <span class="k">elif</span> <span class="n">run_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running until complete&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">)</span>
@@ -577,12 +544,11 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running forever in steps of </span><span class="si">{}</span><span class="s2">ms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">()))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_no_stop_requested</span><span class="p">():</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Run </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">))</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Run </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">next_run_step</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">(),</span> <span class="n">n_sync_steps</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">clear_run_steps</span><span class="p">()</span>
 
         <span class="c1"># Indicate that the signal handler needs to act</span>
         <span class="c1"># pylint: disable=protected-access</span>
@@ -590,8 +556,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_raise_keyboard_interrupt</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_last_except_hook</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception_handler</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">_is_per_timestep_sdram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">():</span>
@@ -605,7 +569,7 @@
 
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Command Sender Adder&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Command Sender Adder&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">all_command_senders</span> <span class="o">=</span> <span class="n">add_command_senders</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
             <span class="c1"># add the edges from the command senders to the dependent vertices</span>
             <span class="k">for</span> <span class="n">command_sender</span> <span class="ow">in</span> <span class="n">all_command_senders</span><span class="p">:</span>
@@ -691,15 +655,14 @@
 
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="s2">&quot;Virtual machine generator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Virtual machine generator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="n">virtual_machine_generator</span><span class="p">())</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_ipaddress</span><span class="p">(</span><span class="s2">&quot;virtual&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_execute_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SpallocAllocator or HBPAllocator if required</span>
 
-<span class="sd">        :param str category: Algorithm category for provenance</span>
 <span class="sd">        :param total_run_time: The total run time to request</span>
 <span class="sd">        type total_run_time: int or None</span>
 <span class="sd">        :return: machine name, machine version, BMP details (if any),</span>
@@ -711,13 +674,13 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_machine</span><span class="p">():</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_server&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;SpallocAllocator&quot;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;SpallocAllocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">spalloc_allocator</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;remote_spinnaker_url&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;HBPAllocator&quot;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;HBPAllocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">hbp_allocator</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_machine_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_execute_machine_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the MachineGenerator if required</span>
 
@@ -755,7 +718,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="s2">&quot;Machine generator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Machine generator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">GET_MACHINE</span><span class="p">):</span>
             <span class="n">machine</span><span class="p">,</span> <span class="n">transceiver</span> <span class="o">=</span> <span class="n">machine_generator</span><span class="p">(</span>
                 <span class="n">bmp_details</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span>
                 <span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">scamp_connection_data</span><span class="p">,</span> <span class="n">reset_machine</span><span class="p">)</span>
@@ -772,15 +735,15 @@
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;virtual_board&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_get_virtual_machine</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span>
-                    <span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">)</span>
+                <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">allocator_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; The factory method to get a machine</span>
 
 <span class="sd">        :rtype: ~spinn_machine.Machine</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">GET_MACHINE</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_user_mode</span><span class="p">()</span> <span class="ow">and</span> \
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_soft_reset</span><span class="p">():</span>
             <span class="c1"># Make the reset hard</span>
@@ -792,6 +755,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_machine</span><span class="p">():</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Not enough information provided to supply a machine&quot;</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">GET_MACHINE</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
@@ -817,7 +781,7 @@
 <span class="sd">        Runs, times and logs WriteJsonMachine if required</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Json machine&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json machine&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_machine&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">write_json_machine</span><span class="p">()</span>
@@ -827,7 +791,8 @@
 <span class="sd">        Runs, times and logs the Network Specification report is requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Network Specification report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Network Specification report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_network_specification_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -837,7 +802,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SplitLPGVertices if required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Split Live Gather Vertices&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Split Live Gather Vertices&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">split_lpg_vertices</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_board_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -845,7 +810,7 @@
 <span class="sd">        Runs, times and logs the BoardChipReport is requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Board chip report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Board chip report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -856,7 +821,7 @@
 <span class="sd">        Runs, times and logs the splitter_reset</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter reset&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Splitter reset&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">splitter_reset</span><span class="p">()</span>
 
     <span class="c1"># Overriden by spynaker to choose an extended algorithm</span>
@@ -864,7 +829,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SplitterSelector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter selector&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Splitter selector&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">splitter_selector</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_delay_support_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -879,7 +844,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Splitter partitioner&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Splitter partitioner&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_n_chips_in_graph</span><span class="p">(</span><span class="n">splitter_partitioner</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_execute_insert_chip_power_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
@@ -887,7 +852,7 @@
 <span class="sd">        Run, time and log the InsertChipPowerMonitorsToGraphs if required</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Insert chip power monitors&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Insert chip power monitors&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">insert_chip_power_monitors_to_graphs</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
@@ -897,7 +862,8 @@
 <span class="sd">        Run, time and log the InsertExtraMonitorVerticesToGraphs if required</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Insert extra monitor vertices&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Insert extra monitor vertices&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfgs_false</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
@@ -908,12 +874,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_gatherer_map</span><span class="p">(</span><span class="n">gather_map</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_monitor_map</span><span class="p">(</span><span class="n">monitor_map</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_partitioner_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_report_partitioner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, times and logs the partitioner_report if needed</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Partitioner report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Partitioner report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_partitioner_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -923,7 +889,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs times and logs the LocalTDMABuilder</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Local TDMA builder&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Local TDMA builder&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">local_tdma_builder</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
@@ -936,7 +902,7 @@
 <span class="sd">            Calling of this method is based on the cfg placer value</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Application Placer&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Application Placer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_placements</span><span class="p">(</span><span class="n">place_application_graph</span><span class="p">(</span>
                 <span class="n">system_placements</span><span class="p">))</span>
 
@@ -969,7 +935,9 @@
 <span class="sd">        &quot;data_in_multicast_key_to_chip_map&quot; and</span>
 <span class="sd">        &quot;system_multicast_router_timeout_keys&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;System multicast routing generator&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;System multicast routing generator&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfgs_false</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">,</span>
                     <span class="s2">&quot;enable_reinjection&quot;</span><span class="p">):</span>
@@ -983,7 +951,7 @@
 
 <span class="sd">        May set the &quot;fixed_routes&quot; data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Fixed route router&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Fixed route router&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -998,7 +966,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
-                <span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Placements wth application graph report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+                <span class="s2">&quot;Placements wth application graph report&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_application_graph_placer_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1009,7 +978,7 @@
 <span class="sd">        Does, times and logs the writing of placements as json if requested</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Json placements&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json placements&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_placements&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1025,7 +994,7 @@
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Ner route traffic aware&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Ner route traffic aware&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_table_by_partition</span><span class="p">(</span>
                 <span class="n">ner_route_traffic_aware</span><span class="p">())</span>
 
@@ -1038,7 +1007,7 @@
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Ner route&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Ner route&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_table_by_partition</span><span class="p">(</span><span class="n">ner_route</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_execute_basic_dijkstra_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1050,7 +1019,7 @@
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic dijkstra routing&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Basic dijkstra routing&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_table_by_partition</span><span class="p">(</span>
                 <span class="n">basic_dijkstra_routing</span><span class="p">())</span>
 
@@ -1063,7 +1032,7 @@
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg router value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Application Router&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Application Router&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_table_by_partition</span><span class="p">(</span>
                 <span class="n">route_application_graph</span><span class="p">())</span>
 
@@ -1100,7 +1069,7 @@
 
 <span class="sd">        Sets the &quot;tag&quot; data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic tag allocator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Basic tag allocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span>
                 <span class="n">basic_tag_allocator</span><span class="p">())</span>
 
@@ -1108,7 +1077,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, times and logs the tag allocator report if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Tag allocator report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Tag allocator report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_tag_allocation_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1125,7 +1094,7 @@
 
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Global allocate&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Global allocate&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_infos</span><span class="p">(</span>
                 <span class="n">global_allocate</span><span class="p">(</span><span class="n">extra_allocations</span><span class="p">))</span>
 
@@ -1140,11 +1109,11 @@
 
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Zoned routing info allocator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Zoned routing info allocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_infos</span><span class="p">(</span>
                 <span class="n">flexible_allocate</span><span class="p">(</span><span class="n">extra_allocations</span><span class="p">))</span>
 
-<div class="viewcode-block" id="AbstractSpinnakerBase.do_info_allocator"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.do_info_allocator">[docs]</a>    <span class="k">def</span> <span class="nf">do_info_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_do_info_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs one of the info allocaters</span>
 
@@ -1166,13 +1135,13 @@
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="s2">&quot;Only a single algorithm is supported for info_allocator&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Unexpected cfg setting info_allocator: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="sa">f</span><span class="s2">&quot;Unexpected cfg setting info_allocator: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_router_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes, times and logs the router info report if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Router info report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router info report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_router_info_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1186,7 +1155,7 @@
 <span class="sd">            Currently no other Routing Table Generator supported.</span>
 <span class="sd">            To add an additional Generator copy the pattern of do_placer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Basic routing table generator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Basic routing table generator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_uncompressed</span><span class="p">(</span><span class="n">basic_routing_table_generator</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_execute_merged_routing_table_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1197,7 +1166,7 @@
 <span class="sd">            Currently no other Routing Table Generator supported.</span>
 <span class="sd">            To add an additional Generator copy the pattern of do_placer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Merged routing table generator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Merged routing table generator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_uncompressed</span><span class="p">(</span>
                 <span class="n">merged_routing_table_generator</span><span class="p">())</span>
 
@@ -1232,7 +1201,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, times and logs the router report if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Router report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_router_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1242,7 +1211,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, times and logs the router summary report if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Router summary report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router summary report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_router_summary_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1252,7 +1221,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, time and log the routing tables as json if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Json routing tables&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json routing tables&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_routing_tables&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1263,7 +1232,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Write, time and log the router collision report</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Router collision potential report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Router collision potential report&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_router_collision_potential_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1274,7 +1245,7 @@
 
 <span class="sd">        :param bool start: Is this the start or the end</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Drift report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Drift report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">start</span> <span class="ow">and</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1291,7 +1262,7 @@
 
 <span class="sd">        May set the executable_types data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Locate executable start type&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Locate executable start type&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_executable_types</span><span class="p">(</span>
                 <span class="n">locate_executable_start_type</span><span class="p">())</span>
 
@@ -1303,7 +1274,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_buffer_manager</span><span class="p">():</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Buffer manager creator&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Buffer manager creator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
 
@@ -1314,7 +1285,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the SDRAMOutgoingPartitionAllocator</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;SDRAM outgoing partition allocator&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;SDRAM outgoing partition allocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">sdram_outgoing_partition_allocator</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_control_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_sync</span><span class="p">):</span>
@@ -1322,7 +1293,7 @@
 
 <span class="sd">        :param bool do_sync: Whether to enable synchronization</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="s2">&quot;Control Sync&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Control Sync&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">CONTROL</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">control_sync</span><span class="p">(</span><span class="n">do_sync</span><span class="p">)</span>
@@ -1333,9 +1304,7 @@
 
 <span class="sd">        :param float total_run_time:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># time the time it takes to do all pacman stuff</span>
-        <span class="n">mapping_total_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
-        <span class="n">mapping_total_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">MAPPING</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_java_caller</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_extra_mapping_algorithms</span><span class="p">()</span>
@@ -1346,8 +1315,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_delay_support_adder</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_splitter_partitioner</span><span class="p">()</span>
-        <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">MAPPING</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">)</span>
+        <span class="n">allocator_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_allocator</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">allocator_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_json_machine</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_board_chip</span><span class="p">()</span>
 
@@ -1357,7 +1326,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_insert_chip_power_monitors</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_insert_extra_monitor_vertices</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_partitioner_report</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_partitioner</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_local_tdma_builder</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_placer</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_placements_with_application_graph</span><span class="p">()</span>
@@ -1370,7 +1339,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_basic_tag_allocator</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_tag_allocations</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">do_info_allocator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_info_allocator</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_router_info</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_routing_table_generator</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_uncompressed_routing_table</span><span class="p">()</span>
@@ -1382,9 +1351,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_buffer_manager_creator</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_sdram_outgoing_partition_allocator</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
-                <span class="n">MAPPING</span><span class="p">,</span> <span class="n">mapping_total_timer</span><span class="o">.</span><span class="n">take_sample</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">MAPPING</span><span class="p">)</span>
 
     <span class="c1"># Overridden by spy which adds placement_order</span>
     <span class="k">def</span> <span class="nf">_execute_graph_data_specification_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1393,8 +1360,7 @@
 
 <span class="sd">        Sets the dsg_targets data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
-                <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="s2">&quot;Graph data specification writer&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Graph data specification writer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_dsg_targets</span><span class="p">(</span>
                 <span class="n">graph_data_specification_writer</span><span class="p">())</span>
 
@@ -1403,14 +1369,7 @@
 <span class="sd">        Runs, Times and logs the data generation</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># set up timing</span>
-        <span class="n">data_gen_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
-        <span class="n">data_gen_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_graph_data_specification_writer</span><span class="p">()</span>
-
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
-                <span class="n">DATA_GENERATION</span><span class="p">,</span> <span class="n">data_gen_timer</span><span class="o">.</span><span class="n">take_sample</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_routing_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -1419,7 +1378,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Routing setup&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Routing setup&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="c1"># Only needs the x and y of chips with routing tables</span>
@@ -1430,7 +1389,7 @@
 <span class="sd">        Runs, times and logs the GraphBinaryGatherer if required.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Graph binary gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Graph binary gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_executable_targets</span><span class="p">(</span>
                     <span class="n">graph_binary_gatherer</span><span class="p">())</span>
@@ -1454,7 +1413,8 @@
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
-                <span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Host based bitfield router compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+                <span class="s2">&quot;Host based bitfield router compressor&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1473,8 +1433,8 @@
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
-                <span class="n">LOADING</span><span class="p">,</span>
-                <span class="s2">&quot;Machine bitfield ordered covering compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+                <span class="s2">&quot;Machine bitfield ordered covering compressor&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">machine_bit_field_ordered_covering_compressor</span><span class="p">()</span>
@@ -1493,7 +1453,8 @@
 <span class="sd">        :rtype: None</span>
 <span class="sd">         &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
-                <span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Machine bitfield pair router compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+               <span class="s2">&quot;Machine bitfield pair router compressor&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1511,7 +1472,7 @@
 <span class="sd">        :return: CompressedRoutingTables</span>
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compression_skipable</span><span class="p">(</span><span class="n">precompressed</span><span class="p">):</span>
@@ -1531,7 +1492,8 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
@@ -1554,7 +1516,7 @@
 <span class="sd">        :return: CompressedRoutingTable</span>
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Pair compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compression_skipable</span><span class="p">(</span><span class="n">precompressed</span><span class="p">):</span>
@@ -1574,7 +1536,8 @@
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Pair on chip router compression&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair on chip router compression&quot;</span><span class="p">,</span>
+                      <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
@@ -1597,7 +1560,7 @@
 <span class="sd">        :return: CompressedRoutingTables</span>
 <span class="sd">        :rtype: MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Pair unordered compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair unordered compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compression_skipable</span><span class="p">(</span><span class="n">precompressed</span><span class="p">):</span>
@@ -1631,7 +1594,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_precompressed</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">())</span>
             <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;Ranged&quot;</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Ranged Compressor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Ranged Compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compression_skipable</span><span class="p">(</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">()):</span>
                         <span class="n">timer</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="s2">&quot;Tables already small enough&quot;</span><span class="p">)</span>
@@ -1719,7 +1682,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Routing table loader&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Routing table loader&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
@@ -1729,7 +1692,9 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the router report from router tables if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Uncompressed routing table report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Uncompressed routing table report&quot;</span><span class="p">,</span>
+                <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_routing_table_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1739,7 +1704,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the BitFieldCompressorReport if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Bitfield compressor report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Bitfield compressor report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span>  <span class="s2">&quot;write_bit_field_compressor_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1750,7 +1715,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs Load Fixed Routes is required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Load fixed routes&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Load fixed routes&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1763,8 +1728,8 @@
 <span class="sd">        Runs, times and logs the execute_system_data_specs if required</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Execute system data specification&quot;</span><span class="p">)</span> \
-                <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Execute system data specification&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span> <span class="kc">None</span>
             <span class="n">execute_system_data_specs</span><span class="p">()</span>
@@ -1773,7 +1738,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the loading of exectuable images</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Load executable system Images&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Load executable system Images&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="n">load_sys_images</span><span class="p">()</span>
@@ -1785,7 +1751,7 @@
 <span class="sd">        :return: map of placement and DSG data, and loaded data flag.</span>
 <span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Host data specification&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Host data specification&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">return</span> <span class="n">execute_application_data_specs</span><span class="p">()</span>
@@ -1795,7 +1761,8 @@
 <span class="sd">        Run, times and logs the TagsFromMachineReport if requested</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Tags from machine report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Tags from machine report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1808,7 +1775,7 @@
 <span class="sd">        Runs, times and logs the Tags Loader if required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO why: if graph_changed or data_changed:</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Tags Loader&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Tags Loader&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="n">tags_loader</span><span class="p">()</span>
@@ -1824,7 +1791,7 @@
 <span class="sd">        Runs, times and logs MemoryMapOnHostReport is requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Memory report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Memory report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1837,7 +1804,7 @@
 <span class="sd">        Runs, times and logs MemoryMapOnHostChipReport is requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Memory report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Memory report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1854,7 +1821,7 @@
 <span class="sd">        :param compressed:</span>
 <span class="sd">        :type compressed: MulticastRoutingTables or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Compressor report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Compressor report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_routing_table_reports&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1879,7 +1846,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the FixedRouteFromMachineReport is requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Fixed route report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Fixed route report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1893,7 +1860,8 @@
 
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">LOADING</span><span class="p">,</span> <span class="s2">&quot;Load executable app images&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Load executable app images&quot;</span><span class="p">,</span>
+                      <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="n">load_app_images</span><span class="p">()</span>
@@ -1903,9 +1871,7 @@
 <span class="sd">        Runs, times and logs the load algotithms</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># set up timing</span>
-        <span class="n">load_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
-        <span class="n">load_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_routing_setup</span><span class="p">()</span>
@@ -1939,13 +1905,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_report_fixed_routes</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_application_load_executables</span><span class="p">()</span>
 
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
-                <span class="n">LOADING</span><span class="p">,</span> <span class="n">load_timer</span><span class="o">.</span><span class="n">take_sample</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_execute_sdram_usage_report_per_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_report_sdram_usage_per_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># TODO why in do run</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Sdram usage per chip report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Sdram usage per chip report&quot;</span><span class="p">,</span>
+                      <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_sdram_usage_report_per_chip&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
@@ -1964,7 +1929,7 @@
             <span class="k">return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_hard_reset</span><span class="p">():</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;DSG region reloader&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;DSG region reloader&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="n">dsg_region_reloader</span><span class="p">()</span>
@@ -1974,7 +1939,7 @@
 <span class="sd">        Runs, times and log the GraphProvenanceGatherer if requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Graph provenance gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Graph provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="n">graph_provenance_gatherer</span><span class="p">()</span>
@@ -1983,7 +1948,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and log the PlacementsProvenanceGatherer if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Placements provenance gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Placements provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -1998,7 +1964,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and log the RouterProvenanceGatherer if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Router provenance gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Router provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2009,7 +1976,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the ProfileDataGatherer if requested</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Profile data gatherer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Profile data gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2032,7 +1999,7 @@
 <span class="sd">        Runs, times and logs the energy report if requested</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Energy report&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Energy report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="p">[]</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2063,7 +2030,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_current_run_timesteps</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Clear IO buffer&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Clear IO buffer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">CONTROL</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="c1"># TODO Why check empty_graph is always false??</span>
@@ -2078,7 +2045,7 @@
 <span class="sd">        :param int n_sync_steps:</span>
 <span class="sd">            The number of timesteps between synchronisations</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Runtime Update&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Runtime Update&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span> <span class="ow">in</span>
@@ -2095,7 +2062,7 @@
 
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Create database interface&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Create database interface&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="c1"># Used to used compressed routing tables if available on host</span>
             <span class="c1"># TODO consider not saving router tabes.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_database_file_path</span><span class="p">(</span>
@@ -2107,7 +2074,7 @@
 
 <span class="sd">        Sets the notification_interface data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Create notification protocol&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Create notification protocol&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_notification_protocol</span><span class="p">(</span>
                 <span class="n">create_notification_protocol</span><span class="p">())</span>
 
@@ -2120,7 +2087,7 @@
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="n">APPLICATION_RUNNER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">FecTimer</span><span class="o">.</span><span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="c1"># Don&#39;t timeout if a stepped mode is in operation</span>
@@ -2136,7 +2103,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the ChipIOBufExtractor if required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Extract IO buff&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Extract IO buff&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -2149,7 +2116,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the BufferExtractor if required</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Buffer extractor&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Buffer extractor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACT_DATA</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
             <span class="n">bm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_buffer_manager</span><span class="p">()</span>
@@ -2168,9 +2135,6 @@
 
         <span class="c1"># FinaliseTimingData never needed as just pushed self._ to inputs</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_read_provenance</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-            <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span>
-                <span class="n">RUN_LOOP</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span><span class="o">.</span><span class="n">take_sample</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_energy</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_provenance_reports</span><span class="p">()</span>
 
@@ -2184,8 +2148,7 @@
 <span class="sd">            The number of timesteps between synchronisations</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO virtual board</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_run_timer</span><span class="o">.</span><span class="n">start_timing</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_LOOP</span><span class="p">)</span>
         <span class="n">run_time</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">n_machine_time_steps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">run_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_machine_time_steps</span> <span class="o">*</span>
@@ -2193,7 +2156,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">increment_current_run_timesteps</span><span class="p">(</span>
             <span class="n">n_machine_time_steps</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_sdram_usage_report_per_chip</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_report_sdram_usage_per_chip</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_drift</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_create_database_interface</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
@@ -2208,6 +2171,7 @@
         <span class="c1"># reset at the end of each do_run cycle</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_drift</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_control_sync</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_LOOP</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_do_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -2349,6 +2313,7 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.reset"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Code that puts the simulation back at time zero</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_last</span><span class="p">():</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">():</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Ignoring the reset before the run&quot;</span><span class="p">)</span>
@@ -2372,16 +2337,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">soft_reset</span><span class="p">()</span>
 
         <span class="c1"># Reset the graph off the machine, to set things to time 0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span></div>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">n_loops</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        The number for this or the net loop within an end_user run</span>
-
-<span class="sd">        :rtype: int or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_loops</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_ipaddress</span><span class="p">():</span>
@@ -2402,6 +2359,8 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">clear_notification_protocol</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">stop_category_timing</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">shut_down</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_transceiver</span><span class="p">():</span>
@@ -2434,6 +2393,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">stopping</span><span class="p">()</span>
+        <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">SHUTTING_DOWN</span><span class="p">)</span>
         <span class="c1"># If we have run forever, stop the binaries</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -2455,11 +2415,11 @@
             <span class="c1"># shut down the machine properly</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write_finished_file</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">shut_down</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_finished_file</span><span class="p">()</span></div>
+        <span class="c1"># No matching FecTimer.end_category as shutdown stops timer</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_finisher</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">RUN_LOOP</span><span class="p">,</span> <span class="s2">&quot;Application finisher&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Application finisher&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">CONTROL</span><span class="p">):</span>
             <span class="n">application_finisher</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_do_stop_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2502,6 +2462,8 @@
 <span class="sd">        raises SpiNNUtilsException:</span>
 <span class="sd">            If the stop_run was not expected in the current state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Do not do start category here</span>
+        <span class="c1"># as called from a different thread while running</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_stop_already_requested</span><span class="p">():</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;Second Request to stop_run ignored&quot;</span><span class="p">)</span>
@@ -2568,7 +2530,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>
