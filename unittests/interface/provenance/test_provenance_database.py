@@ -216,9 +216,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         db2.get_location()
 
     def test_database_locked(self):
-        a = FecDataWriter.get_mapping_dir_path()
-        FecDataWriter.mock()
-        b = FecDataWriter.get_mapping_dir_path()
         ls = LogStoreDB()
         logger.set_log_store(ls)
         logger.warning("this works")

@@ -81,7 +81,7 @@ class FecTimer(object):
         # pylint: disable=global-statement, protected-access
         cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-           cls._provenance_path = os.path.join(
+            cls._provenance_path = os.path.join(
                 FecDataView.get_mapping_dir_path(),
                 "algorithm_timings.rpt")
         else:
