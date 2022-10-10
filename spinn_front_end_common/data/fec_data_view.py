@@ -663,25 +663,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls._child_folder(cls.get_mapping_dir_path(), "json_files")
 
     @classmethod
-    def get_provenance_dir_path(cls):
-        """
-        Returns the path to the directory that holds all provenance files
-
-        This will be the path used by the last run call or to be used by
-        the next run if it has not yet been called.
-
-        ..note: In unittest mode this returns a tempdir
-        shared by all path methods
-
-        :rtpye: str
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the simulation_time_step is currently unavailable
-        """
-        if cls._is_mocked():
-            return cls._temporary_dir_path()
-        return cls._child_folder(cls.get_mapping_dir_path(), "provenance_data")
-
-    @classmethod
     def get_app_provenance_dir_path(cls):
         """
         Returns the path to the directory that holds all app provenance files
@@ -700,7 +681,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return cls._temporary_dir_path()
 
         return cls._child_folder(
-            cls.get_provenance_dir_path(), "app_provenance_data")
+            cls.get_run_dir_path(), "app_provenance_data")
 
     @classmethod
     def get_system_provenance_dir_path(cls):
@@ -720,7 +701,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls._is_mocked():
             return cls._temporary_dir_path()
         return cls._child_folder(
-            cls.get_provenance_dir_path(), "system_provenance_data")
+            cls.get_run_dir_path(), "system_provenance_data")
 
     @classmethod
     def _child_folder(cls, parent, child_name, must_create=False):

@@ -61,7 +61,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         if database_file is None and not memory:
             database_file = os.path.join(
-                FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
+                FecDataView.get_mapping_dir_path(), PROVENANCE_DB)
         self._database_file = database_file
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
 
