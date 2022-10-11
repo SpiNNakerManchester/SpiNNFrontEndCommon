@@ -16,21 +16,20 @@
 from datetime import datetime
 import logging
 import os
-import re
+from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
+    MICRO_TO_MILLISECOND_CONVERSION, MAPPING_PROVENANCE_DB)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
-_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
+_MAPPING_DDL = os.path.join(os.path.dirname(__file__), "mapping.sql")
 
 
-class ProvenanceWriter(SQLiteDB):
+class ProvenanceWriter(AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -43,10 +42,11 @@ class ProvenanceWriter(SQLiteDB):
     """
 
     __slots__ = [
-        "_database_file"
+        "_mapping_db",
+        "_mapping_file"
     ]
 
-    def __init__(self, database_file=None, memory=False):
+    def __init__(self, mapping_file=None):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -54,16 +54,29 @@ class ProvenanceWriter(SQLiteDB):
             If omitted, either the default file path or an unshared in-memory
             database will be used (suitable only for testing).
         :type database_file: str or None
-        :param bool memory:
-            Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
-
         """
-        if database_file is None and not memory:
-            database_file = os.path.join(
-                FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
-        self._database_file = database_file
-        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
+        self._mapping_db = None
+        if mapping_file is None:
+            self._mapping_file = None
+        else:
+            self._mapping_file = mapping_file
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if self._mapping_db is not None:
+            self._mapping_db.close()
+        self._mapping_db = None
+
+    def _mapping_transaction(self):
+        if self._mapping_db is None:
+            if self._mapping_file is None:
+                self._mapping_file = os.path.join(
+                    FecDataView.get_provenance_dir_path(),
+                    MAPPING_PROVENANCE_DB)
+        self._mapping_db = SQLiteDB(self._mapping_file, ddl_file=_MAPPING_DDL)
+        return self._mapping_db.transaction()
 
     def insert_version(self, description, the_value):
         """
@@ -72,7 +85,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO version_provenance(
@@ -87,7 +100,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: Type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO power_provenance(
@@ -103,7 +116,7 @@ class ProvenanceWriter(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
@@ -126,7 +139,7 @@ class ProvenanceWriter(SQLiteDB):
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 UPDATE category_timer_provenance
@@ -151,7 +164,7 @@ class ProvenanceWriter(SQLiteDB):
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
@@ -171,7 +184,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: Specific provenance being saved
         :param ste the_value: Data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO other_provenance(
@@ -192,7 +205,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO gatherer_provenance(
@@ -209,7 +222,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO monitor_provenance(
@@ -228,7 +241,7 @@ class ProvenanceWriter(SQLiteDB):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO router_provenance(
@@ -246,7 +259,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO core_provenance(
@@ -266,7 +279,7 @@ class ProvenanceWriter(SQLiteDB):
         :param int p: id of the core
         :param str core_name: Name to assign
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT OR IGNORE INTO core_mapping(
@@ -283,7 +296,7 @@ class ProvenanceWriter(SQLiteDB):
 
         :param str message:
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO reports(message)
@@ -309,7 +322,7 @@ class ProvenanceWriter(SQLiteDB):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT OR IGNORE INTO connector_provenance(
@@ -329,7 +342,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         if not connections:
             return
-        with self.transaction() as cursor:
+        with self._mapping_transaction() as cursor:
             cursor.executemany(
                 """
                 INSERT OR IGNORE INTO boards_provenance(
@@ -347,7 +360,7 @@ class ProvenanceWriter(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO p_log_provenance(
@@ -362,7 +375,7 @@ class ProvenanceWriter(SQLiteDB):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction() as cur:
+        with self._mapping_transaction() as cur:
             # lock the database
             cur.execute(
                 """
