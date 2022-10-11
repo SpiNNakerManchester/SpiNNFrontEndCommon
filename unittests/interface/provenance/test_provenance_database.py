@@ -22,7 +22,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, ProvenanceWriter, ProvenanceReader)
+    LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory, TimerWork)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -63,35 +63,54 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self):
         with ProvenanceWriter() as db:
-            db.insert_timing("mapping", "compressor", 12, None, None)
+            mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
-                "mapping", "router_report", 123, None, "cfg says no")
-            db.insert_timing("execute", "run", 134, 1, None)
-            db.insert_timing("execute", "run", 344, 2, None)
-            db.insert_timing("execute", "clear", 4, 2, None)
+                mapping_id, "compressor", TimerWork.OTHER,
+                timedelta(milliseconds=12), None)
+            db.insert_timing(
+                mapping_id, "router_report", TimerWork.REPORT,
+                timedelta(milliseconds=123), "cfg says no")
+            execute_id = db.insert_category(TimerCategory.RUN_LOOP, False)
+            db.insert_timing(
+                execute_id, "run", TimerWork.OTHER,
+                timedelta(milliseconds=134), None)
+            db.insert_timing(
+                execute_id, "run", TimerWork.REPORT,
+                timedelta(milliseconds=344), None)
+            db.insert_timing(
+                execute_id, "clear", TimerWork.OTHER,
+                timedelta(milliseconds=4), None)
         reader = ProvenanceReader()
-        data = reader.get_timer_sum_by_category("mapping")
+        data = reader.get_timer_sum_by_category(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
-        data = reader.get_timer_sum_by_category("execute")
+        data = reader.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
         self.assertEqual(134 + 344 + 4, data)
-        data = reader.get_timer_sum_by_category("bacon")
-        self.assertIsNone(data)
+        data = reader.get_timer_sum_by_category(TimerCategory.SHUTTING_DOWN)
+        self.assertEquals(0, data)
         data = reader.get_timer_sum_by_algorithm("router_report")
         self.assertEqual(123, data)
         data = reader.get_timer_sum_by_algorithm("clear")
         self.assertEqual(4, data)
         data = reader.get_timer_sum_by_algorithm("junk")
-        self.assertIsNone(data)
+        self.assertEqual(0, data)
 
     def test_category_timings(self):
         with ProvenanceWriter() as db:
-            db.insert_category_timing("mapping", timedelta(seconds=12), 1)
-            db.insert_category_timing("mapping", timedelta(seconds=123), 2)
-            db.insert_category_timing("execute", timedelta(seconds=134), None)
-            db.insert_category_timing("execute", timedelta(seconds=344), 2)
+            id = db.insert_category(TimerCategory.MAPPING, False)
+            db.insert_category_timing(id, timedelta(milliseconds=12))
+
+            id = db.insert_category(TimerCategory.MAPPING, True)
+            db.insert_category_timing(id, timedelta(milliseconds=123))
+
+            id = db.insert_category(TimerCategory.RUN_LOOP, True)
+            db.insert_category_timing(id, timedelta(milliseconds=134))
+
+            id = db.insert_category(TimerCategory.RUN_LOOP, False)
+            db.insert_category_timing(id, timedelta(milliseconds=344))
+
         reader = ProvenanceReader()
-        data = reader.get_category_timer_sum("mapping")
-        self.assertEqual((12 + 123) * 1000, data)
+        data = reader.get_category_timer_sum(TimerCategory.MAPPING)
+        self.assertEqual(12 + 123, data)
 
     def test_other(self):
         with ProvenanceWriter() as db:

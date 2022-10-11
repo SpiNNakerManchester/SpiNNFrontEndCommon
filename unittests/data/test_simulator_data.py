@@ -721,3 +721,17 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(protocol2.is_closed)
         with self.assertRaises(TypeError):
             writer.set_notification_protocol([])
+
+    def test_run_step(self):
+        self.assertIsNone(FecDataView.get_run_step())
+        writer = FecDataWriter.setup()
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
+        self.assertEqual(2, writer.next_run_step())
+        self.assertEqual(3, writer.next_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        writer.clear_run_steps()
+        self.assertIsNone(FecDataView.get_run_step())
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
