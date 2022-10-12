@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 from spinn_utilities.log import FormatAdapter
 from datetime import timedelta
 from testfixtures.logcapture import LogCapture
@@ -47,7 +46,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
-        data = ProvenanceReader().run_global_query("select * from version_provenance")
+        data = ProvenanceReader().run_global_query(
+            "select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
@@ -57,7 +57,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
-        data = ProvenanceReader().run_mapping_query("select * from power_provenance")
+        data = ProvenanceReader().run_mapping_query(
+            "select * from power_provenance")
         power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
         self.assertListEqual(data, power)
 

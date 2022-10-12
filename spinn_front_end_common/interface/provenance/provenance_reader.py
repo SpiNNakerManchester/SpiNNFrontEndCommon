@@ -15,7 +15,6 @@
 
 import os
 import sqlite3
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .provenance_base import ProvenanceBase
 
