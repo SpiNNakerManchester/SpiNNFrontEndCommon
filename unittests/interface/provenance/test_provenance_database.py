@@ -201,12 +201,14 @@ class TestProvenanceDatabase(unittest.TestCase):
         db1.store_log(30, "this is a warning")
         db2.store_log(10, "this is a debug")
         db1.store_log(20, "this is an info")
-        self.assertListEqual(
-            ["this is a warning", "this is a debug", "this is an info"],
-            db2.retreive_log_messages())
-        self.assertListEqual(
-            ["this is a warning", "this is an info"],
-            db1.retreive_log_messages(20))
+        messages = db2.retreive_log_messages()
+        self.assertIn("this is a warning", messages)
+        self.assertIn("this is a debug", messages)
+        self.assertIn("this is an info", messages)
+        messages = db2.retreive_log_messages(20)
+        self.assertIn("this is a warning", messages)
+        self.assertNotIn("this is a debug", messages)
+        self.assertIn("this is an info", messages)
         db2.get_location()
 
     def test_database_locked(self):
@@ -216,10 +218,12 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db._test_log_locked("locked")
             logger.warning("not locked")
-        logger.warning("this wis fine")
+        logger.warning("this is fine")
         # the use of class variables and tests run in parallel dont work.
-        if "JENKINS_URL" not in os.environ:
-            self.assertListEqual(
-                ["this works", "not locked", "this wis fine"],
-                ls.retreive_log_messages(20))
+        # if "JENKINS_URL" not in os.environ:
+        messages = ls.retreive_log_messages(20)
+        self.assertIn("this works", messages)
+        self.assertIn("not locked", messages)
+        self.assertIn("this is fine", messages)
+        self.assertNotIn("locked", messages)
         logger.set_log_store(None)
