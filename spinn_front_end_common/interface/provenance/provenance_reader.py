@@ -16,7 +16,7 @@
 import os
 import sqlite3
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import MAPPING_PROVENANCE_DB
+from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
@@ -38,7 +38,8 @@ class ProvenanceReader(object):
         is deleted the class will no longer work.
     """
 
-    __slots__ = ["_provenance_data_path"]
+    __slots__ = ["_global_data_path", "_mapping_data_path"]
+
 
     @classmethod
     def get_last_run_database_path(cls):
@@ -53,25 +54,46 @@ class ProvenanceReader(object):
             for example before run is called
         """
         return os.path.join(
-            FecDataView.get_provenance_dir_path(), MAPPING_PROVENANCE_DB)
+            FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
 
-    def __init__(self, provenance_data_path=None):
+    @classmethod
+    def get_last_global_database_path(cls):
+        """ Get the path of the current provenance database of the last run
+
+       .. warning::
+            Calling this method between start/reset and run may result in a
+            path to a database not yet created.
+
+        :raises ValueError:
+            if the system is in a state where path can't be retrieved,
+            for example before run is called
         """
-        Create a wrapper around the database.
+        return os.path.join(
+            FecDataView.get_timestamp_dir_path(), PROVENANCE_DB)
+
+    def __init__(self, global_data_path=None, mapping_data_path=None):
+        """
+        Create a wrapper around the provenance databases.
 
         The suggested way to call this is *without* the
-        ``provenance_data_path`` parameter, allowing
-        :py:meth:`get_last_run_database_path` to find the correct path.
+        parameters, allowing reader to find the correct path.
 
-        :param provenance_data_path: Path to the provenance database to wrap
-        :type provenance_data_path: None or str
+        :param global_data_path:
+            The name of a file that contains an SQLite
+            database holding the data for the whole setup to end
+            If omitted, the default file path will be used.
+        :type global_data_path: str or None
+        :param mapping_data_path:
+            The name of a file that contains an SQLite
+            database holding the data for a single (mapping) run
+            If omitted, the default file path will be used.
+        :type mapping_data_path: str or None
         """
-        if provenance_data_path:
-            self._provenance_data_path = provenance_data_path
-        else:
-            self._provenance_data_path = self.get_last_run_database_path()
+        self._global_data_path = global_data_path
+        self._mapping_data_path = mapping_data_path
 
-    def get_database_handle(self, read_only=True, use_sqlite_rows=False):
+    def get_database_handle(
+            self, data_path, read_only=True, use_sqlite_rows=False):
         """
         Gets a handle to the open database.
 
@@ -92,6 +114,7 @@ class ProvenanceReader(object):
             It is the callers responsibility to close the database.
             The recommended usage is therefore a ``with`` statement
 
+        :param str data_path: Path to the sqlite3 file
         :param bool read_only: If true will return a readonly database
         :param bool use_sqlite_rows:
             If ``True`` the results of :py:meth:`run_query` will be
@@ -101,18 +124,18 @@ class ProvenanceReader(object):
         :return: an open sqlite3 connection
         :rtype: SQLiteDB
         """
-        if not os.path.exists(self._provenance_data_path):
-            raise Exception(f"no such DB: {self._provenance_data_path}")
-        db = SQLiteDB(self._provenance_data_path, read_only=read_only,
+        if not os.path.exists(data_path):
+            raise Exception(f"no such DB: {data_path}")
+        db = SQLiteDB(data_path, read_only=read_only,
                       row_factory=(sqlite3.Row if use_sqlite_rows else None),
                       text_factory=None)
         return db
 
-    def run_query(
+    def run_global_query(
             self, query, params=(), read_only=True, use_sqlite_rows=False):
         """
-        Opens a connection to the database, runs a query, extracts the results
-        and closes the connection
+        Opens a connection to the global database, runs a query,
+        extracts the results and closes the connection
 
         The return type depends on the use_sqlite_rows param.
         By default this method returns tuples (lookup by index) but the
@@ -139,10 +162,52 @@ class ProvenanceReader(object):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        if not os.path.exists(self._provenance_data_path):
-            raise Exception("no such DB: " + self._provenance_data_path)
+        if self._global_data_path is None:
+            self._global_data_path = self.get_last_global_database_path()
         results = []
-        with self.get_database_handle(read_only, use_sqlite_rows) as db:
+        with self.get_database_handle(
+                self._global_data_path, read_only, use_sqlite_rows) as db:
+            with db.transaction() as cur:
+                for row in cur.execute(query, params):
+                    results.append(row)
+        return results
+
+    def run_mapping_query(
+            self, query, params=(), read_only=True, use_sqlite_rows=False):
+        """
+        Opens a connection to the mapping database, runs a query,
+        extracts the results and closes the connection
+
+        The return type depends on the use_sqlite_rows param.
+        By default this method returns tuples (lookup by index) but the
+        advanced tuple type can be used instead, which supports lookup by name
+        used in the query (use ``AS name`` in the query to set).
+
+        This method will not allow queries that change the database unless the
+        read_only flag is set to False.
+
+        .. note::
+            This method is mainly provided as a support method for the later
+            methods that return specific data. For new IntergationTests
+            please add a specific method rather than call this directly.
+
+        :param str query: The SQL query to be run. May include ``?`` wildcards
+        :param ~collections.abc.Iterable(str or int) params:
+            The values to replace the ``?`` wildcards with.
+            The number and types must match what the query expects
+        :param bool read_only: see :py:meth:`get_database_handle`
+        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`
+        :return: A list possibly empty of tuples/rows
+            (one for each row in the database)
+            where the number and type of the values corresponds to the where
+            statement
+        :rtype: list(tuple or ~sqlite3.Row)
+        """
+        if self._mapping_data_path is None:
+            self._mapping_data_path = self.get_last_run_database_path()
+        results = []
+        with self.get_database_handle(
+                self._mapping_data_path, read_only, use_sqlite_rows) as db:
             with db.transaction() as cur:
                 for row in cur.execute(query, params):
                     results.append(row)
@@ -164,7 +229,7 @@ class ProvenanceReader(object):
             WHERE description = 'Number_of_late_spikes'
                 AND the_value > 0
             """
-        return self.run_query(query)
+        return self.run_mapping_query(query)
 
     def get_timer_provenance(self, algorithm):
         """
@@ -185,7 +250,7 @@ class ProvenanceReader(object):
             """
         return "\n".join(
             f"{row[0]}: {row[1]}"
-            for row in self.run_query(query, [algorithm]))
+            for row in self.run_global_query(query, [algorithm]))
 
     def get_run_times(self):
         """
@@ -206,7 +271,7 @@ class ProvenanceReader(object):
             """
         return "\n".join(
             f"{row[0].replace('_', ' ')}: {row[1]} s"
-            for row in self.run_query(query))
+            for row in self.run_mapping_query(query))
 
     def get_run_time_of_BufferExtractor(self):
         """
@@ -243,8 +308,8 @@ class ProvenanceReader(object):
             """
         return "\n".join(
             f"{ row['description'] }: { row['value'] }"
-            for row in self.run_query(query, [int(x), int(y)],
-                                      use_sqlite_rows=True))
+            for row in self.run_mapping_query(query, [int(x), int(y)],
+                                              use_sqlite_rows=True))
 
     def get_cores_with_provenace(self):
         """
@@ -258,7 +323,7 @@ class ProvenanceReader(object):
             FROM core_provenance_view
             group by x, y, p
             """
-        return self.run_query(query)
+        return self.run_mapping_query(query)
 
     def get_router_by_chip(self, description):
         """
@@ -273,7 +338,7 @@ class ProvenanceReader(object):
             FROM router_provenance
             WHERE description = ?
             """
-        data = self.run_query(query, [description])
+        data = self.run_mapping_query(query, [description])
         try:
             return data
         except IndexError:
@@ -292,7 +357,7 @@ class ProvenanceReader(object):
             FROM monitor_provenance
             WHERE description = ?
             """
-        data = self.run_query(query, [description])
+        data = self.run_mapping_query(query, [description])
         try:
             return data
         except IndexError:
@@ -311,7 +376,7 @@ class ProvenanceReader(object):
              FROM category_timer_provenance
              WHERE category = ?
              """
-        data = self.run_query(query, [category.category_name])
+        data = self.run_mapping_query(query, [category.category_name])
         try:
             info = data[0][0]
             if info is None:
@@ -338,7 +403,7 @@ class ProvenanceReader(object):
              GROUP BY machine_on
              """
         try:
-            for data in self.run_query(query, [category.category_name]):
+            for data in self.run_mapping_query(query, [category.category_name]):
                 if data[1]:
                     on = data[0]
                 else:
@@ -360,7 +425,7 @@ class ProvenanceReader(object):
              FROM full_timer_view
              WHERE category = ?
              """
-        data = self.run_query(query, [category.category_name])
+        data = self.run_mapping_query(query, [category.category_name])
         try:
             info = data[0][0]
             if info is None:
@@ -382,7 +447,7 @@ class ProvenanceReader(object):
              FROM full_timer_view
              WHERE work = ?
              """
-        data = self.run_query(query, [work.work_name])
+        data = self.run_mapping_query(query, [work.work_name])
         try:
             info = data[0][0]
             if info is None:
@@ -404,7 +469,7 @@ class ProvenanceReader(object):
              FROM timer_provenance
              WHERE algorithm = ?
              """
-        data = self.run_query(query, [algorithm])
+        data = self.run_mapping_query(query, [algorithm])
         try:
             info = data[0][0]
             if info is None:
@@ -424,7 +489,7 @@ class ProvenanceReader(object):
              SELECT message
              FROM reports
              """
-        return self.run_query(query, [])
+        return self.run_mapping_query(query, [])
 
     def retreive_log_messages(self, min_level=0):
         """
@@ -438,7 +503,7 @@ class ProvenanceReader(object):
             FROM p_log_provenance
             WHERE level >= ?
             """
-        messages = self.run_query(query, [min_level])
+        messages = self.run_global_query(query, [min_level])
         return list(map(lambda x: x[0], messages))
 
     @staticmethod
@@ -456,7 +521,7 @@ class ProvenanceReader(object):
             FROM router_provenance
             WHERE description = 'Local_P2P_Packets'
             """
-        results = pr.run_query(query)
+        results = pr.run_mapping_query(query)
         for row in results:
             print(row)
         print("\nCORES WITH LATE SPIKES:")

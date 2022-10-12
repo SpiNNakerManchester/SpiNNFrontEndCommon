@@ -47,7 +47,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
-        data = ProvenanceReader().run_query("select * from version_provenance")
+        data = ProvenanceReader().run_mapping_query("select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
@@ -57,7 +57,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
-        data = ProvenanceReader().run_query("select * from power_provenance")
+        data = ProvenanceReader().run_mapping_query("select * from power_provenance")
         power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
         self.assertListEqual(data, power)
 
@@ -123,7 +123,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Lost Packets", 12)
         reader = ProvenanceReader()
-        data = reader.run_query("Select * from gatherer_provenance")
+        data = reader.run_mapping_query("Select * from gatherer_provenance")
         expected = [(1, 1, 3, 1715886360, 80, 1, 'Extraction_time', 0.234),
                     (2, 1, 3, 1715886360, 80, 1, 'Lost Packets', 12.0)]
         self.assertListEqual(expected, data)
@@ -169,7 +169,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.add_core_name(1, 3, 2, "first_core")
             db.add_core_name(1, 3, 2, "new_name is ignored")
         reader = ProvenanceReader()
-        data = reader.run_query("Select * from core_mapping")
+        data = reader.run_mapping_query("Select * from core_mapping")
         self.assertEqual(2, len(data))
 
     def test_messages(self):
@@ -190,7 +190,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
         reader = ProvenanceReader()
-        data = reader.run_query("Select * from connector_provenance")
+        data = reader.run_mapping_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
 

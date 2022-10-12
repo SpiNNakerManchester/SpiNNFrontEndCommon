@@ -21,12 +21,13 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, MAPPING_PROVENANCE_DB)
+    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 _MAPPING_DDL = os.path.join(os.path.dirname(__file__), "mapping.sql")
+_GLOBAL_DDL = os.path.join(os.path.dirname(__file__), "global.sql")
 
 
 class ProvenanceWriter(AbstractContextManager):
@@ -42,40 +43,57 @@ class ProvenanceWriter(AbstractContextManager):
     """
 
     __slots__ = [
+        "_global_db",
+        "_global_data_path",
         "_mapping_db",
-        "_mapping_file"
+        "_mapping_data_path"
     ]
 
-    def __init__(self, mapping_file=None):
+    def __init__(self, global_data_path=None, mapping_data_path=None):
         """
-        :param database_file:
+        :param global_data_path:
             The name of a file that contains (or will contain) an SQLite
-            database holding the data.
-            If omitted, either the default file path or an unshared in-memory
-            database will be used (suitable only for testing).
-        :type database_file: str or None
+            database holding the data for the whole setup to end
+            If omitted, the default file path will be used.
+        :type global_data_path: str or None
+        :param mapping_data_path:
+            The name of a file that contains (or will contain) an SQLite
+            database holding the data for a single (mapping) run
+            If omitted, the default file path will be used.
+        :type mapping_data_path: str or None
         """
+        self._global_db = None
+        self._global_data_path = global_data_path
         self._mapping_db = None
-        if mapping_file is None:
-            self._mapping_file = None
-        else:
-            self._mapping_file = mapping_file
+        self._mapping_data_path = mapping_data_path
 
     def __del__(self):
         self.close()
 
     def close(self):
+        if self._global_db is not None:
+            self._global_db.close()
+            self._global_db = None
         if self._mapping_db is not None:
             self._mapping_db.close()
-        self._mapping_db = None
+            self._mapping_db = None
+
+    def _global_transaction(self):
+        if self._global_db is None:
+            if self._mapping_data_path is None:
+                self._global_data_path = os.path.join(
+                    FecDataView.get_timestamp_dir_path(), PROVENANCE_DB)
+            self._global_db = SQLiteDB(
+                self._global_data_path, ddl_file=_GLOBAL_DDL)
+        return self._global_db.transaction()
 
     def _mapping_transaction(self):
         if self._mapping_db is None:
-            if self._mapping_file is None:
-                self._mapping_file = os.path.join(
-                    FecDataView.get_provenance_dir_path(),
-                    MAPPING_PROVENANCE_DB)
-        self._mapping_db = SQLiteDB(self._mapping_file, ddl_file=_MAPPING_DDL)
+            if self._mapping_data_path is None:
+                self._mapping_data_path = os.path.join(
+                    FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
+            self._mapping_db = SQLiteDB(
+                self._mapping_data_path, ddl_file=_MAPPING_DDL)
         return self._mapping_db.transaction()
 
     def insert_version(self, description, the_value):
@@ -85,7 +103,7 @@ class ProvenanceWriter(AbstractContextManager):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO version_provenance(
@@ -116,7 +134,7 @@ class ProvenanceWriter(AbstractContextManager):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
@@ -139,7 +157,7 @@ class ProvenanceWriter(AbstractContextManager):
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             cur.execute(
                 """
                 UPDATE category_timer_provenance
@@ -164,7 +182,7 @@ class ProvenanceWriter(AbstractContextManager):
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
@@ -172,25 +190,6 @@ class ProvenanceWriter(AbstractContextManager):
                 VALUES(?, ?, ?, ?, ?)
                 """,
                 [category, algorithm, work.work_name, time_taken, skip_reason])
-
-    def insert_other(self, category, description, the_value):
-        """
-        Insert unforeseen provenance into the other_provenace_table
-
-        This allows to add provenance that does not readily fit into any of
-        the other categerogies
-
-        :param str category: grouping from this provenance
-        :param str description: Specific provenance being saved
-        :param ste the_value: Data
-        """
-        with self._mapping_transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO other_provenance(
-                    category, description, the_value)
-                VALUES(?, ?, ?)
-                """, [category, description, the_value])
 
     def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
@@ -360,7 +359,7 @@ class ProvenanceWriter(AbstractContextManager):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO p_log_provenance(
