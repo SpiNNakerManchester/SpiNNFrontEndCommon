@@ -47,7 +47,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
-        data = ProvenanceReader().run_mapping_query("select * from version_provenance")
+        data = ProvenanceReader().run_global_query("select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
@@ -111,10 +111,6 @@ class TestProvenanceDatabase(unittest.TestCase):
         reader = ProvenanceReader()
         data = reader.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
-
-    def test_other(self):
-        with ProvenanceWriter() as db:
-            db.insert_other("foo", "bar", 12)
 
     def test_gatherer(self):
         with ProvenanceWriter() as db:

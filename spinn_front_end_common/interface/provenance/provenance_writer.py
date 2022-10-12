@@ -81,7 +81,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
 
     def _global_transaction(self):
         if self._global_db is None:
-            if self._mapping_data_path is None:
+            if self._global_data_path is None:
                 self._global_data_path = self.get_last_global_database_path()
             self._global_db = SQLiteDB(
                 self._global_data_path, ddl_file=_GLOBAL_DDL)
@@ -305,8 +305,8 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
         elif recorded == cutoff:
-            logger.warning(f"Additional interesting provenace items in "
-                           f"{self._database_file}")
+            logger.warning(f"Additional interesting provenance items in "
+                           f"{self._mapping_data_path}")
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
@@ -373,13 +373,14 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
 
         This will lock the database and then try to do a log
         """
-        with self._mapping_transaction() as cur:
+        with self._global_transaction() as cur:
             # lock the database
             cur.execute(
                 """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [text])
+                INSERT INTO version_provenance(
+                    description, the_value)
+                VALUES("foo", "bar")
+                """)
             cur.lastrowid
             # try logging and storing while locked.
             logger.warning(text)

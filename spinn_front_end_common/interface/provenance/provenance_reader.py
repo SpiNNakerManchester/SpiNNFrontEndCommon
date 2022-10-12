@@ -228,7 +228,7 @@ class ProvenanceReader(ProvenanceBase):
             """
         return "\n".join(
             f"{row[0].replace('_', ' ')}: {row[1]} s"
-            for row in self.run_mapping_query(query))
+            for row in self.run_global_query(query))
 
     def get_run_time_of_BufferExtractor(self):
         """
@@ -333,7 +333,7 @@ class ProvenanceReader(ProvenanceBase):
              FROM category_timer_provenance
              WHERE category = ?
              """
-        data = self.run_mapping_query(query, [category.category_name])
+        data = self.run_global_query(query, [category.category_name])
         try:
             info = data[0][0]
             if info is None:
@@ -360,7 +360,7 @@ class ProvenanceReader(ProvenanceBase):
              GROUP BY machine_on
              """
         try:
-            for data in self.run_mapping_query(query, [category.category_name]):
+            for data in self.run_global_query(query, [category.category_name]):
                 if data[1]:
                     on = data[0]
                 else:
@@ -382,7 +382,7 @@ class ProvenanceReader(ProvenanceBase):
              FROM full_timer_view
              WHERE category = ?
              """
-        data = self.run_mapping_query(query, [category.category_name])
+        data = self.run_global_query(query, [category.category_name])
         try:
             info = data[0][0]
             if info is None:
@@ -404,7 +404,7 @@ class ProvenanceReader(ProvenanceBase):
              FROM full_timer_view
              WHERE work = ?
              """
-        data = self.run_mapping_query(query, [work.work_name])
+        data = self.run_global_query(query, [work.work_name])
         try:
             info = data[0][0]
             if info is None:
@@ -426,7 +426,7 @@ class ProvenanceReader(ProvenanceBase):
              FROM timer_provenance
              WHERE algorithm = ?
              """
-        data = self.run_mapping_query(query, [algorithm])
+        data = self.run_global_query(query, [algorithm])
         try:
             info = data[0][0]
             if info is None:
