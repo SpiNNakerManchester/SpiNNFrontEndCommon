@@ -16,11 +16,11 @@
 import os
 import sqlite3
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from .provenance_base import ProvenanceBase
 
 
-class ProvenanceReader(object):
+class ProvenanceReader(ProvenanceBase):
     """
     Provides a connection to a database containing provenance for the current
     run and some convenience methods for extracting provenance data from it.
@@ -39,37 +39,6 @@ class ProvenanceReader(object):
     """
 
     __slots__ = ["_global_data_path", "_mapping_data_path"]
-
-
-    @classmethod
-    def get_last_run_database_path(cls):
-        """ Get the path of the current provenance database of the last run
-
-       .. warning::
-            Calling this method between start/reset and run may result in a
-            path to a database not yet created.
-
-        :raises ValueError:
-            if the system is in a state where path can't be retrieved,
-            for example before run is called
-        """
-        return os.path.join(
-            FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
-
-    @classmethod
-    def get_last_global_database_path(cls):
-        """ Get the path of the current provenance database of the last run
-
-       .. warning::
-            Calling this method between start/reset and run may result in a
-            path to a database not yet created.
-
-        :raises ValueError:
-            if the system is in a state where path can't be retrieved,
-            for example before run is called
-        """
-        return os.path.join(
-            FecDataView.get_timestamp_dir_path(), PROVENANCE_DB)
 
     def __init__(self, global_data_path=None, mapping_data_path=None):
         """
@@ -92,44 +61,42 @@ class ProvenanceReader(object):
         self._global_data_path = global_data_path
         self._mapping_data_path = mapping_data_path
 
-    def get_database_handle(
-            self, data_path, read_only=True, use_sqlite_rows=False):
+    def _run_query(self, data_path, query, params, read_only, use_sqlite_rows):
         """
-        Gets a handle to the open database.
+        Opens a connection to the database, runs a query,
+        extracts the results and closes the connection
 
-        You *should* use this as a Python context handler. A typical usage
-        pattern is this::
+        The return type depends on the use_sqlite_rows param.
+        By default this method returns tuples (lookup by index) but the
+        advanced tuple type can be used instead, which supports lookup by name
+        used in the query (use ``AS name`` in the query to set).
 
-            with reader.get_database_handler() as db:
-                with db.transaction() as cursor:
-                    for row in cursor.execute(...):
-                        # process row
+        This method will not allow queries that change the database unless the
+        read_only flag is set to False.
 
-        .. note::
-            This method is mainly provided as a support method for the later
-            methods that return specific data. For new IntergationTests
-            please add a specific method rather than call this directly.
-
-        .. warning::
-            It is the callers responsibility to close the database.
-            The recommended usage is therefore a ``with`` statement
-
-        :param str data_path: Path to the sqlite3 file
-        :param bool read_only: If true will return a readonly database
-        :param bool use_sqlite_rows:
-            If ``True`` the results of :py:meth:`run_query` will be
-            :py:class:`~sqlite3.Row`\\ s.
-            If ``False`` the results of :py:meth:`run_query` will be
-            :py:class:`tuple`\\ s.
-        :return: an open sqlite3 connection
-        :rtype: SQLiteDB
+        :param str data_path: Path to database to run query against
+        :param str query: The SQL query to be run. May include ``?`` wildcards
+        :param ~collections.abc.Iterable(str or int) params:
+            The values to replace the ``?`` wildcards with.
+            The number and types must match what the query expects
+        :param bool read_only: see :py:meth:`get_database_handle`
+        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`
+        :return: A list possibly empty of tuples/rows
+            (one for each row in the database)
+            where the number and type of the values corresponds to the where
+            statement
+        :rtype: list(tuple or ~sqlite3.Row)
         """
         if not os.path.exists(data_path):
             raise Exception(f"no such DB: {data_path}")
-        db = SQLiteDB(data_path, read_only=read_only,
+        results = []
+        with SQLiteDB(data_path, read_only=read_only,
                       row_factory=(sqlite3.Row if use_sqlite_rows else None),
-                      text_factory=None)
-        return db
+                      text_factory=None) as db:
+            with db.transaction() as cur:
+                for row in cur.execute(query, params):
+                    results.append(row)
+        return results
 
     def run_global_query(
             self, query, params=(), read_only=True, use_sqlite_rows=False):
@@ -164,13 +131,8 @@ class ProvenanceReader(object):
         """
         if self._global_data_path is None:
             self._global_data_path = self.get_last_global_database_path()
-        results = []
-        with self.get_database_handle(
-                self._global_data_path, read_only, use_sqlite_rows) as db:
-            with db.transaction() as cur:
-                for row in cur.execute(query, params):
-                    results.append(row)
-        return results
+        return self._run_query(self._global_data_path, query, params,
+                               read_only, use_sqlite_rows)
 
     def run_mapping_query(
             self, query, params=(), read_only=True, use_sqlite_rows=False):
@@ -205,13 +167,8 @@ class ProvenanceReader(object):
         """
         if self._mapping_data_path is None:
             self._mapping_data_path = self.get_last_run_database_path()
-        results = []
-        with self.get_database_handle(
-                self._mapping_data_path, read_only, use_sqlite_rows) as db:
-            with db.transaction() as cur:
-                for row in cur.execute(query, params):
-                    results.append(row)
-        return results
+        return self._run_query(self._mapping_data_path, query, params,
+                               read_only, use_sqlite_rows)
 
     def cores_with_late_spikes(self):
         """

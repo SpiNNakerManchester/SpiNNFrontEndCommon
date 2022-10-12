@@ -21,8 +21,9 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from .provenance_base import ProvenanceBase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -30,7 +31,7 @@ _MAPPING_DDL = os.path.join(os.path.dirname(__file__), "mapping.sql")
 _GLOBAL_DDL = os.path.join(os.path.dirname(__file__), "global.sql")
 
 
-class ProvenanceWriter(AbstractContextManager):
+class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -81,8 +82,7 @@ class ProvenanceWriter(AbstractContextManager):
     def _global_transaction(self):
         if self._global_db is None:
             if self._mapping_data_path is None:
-                self._global_data_path = os.path.join(
-                    FecDataView.get_timestamp_dir_path(), PROVENANCE_DB)
+                self._global_data_path = self.get_last_global_database_path()
             self._global_db = SQLiteDB(
                 self._global_data_path, ddl_file=_GLOBAL_DDL)
         return self._global_db.transaction()
@@ -90,8 +90,7 @@ class ProvenanceWriter(AbstractContextManager):
     def _mapping_transaction(self):
         if self._mapping_db is None:
             if self._mapping_data_path is None:
-                self._mapping_data_path = os.path.join(
-                    FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
+                self._mapping_data_path = self.get_last_run_database_path()
             self._mapping_db = SQLiteDB(
                 self._mapping_data_path, ddl_file=_MAPPING_DDL)
         return self._mapping_db.transaction()
