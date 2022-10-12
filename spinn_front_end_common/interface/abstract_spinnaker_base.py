@@ -2158,7 +2158,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if (self._data_writer.is_ran_ever() and
-                not self._data_writer.get_requires_mapping()):
+                not self._data_writer.get_requires_mapping() and
+                not self._data_writer.get_requires_data_generation()):
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
