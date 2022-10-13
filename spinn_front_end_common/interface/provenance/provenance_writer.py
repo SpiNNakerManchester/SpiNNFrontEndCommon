@@ -82,6 +82,17 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
             self._mapping_db = None
 
     def _global_transaction(self):
+        """ Get a context manager that manages a transaction on the global \
+        database.
+
+        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
+        This means you can do this::
+
+            with db.transaction() as cursor:
+                cursor.execute(...)
+
+        :rtype: ~typing.ContextManager(~sqlite3.Cursor)
+        """
         if self._global_db is None:
             if self._global_data_path is None:
                 self._global_data_path = self.get_last_global_database_path()
@@ -90,7 +101,18 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         self._global_db = SQLiteDB(self._global_data_path)
         return self._global_db.transaction()
 
-    def _mapping_transaction(self):
+    def mapping_transaction(self):
+        """ Get a context manager that manages a transaction on the mapping \
+        database.
+
+        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
+        This means you can do this::
+
+            with db.transaction() as cursor:
+                cursor.execute(...)
+
+        :rtype: ~typing.ContextManager(~sqlite3.Cursor)
+        """
         if self._mapping_db is None:
             if self._mapping_data_path is None:
                 self._mapping_data_path = self.get_last_run_database_path()
@@ -120,7 +142,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param str description: Type of value
         :param float the_value: data
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO power_provenance(
@@ -206,7 +228,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param str description: type of value
         :param float the_value: data
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO gatherer_provenance(
@@ -223,7 +245,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO monitor_provenance(
@@ -242,7 +264,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO router_provenance(
@@ -260,7 +282,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO core_provenance(
@@ -280,7 +302,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param int p: id of the core
         :param str core_name: Name to assign
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT OR IGNORE INTO core_mapping(
@@ -297,7 +319,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
 
         :param str message:
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO reports(message)
@@ -323,7 +345,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self._mapping_transaction() as cur:
+        with self.mapping_transaction() as cur:
             cur.execute(
                 """
                 INSERT OR IGNORE INTO connector_provenance(
@@ -343,7 +365,7 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         """
         if not connections:
             return
-        with self._mapping_transaction() as cursor:
+        with self.mapping_transaction() as cursor:
             cursor.executemany(
                 """
                 INSERT OR IGNORE INTO boards_provenance(
