@@ -67,7 +67,6 @@ class ConfigHandler(object):
             self._data_writer = data_writer_cls.setup()
         else:
             self._data_writer = FecDataWriter.setup()
-        ProvenanceWriter().create_tables()
         logger.set_log_store(LogStoreDB())
 
         # set up machine targeted data

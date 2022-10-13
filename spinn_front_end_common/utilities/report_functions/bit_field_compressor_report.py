@@ -22,8 +22,10 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from .bit_field_summary import BitFieldSummary
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.interface.provenance import ProvenanceReader
+from spinn_front_end_common.utilities.exceptions import (
+    NoProvenanceDatabaseException)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
@@ -84,24 +86,27 @@ def _merged_component(to_merge_per_chip, writer):
     to_merge_chips = set(to_merge_per_chip.keys())
 
     found = False
-    for (x, y, merged) in ProvenanceReader().get_router_by_chip(
-            MERGED_NAME):
-        if (x, y) not in to_merge_per_chip:
-            continue
-        to_merge = to_merge_per_chip[x, y]
-        to_merge_chips.discard((x, y))
-        found = True
-        writer.write(
-            "Chip {}:{} has {} bitfields out of {} merged into it."
-            " Which is {:.2%}\n".format(
-                x, y, merged, to_merge, merged / to_merge))
-        total_bit_fields_merged += int(merged)
-        if merged > top_bit_field:
-            top_bit_field = merged
-        if merged < min_bit_field:
-            min_bit_field = merged
-        average_per_chip_merged += merged
-        n_chips += 1
+    try:
+        for (x, y, merged) in ProvenanceReader().get_router_by_chip(
+                MERGED_NAME):
+            if (x, y) not in to_merge_per_chip:
+                continue
+            to_merge = to_merge_per_chip[x, y]
+            to_merge_chips.discard((x, y))
+            found = True
+            writer.write(
+                "Chip {}:{} has {} bitfields out of {} merged into it."
+                " Which is {:.2%}\n".format(
+                    x, y, merged, to_merge, merged / to_merge))
+            total_bit_fields_merged += int(merged)
+            if merged > top_bit_field:
+                top_bit_field = merged
+            if merged < min_bit_field:
+                min_bit_field = merged
+            average_per_chip_merged += merged
+            n_chips += 1
+    except NoProvenanceDatabaseException:
+        pass
 
     if found:
         average_per_chip_merged = (

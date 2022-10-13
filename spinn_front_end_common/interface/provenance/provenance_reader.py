@@ -15,6 +15,8 @@
 
 import os
 import sqlite3
+from spinn_front_end_common.utilities.exceptions import (
+    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .provenance_base import ProvenanceBase
 
@@ -87,7 +89,7 @@ class ProvenanceReader(ProvenanceBase):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         if not os.path.exists(data_path):
-            raise Exception(f"no such DB: {data_path}")
+            raise NoProvenanceDatabaseException(f"no such DB: {data_path}")
         results = []
         with SQLiteDB(data_path, read_only=read_only,
                       row_factory=(sqlite3.Row if use_sqlite_rows else None),

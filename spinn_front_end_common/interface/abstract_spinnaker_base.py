@@ -226,7 +226,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.hard_reset()
         self._multicast_routes_loaded = False
         self.__close_allocation_controller()
-        ProvenanceWriter().create_tables()
 
     def _machine_clear(self):
         pass
