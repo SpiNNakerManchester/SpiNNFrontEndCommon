@@ -52,6 +52,13 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
 
     def __init__(self, global_data_path=None, mapping_data_path=None):
         """
+        Records the paths (if any) to the databases.
+
+        This does not create the database so at least the first call to
+        ProvenanceWriter should also call create_tables method
+
+        This avoids all further ProvenanceWriter to have to run the DDL files.
+
         :param global_data_path:
             The name of a file that contains (or will contain) an SQLite
             database holding the data for the whole setup to end
@@ -71,6 +78,24 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
     def __del__(self):
         self.close()
 
+    def create_tables(self):
+        """
+        Creates the tables by running the DDL files.
+
+        This can also be used to create adatabase with all tables empty.
+
+        """
+        if self._global_db is None:
+            if self._global_data_path is None:
+                self._global_data_path = self.get_last_global_database_path()
+            self._global_db = SQLiteDB(
+                self._global_data_path, ddl_file=_GLOBAL_DDL)
+        if self._mapping_db is None:
+            if self._mapping_data_path is None:
+                self._mapping_data_path = self.get_last_run_database_path()
+            self._mapping_db = SQLiteDB(
+                self._mapping_data_path, ddl_file=_MAPPING_DDL)
+
     def close(self):
         if self._global_db is not None:
             self._global_db.close()
@@ -83,16 +108,14 @@ class ProvenanceWriter(AbstractContextManager, ProvenanceBase):
         if self._global_db is None:
             if self._global_data_path is None:
                 self._global_data_path = self.get_last_global_database_path()
-            self._global_db = SQLiteDB(
-                self._global_data_path, ddl_file=_GLOBAL_DDL)
+            self._global_db = SQLiteDB(self._global_data_path)
         return self._global_db.transaction()
 
     def _mapping_transaction(self):
         if self._mapping_db is None:
             if self._mapping_data_path is None:
                 self._mapping_data_path = self.get_last_run_database_path()
-            self._mapping_db = SQLiteDB(
-                self._mapping_data_path, ddl_file=_MAPPING_DDL)
+            self._mapping_db = SQLiteDB(self._mapping_data_path)
         return self._mapping_db.transaction()
 
     def insert_version(self, description, the_value):
