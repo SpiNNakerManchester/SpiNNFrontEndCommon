@@ -183,9 +183,24 @@ class ProvenanceReader(object):
             FROM timer_provenance
             WHERE algorithm LIKE ?
             """
-        return "\n".join(
-            f"{row[0]}: {row[1]}"
-            for row in self.run_query(query, [algorithm]))
+        return self.run_query(query)
+
+    def get_all_timer_provenance(self):
+        """
+        Gets the all timer provenance item(s) from the last run
+
+        :return:
+            A possibly multiline string with for each row which matches the
+            like a line ``algorithm: value``
+        :rtype: str
+        """
+        query = """
+            SELECT algorithm, sum(time_taken), count(*)
+            FROM timer_provenance
+            GROUP BY algorithm
+            ORDER BY min(timer_id)
+            """
+        return self.run_query(query)
 
     def get_run_times(self):
         """

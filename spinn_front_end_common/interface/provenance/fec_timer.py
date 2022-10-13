@@ -234,10 +234,10 @@ class FecTimer(object):
         :type machine_on: None or bool
         """
         cls._previous.append(cls._category)
-        if cls._category != category:
-            cls._change_category(category)
         if machine_on is not None:
             cls._machine_on = machine_on
+        if cls._category != category:
+            cls._change_category(category)
 
     @classmethod
     def end_category(cls, category):

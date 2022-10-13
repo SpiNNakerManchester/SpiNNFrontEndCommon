@@ -109,7 +109,7 @@ from spinn_front_end_common.utilities.report_functions import (
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_placements,
-    write_json_routing_tables, drift_report)
+    write_json_routing_tables, write_timer_report, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
@@ -678,12 +678,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         else:
             return
 
+        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         with FecTimer("Machine generator", TimerWork.GET_MACHINE):
             machine, transceiver = machine_generator(
                 bmp_details, board_version,
                 auto_detect_bmp, scamp_connection_data, reset_machine)
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
+        FecTimer.end_category(TimerCategory.GET_MACHINE)
 
     def _get_known_machine(self, total_run_time=0.0):
         """ The python machine description object.
@@ -1688,11 +1690,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the execute_system_data_specs if required
 
         """
+        FecTimer.start_category(TimerCategory.DATA_GENERATION, True)
         with FecTimer(
                 "Execute system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
                 return None
             execute_system_data_specs()
+        FecTimer.end_category(TimerCategory.DATA_GENERATION)
 
     def _execute_load_system_executable_images(self):
         """
@@ -2161,6 +2165,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # reraise exception
             raise run_e
 
+
     def _recover_from_error(self, exception):
         """
         :param Exception exception:
@@ -2375,6 +2380,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # shut down the machine properly
             self._shutdown()
 
+        write_timer_report()
         self.write_finished_file()
         # No matching FecTimer.end_category as shutdown stops timer
 

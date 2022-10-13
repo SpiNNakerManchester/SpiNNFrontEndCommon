@@ -26,6 +26,7 @@ from .router_collision_potential_report import (
 from .routing_table_from_machine_report import (
     routing_table_from_machine_report)
 from .real_tags_report import tags_from_machine_report
+from .timer_report import write_timer_report
 from .write_json_machine import write_json_machine
 from .write_json_placements import write_json_placements
 from .write_json_routing_tables import write_json_routing_tables
@@ -47,4 +48,5 @@ __all__ = [
     "write_json_machine",
     "write_json_placements",
     "write_json_routing_tables",
+    "write_timer_report",
     "drift_report"]
