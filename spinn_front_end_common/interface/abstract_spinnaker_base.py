@@ -1694,6 +1694,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer(
                 "Execute system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
+                FecTimer.end_category(TimerCategory.DATA_GENERATION)
                 return None
             execute_system_data_specs()
         FecTimer.end_category(TimerCategory.DATA_GENERATION)
