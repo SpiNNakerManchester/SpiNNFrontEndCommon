@@ -30,6 +30,7 @@ JOULES_TO_KILOWATT_HOURS = 3600000
 # report file name
 TIMER_FILENAME = "timer_report.rpt"
 
+
 def write_timer_report(
         report_path=None, provenance_path=None, timer_report_ratio=None,
         timer_report_ms=None, timer_report_to_stdout=None):
@@ -62,12 +63,12 @@ def write_timer_report(
 
     # create report
     if timer_report_to_stdout is None:
-        #try:
+        try:
             timer_report_to_stdout = get_config_bool(
                 "Reports", "timer_report_to_stdout")
-        #except Exception:
-        #    logger.warning("No timer_report_to_stdout found so using False")
-        #    timer_report_to_stdout = False
+        except Exception:
+            logger.warning("No timer_report_to_stdout found so using False")
+            timer_report_to_stdout = False
 
     reader = ProvenanceReader(provenance_data_path=provenance_path)
     if timer_report_to_stdout:
@@ -96,7 +97,7 @@ def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
 def __report_category_sums(f, reader):
     total_on = 0
     total_off = 0
-    f.write(f"category_name         time_on     time_off\n")
+    f.write("category_name         time_on     time_off\n")
     for category in TimerCategory:
         on, off = reader.get_category_timer_sums(category)
         total_on += on
@@ -108,11 +109,11 @@ def __report_category_sums(f, reader):
 
 
 def __report_works_sums(f, reader):
-    f.write(f"work type         time\n")
+    f.write("work type         time\n")
     for work in TimerWork:
         time = reader.get_timer_sum_by_work(work)
         f.write(f"{work.work_name:18} {time:10.3f}ms\n")
-    f.write(f"\n\n")
+    f.write("\n\n")
 
 
 def __report_algorithms(
@@ -145,4 +146,4 @@ def __report_algorithms(
     for name, time, count in data:
         if time > cutoff:
             f.write(f"{name:35} {time:10.3f} {count}\n")
-    f.write(f"\n\n")
+    f.write("\n\n")

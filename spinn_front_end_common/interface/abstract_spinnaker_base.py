@@ -2165,7 +2165,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             # reraise exception
             raise run_e
 
-
     def _recover_from_error(self, exception):
         """
         :param Exception exception:
