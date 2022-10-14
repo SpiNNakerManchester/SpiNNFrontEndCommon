@@ -48,7 +48,7 @@ class TestTimerReport(unittest.TestCase):
 
     def test_all_param(self):
         db_path = os.path.join(os.path.dirname(__file__), "timer.sqlite3")
-        report_path = os.path.join(os.path.dirname(__file__), "TEMP")
+        report_path = os.path.join(os.path.dirname(__file__), "my_timer.rpt")
         write_timer_report(report_path=report_path, provenance_path=db_path,
                            timer_report_ratio=0.5, timer_report_ms=5,
                            timer_report_to_stdout=False)
