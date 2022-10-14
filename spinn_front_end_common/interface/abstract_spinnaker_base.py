@@ -2352,6 +2352,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
 
+    def _report_timer_report(self):
+        # No FecTimer as shutdown has closed the timer!
+        if get_config_bool("Reports", "write_timer_report"):
+            write_timer_report()
+
     def stop(self):
         """
         End running of the simulation.
@@ -2380,7 +2385,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             # shut down the machine properly
             self._shutdown()
 
-        write_timer_report()
+        self._report_timer_report()
         self.write_finished_file()
         # No matching FecTimer.end_category as shutdown stops timer
 

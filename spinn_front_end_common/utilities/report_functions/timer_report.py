@@ -15,7 +15,8 @@
 
 import logging
 import os
-from spinn_utilities.config_holder import get_config_float
+import sys
+from spinn_utilities.config_holder import get_config_bool, get_config_float
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
@@ -30,8 +31,8 @@ JOULES_TO_KILOWATT_HOURS = 3600000
 TIMER_FILENAME = "timer_report.rpt"
 
 def write_timer_report(
-        report_path=None, provenance_path=None, algorithm_report_percent=None,
-        algorithm_report_ms=None):
+        report_path=None, provenance_path=None, timer_report_ratio=None,
+        timer_report_ms=None, timer_report_to_stdout=None):
     """ Writes the timer report.
 
     Only provides parameters if using this standalone
@@ -41,12 +42,12 @@ def write_timer_report(
     :param provenance_path: Where the provenance sqlite3 files is located if
         not using the default.
     :type provenance_path: None or str
-    :param algorithm_report_percent: Percentage of total time and algorithm must take
+    :param timer_report_ratio: Percentage of total time and algorithm must take
     to be shown. Or None to use cfg if available or default
-    :type algorithm_report_percent; None or float
-    :param algorithm_report_ms: Time in ms which algorithm must take
+    :type timer_report_ratio; None or float
+    :param timer_report_ms: Time in ms which algorithm must take
     to be shown. Or None to use cfg if available or default
-    :type algorithm_report_ms: None or float
+    :type timer_report_ms: None or float
 
     =None, cutoff_value
 
@@ -60,13 +61,25 @@ def write_timer_report(
         report_path = os.path.join(run_dir, TIMER_FILENAME)
 
     # create report
+    if timer_report_to_stdout is None:
+        #try:
+            timer_report_to_stdout = get_config_bool(
+                "Reports", "timer_report_to_stdout")
+        #except Exception:
+        #    logger.warning("No timer_report_to_stdout found so using False")
+        #    timer_report_to_stdout = False
+
     reader = ProvenanceReader(provenance_data_path=provenance_path)
-    with open(report_path, "w", encoding="utf-8") as f:
+    if timer_report_to_stdout:
         __write_timer_report(
-            f, reader, algorithm_report_percent, algorithm_report_ms)
+            sys.stdout, reader, timer_report_ratio, timer_report_ms)
+    else:
+        with open(report_path, "w", encoding="utf-8") as f:
+            __write_timer_report(
+                f, reader, timer_report_ratio, timer_report_ms)
 
 
-def __write_timer_report(f, reader, algorithm_report_percent, algorithm_report_ms):
+def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
     """ Write time report into the file
 
     :param ~io.TextIOBase f: file writer
@@ -77,7 +90,7 @@ def __write_timer_report(f, reader, algorithm_report_percent, algorithm_report_m
     total = __report_category_sums(f, reader)
     __report_works_sums(f, reader)
     __report_algorithms(
-        f, reader, total, algorithm_report_percent, algorithm_report_ms)
+        f, reader, total, timer_report_ratio, timer_report_ms)
 
 
 def __report_category_sums(f, reader):
@@ -103,33 +116,32 @@ def __report_works_sums(f, reader):
 
 
 def __report_algorithms(
-        f, reader, total, algorithm_report_ratio, algorithm_report_ms):
-    if algorithm_report_ratio is None:
+        f, reader, total, timer_report_ratio, timer_report_ms):
+    if timer_report_ratio is None:
         try:
-            algorithm_report_ratio = get_config_float(
-                "report", "algorithm_report_percent")
+            timer_report_ratio = get_config_float(
+                "Reports", "timer_report_ratio")
         except Exception:
-            logger.warning("No algorithm_report_ratio so using 1%")
-            algorithm_report_ratio = 0.01
+            logger.warning("No timer_report_ratio so using 1%")
+            timer_report_ratio = 0.01
 
-    if algorithm_report_ms is None:
+    if timer_report_ms is None:
         try:
-            algorithm_report_ms = get_config_float(
-                "report", "algorithm_report_ms")
+            timer_report_ms = get_config_float(
+                "Reports", "timer_report_ms")
         except Exception:
-            logger.warning("No algorithm_report_ms so using 10ms")
-            algorithm_report_ms = 10
+            logger.warning("No timer_report_ms so using 10ms")
+            timer_report_ms = 1000
 
-    cutoff = total * algorithm_report_ratio
-    if cutoff < algorithm_report_ms:
-        f.write(f"algorithms which ran for longer than {algorithm_report_ratio}"
+    cutoff = total * timer_report_ratio
+    if cutoff < timer_report_ms:
+        f.write(f"algorithms which ran for longer than {timer_report_ratio}"
                 f" of the total time\n")
     else:
-        cutoff = algorithm_report_ms
+        cutoff = timer_report_ms
         f.write(f"algorithms which ran for longer than {cutoff}ms\n")
     data = reader.get_all_timer_provenance()
-    f.write(f"algorithms which ran for longer than {cutoff}ms\n")
-    f.write("Name  total_time n_runs\n")
+    f.write("Name                       total_time n_runs\n")
     for name, time, count in data:
         if time > cutoff:
             f.write(f"{name:35} {time:10.3f} {count}\n")
