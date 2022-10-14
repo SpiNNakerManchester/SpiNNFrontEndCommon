@@ -49,7 +49,8 @@ def write_timer_report(
     :param timer_report_ms: Time in ms which algorithm must take
         to be shown. Or None to use cfg if available or default
     :type timer_report_ms: None or float
-    :param timer_report_to_stdout: Flag to say output should go to the terminal.
+    :param timer_report_to_stdout:
+        Flag to say output should go to the terminal.
         Or None to use cfg if available or default
     :rtype: None
     """
