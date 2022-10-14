@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 from spinn_utilities.config_holder import get_config_bool, get_config_float
+from spinn_utilities.exceptions import SpiNNUtilsException
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
@@ -55,10 +56,15 @@ def write_timer_report(
     :rtype: None
     """
     if report_path is None:
-        run_dir = FecDataView.get_run_dir_path()
-        if not run_dir.endswith("run_1"):
-            logger.warning(
-                "timer report does not currently work well after a reset")
+        try:
+            run_dir = FecDataView.get_run_dir_path()
+            if not run_dir.endswith("run_1"):
+                logger.warning(
+                    "timer report does not currently work well after a reset")
+        except SpiNNUtilsException:
+            run_dir = os.path.curdir
+            logger.warning(f"no report_path so writing to {run_dir}")
+
         report_path = os.path.join(run_dir, TIMER_FILENAME)
 
     # create report
