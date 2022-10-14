@@ -44,14 +44,13 @@ def write_timer_report(
         not using the default.
     :type provenance_path: None or str
     :param timer_report_ratio: Percentage of total time and algorithm must take
-    to be shown. Or None to use cfg if available or default
-    :type timer_report_ratio; None or float
+        to be shown. Or None to use cfg if available or default
+    :type timer_report_ratio: None or float
     :param timer_report_ms: Time in ms which algorithm must take
-    to be shown. Or None to use cfg if available or default
+        to be shown. Or None to use cfg if available or default
     :type timer_report_ms: None or float
-
-    =None, cutoff_value
-
+    :param timer_report_to_stdout: Flag to say output should go to the terminal.
+        Or None to use cfg if available or default
     :rtype: None
     """
     if report_path is None:
@@ -85,6 +84,8 @@ def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
 
     :param ~io.TextIOBase f: file writer
     :param ProvenanceReader reader:
+    :type timer_report_ratio: None or float
+    :type timer_report_ms: None or float
     """
     f.write("Summary timer report\n-------------------\n\n")
 
@@ -95,6 +96,11 @@ def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
 
 
 def __report_category_sums(f, reader):
+    """
+
+     :param ~io.TextIOBase f: file writer
+     :param ProvenanceReader reader:
+     """
     total_on = 0
     total_off = 0
     f.write("category_name         time_on     time_off\n")
@@ -109,6 +115,11 @@ def __report_category_sums(f, reader):
 
 
 def __report_works_sums(f, reader):
+    """
+
+     :param ~io.TextIOBase f: file writer
+     :param ProvenanceReader reader:
+     """
     f.write("work type         time\n")
     for work in TimerWork:
         time = reader.get_timer_sum_by_work(work)
@@ -118,6 +129,14 @@ def __report_works_sums(f, reader):
 
 def __report_algorithms(
         f, reader, total, timer_report_ratio, timer_report_ms):
+    """ Write time report into the file
+
+    :param ~io.TextIOBase f: file writer
+    :param ProvenanceReader reader:
+    :param float total:
+    :type timer_report_ratio: None or float
+    :type timer_report_ms: None or float
+    """
     if timer_report_ratio is None:
         try:
             timer_report_ratio = get_config_float(
