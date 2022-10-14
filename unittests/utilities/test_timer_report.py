@@ -15,7 +15,6 @@
 
 import os.path
 import unittest
-from spinn_utilities.config_holder import set_config
 from spinn_utilities.exceptions import InvalidDirectory
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utilities.report_functions.timer_report import\
@@ -56,7 +55,6 @@ class TestTimerReport(unittest.TestCase):
 
     def test_to_screen(self):
         db_path = os.path.join(os.path.dirname(__file__), "timer.sqlite3")
-        report_path = os.path.join(os.path.dirname(__file__), "TEMP")
         write_timer_report(provenance_path=db_path,
                            timer_report_to_stdout=True)
 
