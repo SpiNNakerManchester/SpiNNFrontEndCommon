@@ -183,7 +183,7 @@ class ProvenanceReader(object):
             FROM timer_provenance
             WHERE algorithm LIKE ?
             """
-        return self.run_query(query)
+        return self.run_query(query, [algorithm])
 
     def get_all_timer_provenance(self):
         """
