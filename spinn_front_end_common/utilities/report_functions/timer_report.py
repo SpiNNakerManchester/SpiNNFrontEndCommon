@@ -89,6 +89,7 @@ def write_timer_report(
             __write_timer_report(
                 f, reader, timer_report_ratio, timer_report_ms)
 
+
 def timer_report_file():
     report_dir = FecDataView.get_timestamp_dir_path()
     return os.path.join(report_dir, TIMER_FILENAME)
