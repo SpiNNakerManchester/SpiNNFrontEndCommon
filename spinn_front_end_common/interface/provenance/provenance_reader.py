@@ -183,7 +183,9 @@ class ProvenanceReader(object):
             FROM timer_provenance
             WHERE algorithm LIKE ?
             """
-        return self.run_query(query, [algorithm])
+        return "\n".join(
+            f"{row[0]}: {row[1]}"
+            for row in self.run_query(query, [algorithm]))
 
     def get_all_timer_provenance(self):
         """
@@ -232,9 +234,7 @@ class ProvenanceReader(object):
             like %BufferExtractor description_name: value
         :rtype: str
         """
-        return "\n".join(
-            f"{row[0]}: {row[1]}"
-            for row in self.get_timer_provenance("%BufferExtractor"))
+        return self.get_timer_provenance("%BufferExtractor")
 
     def get_provenance_for_router(self, x, y):
         """
