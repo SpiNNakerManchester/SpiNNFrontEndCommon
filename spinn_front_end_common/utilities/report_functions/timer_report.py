@@ -55,17 +55,17 @@ def write_timer_report(
         Or None to use cfg if available or default
     :rtype: None
     """
+    run_dir = FecDataView.get_run_dir_path()
+    if not run_dir.endswith("run_1"):
+        logger.warning(
+            "timer report does not currently work well after a reset")
+
     if report_path is None:
         try:
-            run_dir = FecDataView.get_run_dir_path()
-            if not run_dir.endswith("run_1"):
-                logger.warning(
-                    "timer report does not currently work well after a reset")
+            report_path = timer_report_file()
         except SpiNNUtilsException:
-            run_dir = os.path.curdir
-            logger.warning(f"no report_path so writing to {run_dir}")
-
-        report_path = os.path.join(run_dir, TIMER_FILENAME)
+            report_path = os.path.join(os.path.curdir, TIMER_FILENAME)
+            logger.warning(f"no report_path so writing to {report_path}")
 
     # create report
     if timer_report_to_stdout is None:
@@ -84,6 +84,10 @@ def write_timer_report(
         with open(report_path, "w", encoding="utf-8") as f:
             __write_timer_report(
                 f, reader, timer_report_ratio, timer_report_ms)
+
+def timer_report_file():
+    report_dir = FecDataView.get_timestamp_dir_path()
+    return os.path.join(report_dir, TIMER_FILENAME)
 
 
 def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
