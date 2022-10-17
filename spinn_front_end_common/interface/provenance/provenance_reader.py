@@ -232,7 +232,9 @@ class ProvenanceReader(object):
             like %BufferExtractor description_name: value
         :rtype: str
         """
-        return self.get_timer_provenance("%BufferExtractor")
+        return "\n".join(
+            f"{row[0]}: {row[1]}"
+            for row in self.get_timer_provenance("%BufferExtractor"))
 
     def get_provenance_for_router(self, x, y):
         """
