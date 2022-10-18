@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	x INTEGER NOT NULL,
 	y INTEGER NOT NULL,
-	processor INTEGER NOT NULL);
+	processor INTEGER NOT NULL,
+	label STRING);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);

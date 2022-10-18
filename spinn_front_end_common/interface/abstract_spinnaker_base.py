@@ -67,6 +67,8 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import (SqlLiteDatabase)
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
@@ -2270,10 +2272,32 @@ class AbstractSpinnakerBase(ConfigHandler):
         for error in errors:
             logger.error(error)
 
+    def _execute_prepare_chip_power(self):
+        with FecTimer("Prepare Chip Power", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+            db = SqlLiteDatabase()
+            db.store_placements()
+
+    def _report_chip_active(self):
+        with FecTimer("Prepare Chip Power", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+        write_chip_active_report()
+
+    def _do_end_of_run(self):
+        if not self._data_writer.is_ran_last():
+            return
+        self._execute_prepare_chip_power()
+        #self._report_chip_active()
+
     def reset(self):
         """ Code that puts the simulation back at time zero
         """
-        FecTimer.start_category(TimerCategory.RESETTING)
         if not self._data_writer.is_ran_last():
             if not self._data_writer.is_ran_ever():
                 logger.error("Ignoring the reset before the run")
@@ -2281,7 +2305,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.error("Ignoring the repeated reset call")
             return
 
+        FecTimer.start_category(TimerCategory.RESETTING)
         logger.info("Resetting")
+
+        self._do_end_of_run()
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
@@ -2366,6 +2393,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                   not get_config_bool("Reports", "read_provenance_data")):
                 set_config("Reports", "read_provenance_data", "True")
                 self._do_read_provenance()
+
+            self._do_end_of_run()
 
         except Exception as e:
             self._recover_from_error(e)

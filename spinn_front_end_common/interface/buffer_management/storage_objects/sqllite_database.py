@@ -50,7 +50,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
             If omitted the default location will be used
         """
         if database_file is None:
-            database_file = self.default_database_file
+            database_file = self.default_database_file()
 
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
@@ -246,3 +246,13 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def store_placements(self):
+        with self.transaction() as cursor:
+            for placement in FecDataView.iterate_placemements():
+                core_id = self.__get_core_id(
+                    cursor, placement.x, placement.y, placement.p)
+                cursor.execute(
+                    "UPDATE core SET label = ? WHERE core_id = ?",
+                    (placement.vertex.label, core_id))
+                assert cursor.rowcount == 1
