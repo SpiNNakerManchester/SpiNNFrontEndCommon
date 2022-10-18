@@ -141,6 +141,52 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
             data = c_buffer
         return memoryview(data)
 
+    def __read_contents(self, cursor, x, y, p, region):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param int region:
+        :rtype: memoryview
+        """
+        for row in cursor.execute(
+                """
+                SELECT region_id, content, have_extra
+                FROM region_view
+                WHERE x = ? AND y = ? AND processor = ?
+                    AND local_region_index = ? LIMIT 1
+                """, (x, y, p, region)):
+            r_id, data, extra = (
+                row["region_id"], row["content"], row["have_extra"])
+            break
+        else:
+            raise LookupError("no record for region ({},{},{}:{})".format(
+                x, y, p, region))
+        if extra:
+            c_buffer = None
+            for row in cursor.execute(
+                    """
+                    SELECT r.content_len + (
+                        SELECT SUM(x.content_len)
+                        FROM region_extra AS x
+                        WHERE x.region_id = r.region_id) AS len
+                    FROM region AS r WHERE region_id = ? LIMIT 1
+                    """, (r_id, )):
+                c_buffer = bytearray(row["len"])
+                c_buffer[:len(data)] = data
+            idx = len(data)
+            for row in cursor.execute(
+                    """
+                    SELECT content FROM region_extra
+                    WHERE region_id = ? ORDER BY extra_id ASC
+                    """, (r_id, )):
+                item = row["content"]
+                c_buffer[idx:idx + len(item)] = item
+                idx += len(item)
+            data = c_buffer
+        return memoryview(data)
+
     @staticmethod
     def __get_core_id(cursor, x, y, p):
         """
@@ -268,6 +314,17 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                     (placement.vertex.label, core_id))
                 assert cursor.rowcount == 1
 
+    def get_label(self, x, y, p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT label
+                    FROM core
+                    WHERE x = ? AND y = ? and processor = ?
+                    """, (x, y, p)):
+                return str(row["label"], 'utf8')
+        return ""
+
     def store_chip_power_monitors(self):
         # delayed import due to circular refrences
         from spinn_front_end_common.utility_models.\
@@ -292,6 +349,13 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                     sampling_frequency  FLOAT NOT NULL)
                 """)
 
+            cursor.execute(
+                """
+                CREATE VIEW chip_power_monitors_view AS
+	                SELECT core_id, x, y, processor, sampling_frequency
+                    FROM core NATURAL JOIN chip_power_monitors
+                """)
+
             for placement in FecDataView.iterate_placements_by_vertex_type(
                     ChipPowerMonitorMachineVertex):
                 core_id = self.__get_core_id(
@@ -308,8 +372,8 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT core_id, sampling_frequency
-                    FROM chip_power_monitors
+                    SELECT x, y, processor, sampling_frequency
+                    FROM chip_power_monitors_view
                     ORDER BY core_id
                     """):
                 yield row

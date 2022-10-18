@@ -2281,7 +2281,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             db = SqlLiteDatabase()
             db.store_placements()
             db.store_chip_power_monitors()
-            #data = list(db.iterate_chip_power_monitor_cores())
             db.close()
 
     def _report_chip_active(self):
@@ -2290,7 +2289,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-            #write_chip_active_report()
+            write_chip_active_report()
 
     def _do_end_of_run(self):
         if not self._data_writer.is_ran_last():
