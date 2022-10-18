@@ -110,7 +110,7 @@ from spinn_front_end_common.utilities.report_functions import (
     memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
-    write_json_machine, write_json_placements,
+    write_chip_active_report, write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
@@ -2280,6 +2280,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             db = SqlLiteDatabase()
             db.store_placements()
+            db.store_chip_power_monitors()
+            #data = list(db.iterate_chip_power_monitor_cores())
+            db.close()
 
     def _report_chip_active(self):
         with FecTimer("Prepare Chip Power", TimerWork.REPORT) as timer:
@@ -2287,13 +2290,13 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             if timer.skip_if_virtual_board():
                 return
-        write_chip_active_report()
+            #write_chip_active_report()
 
     def _do_end_of_run(self):
         if not self._data_writer.is_ran_last():
             return
         self._execute_prepare_chip_power()
-        #self._report_chip_active()
+        self._report_chip_active()
 
     def reset(self):
         """ Code that puts the simulation back at time zero
