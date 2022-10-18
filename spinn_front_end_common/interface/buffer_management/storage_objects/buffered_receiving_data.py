@@ -14,10 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 from .sqllite_database import SqlLiteDatabase
-from spinn_front_end_common.data import FecDataView
-
-#: Name of the database in the data folder
-DB_FILE_NAME = "buffer.sqlite3"
 
 
 class BufferedReceivingData(object):
@@ -29,9 +25,6 @@ class BufferedReceivingData(object):
         #: the AbstractDatabase holding the data to store
         "_db",
 
-        #: the path to the database
-        "_db_file",
-
         #: the (size, address) of each region
         "__sizes_and_addresses",
 
@@ -40,8 +33,6 @@ class BufferedReceivingData(object):
     ]
 
     def __init__(self):
-        self._db_file = os.path.join(
-            FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self._db = None
         self.__sizes_and_addresses = None
         self.__data_flushed = None
@@ -50,11 +41,11 @@ class BufferedReceivingData(object):
     def reset(self):
         """ Perform tasks to restart recording from time=0
         """
-        if os.path.exists(self._db_file):
-            if self._db:
-                self._db.close()
-            os.remove(self._db_file)
-        self._db = SqlLiteDatabase(self._db_file)
+        if self._db:
+            self._db.close()
+            if os.path.exists(self._db.default_database_file()):
+                os.remove(self._db.default_database_file())
+        self._db = SqlLiteDatabase()
         self.__sizes_and_addresses = dict()
         self.__data_flushed = set()
 
