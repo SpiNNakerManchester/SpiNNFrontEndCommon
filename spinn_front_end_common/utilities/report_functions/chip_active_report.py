@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from collections import defaultdict
 import logging
 import numpy
 import os
-from spinn_utilities.config_holder import (get_config_int, get_config_str)
+from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.exceptions import SpiNNUtilsException
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
@@ -33,6 +32,7 @@ JOULES_TO_KILOWATT_HOURS = 3600000
 
 # energy report file name
 CHIP_ACTIVE_FILENAME = "chip_active_report.rpt"
+
 
 def write_chip_active_report(report_path=None, buffer_path=None):
     """ Writes the report.
@@ -58,10 +58,15 @@ def write_chip_active_report(report_path=None, buffer_path=None):
     with open(report_path, "w", encoding="utf-8") as f:
         __write_report(f, buffer_path)
 
+
 def __write_report(f, buffer_path):
     db = SqlLiteDatabase(buffer_path)
     n_samples_per_recording = get_config_int(
         "EnergyMonitor", "n_samples_per_recording_entry")
+
+    milliwatts = MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD / 18
+    activity_total = 0
+    energy_total = 0
 
     for row in db.iterate_chip_power_monitor_cores():
         record_raw, data_missing = db.get_region_data(
@@ -73,13 +78,24 @@ def __write_report(f, buffer_path):
         activity_count = numpy.sum(results)
         time_for_recorded_sample =\
             (row["sampling_frequency"] * n_samples_per_recording) / 1000
+        energy_factor = time_for_recorded_sample * milliwatts
 
         for core in range(0, 18):
             label = db.get_label(row["x"], row["y"], core)
             if (active_sums[core] > 0) or label:
-                energy = (active_sums[core] * time_for_recorded_sample *
-                            MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD / 18)
                 f.write(
                     f"processor {row['x']}:{row['y']}:{core}({label})"
-                    f" was active for {active_sums[core]} "
-                    f" using {energy} Joules\n")
+                    f" was active for {active_sums[core]}ms "
+                    f" using { active_sums[core] * energy_factor} Joules\n")
+
+        energy = activity_count * energy_factor
+        activity_total += activity_count
+        energy_total += energy
+        f.write(
+            f"Total for chip {row['x']}:{row['y']} "
+            f" was {activity_count}ms of activity "
+            f" using {energy} Joules\n\n")
+    f.write(
+        f"Total "
+        f" was {activity_total}ms of activity "
+        f" using {energy_total} Joules\n\n")

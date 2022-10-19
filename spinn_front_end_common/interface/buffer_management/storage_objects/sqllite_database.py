@@ -276,7 +276,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                             cursor, chip.x, chip.y, processor.processor_id)
                         cursor.execute(
                             """
-                            UPDATE core SET label = 'MONITOR' 
+                            UPDATE core SET label = 'MONITOR'
                             WHERE core_id = ?
                             """, [core_id])
                         assert cursor.rowcount == 1
