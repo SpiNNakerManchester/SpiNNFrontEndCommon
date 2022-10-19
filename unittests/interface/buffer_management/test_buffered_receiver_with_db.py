@@ -19,7 +19,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_receiving_data import DB_FILE_NAME
+    .sqllite_database import DB_FILE_NAME
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
