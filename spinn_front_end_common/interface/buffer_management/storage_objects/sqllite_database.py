@@ -28,6 +28,7 @@ _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
 DB_FILE_NAME = "buffer.sqlite3"
 
+
 def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
@@ -94,52 +95,6 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                 DELETE FROM region_extra WHERE region_id = ?
                 """, locus)
             return True
-
-    def __read_contents(self, cursor, x, y, p, region):
-        """
-        :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
-        :rtype: memoryview
-        """
-        for row in cursor.execute(
-                """
-                SELECT region_id, content, have_extra
-                FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? LIMIT 1
-                """, (x, y, p, region)):
-            r_id, data, extra = (
-                row["region_id"], row["content"], row["have_extra"])
-            break
-        else:
-            raise LookupError("no record for region ({},{},{}:{})".format(
-                x, y, p, region))
-        if extra:
-            c_buffer = None
-            for row in cursor.execute(
-                    """
-                    SELECT r.content_len + (
-                        SELECT SUM(x.content_len)
-                        FROM region_extra AS x
-                        WHERE x.region_id = r.region_id) AS len
-                    FROM region AS r WHERE region_id = ? LIMIT 1
-                    """, (r_id, )):
-                c_buffer = bytearray(row["len"])
-                c_buffer[:len(data)] = data
-            idx = len(data)
-            for row in cursor.execute(
-                    """
-                    SELECT content FROM region_extra
-                    WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (r_id, )):
-                item = row["content"]
-                c_buffer[idx:idx + len(item)] = item
-                idx += len(item)
-            data = c_buffer
-        return memoryview(data)
 
     def __read_contents(self, cursor, x, y, p, region):
         """
@@ -329,7 +284,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
         # delayed import due to circular refrences
         from spinn_front_end_common.utility_models.\
             chip_power_monitor_machine_vertex import (
-            ChipPowerMonitorMachineVertex)
+                ChipPowerMonitorMachineVertex)
 
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -352,7 +307,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
             cursor.execute(
                 """
                 CREATE VIEW chip_power_monitors_view AS
-	                SELECT core_id, x, y, processor, sampling_frequency
+                SELECT core_id, x, y, processor, sampling_frequency
                     FROM core NATURAL JOIN chip_power_monitors
                 """)
 
@@ -377,4 +332,3 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                     ORDER BY core_id
                     """):
                 yield row
-
