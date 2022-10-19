@@ -46,7 +46,6 @@ class TestChipActive(unittest.TestCase):
         db_path = os.path.join(os.path.dirname(__file__), "buffer.sqlite3")
         write_chip_active_report(buffer_path=db_path)
 
-
     def test_all_params(self):
         # make sure there is not run_dir_path so falls back on default
         writer = FecDataWriter.setup()
