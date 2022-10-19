@@ -17,7 +17,7 @@ from .abstract_database import AbstractDatabase
 from .buffered_receiving_data import BufferedReceivingData
 from .buffered_sending_region import BufferedSendingRegion
 from .buffers_sent_deque import BuffersSentDeque
-from .sqllite_database import SqlLiteDatabase
+from .sqllite_database import BufferDatabase
 
 __all__ = ["AbstractDatabase", "BufferedReceivingData",
-           "BufferedSendingRegion", "BuffersSentDeque", "SqlLiteDatabase"]
+           "BufferedSendingRegion", "BuffersSentDeque", "BufferDatabase"]

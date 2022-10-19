@@ -29,7 +29,7 @@ def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
+class BufferDatabase(SQLiteDB, AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::

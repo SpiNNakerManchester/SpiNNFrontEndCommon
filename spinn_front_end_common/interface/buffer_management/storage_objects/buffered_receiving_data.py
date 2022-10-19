@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
-from .sqllite_database import SqlLiteDatabase
+from .sqllite_database import BufferDatabase
 from spinn_front_end_common.data import FecDataView
 
 #: Name of the database in the data folder
@@ -54,7 +54,7 @@ class BufferedReceivingData(object):
             if self._db:
                 self._db.close()
             os.remove(self._db_file)
-        self._db = SqlLiteDatabase(self._db_file)
+        self._db = BufferDatabase(self._db_file)
         self.__sizes_and_addresses = dict()
         self.__data_flushed = set()
 
