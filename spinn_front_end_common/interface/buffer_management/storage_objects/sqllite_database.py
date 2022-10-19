@@ -17,10 +17,13 @@ import os
 import sqlite3
 import time
 from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
+#: Name of the database in the data folder
+DB_FILE_NAME = "buffer.sqlite3"
 
 
 def _timestamp():
@@ -49,9 +52,33 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
-            database holding the data. If omitted, an unshared in-memory
-            database will be used.
+            database holding the data.
+            If omitted the default location will be used.
         """
+        if database_file is None:
+            database_file = self.default_database_file()
+
+        super().__init__(database_file, ddl_file=_DDL_FILE)
+
+    @classmethod
+    def default_database_file(cls):
+        return os.path.join(
+            FecDataView.get_run_dir_path(), DB_FILE_NAME)
+
+    def reset(self):
+        """
+        UGLY SHOULD NOT NEVER DELETE THE FILE!
+
+        .. note::
+            This method will be removed when the database moves to
+            keeping data after reset.
+
+        :rtype: None
+        """
+        database_file = self.default_database_file()
+        self.close()
+        if os.path.exists(database_file):
+            os.remove(database_file)
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
     def clear(self):

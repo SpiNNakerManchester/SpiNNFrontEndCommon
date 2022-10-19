@@ -37,12 +37,15 @@ from spinn_front_end_common.utilities.exceptions import (
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (BuffersSentDeque, BufferedReceivingData)
+    import (BuffersSentDeque)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -90,7 +93,7 @@ class BufferManager(object):
         "_sent_messages",
 
         # storage area for received data from cores
-        "_received_data",
+        "_db",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -120,7 +123,7 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData()
+        self._db = BufferDatabase()
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -307,7 +310,8 @@ class BufferManager(object):
             beginning of its expected regions and clears the buffered out\
             data files.
         """
-        self._received_data.reset()
+        #
+        self._db.reset()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -331,7 +335,7 @@ class BufferManager(object):
         :param int p: placement p coordinate
         :param int recording_region_id: the recording region ID
         """
-        self._received_data.clear(x, y, p, recording_region_id)
+        self._db.clear(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -613,7 +617,7 @@ class BufferManager(object):
                 "so no data read".format(placement.vertex))
         with self._thread_lock_buffer_out:
             # data flush has been completed - return appropriate data
-            return self._received_data.get_region_data(
+            return self._db.get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
     def _retreive_by_placement(self, placement):
@@ -634,7 +638,7 @@ class BufferManager(object):
             size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
-            self._received_data.store_data_in_region_buffer(
+            self._db.store_data_in_region_buffer(
                 placement.x, placement.y, placement.p, region, missing, data)
 
     def _get_region_information(self, addr, x, y, p):
