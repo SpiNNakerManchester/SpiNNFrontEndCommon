@@ -585,7 +585,8 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__python_get_data_for_placements(recording_placements, progress)
+            self.__python_get_data_for_placements(
+                recording_placements, progress)
 
     def __python_get_data_for_placements(self, recording_placements, progress):
         """
