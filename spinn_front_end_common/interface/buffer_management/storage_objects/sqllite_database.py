@@ -269,6 +269,18 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                     (placement.vertex.label, core_id))
                 assert cursor.rowcount == 1
 
+            for chip in FecDataView.get_machine().chips:
+                for processor in chip.processors:
+                    if processor.is_monitor:
+                        core_id = self.__get_core_id(
+                            cursor, chip.x, chip.y, processor.processor_id)
+                        cursor.execute(
+                            """
+                            UPDATE core SET label = 'MONITOR' 
+                            WHERE core_id = ?
+                            """, [core_id])
+                        assert cursor.rowcount == 1
+
     def get_label(self, x, y, p):
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -287,7 +299,7 @@ class SqlLiteDatabase(SQLiteDB, AbstractContextManager):
                 ChipPowerMonitorMachineVertex)
 
         with self.transaction() as cursor:
-            for row in cursor.execute(
+            for _ in cursor.execute(
                     """
                     SELECT name FROM sqlite_master
                     WHERE type='table' AND name='chip_power_monitor'
