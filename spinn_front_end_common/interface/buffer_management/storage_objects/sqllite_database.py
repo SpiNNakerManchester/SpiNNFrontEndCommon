@@ -17,9 +17,7 @@ import os
 import sqlite3
 import time
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from .abstract_database import AbstractDatabase
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
@@ -31,6 +29,14 @@ def _timestamp():
 
 class BufferDatabase(SQLiteDB, AbstractContextManager):
     """ Specific implementation of the Database for SQLite 3.
+
+    There should only ever be a single Database Object in use at any time.
+    In the case of application_graph_changed the first should closed and
+    a new one created.
+
+    If 2 database objects where opened with the database_file they hold the
+    same data. Unless someone else deletes that file.
+
 
     .. note::
         *Not thread safe on the same database file!*
@@ -48,8 +54,15 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         """
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
-    @overrides(AbstractDatabase.clear)
     def clear(self):
+        """ Clears the data for all regions.
+
+        .. note::
+            This method will be removed when the database moves to
+            keeping data after reset.
+
+        :rtype: None
+        """
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -59,8 +72,19 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 """)
             cursor.execute("DELETE FROM region_extra")
 
-    @overrides(AbstractDatabase.clear_region)
     def clear_region(self, x, y, p, region):
+        """ Clears the data for a single region.
+
+        .. note::
+            This method *loses information!*
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be cleared
+        :return: True if any region was changed
+        :rtype: bool
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -178,8 +202,21 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             """, (core_id, region))
         return cursor.lastrowid
 
-    @overrides(AbstractDatabase.store_data_in_region_buffer)
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
+        """ Store some information in the corresponding buffer for a\
+            specific chip, core and recording region.
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data to be stored
+        :param bool missing: Whether any data is missing
+        :param bytearray data: data to be stored
+
+            .. note::
+                    Must be shorter than 1GB
+        """
+
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
@@ -227,8 +264,22 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             return existing == 1
         return False
 
-    @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
+        """ Get the data stored for a given region of a given core
+
+        :param int x: x coordinate of the chip
+        :param int y: y coordinate of the chip
+        :param int p: Core within the specified chip
+        :param int region: Region containing the data
+        :return: a buffer containing all the data received during the\
+            simulation, and a flag indicating if any data was missing
+
+            .. note::
+                Implementations should not assume that the total buffer is
+                necessarily shorter than 1GB.
+
+        :rtype: tuple(memoryview, bool)
+        """
         try:
             with self.transaction() as cursor:
                 data = self.__read_contents(cursor, x, y, p, region)

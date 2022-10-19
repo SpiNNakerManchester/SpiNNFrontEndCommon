@@ -13,11 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .abstract_database import AbstractDatabase
 from .buffered_receiving_data import BufferedReceivingData
 from .buffered_sending_region import BufferedSendingRegion
 from .buffers_sent_deque import BuffersSentDeque
 from .sqllite_database import BufferDatabase
 
-__all__ = ["AbstractDatabase", "BufferedReceivingData",
-           "BufferedSendingRegion", "BuffersSentDeque", "BufferDatabase"]
+__all__ = ["BufferedReceivingData", "BufferedSendingRegion",
+           "BuffersSentDeque", "BufferDatabase"]
