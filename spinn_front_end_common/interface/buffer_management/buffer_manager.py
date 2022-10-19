@@ -321,7 +321,6 @@ class BufferManager(object):
         """
 
         # update the received data items
-        self._received_data.resume()
         self._finished = False
 
     def clear_recorded_data(self, x, y, p, recording_region_id):
@@ -593,10 +592,8 @@ class BufferManager(object):
         """
         # get data
         for placement in recording_placements:
-            vertex = placement.vertex
-            for recording_region_id in vertex.get_recorded_region_ids():
-                self._retreive_by_placement(placement, recording_region_id)
-                progress.update()
+            self._retreive_by_placement(placement)
+            progress.update()
 
     def get_data_by_placement(self, placement, recording_region_id):
         """ Get the data container for all the data retrieved\
@@ -619,30 +616,22 @@ class BufferManager(object):
             return self._received_data.get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retreive_by_placement(self, placement, region):
+    def _retreive_by_placement(self, placement):
         """ Retrieve the data for a vertex; must be locked first.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region
         """
-
-        # Has the region information been read
-        if not self._received_data.has_region_information(
-                placement.x, placement.y, placement.p):
-
-            addr = placement.vertex.get_recording_region_base_address(
-                placement)
-            self._get_region_information(
+        vertex = placement.vertex
+        addr = vertex.get_recording_region_base_address(placement)
+        sizes_and_addresses = self._get_region_information(
                 addr, placement.x, placement.y, placement.p)
 
         # Read the data if not already received
-        if not self._received_data.is_data_from_region_flushed(
-                placement.x, placement.y, placement.p, region):
-
+        for region in vertex.get_recorded_region_ids():
             # Now read the data and store it
-            size, addr, missing = self._received_data.get_region_information(
-                placement.x, placement.y, placement.p, region)
+            size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
             self._received_data.store_data_in_region_buffer(
@@ -664,8 +653,7 @@ class BufferManager(object):
         regions = data_type.from_buffer_copy(data)
         sizes_and_addresses = [
             (r.size, r.data, bool(r.missing)) for r in regions]
-        self._received_data.store_region_information(
-            x, y, p, sizes_and_addresses)
+        return sizes_and_addresses
 
     @property
     def sender_vertices(self):

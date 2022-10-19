@@ -32,19 +32,12 @@ class BufferedReceivingData(object):
         #: the path to the database
         "_db_file",
 
-        #: the (size, address) of each region
-        "__sizes_and_addresses",
-
-        #: whether data has been flushed for each region
-        "__data_flushed"
     ]
 
     def __init__(self):
         self._db_file = os.path.join(
             FecDataView.get_run_dir_path(), DB_FILE_NAME)
         self._db = None
-        self.__sizes_and_addresses = None
-        self.__data_flushed = None
         self.reset()
 
     def reset(self):
@@ -55,46 +48,6 @@ class BufferedReceivingData(object):
                 self._db.close()
             os.remove(self._db_file)
         self._db = BufferDatabase(self._db_file)
-        self.__sizes_and_addresses = dict()
-        self.__data_flushed = set()
-
-    def resume(self):
-        """ Perform tasks that will continue running without resetting
-        """
-        self.__sizes_and_addresses = dict()
-        self.__data_flushed = set()
-
-    def store_region_information(self, x, y, p, sizes_and_addresses):
-        """ Store the sizes, addresses and is_missing data of the regions
-
-        :param int x: The x-coordinate of the core whose data this is
-        :param int y: The y-coordinate of the core whose data this is
-        :param int p: The processor id of the core whose data this is
-        :param list(int,int,bool) sizes_and_addresses:
-            The size and address of each region
-        """
-        self.__sizes_and_addresses[x, y, p] = sizes_and_addresses
-
-    def get_region_information(self, x, y, p, region_id):
-        """ Get the size, address and is_missing of the region
-
-        :param int x: The x-coordinate of the core whose data this is
-        :param int y: The y-coordinate of the core whose data this is
-        :param int p: The processor id of the core whose data this is
-        :param int region_id: The id of the region to get the data for
-        :rtype: tuple(int, int, bool)
-        """
-        return self.__sizes_and_addresses.get((x, y, p))[region_id]
-
-    def has_region_information(self, x, y, p):
-        """ Determine if region information has been stored for this core
-
-        :param int x: The x-coordinate of the core whose data this is
-        :param int y: The y-coordinate of the core whose data this is
-        :param int p: The processor id of the core whose data this is
-        :rtype: bool
-        """
-        return (x, y, p) in self.__sizes_and_addresses
 
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
         """ Store some information in the correspondent buffer class for a\
@@ -109,17 +62,6 @@ class BufferedReceivingData(object):
         """
         # pylint: disable=too-many-arguments
         self._db.store_data_in_region_buffer(x, y, p, region, missing, data)
-        self.__data_flushed.add((x, y, p, region))
-
-    def is_data_from_region_flushed(self, x, y, p, region):
-        """ Determine if data has been stored for this region
-
-        :param int x: x coordinate of the chip
-        :param int y: y coordinate of the chip
-        :param int p: Core within the specified chip
-        :param int region: Region containing the data
-        """
-        return (x, y, p, region) in self.__data_flushed
 
     def get_region_data(self, x, y, p, region):
         """ Get the data stored for a given region of a given core.
