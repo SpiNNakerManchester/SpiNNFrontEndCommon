@@ -139,14 +139,16 @@ class BufferManager(object):
         else:
             self._java_caller = None
 
-        for placement in FecDataView.iterate_placemements():
+        for placement in FecDataView.iterate_placements_by_vertex_type(
+                (AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost)):
             vertex = placement.vertex
             if (isinstance(vertex, AbstractSendsBuffersFromHost) and
                     vertex.buffering_input()):
-                self.add_sender_vertex(vertex)
+                self._sender_vertices.add(vertex)
+            self._add_buffer_listeners(vertex)
 
             if isinstance(vertex, AbstractReceiveBuffersToHost):
-                self.add_receiving_vertex(vertex)
+                self._add_buffer_listeners(vertex)
 
     def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.
@@ -282,23 +284,6 @@ class BufferManager(object):
                     # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
                         self._create_connection(tag)
-
-    def add_receiving_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices which require\
-            buffers to be received from them during runtime.
-
-        :param AbstractReceiveBuffersToHost vertex: the vertex to be managed
-        """
-        self._add_buffer_listeners(vertex)
-
-    def add_sender_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices which require\
-            buffers to be sent to them during runtime.
-
-        :param AbstractSendsBuffersFromHost vertex: the vertex to be managed
-        """
-        self._sender_vertices.add(vertex)
-        self._add_buffer_listeners(vertex)
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using memory writes.
