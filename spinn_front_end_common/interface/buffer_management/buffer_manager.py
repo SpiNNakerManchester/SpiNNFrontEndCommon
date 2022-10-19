@@ -550,10 +550,10 @@ class BufferManager(object):
                     n_regions,  "Extracting buffers from the last run")
                 if get_config_bool(
                         "Machine", "enable_advanced_monitor_support"):
-                    self.__old_get_data_for_placements_with_monitors(
+                    self.__python_get_data_for_placements_with_monitors(
                         recording_placements, progress)
                 else:
-                    self.__old_get_data_for_placements(
+                    self.__python_get_data_for_placements(
                         recording_placements, progress)
 
     def __get_data_for_placements_using_java(self):
@@ -563,7 +563,7 @@ class BufferManager(object):
                 AbstractReceiveBuffersToHost))
         self._java_caller.get_all_data()
 
-    def __old_get_data_for_placements_with_monitors(
+    def __python_get_data_for_placements_with_monitors(
             self, recording_placements, progress):
         """
         :param ~pacman.model.placements.Placements recording_placements:
@@ -582,9 +582,9 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__old_get_data_for_placements(recording_placements, progress)
+            self.__python_get_data_for_placements(recording_placements, progress)
 
-    def __old_get_data_for_placements(self, recording_placements, progress):
+    def __python_get_data_for_placements(self, recording_placements, progress):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
