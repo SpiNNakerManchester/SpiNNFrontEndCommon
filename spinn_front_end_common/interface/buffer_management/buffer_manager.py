@@ -39,7 +39,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
+    import (AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.utility_models.streaming_context_manager import (
@@ -138,6 +138,15 @@ class BufferManager(object):
                 self._java_caller.set_advanced_monitors()
         else:
             self._java_caller = None
+
+        for placement in FecDataView.iterate_placemements():
+            vertex = placement.vertex
+            if (isinstance(vertex, AbstractSendsBuffersFromHost) and
+                    vertex.buffering_input()):
+                self.add_sender_vertex(vertex)
+
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
+                self.add_receiving_vertex(vertex)
 
     def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.
