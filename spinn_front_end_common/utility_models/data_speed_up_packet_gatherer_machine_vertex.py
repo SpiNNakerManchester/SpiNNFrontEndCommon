@@ -1018,8 +1018,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: byte array of the data
         :rtype: bytearray
         """
-        start = float(time.time())
+        # create report elements
+        if get_config_bool("Reports", "write_data_speed_up_reports"):
+            routers_been_in_use = self._determine_which_routers_were_used(
+                placement)
+            self._write_routers_used_into_report(
+                routers_been_in_use, placement)
 
+        start = float(time.time())
         # if asked for no data, just return a empty byte array
         if length_in_bytes == 0:
             data = bytearray(0)
@@ -1079,14 +1085,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                         placement.x, placement.y, memory_address,
                         length_in_bytes, self._run, "Lost_seq_nums",
                         lost_seq_num)
-
-        # create report elements
-        if get_config_bool("Reports", "write_data_speed_up_reports"):
-            routers_been_in_use = self._determine_which_routers_were_used(
-                placement)
-            self._write_routers_used_into_report(
-                self._out_report_path, routers_been_in_use,
-                placement)
 
         return self._output
 
@@ -1159,9 +1157,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             entry = fixed_routes[chip_x, chip_y]
         return routers
 
-    @staticmethod
-    def _write_routers_used_into_report(
-            report_path, routers_been_in_use, placement):
+    def _write_routers_used_into_report(self, routers_been_in_use, placement):
         """ Write the used routers into a report
 
         :param str report_path: the path to the report file
@@ -1169,11 +1165,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             the routers been in use
         :param ~.Placement placement: the first placement used
         """
-        writer_behaviour = "w"
-        if os.path.isfile(report_path):
-            writer_behaviour = "a"
-
-        with open(report_path, writer_behaviour, encoding="utf-8") as writer:
+        with open(self._out_report_path, "a", encoding="utf-8") as writer:
             writer.write("[{}:{}:{}] = {}\n".format(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 
