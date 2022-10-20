@@ -1690,7 +1690,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the execute_system_data_specs if required
 
         """
-        FecTimer.start_category(TimerCategory.DATA_GENERATION, True)
+        FecTimer.start_category(TimerCategory.DATA_GENERATION)
         with FecTimer(
                 "Execute system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
