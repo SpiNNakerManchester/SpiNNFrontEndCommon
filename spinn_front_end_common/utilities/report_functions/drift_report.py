@@ -41,7 +41,7 @@ def drift_report():
 
     # create file path
     directory_name = os.path.join(
-        FecDataView.get_report_dir_path(), CLOCK_DRIFT_REPORT)
+        FecDataView.get_run_dir_path(), CLOCK_DRIFT_REPORT)
 
     # If the file is new, write a header
     if not os.path.exists(directory_name):
