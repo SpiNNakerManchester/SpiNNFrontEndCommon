@@ -1086,7 +1086,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                         length_in_bytes, self._run, "Lost_seq_nums",
                         lost_seq_num)
 
-
         return self._output
 
     def _receive_data(
