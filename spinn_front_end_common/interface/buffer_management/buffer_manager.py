@@ -523,35 +523,28 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
-    def __count_regions(self):
+    def __get_recording_placements(self):
         """
-        :rtype: tuple(int, list(~.Placement))
+        :rtype: list(~.Placement)
         """
-        # Count the regions to be read
-        n_regions_to_read = 0
         recording_placements = list()
         for placement in FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost):
-            vertex = placement.vertex
-            n_regions_to_read += len(vertex.get_recorded_region_ids())
             recording_placements.append(placement)
-        return n_regions_to_read, recording_placements
+        return recording_placements
 
     def get_placement_data(self):
         with self._thread_lock_buffer_out:
             if self._java_caller is not None:
                 self.__get_data_for_placements_using_java()
             else:
-                n_regions, recording_placements = self.__count_regions()
-                progress = ProgressBar(
-                    n_regions,  "Extracting buffers from the last run")
+                recording_placements = self.__get_recording_placements()
                 if get_config_bool(
                         "Machine", "enable_advanced_monitor_support"):
                     self.__python_get_data_for_placements_with_monitors(
-                        recording_placements, progress)
+                        recording_placements)
                 else:
-                    self.__python_get_data_for_placements(
-                        recording_placements, progress)
+                    self.__python_get_data_for_placements(recording_placements)
 
     def __get_data_for_placements_using_java(self):
         logger.info("Starting buffer extraction using Java")
@@ -561,12 +554,10 @@ class BufferManager(object):
         self._java_caller.get_all_data()
 
     def __python_get_data_for_placements_with_monitors(
-            self, recording_placements, progress):
+            self, recording_placements):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
-        :param progress: How to measure/display the progress.
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         # locate receivers
         receivers = list(OrderedSet(
@@ -579,20 +570,20 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__python_get_data_for_placements(
-                recording_placements, progress)
+            self.__python_get_data_for_placements(recording_placements)
 
-    def __python_get_data_for_placements(self, recording_placements, progress):
+    def __python_get_data_for_placements(self, recording_placements):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
-        :param progress: How to measure/display the progress.
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        """
+       """
         # get data
-        for placement in recording_placements:
+        progress = ProgressBar(
+            len(recording_placements),
+            "Extracting buffers from the last run")
+
+        for placement in progress.over(recording_placements):
             self._retreive_by_placement(placement)
-            progress.update()
 
     def get_data_by_placement(self, placement, recording_region_id):
         """ Get the data container for all the data retrieved\
