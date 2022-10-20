@@ -23,6 +23,7 @@ from spinn_front_end_common.data import FecDataView
 
 # The fixed point position for drift readings
 DRIFT_FP = 1 << 17
+CLOCK_DRIFT_REPORT = "clock_drift.csv"
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -40,7 +41,7 @@ def drift_report():
 
     # create file path
     directory_name = os.path.join(
-        FecDataView.get_report_dir_path(), "clock_drift.csv")
+        FecDataView.get_report_dir_path(), CLOCK_DRIFT_REPORT)
 
     # If the file is new, write a header
     if not os.path.exists(directory_name):
