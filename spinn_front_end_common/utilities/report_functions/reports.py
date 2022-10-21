@@ -209,11 +209,10 @@ def _write_one_router_partition_report(f, partition):
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(
-                source_placement, r_info.key_and_mask)
+                m_vertex, r_info.key_and_mask)
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
             f.write("{}\n".format(path))
@@ -675,32 +674,29 @@ def generate_comparison_router_report(compressed_routing_tables):
                          " {} for writing.", file_name)
 
 
-def _search_route(source_placement, key_and_mask):
+def _search_route(source_vertex, key_and_mask):
     """
-    :param Placement source_placement:
+    :param MachineVertex source_vertex:
     :param Placement dest_placement:
     :param BaseKeyAndMask key_and_mask:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
     machine = FecDataView.get_machine()
-    source_vertex = source_placement.vertex
-    text = ""
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
+        text = "        Virtual SpiNNaker Link -> "
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
     elif isinstance(source_vertex, MachineFPGAVertex):
-        text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
+        text = "        Virtual FPGA Link on -> "
         flink = machine.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
     else:
+        source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
         y = source_placement.y
         text = "        {}:{}:{} -> ".format(
