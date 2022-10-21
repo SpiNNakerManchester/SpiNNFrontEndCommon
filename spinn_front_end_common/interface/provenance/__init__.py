@@ -17,24 +17,17 @@ from .abstract_provides_local_provenance_data import (
     AbstractProvidesLocalProvenanceData)
 from .abstract_provides_provenance_data_from_machine import (
     AbstractProvidesProvenanceDataFromMachine)
+from .fec_timer import FecTimer
 from .log_store_db import LogStoreDB
 from .provenance_reader import ProvenanceReader
 from .provides_provenance_data_from_machine_impl import (
     ProvidesProvenanceDataFromMachineImpl)
 from .provenance_writer import ProvenanceWriter
-from .fec_timer import FecTimer
+from .timer_category import TimerCategory
+from .timer_work import TimerWork
 
-# TIMER categories
-GET_MACHINE = "machine_generation"
-MAPPING = "mapping"
-DATA_GENERATION = "data_generation"
-LOADING = "loading"
-RUN_LOOP = "running"
-# Algorithm Names used elsewhere
-APPLICATION_RUNNER = "Application runner"
-BUFFER = "BufferExtraction"
-
-__all__ = ["AbstractProvidesLocalProvenanceData",
+__all__ = ["AbstractProvidesLocalProvenanceData", "FecTimer",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
-           "ProvidesProvenanceDataFromMachineImpl", "FecTimer"]
+           "ProvidesProvenanceDataFromMachineImpl",
+           "TimerCategory", "TimerWork"]
