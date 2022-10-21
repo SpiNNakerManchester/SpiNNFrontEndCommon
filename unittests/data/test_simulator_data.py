@@ -211,8 +211,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse(view.has_time_step())
 
     def test_directories_normal(self):
-        FecDataWriter.setup()
-        report_dir = FecDataView.get_report_dir_path()
+        writer = FecDataWriter.setup()
+        report_dir = writer.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
 
         timestramp_dir = FecDataView.get_timestamp_dir_path()
@@ -286,7 +286,7 @@ class TestSimulatorData(unittest.TestCase):
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
         _UtilsDataModel()._data_status = DataStatus.NOT_SETUP
         with self.assertRaises(NotSetupException):
-            FecDataView.get_report_dir_path()
+            writer.get_report_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
@@ -721,3 +721,17 @@ class TestSimulatorData(unittest.TestCase):
         self.assertTrue(protocol2.is_closed)
         with self.assertRaises(TypeError):
             writer.set_notification_protocol([])
+
+    def test_run_step(self):
+        self.assertIsNone(FecDataView.get_run_step())
+        writer = FecDataWriter.setup()
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
+        self.assertEqual(2, writer.next_run_step())
+        self.assertEqual(3, writer.next_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        self.assertEqual(3, FecDataView.get_run_step())
+        writer.clear_run_steps()
+        self.assertIsNone(FecDataView.get_run_step())
+        self.assertEqual(1, writer.next_run_step())
+        self.assertEqual(1, FecDataView.get_run_step())
