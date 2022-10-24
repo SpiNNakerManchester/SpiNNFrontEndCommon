@@ -47,7 +47,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
 
     __slots__ = []
 
-    def __init__(self, database_file=None):
+    def __init__(self, database_file=None, read_only=False):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -57,7 +57,11 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         if database_file is None:
             database_file = self.default_database_file()
 
-        super().__init__(database_file, ddl_file=_DDL_FILE)
+        if read_only:
+            super().__init__(database_file, read_only=False)
+        else:
+            super().__init__(
+                database_file, read_only=False, ddl_file=_DDL_FILE)
 
     @classmethod
     def default_database_file(cls):

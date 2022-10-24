@@ -320,7 +320,7 @@ class BufferManager(object):
         :param int p: placement p coordinate
         :param int recording_region_id: the recording region ID
         """
-        BufferDatabase().clear_region(x, y, p, recording_region_id)
+        BufferDatabase(read_only=False).clear_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -573,7 +573,7 @@ class BufferManager(object):
             len(recording_placements),
             "Extracting buffers from the last run")
 
-        db = BufferDatabase()
+        db = BufferDatabase(read_only=False)
         for placement in progress.over(recording_placements):
             self._retreive_by_placement(db, placement)
 
@@ -595,7 +595,7 @@ class BufferManager(object):
                 "so no data read".format(placement.vertex))
         with self._thread_lock_buffer_out:
             # data flush has been completed - return appropriate data
-            return BufferDatabase().get_region_data(
+            return BufferDatabase(read_only=True).get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
     def _retreive_by_placement(self, db, placement):
