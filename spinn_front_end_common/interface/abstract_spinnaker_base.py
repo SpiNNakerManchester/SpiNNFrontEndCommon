@@ -67,10 +67,11 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
+from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
-    buffer_manager_creator, chip_io_buf_clearer, chip_io_buf_extractor,
+    chip_io_buf_clearer, chip_io_buf_extractor,
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     dsg_region_reloader, energy_provenance_reporter,
@@ -1240,8 +1241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
 
-            self._data_writer.set_buffer_manager(
-                buffer_manager_creator())
+            self._data_writer.set_buffer_manager(BufferManager())
 
     def _execute_sdram_outgoing_partition_allocator(self):
         """
