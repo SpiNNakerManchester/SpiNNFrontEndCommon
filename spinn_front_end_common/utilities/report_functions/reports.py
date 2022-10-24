@@ -20,6 +20,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
 from pacman import exceptions
+from pacman.model.graphs import AbstractVirtual
 from pacman.model.graphs.machine import (
     MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
@@ -682,19 +683,12 @@ def _search_route(source_vertex, key_and_mask):
     :rtype: tuple(str, int)
     """
     # Create text for starting point
-    machine = FecDataView.get_machine()
-    if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        text = "        Virtual SpiNNaker Link -> "
-        slink = machine.get_spinnaker_link_with_id(
-            source_vertex.spinnaker_link_id)
-        x = slink.connected_chip_x
-        y = slink.connected_chip_y
-    elif isinstance(source_vertex, MachineFPGAVertex):
-        text = "        Virtual FPGA Link on -> "
-        flink = machine.get_fpga_link_with_id(
-            source_vertex.fpga_id, source_vertex.fpga_link_id)
-        x = flink.connected_chip_x
-        y = flink.connected_chip_y
+    if isinstance(source_vertex, AbstractVirtual):
+        machine = FecDataView.get_machine()
+        link_data = source_vertex.get_link_data(machine)
+        x = link_data.connected_chip_x
+        y = link_data.connected_chip_y
+        text = "        Virtual Link -> "
     else:
         source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
