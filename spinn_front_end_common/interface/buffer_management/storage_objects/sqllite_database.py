@@ -68,24 +68,6 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         return os.path.join(
             FecDataView.get_run_dir_path(), "buffer.sqlite3")
 
-    def clear(self):
-        """ Clears the data for all regions.
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                UPDATE region SET
-                    content = CAST('' AS BLOB), content_len = 0,
-                    fetches = 0, append_time = NULL
-                """)
-            cursor.execute("DELETE FROM region_extra")
-
     def clear_region(self, x, y, p, region):
         """ Clears the data for a single region.
 
