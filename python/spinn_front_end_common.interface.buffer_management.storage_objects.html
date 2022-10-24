@@ -54,17 +54,30 @@
 <section id="module-spinn_front_end_common.interface.buffer_management.storage_objects">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">AbstractDatabase</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>This API separates the required database calls from the implementation.</p>
-<p>Methods here are designed for the convenience of the caller not the    database.</p>
-<p>There should only ever be a single Database Object in use at any time.    In the case of application_graph_changed the first should closed and    a new one created.</p>
-<p>Do not assume that just because 2 database objects where opened with the    same parameters (for example SQLite file)    that they hold the same data.     In fact the second init is allowed to delete any previous data.</p>
-<p>While not recommended implementation objects are allowed to hold data in     memory, with the exception of data required by the java which must be     in the database once commit is called.</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
+<p>Specific implementation of the Database for SQLite 3.</p>
+<p>There should only ever be a single Database Object in use at any time.
+In the case of application_graph_changed the first should closed and
+a new one created.</p>
+<p>If 2 database objects where opened with the database_file they hold the
+same data. Unless someone else deletes that file.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>Not thread safe on the same database file!</em>
+Threads can access different DBs just fine.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
+database holding the data.
+If omitted the default location will be used.</p>
+</dd>
+</dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for all regions.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -79,8 +92,8 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region">
+<span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for a single region.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -105,15 +118,13 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Signals that the database can be closed and will not be reused.</p>
-<p>Once this is called any other method in this API is allowed to        raise any kind of exception.</p>
-</dd></dl>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_database_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.default_database_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data">
+<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data stored for a given region of a given core</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -140,8 +151,24 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/abstract_database.html#AbstractDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>UGLY SHOULD NOT NEVER DELETE THE FILE!</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method will be removed when the database moves to
+keeping data after reset.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer">
+<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -154,157 +181,9 @@ necessarily shorter than 1GB.</p>
 <li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)"><em>bytearray</em></a>) – <p>data to be stored</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Implementations may assume this to be shorter than 1GB</p>
+<p>Must be shorter than 1GB</p>
 </div>
 </p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferedReceivingData</span></span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Stores the information received through the buffering output        from the SpiNNaker system.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the data from a given data region (only clears things            associated with a given data recording region).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – placement x coordinate</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – placement y coordinate</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – placement p coordinate</p></li>
-<li><p><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the recording region ID to clear data from</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data">
-<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the data stored for a given region of a given core.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>a buffer containing all the data received during the
-simulation, and a flag indicating if any data was missing</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#memoryview" title="(in Python v3.8)">memoryview</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information">
-<span class="sig-name descname"><span class="pre">get_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.get_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the size, address and is_missing of the region</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The x-coordinate of the core whose data this is</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The y-coordinate of the core whose data this is</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The processor id of the core whose data this is</p></li>
-<li><p><strong>region_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The id of the region to get the data for</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information">
-<span class="sig-name descname"><span class="pre">has_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.has_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine if region information has been stored for this core</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The x-coordinate of the core whose data this is</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The y-coordinate of the core whose data this is</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The processor id of the core whose data this is</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed">
-<span class="sig-name descname"><span class="pre">is_data_from_region_flushed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.is_data_from_region_flushed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine if data has been stored for this region</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform tasks to restart recording from time=0</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume">
-<span class="sig-name descname"><span class="pre">resume</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.resume"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume" title="Permalink to this definition">¶</a></dt>
-<dd><p>Perform tasks that will continue running without resetting</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer">
-<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store some information in the correspondent buffer class for a            specific chip, core and region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data to be stored</p></li>
-<li><p><strong>missing</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether any data is missing</p></li>
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)"><em>bytearray</em></a>) – data to be stored</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information">
-<span class="sig-name descname"><span class="pre">store_region_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizes_and_addresses</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffered_receiving_data.html#BufferedReceivingData.store_region_information"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store the sizes, addresses and is_missing data of the regions</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The x-coordinate of the core whose data this is</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The y-coordinate of the core whose data this is</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The processor id of the core whose data this is</p></li>
-<li><p><strong>sizes_and_addresses</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em>)</em>) – The size and address of each region</p></li>
 </ul>
 </dd>
 </dl>
@@ -528,118 +407,6 @@ simulation, and a flag indicating if any data was missing</p>
 
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">SqlLiteDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
-<p>Specific implementation of the Database for SQLite 3.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p><em>Not thread safe on the same database file!</em>
-Threads can access different DBs just fine.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The name of a file that contains (or will contain) an SQLite
-database holding the data. If omitted, an unshared in-memory
-database will be used.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the data for all regions.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method will be removed when the database moves to
-keeping data after reset.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region">
-<span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the data for a single region.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method <em>loses information!</em></p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data to be cleared</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>True if any region was changed</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data">
-<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the data stored for a given region of a given core</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>a buffer containing all the data received during the            simulation, and a flag indicating if any data was missing</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Implementations should not assume that the total buffer is
-necessarily shorter than 1GB.</p>
-</div>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#memoryview" title="(in Python v3.8)">memoryview</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer">
-<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#SqlLiteDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Core within the specified chip</p></li>
-<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Region containing the data to be stored</p></li>
-<li><p><strong>missing</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether any data is missing</p></li>
-<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)"><em>bytearray</em></a>) – <p>data to be stored</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Implementations may assume this to be shorter than 1GB</p>
-</div>
-</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 </section>
 
@@ -655,24 +422,13 @@ necessarily shorter than 1GB.</p>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.storage_objects package</a><ul>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects">Module contents</a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.clear()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.clear_region()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.close"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.close()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.get_region_data()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.AbstractDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">AbstractDatabase.store_data_in_region_buffer()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.clear"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.clear()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_data"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.get_region_data()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.get_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.get_region_information()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.has_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.has_region_information()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.is_data_from_region_flushed"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.is_data_from_region_flushed()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.reset"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.reset()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.resume"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.resume()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.store_data_in_region_buffer()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedReceivingData.store_region_information"><code class="docutils literal notranslate"><span class="pre">BufferedReceivingData.store_region_information()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase"><code class="docutils literal notranslate"><span class="pre">BufferDatabase</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.clear()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.clear_region()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.default_database_file()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.get_region_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.reset()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.store_data_in_region_buffer()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion"><code class="docutils literal notranslate"><span class="pre">BufferedSendingRegion</span></code></a><ul>
@@ -697,13 +453,6 @@ necessarily shorter than 1GB.</p>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.messages"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.messages</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.send_stop_message()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number"><code class="docutils literal notranslate"><span class="pre">BuffersSentDeque.update_last_received_sequence_number()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.clear()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.clear_region()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.get_region_data()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.SqlLiteDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">SqlLiteDatabase.store_data_in_region_buffer()</span></code></a></li>
 </ul>
 </li>
 </ul>

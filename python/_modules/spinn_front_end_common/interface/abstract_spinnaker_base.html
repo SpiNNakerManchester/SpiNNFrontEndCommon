@@ -107,10 +107,11 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management</span> <span class="kn">import</span> <span class="n">BufferManager</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span>
-    <span class="n">buffer_manager_creator</span><span class="p">,</span> <span class="n">chip_io_buf_clearer</span><span class="p">,</span> <span class="n">chip_io_buf_extractor</span><span class="p">,</span>
+    <span class="n">chip_io_buf_clearer</span><span class="p">,</span> <span class="n">chip_io_buf_extractor</span><span class="p">,</span>
     <span class="n">chip_provenance_updater</span><span class="p">,</span> <span class="n">chip_runtime_updater</span><span class="p">,</span> <span class="n">compute_energy_used</span><span class="p">,</span>
     <span class="n">create_notification_protocol</span><span class="p">,</span> <span class="n">database_interface</span><span class="p">,</span>
     <span class="n">dsg_region_reloader</span><span class="p">,</span> <span class="n">energy_provenance_reporter</span><span class="p">,</span>
@@ -1278,8 +1279,7 @@
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_buffer_manager</span><span class="p">(</span>
-                <span class="n">buffer_manager_creator</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_buffer_manager</span><span class="p">(</span><span class="n">BufferManager</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_execute_sdram_outgoing_partition_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

@@ -60,7 +60,16 @@
 <p>How to send messages to clear the reinjection queue.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -82,7 +91,16 @@
 <p>How to send messages to load the saved application multicast routing        tables.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -104,7 +122,16 @@
 <p>How to send messages to load the configured system multicast routing        tables (and save the application routing tables).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -126,7 +153,16 @@
 <p>How to send messages to read the status of extra monitors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -168,7 +204,16 @@
 <p>How to send messages to clear the reinjection state counters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -190,7 +235,16 @@
 <p>How to send messages to control what messages are reinjected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
@@ -228,7 +282,16 @@ See the SpiNNaker datasheet for details.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – </p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>next_connection_selector</strong> (<em>AbstractMultiConnectionProcessConnectionSelector</em>) – How to choose the connection.</p></li>
+<li><p><strong>n_retries</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of retries of a message to use. Passed to
+<code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The timeout, in seconds. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>n_channels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of channels to use when talking to a particular
+SCAMP instance. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+<li><p><strong>intermediate_channel_waits</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The maximum number of outstanding message/reply pairs to have on a
+particular connection. Passed to <code class="xref py py-class docutils literal notranslate"><span class="pre">SCPRequestPipeLine</span></code></p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py method">
