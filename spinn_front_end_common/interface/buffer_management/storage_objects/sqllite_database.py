@@ -23,7 +23,6 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
-DB_FILE_NAME = "buffer.sqlite3"
 
 
 def _timestamp():
@@ -62,24 +61,12 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
 
     @classmethod
     def default_database_file(cls):
+        if FecDataView.get_reset_number():
+            return os.path.join(
+                FecDataView.get_run_dir_path(),
+                f"buffer{FecDataView.get_reset_number()}.sqlite3")
         return os.path.join(
-            FecDataView.get_run_dir_path(), DB_FILE_NAME)
-
-    def reset(self):
-        """
-        UGLY SHOULD NOT NEVER DELETE THE FILE!
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        database_file = self.default_database_file()
-        self.close()
-        if os.path.exists(database_file):
-            os.remove(database_file)
-        super().__init__(database_file, ddl_file=_DDL_FILE)
+            FecDataView.get_run_dir_path(), "buffer.sqlite3")
 
     def clear(self):
         """ Clears the data for all regions.
