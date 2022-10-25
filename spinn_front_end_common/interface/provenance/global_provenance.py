@@ -17,11 +17,10 @@ from datetime import datetime
 import logging
 import os
 import re
-from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
+    MICRO_TO_MILLISECOND_CONVERSION)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -59,7 +58,7 @@ class GlobalProvenance(SQLiteDB):
             for example before run is called
         """
         return os.path.join(
-                FecDataView.get_provenance_dir_path(),
+            FecDataView.get_provenance_dir_path(),
             "global_provenance.sqlite3")
 
     def __init__(self, database_file=None, memory=False):

@@ -13,15 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
 import logging
 import os
 import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
+from spinn_front_end_common.utilities.constants import (PROVENANCE_DB)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))

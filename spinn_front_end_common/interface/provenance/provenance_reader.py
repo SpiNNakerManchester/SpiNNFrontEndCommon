@@ -231,22 +231,22 @@ class ProvenanceReader(SQLiteDB):
         """
         # This uses the example file in the same directory as this script
         with ProvenanceReader(os.path.join(
-            os.path.dirname(__file__), "provenance.sqlite3")) as pr:
-                print("DIRECT QUERY:")
-                query = """
-                    SELECT x, y, the_value
-                    FROM router_provenance
-                    WHERE description = 'Local_P2P_Packets'
-                    """
-                results = pr.run_query(query)
-                for row in results:
-                    print(row)
-                print("\nCORES WITH LATE SPIKES:")
-                print(pr.cores_with_late_spikes())
-                print("\nROUETER (0,0) PROVENANCE:")
-                print(pr.get_provenance_for_router(0, 0))
-                print("\nCORES WITH PROVENACE")
-                print(pr.get_cores_with_provenace())
+                os.path.dirname(__file__), "provenance.sqlite3")) as pr:
+            print("DIRECT QUERY:")
+            query = """
+                SELECT x, y, the_value
+                FROM router_provenance
+                WHERE description = 'Local_P2P_Packets'
+                """
+            results = pr.run_query(query)
+            for row in results:
+                print(row)
+            print("\nCORES WITH LATE SPIKES:")
+            print(pr.cores_with_late_spikes())
+            print("\nROUETER (0,0) PROVENANCE:")
+            print(pr.get_provenance_for_router(0, 0))
+            print("\nCORES WITH PROVENACE")
+            print(pr.get_cores_with_provenace())
 
 
 if __name__ == '__main__':

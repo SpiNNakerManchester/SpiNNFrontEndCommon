@@ -17,7 +17,6 @@ import sqlite3
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .global_provenance import GlobalProvenance
-from .provenance_reader import ProvenanceReader
 
 
 class LogStoreDB(LogStore):
