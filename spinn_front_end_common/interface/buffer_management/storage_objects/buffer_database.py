@@ -16,7 +16,6 @@
 import os
 import sqlite3
 import time
-from spinn_front_end_common.data import FecDataView
 from .base_database import BaseDatabase
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
@@ -45,7 +44,6 @@ class BufferDatabase(BaseDatabase):
     """
 
     __slots__ = []
-
 
     def clear_region(self, x, y, p, region):
         """ Clears the data for a single region.

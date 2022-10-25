@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sqlite3
 import time
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
