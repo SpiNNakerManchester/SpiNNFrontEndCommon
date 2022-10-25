@@ -58,7 +58,7 @@ class GlobalProvenance(SQLiteDB):
             for example before run is called
         """
         return os.path.join(
-            FecDataView.get_provenance_dir_path(),
+            FecDataView.get_timestamp_dir_path(),
             "global_provenance.sqlite3")
 
     def __init__(self, database_file=None, memory=False):
