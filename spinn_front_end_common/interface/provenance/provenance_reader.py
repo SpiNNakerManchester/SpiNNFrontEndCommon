@@ -16,6 +16,8 @@
 import os
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
+from spinn_front_end_common.utilities.exceptions import (
+    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
@@ -70,7 +72,8 @@ class ProvenanceReader(SQLiteDB):
         else:
             self._provenance_data_path = self.get_last_run_database_path()
         if not os.path.exists(self._provenance_data_path):
-            raise Exception(f"no such DB: {self._provenance_data_path}")
+            raise NoProvenanceDatabaseException(
+                f"no such DB: {self._provenance_data_path}")
         SQLiteDB.__init__(self, self._provenance_data_path, read_only=True,
                           row_factory=None, text_factory=None)
 

@@ -20,10 +20,12 @@ from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.provenance import \
+    (ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
+from spinn_front_end_common.utilities.exceptions import (
+    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.interface.provenance import ProvenanceReader
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
@@ -56,11 +58,15 @@ def bitfield_compressor_report():
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            return _write_report(f)
+            _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
-        return None
+        return
+    except NoProvenanceDatabaseException:
+        logger.exception(
+            "No proveance found to write bitfield_compressor_report")
+        return
 
 
 def _merged_component(to_merge_per_chip, writer):

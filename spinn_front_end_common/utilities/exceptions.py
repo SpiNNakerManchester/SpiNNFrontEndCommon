@@ -60,3 +60,8 @@ class BufferedRegionNotPresent(SpinnFrontEndException):
 class CantFindSDRAMToUseException(SpinnFrontEndException):
     """ Raised when malloc and sdram stealing cannot occur.
     """
+
+class NoProvenanceDatabaseException(SpinnFrontEndException):
+    """
+    Raised when the Provenance database has not yet been created.
+    """
