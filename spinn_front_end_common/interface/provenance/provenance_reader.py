@@ -154,9 +154,8 @@ class ProvenanceReader(SQLiteDB):
             ORDER BY description
             """
         return "\n".join(
-            f"{ row['description'] }: { row['value'] }"
-            for row in self.run_query(query, [int(x), int(y)],
-                                      use_sqlite_rows=True))
+            f"{ row[0] }: { row[1] }"
+            for row in self.run_query(query, [int(x), int(y)]))
 
     def get_cores_with_provenace(self):
         """
