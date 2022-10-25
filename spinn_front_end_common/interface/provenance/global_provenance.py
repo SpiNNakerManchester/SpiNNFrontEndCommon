@@ -25,7 +25,7 @@ from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+_DDL_FILE = os.path.join(os.path.dirname(__file__), "global.sql")
 _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
