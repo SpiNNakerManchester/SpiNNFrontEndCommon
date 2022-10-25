@@ -29,19 +29,19 @@ class TestBufferedDatabase(unittest.TestCase):
         f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-        brd = BufferDatabase()
-        self.assertTrue(os.path.isfile(f), "DB now exists")
+        with BufferDatabase() as brd:
+            self.assertTrue(os.path.isfile(f), "DB now exists")
 
-        # TODO missing
-        # data, missing = brd.get_region_data(0, 0, 0, 0)
-        # self.assertTrue(missing, "data should be 'missing'")
-        # self.assertEqual(data, b"")
+            # TODO missing
+            # data, missing = brd.get_region_data(0, 0, 0, 0)
+            # self.assertTrue(missing, "data should be 'missing'")
+            # self.assertEqual(data, b"")
 
-        brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
-        brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
-        data, missing = brd.get_region_data(0, 0, 0, 0)
+            brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"abc")
+            brd.store_data_in_region_buffer(0, 0, 0, 0, False, b"def")
+            data, missing = brd.get_region_data(0, 0, 0, 0)
 
-        self.assertFalse(missing, "data shouldn't be 'missing'")
-        self.assertEqual(bytes(data), b"abcdef")
+            self.assertFalse(missing, "data shouldn't be 'missing'")
+            self.assertEqual(bytes(data), b"abcdef")
 
-        self.assertTrue(os.path.isfile(f), "DB still exists")
+            self.assertTrue(os.path.isfile(f), "DB still exists")
