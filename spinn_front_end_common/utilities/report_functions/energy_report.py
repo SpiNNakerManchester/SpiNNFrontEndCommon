@@ -309,8 +309,8 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_category(TimerCategory.LOADING)
+        with ProvenanceReader() as db:
+            total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -336,9 +336,9 @@ class EnergyReport(object):
         """
 
         # find time
-        reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_algorithm(
-            FecTimer.APPLICATION_RUNNER)
+        with ProvenanceReader() as db:
+            total_time_ms = db.get_timer_sum_by_algorithm(
+                FecTimer.APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (

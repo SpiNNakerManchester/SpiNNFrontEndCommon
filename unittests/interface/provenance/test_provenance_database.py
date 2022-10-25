@@ -47,7 +47,8 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
-        data = ProvenanceReader().run_query("select * from version_provenance")
+        with ProvenanceReader() as db:
+            data = db.run_query("select * from version_provenance")
         versions = [
             (1, 'spinn_utilities_version', '1!6.0.1'),
             (2, 'numpy_version', '1.17.4')]
@@ -57,9 +58,10 @@ class TestProvenanceDatabase(unittest.TestCase):
         with ProvenanceWriter() as db:
             db.insert_power("num_cores", 34)
             db.insert_power("total time (seconds)", 6.81)
-        data = ProvenanceReader().run_query("select * from power_provenance")
-        power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
-        self.assertListEqual(data, power)
+        with ProvenanceReader() as db:
+            data = db.run_query("select * from power_provenance")
+            power = [(1, 'num_cores', 34.0), (2, 'total time (seconds)', 6.81)]
+            self.assertListEqual(data, power)
 
     def test_timings(self):
         with ProvenanceWriter() as db:
@@ -80,19 +82,19 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_timing(
                 execute_id, "clear", TimerWork.OTHER,
                 timedelta(milliseconds=4), None)
-        reader = ProvenanceReader()
-        data = reader.get_timer_sum_by_category(TimerCategory.MAPPING)
-        self.assertEqual(12 + 123, data)
-        data = reader.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
-        self.assertEqual(134 + 344 + 4, data)
-        data = reader.get_timer_sum_by_category(TimerCategory.SHUTTING_DOWN)
-        self.assertEquals(0, data)
-        data = reader.get_timer_sum_by_algorithm("router_report")
-        self.assertEqual(123, data)
-        data = reader.get_timer_sum_by_algorithm("clear")
-        self.assertEqual(4, data)
-        data = reader.get_timer_sum_by_algorithm("junk")
-        self.assertEqual(0, data)
+        with ProvenanceReader() as db:
+            data = db.get_timer_sum_by_category(TimerCategory.MAPPING)
+            self.assertEqual(12 + 123, data)
+            data = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
+            self.assertEqual(134 + 344 + 4, data)
+            data = db.get_timer_sum_by_category(TimerCategory.SHUTTING_DOWN)
+            self.assertEquals(0, data)
+            data = db.get_timer_sum_by_algorithm("router_report")
+            self.assertEqual(123, data)
+            data = db.get_timer_sum_by_algorithm("clear")
+            self.assertEqual(4, data)
+            data = db.get_timer_sum_by_algorithm("junk")
+            self.assertEqual(0, data)
 
     def test_category_timings(self):
         with ProvenanceWriter() as db:
@@ -108,8 +110,8 @@ class TestProvenanceDatabase(unittest.TestCase):
             id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_category_timing(id, timedelta(milliseconds=344))
 
-        reader = ProvenanceReader()
-        data = reader.get_category_timer_sum(TimerCategory.MAPPING)
+        with ProvenanceReader() as db:
+            data = db.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
 
     def test_other(self):
@@ -122,8 +124,8 @@ class TestProvenanceDatabase(unittest.TestCase):
                 1, 3, 1715886360, 80, 1, "Extraction_time", 00.234)
             db.insert_gatherer(
                 1, 3, 1715886360, 80, 1, "Lost Packets", 12)
-        reader = ProvenanceReader()
-        data = reader.run_query("Select * from gatherer_provenance")
+        with ProvenanceReader() as db:
+            data = db.run_query("Select * from gatherer_provenance")
         expected = [(1, 1, 3, 1715886360, 80, 1, 'Extraction_time', 0.234),
                     (2, 1, 3, 1715886360, 80, 1, 'Lost Packets', 12.0)]
         self.assertListEqual(expected, data)
@@ -135,12 +137,12 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_router(1, 3, "des2", 67)
             db.insert_router(1, 3, "des1", 48)
             db.insert_router(5, 5, "des1", 48, False)
-        reader = ProvenanceReader()
-        data = set(reader.get_router_by_chip("des1"))
-        chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48), (5, 5, 48)}
-        self.assertSetEqual(data, chip_set)
-        data = reader.get_router_by_chip("junk")
-        self.assertEqual(0, len(data))
+        with ProvenanceReader() as db:
+            data = set(db.get_router_by_chip("des1"))
+            chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48), (5, 5, 48)}
+            self.assertSetEqual(data, chip_set)
+            data = db.get_router_by_chip("junk")
+            self.assertEqual(0, len(data))
 
     def test_monitor(self):
         with ProvenanceWriter() as db:
@@ -148,12 +150,12 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_monitor(1, 2, "des1", 45)
             db.insert_monitor(1, 3, "des2", 67)
             db.insert_monitor(1, 3, "des1", 48)
-        reader = ProvenanceReader()
-        data = set(reader.get_monitor_by_chip("des1"))
-        chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
-        self.assertSetEqual(data, chip_set)
-        data = reader.get_monitor_by_chip("junk")
-        self.assertEqual(0, len(data))
+        with ProvenanceReader() as db:
+            data = set(db.get_monitor_by_chip("des1"))
+            chip_set = {(1, 3, 34), (1, 2, 45), (1, 3, 48)}
+            self.assertSetEqual(data, chip_set)
+            data = db.get_monitor_by_chip("junk")
+            self.assertEqual(0, len(data))
 
     def test_cores(self):
         with ProvenanceWriter() as db:
@@ -168,8 +170,8 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.add_core_name(1, 3, 3, "second_core")
             db.add_core_name(1, 3, 2, "first_core")
             db.add_core_name(1, 3, 2, "new_name is ignored")
-        reader = ProvenanceReader()
-        data = reader.run_query("Select * from core_mapping")
+        with ProvenanceReader() as db:
+            data = db.run_query("Select * from core_mapping")
         self.assertEqual(2, len(data))
 
     def test_messages(self):
@@ -182,15 +184,15 @@ class TestProvenanceDatabase(unittest.TestCase):
                 db.insert_report("vier")
             self.assertEqual(3, len(lc.records))
 
-        reader = ProvenanceReader()
-        data = reader.messages()
+        with ProvenanceReader() as db:
+            data = db.messages()
         self.assertEqual(4, len(data))
 
     def test_connector(self):
         with ProvenanceWriter() as db:
             db.insert_connector("the pre", "A post", "OneToOne", "foo", 12)
-        reader = ProvenanceReader()
-        data = reader.run_query("Select * from connector_provenance")
+        with ProvenanceReader() as db:
+            data = db.run_query("Select * from connector_provenance")
         expected = [(1, 'the pre', 'A post', 'OneToOne', 'foo', 12)]
         self.assertListEqual(expected, data)
 

@@ -37,7 +37,8 @@ class LogStoreDB(LogStore):
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(self, min_level=0):
-        return ProvenanceReader().retreive_log_messages(min_level)
+        with ProvenanceReader() as db:
+            return db.retreive_log_messages(min_level)
 
     @overrides(LogStore.get_location)
     def get_location(self):

@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
 
-class ProvenanceReader(object):
+class ProvenanceReader(SQLiteDB):
     """
     Provides a connection to a database containing provenance for the current
     run and some convenience methods for extracting provenance data from it.
@@ -70,46 +70,12 @@ class ProvenanceReader(object):
             self._provenance_data_path = provenance_data_path
         else:
             self._provenance_data_path = self.get_last_run_database_path()
-
-    def get_database_handle(self, read_only=True, use_sqlite_rows=False):
-        """
-        Gets a handle to the open database.
-
-        You *should* use this as a Python context handler. A typical usage
-        pattern is this::
-
-            with reader.get_database_handler() as db:
-                with db.transaction() as cursor:
-                    for row in cursor.execute(...):
-                        # process row
-
-        .. note::
-            This method is mainly provided as a support method for the later
-            methods that return specific data. For new IntergationTests
-            please add a specific method rather than call this directly.
-
-        .. warning::
-            It is the callers responsibility to close the database.
-            The recommended usage is therefore a ``with`` statement
-
-        :param bool read_only: If true will return a readonly database
-        :param bool use_sqlite_rows:
-            If ``True`` the results of :py:meth:`run_query` will be
-            :py:class:`~sqlite3.Row`\\ s.
-            If ``False`` the results of :py:meth:`run_query` will be
-            :py:class:`tuple`\\ s.
-        :return: an open sqlite3 connection
-        :rtype: SQLiteDB
-        """
         if not os.path.exists(self._provenance_data_path):
             raise Exception(f"no such DB: {self._provenance_data_path}")
-        db = SQLiteDB(self._provenance_data_path, read_only=read_only,
-                      row_factory=(sqlite3.Row if use_sqlite_rows else None),
-                      text_factory=None)
-        return db
+        SQLiteDB.__init__(self, self._provenance_data_path, read_only=True,
+                          row_factory=None, text_factory=None)
 
-    def run_query(
-            self, query, params=(), read_only=True, use_sqlite_rows=False):
+    def run_query(self, query, params=()):
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
@@ -139,12 +105,9 @@ class ProvenanceReader(object):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        if not os.path.exists(self._provenance_data_path):
-            raise Exception("no such DB: " + self._provenance_data_path)
         results = []
-        with self.get_database_handle(read_only, use_sqlite_rows) as db:
-            with db.transaction() as cur:
-                for row in cur.execute(query, params):
+        with self.transaction() as cur:
+            for row in cur.execute(query, params):
                     results.append(row)
         return results
 
@@ -448,25 +411,25 @@ class ProvenanceReader(object):
         See also unittests/interface/provenance/test_provenance_database.py
         """
         # This uses the example file in the same directory as this script
-        pr = ProvenanceReader(os.path.join(
-            os.path.dirname(__file__), "provenance.sqlite3"))
-        print("DIRECT QUERY:")
-        query = """
-            SELECT x, y, the_value
-            FROM router_provenance
-            WHERE description = 'Local_P2P_Packets'
-            """
-        results = pr.run_query(query)
-        for row in results:
-            print(row)
-        print("\nCORES WITH LATE SPIKES:")
-        print(pr.cores_with_late_spikes())
-        print("\nRUN TIME OF BUFFER EXTRACTOR:")
-        print(pr.get_run_time_of_BufferExtractor())
-        print("\nROUETER (0,0) PROVENANCE:")
-        print(pr.get_provenance_for_router(0, 0))
-        print("\nCORES WITH PROVENACE")
-        print(pr.get_cores_with_provenace())
+        with ProvenanceReader(os.path.join(
+            os.path.dirname(__file__), "provenance.sqlite3")) as pr:
+            print("DIRECT QUERY:")
+            query = """
+                SELECT x, y, the_value
+                FROM router_provenance
+                WHERE description = 'Local_P2P_Packets'
+                """
+            results = pr.run_query(query)
+            for row in results:
+                print(row)
+            print("\nCORES WITH LATE SPIKES:")
+            print(pr.cores_with_late_spikes())
+            print("\nRUN TIME OF BUFFER EXTRACTOR:")
+            print(pr.get_run_time_of_BufferExtractor())
+            print("\nROUETER (0,0) PROVENANCE:")
+            print(pr.get_provenance_for_router(0, 0))
+            print("\nCORES WITH PROVENACE")
+            print(pr.get_cores_with_provenace())
 
 
 if __name__ == '__main__':
