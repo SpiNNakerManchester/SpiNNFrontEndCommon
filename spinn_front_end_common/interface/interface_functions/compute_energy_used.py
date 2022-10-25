@@ -17,7 +17,7 @@ import itertools
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceReader, TimerCategory, TimerWork)
+    GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -71,7 +71,7 @@ def compute_energy_used(machine_allocation_controller=None):
             FecDataView.get_current_run_timesteps() *
             FecDataView.get_time_scale_factor())
     machine = FecDataView.get_machine()
-    with ProvenanceReader() as db:
+    with GlobalProvenance() as db:
         dsg_time = db.get_category_timer_sum(TimerCategory.DATA_GENERATION)
         execute_time = db.get_category_timer_sum(TimerCategory.RUN_LOOP)
         # NOTE: this extraction time is part of the execution time; it does not
@@ -360,7 +360,7 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
     # pylint: disable=too-many-arguments
 
     # find time in milliseconds
-    with ProvenanceReader() as db:
+    with GlobalProvenance() as db:
         total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
     # handle monitor core active cost
@@ -406,7 +406,7 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
     # find time
     # TODO is this what was desired
     total_time_ms = 0
-    with ProvenanceReader() as db:
+    with GlobalProvenance() as db:
         buffer_time_ms = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
 
     energy_cost = 0

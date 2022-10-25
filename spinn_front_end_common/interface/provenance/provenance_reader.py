@@ -128,59 +128,6 @@ class ProvenanceReader(SQLiteDB):
             """
         return self.run_query(query)
 
-    def get_timer_provenance(self, algorithm):
-        """
-        Gets the timer provenance item(s) from the last run
-
-        :param str algorithm:
-            The value to LIKE search for in the algorithm column.
-            Can be the full name, or have ``%``  and ``_`` wildcards.
-        :return:
-            A possibly multiline string with for each row which matches the
-            like a line ``algorithm: value``
-        :rtype: str
-        """
-        query = """
-            SELECT algorithm, time_taken
-            FROM timer_provenance
-            WHERE algorithm LIKE ?
-            """
-        return "\n".join(
-            f"{row[0]}: {row[1]}"
-            for row in self.run_query(query, [algorithm]))
-
-    def get_run_times(self):
-        """
-        Gets the algorithm running times from the last run. If an algorithm is
-        invoked multiple times in the run, its times are summed.
-
-        :return:
-            A possibly multiline string with for each row which matches the
-            like a line ``description_name: time``. The times are in seconds.
-        :rtype: str
-        """
-        # We know the database actually stores microseconds for durations
-        query = """
-            SELECT description, SUM(time_taken) / 1000000.0
-            FROM timer_provenance
-            GROUP BY description
-            ORDER BY the_value
-            """
-        return "\n".join(
-            f"{row[0].replace('_', ' ')}: {row[1]} s"
-            for row in self.run_query(query))
-
-    def get_run_time_of_BufferExtractor(self):
-        """
-        Gets the BufferExtractor provenance item(s) from the last run
-
-        :return:
-            A possibly multiline string with for each row which matches the
-            like %BufferExtractor description_name: value
-        :rtype: str
-        """
-        return self.get_timer_provenance("%BufferExtractor")
-
     def get_provenance_for_router(self, x, y):
         """
         Gets the provenance item(s) from the last run relating to a chip
@@ -260,121 +207,6 @@ class ProvenanceReader(SQLiteDB):
         except IndexError:
             return None
 
-    def get_category_timer_sum(self, category):
-        """
-        Get the total runtime for one category of algorithms
-
-        :param  TimerCategory category:
-        :return: total off all runtimes with this category
-        :rtype: int
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM category_timer_provenance
-             WHERE category = ?
-             """
-        data = self.run_query(query, [category.category_name])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
-    def get_category_timer_sums(self, category):
-        """
-        Get the runtime for one category of algorithms
-        split machine on, machine off
-
-        :param TimerCategory category:
-        :return: total on and off time of instances with this category
-        :rtype: int
-        """
-        on = 0
-        off = 0
-        query = """
-             SELECT sum(time_taken), machine_on
-             FROM category_timer_provenance
-             WHERE category = ?
-             GROUP BY machine_on
-             """
-        try:
-            for data in self.run_query(query, [category.category_name]):
-                if data[1]:
-                    on = data[0]
-                else:
-                    off = data[0]
-        except IndexError:
-            pass
-        return on, off
-
-    def get_timer_sum_by_category(self, category):
-        """
-        Get the total runtime for one category of algorithms
-
-        :param TimerCategory category:
-        :return: total off all runtimes with this category
-        :rtype: int
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM full_timer_view
-             WHERE category = ?
-             """
-        data = self.run_query(query, [category.category_name])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
-    def get_timer_sum_by_work(self, work):
-        """
-        Get the total runtime for one work type of algorithms
-
-        :param TimerWork work:
-        :return: total off all runtimes with this category
-        :rtype: int
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM full_timer_view
-             WHERE work = ?
-             """
-        data = self.run_query(query, [work.work_name])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
-    def get_timer_sum_by_algorithm(self, algorithm):
-        """
-        Get the total runtime for one algorithm
-
-        :param str algorithm:
-        :return: total off all runtimes with this algorithm
-        :rtype: int
-        """
-        query = """
-             SELECT sum(time_taken)
-             FROM timer_provenance
-             WHERE algorithm = ?
-             """
-        data = self.run_query(query, [algorithm])
-        try:
-            info = data[0][0]
-            if info is None:
-                return 0
-            return info
-        except IndexError:
-            return 0
-
     def messages(self):
         """
         List all the provenance messages
@@ -387,21 +219,6 @@ class ProvenanceReader(SQLiteDB):
              FROM reports
              """
         return self.run_query(query, [])
-
-    def retreive_log_messages(self, min_level=0):
-        """
-        Retrieves all log messages at or above the min_level
-
-        :param int min_level:
-        :rtype: list(tuple(int, str))
-        """
-        query = """
-            SELECT message
-            FROM p_log_provenance
-            WHERE level >= ?
-            """
-        messages = self.run_query(query, [min_level])
-        return list(map(lambda x: x[0], messages))
 
     @staticmethod
     def demo():
@@ -423,8 +240,6 @@ class ProvenanceReader(SQLiteDB):
                     print(row)
                 print("\nCORES WITH LATE SPIKES:")
                 print(pr.cores_with_late_spikes())
-                print("\nRUN TIME OF BUFFER EXTRACTOR:")
-                print(pr.get_run_time_of_BufferExtractor())
                 print("\nROUETER (0,0) PROVENANCE:")
                 print(pr.get_provenance_for_router(0, 0))
                 print("\nCORES WITH PROVENACE")

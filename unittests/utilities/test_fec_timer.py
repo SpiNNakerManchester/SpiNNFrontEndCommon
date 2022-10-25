@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from testfixtures import LogCapture
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
@@ -74,7 +74,7 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.end_category(TimerCategory.GET_MACHINE)
         FecTimer.end_category(TimerCategory.MAPPING)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             on, off = db.get_category_timer_sums(TimerCategory.RUN_OTHER)
             total = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
             self.assertGreater(on, 0)
@@ -105,7 +105,7 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
         FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             total = db.get_category_timer_sum(
                 TimerCategory.SHUTTING_DOWN)
             self.assertEqual(total, 0)
@@ -135,7 +135,7 @@ class TestFecTimer(unittest.TestCase):
     def test_stop_category_timing_clean(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
             FecTimer.start_category(TimerCategory.MAPPING)
             FecTimer.end_category(TimerCategory.MAPPING)
@@ -149,7 +149,7 @@ class TestFecTimer(unittest.TestCase):
     def test_stop_category_timing_messy(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
             FecTimer.start_category(TimerCategory.MAPPING)
             FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
@@ -160,8 +160,7 @@ class TestFecTimer(unittest.TestCase):
             total = db.get_category_timer_sum(TimerCategory.WAITING)
             # As we never ended RUN_OTHER we never got back to WAITING
             self.assertEqual(total, before)
-            other = ProvenanceReader().get_category_timer_sum(
-                TimerCategory.RUN_OTHER)
+            other = db.get_category_timer_sum(TimerCategory.RUN_OTHER)
             self.assertGreater(other, 0)
 
     def test_stop_last_category_blocked(self):

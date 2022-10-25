@@ -22,7 +22,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.provenance import (
-    LogStoreDB, ProvenanceWriter, ProvenanceReader, TimerCategory, TimerWork)
+    LogStoreDB, GlobalProvenance, ProvenanceWriter, ProvenanceReader, TimerCategory, TimerWork)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -44,15 +44,14 @@ class TestProvenanceDatabase(unittest.TestCase):
         return results
 
     def test_version(self):
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", "1!6.0.1")
             db.insert_version("numpy_version", "1.17.4")
-        with ProvenanceReader() as db:
             data = db.run_query("select * from version_provenance")
-        versions = [
-            (1, 'spinn_utilities_version', '1!6.0.1'),
-            (2, 'numpy_version', '1.17.4')]
-        self.assertListEqual(data, versions)
+            versions = [
+                (1, 'spinn_utilities_version', '1!6.0.1'),
+                (2, 'numpy_version', '1.17.4')]
+            self.assertListEqual(data, versions)
 
     def test_power(self):
         with ProvenanceWriter() as db:
@@ -64,7 +63,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertListEqual(data, power)
 
     def test_timings(self):
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             mapping_id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_timing(
                 mapping_id, "compressor", TimerWork.OTHER,
@@ -82,7 +81,6 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_timing(
                 execute_id, "clear", TimerWork.OTHER,
                 timedelta(milliseconds=4), None)
-        with ProvenanceReader() as db:
             data = db.get_timer_sum_by_category(TimerCategory.MAPPING)
             self.assertEqual(12 + 123, data)
             data = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
@@ -97,7 +95,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             self.assertEqual(0, data)
 
     def test_category_timings(self):
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             id = db.insert_category(TimerCategory.MAPPING, False)
             db.insert_category_timing(id, timedelta(milliseconds=12))
 
@@ -110,7 +108,6 @@ class TestProvenanceDatabase(unittest.TestCase):
             id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_category_timing(id, timedelta(milliseconds=344))
 
-        with ProvenanceReader() as db:
             data = db.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
 
@@ -219,7 +216,7 @@ class TestProvenanceDatabase(unittest.TestCase):
         ls = LogStoreDB()
         logger.set_log_store(ls)
         logger.warning("this works")
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db._test_log_locked("locked")
             logger.warning("not locked")
         logger.warning("this wis fine")

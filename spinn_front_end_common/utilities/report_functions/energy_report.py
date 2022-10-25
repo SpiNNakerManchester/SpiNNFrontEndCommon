@@ -20,7 +20,7 @@ from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader, TimerCategory)
+    FecTimer, GlobalProvenance, TimerCategory)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
@@ -309,7 +309,7 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
@@ -336,7 +336,7 @@ class EnergyReport(object):
         """
 
         # find time
-        with ProvenanceReader() as db:
+        with GlobalProvenance() as db:
             total_time_ms = db.get_timer_sum_by_algorithm(
                 FecTimer.APPLICATION_RUNNER)
 
