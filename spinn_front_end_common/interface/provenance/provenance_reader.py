@@ -14,7 +14,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sqlite3
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
@@ -108,7 +107,7 @@ class ProvenanceReader(SQLiteDB):
         results = []
         with self.transaction() as cur:
             for row in cur.execute(query, params):
-                    results.append(row)
+                results.append(row)
         return results
 
     def cores_with_late_spikes(self):
@@ -413,23 +412,23 @@ class ProvenanceReader(SQLiteDB):
         # This uses the example file in the same directory as this script
         with ProvenanceReader(os.path.join(
             os.path.dirname(__file__), "provenance.sqlite3")) as pr:
-            print("DIRECT QUERY:")
-            query = """
-                SELECT x, y, the_value
-                FROM router_provenance
-                WHERE description = 'Local_P2P_Packets'
-                """
-            results = pr.run_query(query)
-            for row in results:
-                print(row)
-            print("\nCORES WITH LATE SPIKES:")
-            print(pr.cores_with_late_spikes())
-            print("\nRUN TIME OF BUFFER EXTRACTOR:")
-            print(pr.get_run_time_of_BufferExtractor())
-            print("\nROUETER (0,0) PROVENANCE:")
-            print(pr.get_provenance_for_router(0, 0))
-            print("\nCORES WITH PROVENACE")
-            print(pr.get_cores_with_provenace())
+                print("DIRECT QUERY:")
+                query = """
+                    SELECT x, y, the_value
+                    FROM router_provenance
+                    WHERE description = 'Local_P2P_Packets'
+                    """
+                results = pr.run_query(query)
+                for row in results:
+                    print(row)
+                print("\nCORES WITH LATE SPIKES:")
+                print(pr.cores_with_late_spikes())
+                print("\nRUN TIME OF BUFFER EXTRACTOR:")
+                print(pr.get_run_time_of_BufferExtractor())
+                print("\nROUETER (0,0) PROVENANCE:")
+                print(pr.get_provenance_for_router(0, 0))
+                print("\nCORES WITH PROVENACE")
+                print(pr.get_cores_with_provenace())
 
 
 if __name__ == '__main__':
