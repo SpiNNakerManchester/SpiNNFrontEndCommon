@@ -146,7 +146,7 @@ class BufferDatabase(BaseDatabase):
                 LIMIT 1
                 """, (x, y, p, region)):
             return row["region_id"]
-        core_id = self.__get_core_id(cursor, x, y, p)
+        core_id = self._get_core_id(cursor, x, y, p)
         cursor.execute(
             """
             INSERT INTO region(

@@ -69,7 +69,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
             FecDataView.get_run_dir_path(), "buffer.sqlite3")
 
     @staticmethod
-    def __get_core_id(cursor, x, y, p):
+    def _get_core_id(cursor, x, y, p):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
