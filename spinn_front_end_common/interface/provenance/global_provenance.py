@@ -188,9 +188,10 @@ class GlobalProvenance(SQLiteDB):
             # lock the database
             cur.execute(
                 """
-                INSERT INTO reports(message)
-                VALUES(?)
-                """, [text])
+                INSERT INTO version_provenance(
+                    description, the_value)
+                VALUES("foo", "bar")
+                """)
             cur.lastrowid
             # try logging and storing while locked.
             logger.warning(text)

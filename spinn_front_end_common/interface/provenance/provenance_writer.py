@@ -78,25 +78,6 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_other(self, category, description, the_value):
-        """
-        Insert unforeseen provenance into the other_provenace_table
-
-        This allows to add provenance that does not readily fit into any of
-        the other categerogies
-
-        :param str category: grouping from this provenance
-        :param str description: Specific provenance being saved
-        :param ste the_value: Data
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO other_provenance(
-                    category, description, the_value)
-                VALUES(?, ?, ?)
-                """, [category, description, the_value])
-
     def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
         """

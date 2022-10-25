@@ -112,10 +112,6 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_category_timer_sum(TimerCategory.MAPPING)
         self.assertEqual(12 + 123, data)
 
-    def test_other(self):
-        with ProvenanceWriter() as db:
-            db.insert_other("foo", "bar", 12)
-
     def test_gatherer(self):
         with ProvenanceWriter() as db:
             db.insert_gatherer(
