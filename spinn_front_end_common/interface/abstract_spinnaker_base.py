@@ -895,8 +895,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_record_core_names(self):
         with FecTimer(
-                "Record core names to databse", TimerWork.REPORT) as timer:
-             with BufferDatabase() as db:
+                "Record core names to databse", TimerWork.REPORT):
+            with BufferDatabase() as db:
                 db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):

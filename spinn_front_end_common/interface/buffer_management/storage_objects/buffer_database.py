@@ -258,7 +258,6 @@ class BufferDatabase(BaseDatabase):
                 """
                 UPDATE core SET core_name = ?
                 WHERE x = ? AND y = ? and processor = ?
-                
                 """, (core_name, x, y, p))
 
     def store_vertex_labels(self):
