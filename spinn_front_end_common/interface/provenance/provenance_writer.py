@@ -133,12 +133,13 @@ class ProvenanceWriter(BaseDatabase):
         :param int the_value: data
         """
         with self.transaction() as cur:
+            core_id = self._get_core_id(cur, x, y, p)
             cur.execute(
                 """
                 INSERT INTO core_provenance(
-                    x, y, p, description, the_value)
-                VALUES(?, ?, ?, ?, ?)
-                """, [x, y, p, description, the_value])
+                    core_id, description, the_value)
+                VALUES(?, ?, ?)
+                """, [core_id, description, the_value])
 
     def insert_report(self, message):
         """

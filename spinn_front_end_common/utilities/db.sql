@@ -161,17 +161,16 @@ CREATE VIEW IF NOT EXISTS router_summary_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for each core
 CREATE TABLE IF NOT EXISTS core_provenance(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x INTEGER NOT NULL,
-    y INTEGER NOT NULL,
-    p INTEGER NOT NULL,
+    cp_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
 
 -- Create a view combining core name and data
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT core_name, x, y, p, description, the_value
+    SELECT core_name, x, y, processor as p, description, the_value
     FROM core_provenance NATURAL JOIN core;
 
 -- Compute some basic statistics per core over the provenance
