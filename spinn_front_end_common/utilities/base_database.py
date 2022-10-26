@@ -71,7 +71,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
                 FecDataView.get_run_dir_path(),
                 f"data{FecDataView.get_reset_number()}.sqlite3")
         return os.path.join(
-            FecDataView.get_run_dir_path(), "buffer.sqlite3")
+            FecDataView.get_run_dir_path(), "data.sqlite3")
 
     @staticmethod
     def _get_core_id(cursor, x, y, p):
