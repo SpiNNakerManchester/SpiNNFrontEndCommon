@@ -15,24 +15,21 @@
 
 import unittest
 import os
-from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferedReceivingData
-from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .sqllite_database import DB_FILE_NAME
+    import BufferDatabase
 from spinn_front_end_common.interface.config_setup import unittest_setup
 
 
-class TestBufferedReceivingDataWithDB(unittest.TestCase):
+class TestBufferedDatabase(unittest.TestCase):
 
     def setUp(self):
         unittest_setup()
 
     def test_use_database(self):
-        f = os.path.join(FecDataView.get_run_dir_path(), DB_FILE_NAME)
+        f = BufferDatabase.default_database_file()
         self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-        brd = BufferedReceivingData()
+        brd = BufferDatabase()
         self.assertTrue(os.path.isfile(f), "DB now exists")
 
         # TODO missing

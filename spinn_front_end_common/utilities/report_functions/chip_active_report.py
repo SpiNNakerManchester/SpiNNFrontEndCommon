@@ -21,7 +21,7 @@ from spinn_utilities.exceptions import SpiNNUtilsException
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (SqlLiteDatabase)
+    import (BufferDatabase)
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
     import (MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD)
 
@@ -60,7 +60,7 @@ def write_chip_active_report(report_path=None, buffer_path=None):
 
 
 def __write_report(f, buffer_path):
-    db = SqlLiteDatabase(buffer_path)
+    db = BufferDatabase(buffer_path)
     n_samples_per_recording = get_config_int(
         "EnergyMonitor", "n_samples_per_recording_entry")
 

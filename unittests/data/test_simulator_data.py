@@ -25,6 +25,7 @@ from spinn_utilities.exceptions import (
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
+from pacman.model.placements import Placements
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.data import FecDataView
@@ -76,6 +77,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
+        writer.set_placements(Placements())
         bm = BufferManager()
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
@@ -211,8 +213,8 @@ class TestSimulatorData(unittest.TestCase):
         self.assertFalse(view.has_time_step())
 
     def test_directories_normal(self):
-        FecDataWriter.setup()
-        report_dir = FecDataView.get_report_dir_path()
+        writer = FecDataWriter.setup()
+        report_dir = writer.get_report_dir_path()
         self.assertTrue(os.path.exists(report_dir))
 
         timestramp_dir = FecDataView.get_timestamp_dir_path()
@@ -286,7 +288,7 @@ class TestSimulatorData(unittest.TestCase):
         # VERY UGLY HACK DO NOT COPY!!!!!!!!!!!!
         _UtilsDataModel()._data_status = DataStatus.NOT_SETUP
         with self.assertRaises(NotSetupException):
-            FecDataView.get_report_dir_path()
+            writer.get_report_dir_path()
         with self.assertRaises(NotSetupException):
             FecDataView.get_timestamp_dir_path()
         with self.assertRaises(NotSetupException):
