@@ -13,12 +13,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import sqlite3
 import time
-from .base_database import BaseDatabase
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
 

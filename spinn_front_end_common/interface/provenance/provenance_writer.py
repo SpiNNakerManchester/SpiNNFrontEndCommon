@@ -14,21 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
-import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (PROVENANCE_DB)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "local.sql")
-_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
-
-class ProvenanceWriter(SQLiteDB):
+class ProvenanceWriter(BaseDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -40,9 +33,7 @@ class ProvenanceWriter(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-        "_database_file"
-    ]
+    __slots__ = []
 
     def __init__(self, database_file=None, memory=False):
         """
@@ -57,11 +48,7 @@ class ProvenanceWriter(SQLiteDB):
             Otherwise a None file will mean the default should be used
 
         """
-        if database_file is None and not memory:
-            database_file = os.path.join(
-                FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
-        self._database_file = database_file
-        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
+        super().__init__(database_file)
 
     def insert_power(self, description, the_value):
         """

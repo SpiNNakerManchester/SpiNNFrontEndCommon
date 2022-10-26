@@ -18,10 +18,10 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.exceptions import (
     NoProvenanceDatabaseException)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 
-class ProvenanceReader(SQLiteDB):
+class ProvenanceReader(BaseDatabase):
     """
     Provides a connection to a database containing provenance for the current
     run and some convenience methods for extracting provenance data from it.
@@ -67,14 +67,7 @@ class ProvenanceReader(SQLiteDB):
         :param provenance_data_path: Path to the provenance database to wrap
         :type provenance_data_path: None or str
         """
-        if provenance_data_path:
-            self._provenance_data_path = provenance_data_path
-        else:
-            self._provenance_data_path = self.get_last_run_database_path()
-        if not os.path.exists(self._provenance_data_path):
-            raise NoProvenanceDatabaseException(
-                f"no such DB: {self._provenance_data_path}")
-        SQLiteDB.__init__(self, self._provenance_data_path, read_only=True,
+        super().__init__(provenance_data_path, read_only=True,
                           row_factory=None, text_factory=None)
 
     def run_query(self, query, params=()):
