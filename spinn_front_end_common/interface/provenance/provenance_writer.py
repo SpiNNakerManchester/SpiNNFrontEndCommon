@@ -140,26 +140,6 @@ class ProvenanceWriter(BaseDatabase):
                 VALUES(?, ?, ?, ?, ?)
                 """, [x, y, p, description, the_value])
 
-    def add_core_name(self, x, y, p, core_name):
-        """
-        Adds a vertex or similar name for the core to the core_mapping table
-
-        A second call to the same core is silently ignored even if the name
-        if different.
-
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param int p: id of the core
-        :param str core_name: Name to assign
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT OR IGNORE INTO core_mapping(
-                    x, y, p, core_name)
-                VALUES(?, ?, ?, ?)
-                """, [x, y, p, core_name])
-
     def insert_report(self, message):
         """
         Save and if applicable logs a message to the report_table

@@ -15,6 +15,9 @@
 
 import unittest
 import os
+from pacman.model.graphs.machine import SimpleMachineVertex
+from pacman.model.placements import Placement, Placements
+from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -45,3 +48,23 @@ class TestBufferedDatabase(unittest.TestCase):
             self.assertEqual(bytes(data), b"abcdef")
 
             self.assertTrue(os.path.isfile(f), "DB still exists")
+
+    def test_placements(self):
+        writer = FecDataWriter.mock()
+        info = Placements([])
+        p1 = Placement(SimpleMachineVertex(None, label="V1"), 1, 2, 3)
+        info.add_placement(p1)
+        v2 = SimpleMachineVertex(None, label="V2")
+        p2 = Placement(v2, 1, 2, 5)
+        info.add_placement(p2)
+        info.add_placement(Placement(SimpleMachineVertex(None), 2, 2, 3))
+        writer.set_placements(info)
+        with BufferDatabase() as db:
+            db.store_data_in_region_buffer(1, 2, 3, 0, False, b"abc")
+            db.store_vertex_labels()
+            label = db.get_core_name(1, 2, 3)
+            self.assertEqual("V1", label)
+            label = db.get_core_name(1, 2, 5)
+            self.assertEqual("V2", label)
+            label = db.get_core_name(4, 3, 0)
+            self.assertEqual("SCAMP(OS)_4:3", label)

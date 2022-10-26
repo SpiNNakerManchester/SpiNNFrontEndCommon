@@ -68,6 +68,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
@@ -438,6 +440,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
             self._do_mapping(total_run_time)
+
+        if not self._data_writer.is_ran_last():
+            self._execute_record_core_names()
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -887,6 +892,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _execute_record_core_names(self):
+        with FecTimer(
+                "Record core names to databse", TimerWork.REPORT) as timer:
+             with BufferDatabase() as db:
+                db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):
         """

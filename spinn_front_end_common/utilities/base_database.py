@@ -73,8 +73,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         return os.path.join(
             FecDataView.get_run_dir_path(), "data.sqlite3")
 
-    @staticmethod
-    def _get_core_id(cursor, x, y, p):
+    def _get_core_id(self, cursor, x, y, p):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
@@ -84,7 +83,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         """
         for row in cursor.execute(
                 """
-                SELECT core_id FROM region_view
+                SELECT core_id FROM core
                 WHERE x = ? AND y = ? AND processor = ?
                 LIMIT 1
                 """, (x, y, p)):

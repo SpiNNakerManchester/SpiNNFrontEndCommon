@@ -15,6 +15,7 @@
 
 import sqlite3
 import time
+from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
@@ -236,3 +237,48 @@ class BufferDatabase(BaseDatabase):
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def _set_core_name(self, cursor, x, y, p, core_name):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param str core_name:
+
+        """
+        try:
+            cursor.execute(
+                """
+                INSERT INTO core (x, y, processor, core_name)
+                VALUES (?, ?, ? ,?)
+                """, (x, y, p, core_name))
+        except sqlite3.IntegrityError:
+            cursor.execute(
+                """
+                UPDATE core SET core_name = ?
+                WHERE x = ? AND y = ? and processor = ?
+                
+                """, (core_name, x, y, p))
+
+    def store_vertex_labels(self):
+        with self.transaction() as cursor:
+            for placement in FecDataView.iterate_placemements():
+                self._set_core_name(cursor, placement.x, placement.y,
+                                    placement.p, placement.vertex.label)
+            for chip in FecDataView.get_machine().chips:
+                for processor in chip.processors:
+                    if processor.is_monitor:
+                        self._set_core_name(
+                            cursor, chip.x, chip.y, processor.processor_id,
+                            f"SCAMP(OS)_{chip.x}:{chip.y}")
+
+    def get_core_name(self, x, y, p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT core_name
+                    FROM core
+                    WHERE x = ? AND y = ? and processor = ?
+                    """, (x, y, p)):
+                return str(row["core_name"], 'utf8')

@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	x INTEGER NOT NULL,
 	y INTEGER NOT NULL,
-	processor INTEGER NOT NULL);
+	processor INTEGER NOT NULL,
+	core_name STRING);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
@@ -167,21 +168,11 @@ CREATE TABLE IF NOT EXISTS core_provenance(
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
--- A table holding the mapping from vertex name to core x, y, p
-CREATE TABLE IF NOT EXISTS core_mapping(
-    core_name STRING NOT NULL,
-    x INTEGER,
-    y INTEGER,
-    p INTEGER);
-
--- Every core has a unique x,y,p location.
-CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
-	x ASC, y ASC, p ASC);
 
 -- Create a view combining core name and data
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
     SELECT core_name, x, y, p, description, the_value
-    FROM core_provenance NATURAL JOIN core_mapping;
+    FROM core_provenance NATURAL JOIN core;
 
 -- Compute some basic statistics per core over the provenance
 CREATE VIEW IF NOT EXISTS core_stats_view AS

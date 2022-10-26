@@ -158,16 +158,6 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_core(1, 3, 2, "des2", 67)
             db.insert_core(1, 3, 1, "des1", 48)
 
-    def test_core_name(self):
-        with ProvenanceWriter() as db:
-            db.add_core_name(1, 3, 2, "first_core")
-            db.add_core_name(1, 3, 3, "second_core")
-            db.add_core_name(1, 3, 2, "first_core")
-            db.add_core_name(1, 3, 2, "new_name is ignored")
-        with ProvenanceReader() as db:
-            data = db.run_query("Select * from core_mapping")
-        self.assertEqual(2, len(data))
-
     def test_messages(self):
         set_config("Reports", "provenance_report_cutoff", 3)
         with LogCapture() as lc:
