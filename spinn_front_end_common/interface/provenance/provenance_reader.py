@@ -16,8 +16,6 @@
 import os
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
-from spinn_front_end_common.utilities.exceptions import (
-    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 
@@ -68,7 +66,7 @@ class ProvenanceReader(BaseDatabase):
         :type provenance_data_path: None or str
         """
         super().__init__(provenance_data_path, read_only=True,
-                          row_factory=None, text_factory=None)
+                         row_factory=None, text_factory=None)
 
     def run_query(self, query, params=()):
         """
