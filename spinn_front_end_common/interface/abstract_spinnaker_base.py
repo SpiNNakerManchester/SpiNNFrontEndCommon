@@ -2288,7 +2288,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             db = BufferDatabase()
-            db.store_placements()
             db.store_chip_power_monitors()
             db.close()
 

@@ -81,7 +81,7 @@ def __write_report(f, buffer_path):
         energy_factor = time_for_recorded_sample * milliwatts
 
         for core in range(0, 18):
-            label = db.get_label(row["x"], row["y"], core)
+            label = db.get_core_name(row["x"], row["y"], core)
             if (active_sums[core] > 0) or label:
                 f.write(
                     f"processor {row['x']}:{row['y']}:{core}({label})"

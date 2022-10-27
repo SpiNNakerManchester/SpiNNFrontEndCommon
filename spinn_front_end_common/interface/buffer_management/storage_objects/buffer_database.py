@@ -280,4 +280,60 @@ class BufferDatabase(BaseDatabase):
                     FROM core
                     WHERE x = ? AND y = ? and processor = ?
                     """, (x, y, p)):
-                return str(row["core_name"], 'utf8')
+                if row["core_name"]:
+                    return str(row["core_name"], 'utf8')
+                else:
+                    return None
+
+    def store_chip_power_monitors(self):
+        # delayed import due to circular refrences
+        from spinn_front_end_common.utility_models. \
+            chip_power_monitor_machine_vertex import (
+            ChipPowerMonitorMachineVertex)
+
+        with self.transaction() as cursor:
+            for _ in cursor.execute(
+                    """
+                    SELECT name FROM sqlite_master
+                    WHERE type='table' AND name='chip_power_monitor'
+                     """):
+                # Already exists so no need to run again
+                return
+
+            cursor.execute(
+                """
+                CREATE TABLE chip_power_monitors(
+                    cpm_id INTEGER PRIMARY KEY autoincrement,
+                    core_id INTEGER NOT NULL
+                        REFERENCES core(core_id) ON DELETE RESTRICT,
+                    sampling_frequency  FLOAT NOT NULL)
+                """)
+
+            cursor.execute(
+                """
+                CREATE VIEW chip_power_monitors_view AS
+                SELECT core_id, x, y, processor, sampling_frequency
+                    FROM core NATURAL JOIN chip_power_monitors
+                """)
+
+            for placement in FecDataView.iterate_placements_by_vertex_type(
+                    ChipPowerMonitorMachineVertex):
+                core_id = self._get_core_id(
+                    cursor, placement.x, placement.y, placement.p)
+                cursor.execute(
+                    """
+                    INSERT INTO chip_power_monitors(
+                        core_id, sampling_frequency)
+                    VALUES (?, ?)
+                    """, (core_id, placement.vertex.sampling_frequency))
+                assert cursor.rowcount == 1
+
+    def iterate_chip_power_monitor_cores(self):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, sampling_frequency
+                    FROM chip_power_monitors_view
+                    ORDER BY core_id
+                    """):
+                yield row
