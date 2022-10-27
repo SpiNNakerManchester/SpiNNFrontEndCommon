@@ -33,7 +33,7 @@ class TimerWork(Enum):
     RUNNING = (auto(), "Running")
     EXTRACTING = (auto(), "Extracting")
     # TODO is in right to treat this separately
-    EXTRACT_DATA = (auto(), "Extracting")
+    EXTRACT_DATA = (auto(), "Extracting Data")
     REPORT = (auto(), "Reporting")
 
     def __new__(cls, value, work_name):

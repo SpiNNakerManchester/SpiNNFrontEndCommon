@@ -33,7 +33,7 @@ TIMER_FILENAME = "timer_report.rpt"
 
 
 def write_timer_report(
-        report_path=None, provenance_path=None, timer_report_ratio=None,
+        report_path=None, database_file=None, timer_report_ratio=None,
         timer_report_ms=None, timer_report_to_stdout=None):
     """ Writes the timer report.
 
@@ -41,9 +41,9 @@ def write_timer_report(
 
     :param report_path: Where to write the report if not using the default
     :type report_path: None or str
-    :param provenance_path: Where the provenance sqlite3 files is located if
+    :param database_file: Where the provenance sqlite3 files is located if
         not using the default.
-    :type provenance_path: None or str
+    :type database_file: None or str
     :param timer_report_ratio: Percentage of total time and algorithm must take
         to be shown. Or None to use cfg if available or default
     :type timer_report_ratio: None or float
@@ -80,7 +80,7 @@ def write_timer_report(
             logger.warning("No timer_report_to_stdout found so using False")
             timer_report_to_stdout = False
 
-    with GlobalProvenance(provenance_data_path=provenance_path) as reader:
+    with GlobalProvenance(database_file=database_file) as reader:
         if timer_report_to_stdout:
             __write_timer_report(
                 sys.stdout, reader, timer_report_ratio, timer_report_ms)

@@ -44,18 +44,18 @@ class TestTimerReport(unittest.TestCase):
         except InvalidDirectory:
             pass
         db_path = os.path.join(os.path.dirname(__file__), "timer.sqlite3")
-        write_timer_report(provenance_path=db_path)
+        write_timer_report(database_file=db_path)
 
     def test_all_param(self):
         db_path = os.path.join(os.path.dirname(__file__), "timer.sqlite3")
         report_path = os.path.join(os.path.dirname(__file__), "my_timer.rpt")
-        write_timer_report(report_path=report_path, provenance_path=db_path,
+        write_timer_report(report_path=report_path, database_file=db_path,
                            timer_report_ratio=0.5, timer_report_ms=5,
                            timer_report_to_stdout=False)
 
     def test_to_screen(self):
         db_path = os.path.join(os.path.dirname(__file__), "timer.sqlite3")
-        write_timer_report(provenance_path=db_path,
+        write_timer_report(database_file=db_path,
                            timer_report_to_stdout=True)
 
 
