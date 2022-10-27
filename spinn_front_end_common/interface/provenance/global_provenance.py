@@ -419,10 +419,10 @@ class GlobalProvenance(SQLiteDB):
     def get_all_timer_provenance(self):
         """
         Gets the all timer provenance item(s) from the last run
-        :return:
-            A possibly multiline string with for each row which matches the
-            like a line ``algorithm: value``
-        :rtype: str
+
+        :return: a list of tuples of the algorithm name, the total run time
+            and how often it was run
+        :rtype: list(tuple(str, float, int))
         """
         query = """
             SELECT algorithm, sum(time_taken), count(*)

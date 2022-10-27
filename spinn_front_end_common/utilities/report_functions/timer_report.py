@@ -111,7 +111,7 @@ def __report_category_sums(f, reader):
      """
     total_on = 0
     total_off = 0
-    f.write("category_name         time_on     time_off\n")
+    f.write("category_name                  time_on     time_off\n")
     for category in TimerCategory:
         on, off = reader.get_category_timer_sums(category)
         total_on += on
