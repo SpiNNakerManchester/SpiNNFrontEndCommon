@@ -289,7 +289,7 @@ class BufferDatabase(BaseDatabase):
         # delayed import due to circular refrences
         from spinn_front_end_common.utility_models. \
             chip_power_monitor_machine_vertex import (
-            ChipPowerMonitorMachineVertex)
+                ChipPowerMonitorMachineVertex)
 
         with self.transaction() as cursor:
             for _ in cursor.execute(
