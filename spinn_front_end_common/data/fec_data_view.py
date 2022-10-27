@@ -73,6 +73,7 @@ class _FecDataModel(object):
         "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
+        "_reset_number",
         "_run_number",
         "_run_step",
         "_simulation_time_step_ms",
@@ -109,6 +110,7 @@ class _FecDataModel(object):
         self._n_boards_required = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
+        self._reset_number = 0
         self._run_number = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
@@ -411,6 +413,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :rtype: bool
         """
         return cls.__fec_data._time_scale_factor is not None
+
+    #  reset number
+
+    @classmethod
+    def get_reset_number(cls):
+        """
+        Get the number of times a reset has happened.
+
+        Only counts the first reset after each run.
+
+        So resets that are first soft then hard are ignored.
+        Double reset calls without a run and resets before run are ignored.
+
+        Reset numbers start at zero
+
+        :return:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the run_number is currently unavailable
+        """
+        if cls.__fec_data._reset_number is None:
+            raise cls._exception("run_number")
+        return cls.__fec_data._reset_number
 
     #  run number
 

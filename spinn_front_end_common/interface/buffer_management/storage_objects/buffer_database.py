@@ -13,24 +13,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import sqlite3
 import time
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
-DB_FILE_NAME = "buffer.sqlite3"
 
 
 def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class BufferDatabase(SQLiteDB, AbstractContextManager):
+class BufferDatabase(BaseDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     There should only ever be a single Database Object in use at any time.
@@ -47,57 +43,6 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
     """
 
     __slots__ = []
-
-    def __init__(self, database_file=None):
-        """
-        :param str database_file:
-            The name of a file that contains (or will contain) an SQLite
-            database holding the data.
-            If omitted the default location will be used.
-        """
-        if database_file is None:
-            database_file = self.default_database_file()
-
-        super().__init__(database_file, ddl_file=_DDL_FILE)
-
-    @classmethod
-    def default_database_file(cls):
-        return os.path.join(
-            FecDataView.get_run_dir_path(), DB_FILE_NAME)
-
-    def reset(self):
-        """
-        UGLY SHOULD NOT NEVER DELETE THE FILE!
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        database_file = self.default_database_file()
-        self.close()
-        if os.path.exists(database_file):
-            os.remove(database_file)
-        super().__init__(database_file, ddl_file=_DDL_FILE)
-
-    def clear(self):
-        """ Clears the data for all regions.
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                UPDATE region SET
-                    content = CAST('' AS BLOB), content_len = 0,
-                    fetches = 0, append_time = NULL
-                """)
-            cursor.execute("DELETE FROM region_extra")
 
     def clear_region(self, x, y, p, region):
         """ Clears the data for a single region.
@@ -182,28 +127,6 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             data = c_buffer
         return memoryview(data)
 
-    @staticmethod
-    def __get_core_id(cursor, x, y, p):
-        """
-        :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: int
-        """
-        for row in cursor.execute(
-                """
-                SELECT core_id FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                LIMIT 1
-                """, (x, y, p)):
-            return row["core_id"]
-        cursor.execute(
-            """
-            INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
-            """, (x, y, p))
-        return cursor.lastrowid
-
     def __get_region_id(self, cursor, x, y, p, region):
         """
         :param ~sqlite3.Cursor cursor:
@@ -220,7 +143,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 LIMIT 1
                 """, (x, y, p, region)):
             return row["region_id"]
-        core_id = self.__get_core_id(cursor, x, y, p)
+        core_id = self._get_core_id(cursor, x, y, p)
         cursor.execute(
             """
             INSERT INTO region(
@@ -314,3 +237,47 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def _set_core_name(self, cursor, x, y, p, core_name):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param str core_name:
+
+        """
+        try:
+            cursor.execute(
+                """
+                INSERT INTO core (x, y, processor, core_name)
+                VALUES (?, ?, ? ,?)
+                """, (x, y, p, core_name))
+        except sqlite3.IntegrityError:
+            cursor.execute(
+                """
+                UPDATE core SET core_name = ?
+                WHERE x = ? AND y = ? and processor = ?
+                """, (core_name, x, y, p))
+
+    def store_vertex_labels(self):
+        with self.transaction() as cursor:
+            for placement in FecDataView.iterate_placemements():
+                self._set_core_name(cursor, placement.x, placement.y,
+                                    placement.p, placement.vertex.label)
+            for chip in FecDataView.get_machine().chips:
+                for processor in chip.processors:
+                    if processor.is_monitor:
+                        self._set_core_name(
+                            cursor, chip.x, chip.y, processor.processor_id,
+                            f"SCAMP(OS)_{chip.x}:{chip.y}")
+
+    def get_core_name(self, x, y, p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT core_name
+                    FROM core
+                    WHERE x = ? AND y = ? and processor = ?
+                    """, (x, y, p)):
+                return str(row["core_name"], 'utf8')

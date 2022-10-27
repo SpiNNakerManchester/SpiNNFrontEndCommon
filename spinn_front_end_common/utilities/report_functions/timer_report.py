@@ -21,7 +21,7 @@ from spinn_utilities.exceptions import SpiNNUtilsException
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceReader, TimerCategory, TimerWork)
+    GlobalProvenance, TimerCategory, TimerWork)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -80,14 +80,14 @@ def write_timer_report(
             logger.warning("No timer_report_to_stdout found so using False")
             timer_report_to_stdout = False
 
-    reader = ProvenanceReader(provenance_data_path=provenance_path)
-    if timer_report_to_stdout:
-        __write_timer_report(
-            sys.stdout, reader, timer_report_ratio, timer_report_ms)
-    else:
-        with open(report_path, "w", encoding="utf-8") as f:
+    with GlobalProvenance(provenance_data_path=provenance_path) as reader:
+        if timer_report_to_stdout:
             __write_timer_report(
-                f, reader, timer_report_ratio, timer_report_ms)
+                sys.stdout, reader, timer_report_ratio, timer_report_ms)
+        else:
+            with open(report_path, "w", encoding="utf-8") as f:
+                __write_timer_report(
+                    f, reader, timer_report_ratio, timer_report_ms)
 
 
 def timer_report_file():

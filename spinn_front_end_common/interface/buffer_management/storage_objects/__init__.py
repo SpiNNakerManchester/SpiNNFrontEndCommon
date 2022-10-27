@@ -15,6 +15,6 @@
 
 from .buffered_sending_region import BufferedSendingRegion
 from .buffers_sent_deque import BuffersSentDeque
-from .sqllite_database import BufferDatabase
+from .buffer_database import BufferDatabase
 
 __all__ = ["BufferedSendingRegion", "BuffersSentDeque", "BufferDatabase"]

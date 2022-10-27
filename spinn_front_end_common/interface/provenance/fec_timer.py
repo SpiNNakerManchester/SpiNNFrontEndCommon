@@ -20,8 +20,7 @@ from datetime import timedelta
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance.provenance_writer import (
-    ProvenanceWriter)
+from .global_provenance import GlobalProvenance
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -108,7 +107,7 @@ class FecTimer(object):
     def skip(self, reason):
         message = f"{self._algorithm} skipped as {reason}"
         timedelta = self._stop_timer()
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
                              timedelta, reason)
         self._report(message)
@@ -157,7 +156,7 @@ class FecTimer(object):
     def error(self, reason):
         timedelta = self._stop_timer()
         message = f"{self._algorithm} failed after {timedelta} as {reason}"
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm,
                              self._work, timedelta, reason)
         self._report(message)
@@ -190,7 +189,7 @@ class FecTimer(object):
                           f"after {timedelta}"
                 skip = f"Exception {ex}"
 
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
                              timedelta, skip)
         self._report(message)
@@ -205,7 +204,7 @@ class FecTimer(object):
         """
         time_now = _now()
         if cls._category_id:
-            with ProvenanceWriter() as db:
+            with GlobalProvenance() as db:
                 diff = _convert_to_timedelta(time_now - cls._category_time)
                 db.insert_category_timing(cls._category_id, diff)
         return time_now
@@ -218,7 +217,7 @@ class FecTimer(object):
         :param TimerCategory category: Category to switch to
         """
         time_now = cls.__stop_category()
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             cls._category_id = db.insert_category(category, cls._machine_on)
         cls._category = category
         cls._category_time = time_now
@@ -226,7 +225,12 @@ class FecTimer(object):
     @classmethod
     def start_category(cls, category, machine_on=None):
         """
-        This method should only be called via the View!
+        Starts a new category, and pauses the previous one recording its time
+
+        Categories started must be ended in LIFO order
+
+        The same cateogry can be started multiple times but
+        then must be ended an equal number of times.
 
         :param TimerCategory category: category to switch to
         :param machine_on: What to change machine on too.
@@ -242,8 +246,10 @@ class FecTimer(object):
     @classmethod
     def end_category(cls, category):
         """
-        This method should only be
-        called via the View!
+        This ends a category recording its time
+        and restarted the previous categeory
+
+        Calls to end must match calls to start in LIFO order
 
         :param SimulatorStage category: Stage to end
         """
