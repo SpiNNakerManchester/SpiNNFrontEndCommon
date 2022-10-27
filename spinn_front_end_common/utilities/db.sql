@@ -1,4 +1,4 @@
--- Copyright (c) 2018-2022 The University of Manchester
+-- Copyright (c) 2018-2019 The University of Manchester
 --
 -- This program is free software: you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -17,11 +17,56 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for versions
-CREATE TABLE IF NOT EXISTS version_provenance(
-    version_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    description STRING NOT NULL,
-    the_value STRING NOT NULL);
+-- A table describing the cores.
+CREATE TABLE IF NOT EXISTS core(
+    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	x INTEGER NOT NULL,
+	y INTEGER NOT NULL,
+	processor INTEGER NOT NULL,
+	core_name STRING);
+-- Every processor has a unique ID
+CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
+	x ASC, y ASC, processor ASC);
+
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing recording regions.
+CREATE TABLE IF NOT EXISTS region(
+	region_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
+	local_region_index INTEGER NOT NULL,
+	address INTEGER,
+	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0,
+	fetches INTEGER NOT NULL DEFAULT 0,
+	append_time INTEGER);
+-- Every recording region has a unique vertex and index
+CREATE UNIQUE INDEX IF NOT EXISTS regionSanity ON region(
+	core_id ASC, local_region_index ASC);
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table containing the data which doesn't fit in the content column of the
+-- region table; care must be taken with this to not exceed 1GB! We actually
+-- store one per auto-pause-resume cycle as that is more efficient.
+CREATE TABLE IF NOT EXISTS region_extra(
+	extra_id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+	region_id INTEGER NOT NULL
+		REFERENCES region(region_id) ON DELETE RESTRICT,
+	content BLOB NOT NULL DEFAULT '',
+	content_len INTEGER DEFAULT 0);
+
+CREATE VIEW IF NOT EXISTS region_view AS
+	SELECT core_id, region_id, x, y, processor, local_region_index, address,
+		content, content_len, fetches, append_time,
+		(fetches > 1) AS have_extra
+FROM core NATURAL JOIN region;
+
+CREATE VIEW IF NOT EXISTS extra_view AS
+    SELECT core_id, region_id, extra_id, x, y, processor, local_region_index,
+    	address, append_time, region_extra.content AS content,
+    	region_extra.content_len AS content_len
+FROM core NATURAL JOIN region NATURAL JOIN region_extra;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for power provenance
@@ -31,45 +76,6 @@ CREATE TABLE IF NOT EXISTS power_provenance(
     description STRING NOT NULL,
     the_value FLOAT NOT NULL);
 
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for algorithm timings
-CREATE TABLE IF NOT EXISTS timer_provenance(
-    timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category_id INTEGER NOT NULL,
-    algorithm STRING NOT NULL,
-    work STRING NOT NULL,
-    time_taken INTEGER NOT NULL,
-    skip_reason STRING);
-
-CREATE VIEW IF NOT EXISTS full_timer_view AS
-    SELECT timer_id, category, algorithm, work, machine_on, timer_provenance.time_taken, n_run, n_loop
-    FROM timer_provenance ,category_timer_provenance
-	WHERE timer_provenance.category_id = category_timer_provenance.category_id
-    ORDER BY timer_id;
-
-CREATE VIEW IF NOT EXISTS timer_view AS
-    SELECT category, algorithm, work, machine_on, time_taken, n_run, n_loop
-    FROM full_timer_view
-    WHERE skip_reason is NULL
-    ORDER BY timer_id;
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for category timings
-CREATE TABLE IF NOT EXISTS category_timer_provenance(
-    category_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
-    time_taken INTEGER,
-    machine_on BOOL NOT NULL,
-    n_run INTEGER NOT NULL,
-    n_loop INTEGER);
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table holding the values for uncategorised general provenance
-CREATE TABLE IF NOT EXISTS other_provenance(
-    other_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    category STRING NOT NULL,
-    description STRING NOT NULL,
-    the_value STRING NOT NULL);
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for data speed up packet gathers
@@ -155,28 +161,17 @@ CREATE VIEW IF NOT EXISTS router_summary_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for each core
 CREATE TABLE IF NOT EXISTS core_provenance(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    x INTEGER NOT NULL,
-    y INTEGER NOT NULL,
-    p INTEGER NOT NULL,
+    cp_id INTEGER PRIMARY KEY AUTOINCREMENT,
+	core_id INTEGER NOT NULL
+		REFERENCES core(core_id) ON DELETE RESTRICT,
     description STRING NOT NULL,
     the_value INTEGER NOT NULL);
 
--- A table holding the mapping from vertex name to core x, y, p
-CREATE TABLE IF NOT EXISTS core_mapping(
-    core_name STRING NOT NULL,
-    x INTEGER,
-    y INTEGER,
-    p INTEGER);
-
--- Every core has a unique x,y,p location.
-CREATE UNIQUE INDEX IF NOT EXISTS core_sanity ON core_mapping(
-	x ASC, y ASC, p ASC);
 
 -- Create a view combining core name and data
 CREATE VIEW IF NOT EXISTS core_provenance_view AS
-    SELECT core_name, x, y, p, description, the_value
-    FROM core_provenance NATURAL JOIN core_mapping;
+    SELECT core_name, x, y, processor as p, description, the_value
+    FROM core_provenance NATURAL JOIN core;
 
 -- Compute some basic statistics per core over the provenance
 CREATE VIEW IF NOT EXISTS core_stats_view AS
@@ -224,33 +219,3 @@ CREATE TABLE IF NOT EXISTS boards_provenance(
     ip_addres STRING NOT NULL,
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL);
-
----------------------------------------------------------------------
--- A table to store log.info
-CREATE TABLE IF NOT EXISTS p_log_provenance(
-    log_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp TIMESTAMP NOT NULL,
-    level INTEGER NOT NULL,
-    message STRING NOT NULL);
-
-CREATE TABLE IF NOT EXISTS log_level_names(
-    level INTEGER PRIMARY KEY NOT NULL,
-    name STRING NOT NULL);
-
-INSERT OR IGNORE INTO log_level_names
-    (level, name)
-VALUES
-    (50, "CRITICAL"),
-    (40, "ERROR"),
-    (30, "WARNING"),
-    (20, "INFO"),
-    (10, "DEBUG");
-
-CREATE VIEW IF NOT EXISTS p_log_view AS
-    SELECT
-        timestamp,
-		name,
-        message
-    FROM p_log_provenance left join log_level_names
-    ON p_log_provenance.level = log_level_names.level
-    ORDER BY p_log_provenance.log_id;

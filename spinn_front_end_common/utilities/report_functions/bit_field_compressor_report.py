@@ -20,10 +20,12 @@ from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.interface.provenance import \
+    (ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
+from spinn_front_end_common.utilities.exceptions import (
+    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.interface.provenance import ProvenanceReader
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"
@@ -56,11 +58,15 @@ def bitfield_compressor_report():
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            return _write_report(f)
+            _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
-        return None
+        return
+    except NoProvenanceDatabaseException:
+        logger.exception(
+            "No proveance found to write bitfield_compressor_report")
+        return
 
 
 def _merged_component(to_merge_per_chip, writer):
@@ -84,24 +90,25 @@ def _merged_component(to_merge_per_chip, writer):
     to_merge_chips = set(to_merge_per_chip.keys())
 
     found = False
-    for (x, y, merged) in ProvenanceReader().get_router_by_chip(
-            MERGED_NAME):
-        if (x, y) not in to_merge_per_chip:
-            continue
-        to_merge = to_merge_per_chip[x, y]
-        to_merge_chips.discard((x, y))
-        found = True
-        writer.write(
-            "Chip {}:{} has {} bitfields out of {} merged into it."
-            " Which is {:.2%}\n".format(
-                x, y, merged, to_merge, merged / to_merge))
-        total_bit_fields_merged += int(merged)
-        if merged > top_bit_field:
-            top_bit_field = merged
-        if merged < min_bit_field:
-            min_bit_field = merged
-        average_per_chip_merged += merged
-        n_chips += 1
+    with ProvenanceReader() as db:
+        for (x, y, merged) in db.get_router_by_chip(
+                MERGED_NAME):
+            if (x, y) not in to_merge_per_chip:
+                continue
+            to_merge = to_merge_per_chip[x, y]
+            to_merge_chips.discard((x, y))
+            found = True
+            writer.write(
+                "Chip {}:{} has {} bitfields out of {} merged into it."
+                " Which is {:.2%}\n".format(
+                    x, y, merged, to_merge, merged / to_merge))
+            total_bit_fields_merged += int(merged)
+            if merged > top_bit_field:
+                top_bit_field = merged
+            if merged < min_bit_field:
+                min_bit_field = merged
+            average_per_chip_merged += merged
+            n_chips += 1
 
     if found:
         average_per_chip_merged = (

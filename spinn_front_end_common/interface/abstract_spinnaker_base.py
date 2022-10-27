@@ -100,7 +100,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceWriter, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -441,6 +441,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._do_mapping(total_run_time)
 
+        if not self._data_writer.is_ran_last():
+            self._execute_record_core_names()
+
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
@@ -723,7 +726,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
         """
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", spinn_utils_version)
             db.insert_version("spinn_machine_version", spinn_machine_version)
             db.insert_version("spalloc_version", spalloc_version)
@@ -889,6 +892,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _execute_record_core_names(self):
+        with FecTimer(
+                "Record core names to databse", TimerWork.REPORT):
+            with BufferDatabase() as db:
+                db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -2312,11 +2321,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._do_end_of_run()
 
-        # rewind the buffers from the buffer manager, to start at the beginning
-        # of the simulation again and clear buffered out
-        if self._data_writer.has_buffer_manager():
-            self._data_writer.get_buffer_manager().reset()
-
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
                 "A reset after a get machine call is always hard and "
@@ -2324,6 +2328,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._hard_reset()
         else:
             self._data_writer.soft_reset()
+
+        # rewind the buffers from the buffer manager, to start at the beginning
+        # of the simulation again and clear buffered out
+        if self._data_writer.has_buffer_manager():
+            self._data_writer.get_buffer_manager().reset()
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()

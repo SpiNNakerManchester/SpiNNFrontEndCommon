@@ -16,8 +16,7 @@
 import sqlite3
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
-from .provenance_writer import ProvenanceWriter
-from .provenance_reader import ProvenanceReader
+from .global_provenance import GlobalProvenance
 
 
 class LogStoreDB(LogStore):
@@ -25,7 +24,7 @@ class LogStoreDB(LogStore):
     @overrides(LogStore.store_log)
     def store_log(self, level, message, timestamp=None):
         try:
-            with ProvenanceWriter() as db:
+            with GlobalProvenance() as db:
                 db.store_log(level, message, timestamp)
         except sqlite3.OperationalError as ex:
             if "database is locked" in ex.args:
@@ -37,8 +36,9 @@ class LogStoreDB(LogStore):
 
     @overrides(LogStore.retreive_log_messages)
     def retreive_log_messages(self, min_level=0):
-        return ProvenanceReader().retreive_log_messages(min_level)
+        with GlobalProvenance() as db:
+            return db.retreive_log_messages(min_level)
 
     @overrides(LogStore.get_location)
     def get_location(self):
-        return ProvenanceReader.get_last_run_database_path()
+        return GlobalProvenance.get_global_provenace_path()
