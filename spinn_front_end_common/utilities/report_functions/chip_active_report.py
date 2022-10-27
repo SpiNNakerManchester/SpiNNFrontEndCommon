@@ -30,9 +30,6 @@ logger = FormatAdapter(logging.getLogger(__name__))
 #: converter between joules to kilowatt hours
 JOULES_TO_KILOWATT_HOURS = 3600000
 
-# energy report file name
-CHIP_ACTIVE_FILENAME = "chip_active_report.rpt"
-
 
 def write_chip_active_report(report_path=None, buffer_path=None):
     """ Writes the report.
@@ -46,12 +43,12 @@ def write_chip_active_report(report_path=None, buffer_path=None):
     """
     if report_path is None:
         try:
-            report_dir = FecDataView.get_run_dir_path()
             report_path = os.path.join(
-                report_dir, CHIP_ACTIVE_FILENAME)
+                FecDataView.get_run_dir_path(),
+                f"chip_active_report{FecDataView.get_reset_str()}.rpt")
         except SpiNNUtilsException:
             report_path = os.path.join(
-                os.path.curdir, CHIP_ACTIVE_FILENAME)
+                os.path.curdir, "chip_active_report.rpt")
             logger.warning(f"no report_path so writing to {report_path}")
 
     # create detailed report
