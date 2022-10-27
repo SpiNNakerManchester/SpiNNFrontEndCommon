@@ -71,7 +71,8 @@ def write_timer_report(
             logger.warning("No timer_report_to_stdout found so using False")
             timer_report_to_stdout = False
 
-    with GlobalProvenance(database_file=database_file) as reader:
+    with GlobalProvenance(
+            database_file=database_file, read_only=True) as reader:
         if timer_report_to_stdout:
             __write_timer_report(
                 sys.stdout, reader, timer_report_ratio, timer_report_ms)

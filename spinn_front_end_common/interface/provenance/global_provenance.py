@@ -61,7 +61,7 @@ class GlobalProvenance(SQLiteDB):
             FecDataView.get_timestamp_dir_path(),
             "global_provenance.sqlite3")
 
-    def __init__(self, database_file=None, memory=False):
+    def __init__(self, database_file=None, memory=False, read_only=False):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -78,7 +78,8 @@ class GlobalProvenance(SQLiteDB):
             database_file = self.get_global_provenace_path()
         self._database_file = database_file
         SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE,
-                          row_factory=None, text_factory=None)
+                          row_factory=None, text_factory=None,
+                          read_only=read_only)
 
     def insert_version(self, description, the_value):
         """

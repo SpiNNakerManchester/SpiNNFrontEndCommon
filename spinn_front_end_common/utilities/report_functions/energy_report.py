@@ -309,7 +309,7 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        with GlobalProvenance() as db:
+        with GlobalProvenance(read_only=True) as db:
             total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
@@ -336,7 +336,7 @@ class EnergyReport(object):
         """
 
         # find time
-        with GlobalProvenance() as db:
+        with GlobalProvenance(read_only=True) as db:
             total_time_ms = db.get_timer_sum_by_algorithm(
                 FecTimer.APPLICATION_RUNNER)
 

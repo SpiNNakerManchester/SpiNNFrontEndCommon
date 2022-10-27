@@ -27,6 +27,15 @@ class TestTimerReport(unittest.TestCase):
     def setUp(cls):
         unittest_setup()
 
+    def test_no_params(self):
+        try:
+            write_timer_report()
+            failed = False
+        except Exception as ex:
+            self.assertIn("no such DB", str(ex))
+            failed = True
+        self.assertTrue(failed)
+
     def test_db_only(self):
         # make sure there is not run_dir_path so falls back on default
         writer = FecDataWriter.setup()
