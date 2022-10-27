@@ -55,15 +55,6 @@ def write_timer_report(
         Or None to use cfg if available or default
     :rtype: None
     """
-    try:
-        run_dir = FecDataView.get_run_dir_path()
-        if not run_dir.endswith("run_1"):
-            logger.warning(
-                "timer report does not currently work well after a reset")
-    except SpiNNUtilsException:
-        # Only to do a temporary warning so ignore
-        pass
-
     if report_path is None:
         try:
             report_path = timer_report_file()
