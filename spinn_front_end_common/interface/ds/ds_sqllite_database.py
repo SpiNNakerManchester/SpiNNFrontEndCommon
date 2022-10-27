@@ -22,7 +22,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .data_row_writer import DataRowWriter
 
-DB_NAME = "ds.sqlite3"
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -38,7 +37,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param init:
         :type init: bool or None
         """
-        database_file = os.path.join(FecDataView.get_run_dir_path(), DB_NAME)
+        database_file = self.default_database_file()
 
         if init is None:
             init = not os.path.exists(database_file)
@@ -47,6 +46,11 @@ class DsSqlliteDatabase(SQLiteDB):
         if init:
             self.__init_db_contents()
         self._root_ethernet_id = self.__find_root_id()
+
+    @classmethod
+    def default_database_file(cls):
+        return os.path.join(FecDataView.get_run_dir_path(),
+                            f"ds{FecDataView.get_reset_str()}.sqlite3")
 
     def __init_db_contents(self):
         """ Set up the database contents from the machine. """
@@ -81,15 +85,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 "No Ethernet chip found at 0,0 using {},{} "
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
-
-    def clear_ds(self):
-        """ Clear all saved data specification data
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM core
-                """)
 
     def write_data_spec(self, core_x, core_y, core_p, ds):
         """
