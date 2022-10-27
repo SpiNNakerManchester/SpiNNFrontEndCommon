@@ -43,7 +43,7 @@ class TestChipActive(unittest.TestCase):
             writer.set_run_dir_path("THIS DIRECTORY DOES NOT EXIST")
         except InvalidDirectory:
             pass
-        db_path = os.path.join(os.path.dirname(__file__), "buffer.sqlite3")
+        db_path = os.path.join(os.path.dirname(__file__), "data.sqlite3")
         write_chip_active_report(buffer_path=db_path)
 
     def test_all_params(self):
@@ -53,7 +53,7 @@ class TestChipActive(unittest.TestCase):
             writer.set_run_dir_path("THIS DIRECTORY DOES NOT EXIST")
         except InvalidDirectory:
             pass
-        db_path = os.path.join(os.path.dirname(__file__), "buffer.sqlite3")
+        db_path = os.path.join(os.path.dirname(__file__), "data.sqlite3")
         report = os.path.join(os.path.dirname(__file__), "my_active.rpt")
         write_chip_active_report(report_path=report, buffer_path=db_path)
 
