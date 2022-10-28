@@ -338,7 +338,7 @@ class BufferDatabase(BaseDatabase):
         Iterates of the chip power monintors
 
         :return: iterates of dict like object contaning "x", "y" ,"processor"
-        and "sampling_frequency" fields
+            and "sampling_frequency" fields
         :rtpye: sqlite3.Row
         """
         with self.transaction() as cursor:
