@@ -245,7 +245,6 @@ class BufferDatabase(BaseDatabase):
         :param int y:
         :param int p:
         :param str core_name:
-
         """
         try:
             cursor.execute(
