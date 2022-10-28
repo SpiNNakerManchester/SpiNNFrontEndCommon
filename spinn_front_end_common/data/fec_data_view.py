@@ -436,6 +436,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("run_number")
         return cls.__fec_data._reset_number
 
+    @classmethod
+    def get_reset_str(cls):
+        """
+        Get the number of times a reset has happene as a string. Zero as ""
+
+        Only counts the first reset after each run.
+
+        So resets that are first soft then hard are ignored.
+        Double reset calls without a run and resets before run are ignored.
+
+        Reset numbers start at zero
+
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the run_number is currently unavailable
+        """
+        if cls.__fec_data._reset_number is None:
+            raise cls._exception("run_number")
+        if cls.__fec_data._reset_number:
+            return str(cls.__fec_data._reset_number)
+        else:
+            return ""
+
     #  run number
 
     @classmethod
