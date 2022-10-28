@@ -116,7 +116,7 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex,  ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -2288,7 +2288,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if timer.skip_if_virtual_board():
                 return
             db = BufferDatabase()
-            db.store_chip_power_monitors()
+            db.store_chip_power_monitors(ChipPowerMonitorMachineVertex)
             db.close()
 
     def _report_chip_active(self):

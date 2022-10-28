@@ -261,6 +261,10 @@ class BufferDatabase(BaseDatabase):
                 """, (core_name, x, y, p))
 
     def store_vertex_labels(self):
+        """
+        Stores the name of all cores including monitors
+
+        """
         with self.transaction() as cursor:
             for placement in FecDataView.iterate_placemements():
                 self._set_core_name(cursor, placement.x, placement.y,
@@ -273,6 +277,15 @@ class BufferDatabase(BaseDatabase):
                             f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x, y, p):
+        """
+        Retruns the name of the Vertex or monitor running on the core
+
+        :param int x:
+        :param int y:
+        :param int p:
+        :return: The Vertex name, a monitor name or None if nothing running
+        :rtype: str or None
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -285,24 +298,17 @@ class BufferDatabase(BaseDatabase):
                 else:
                     return None
 
-    def store_chip_power_monitors(self):
-        # delayed import due to circular refrences
-        from spinn_front_end_common.utility_models. \
-            chip_power_monitor_machine_vertex import (
-                ChipPowerMonitorMachineVertex)
+    def store_chip_power_monitors(self, monitor_class):
+        """
+        Store the existence and sampling frequency of all chip power monitors
 
+        :param Class monitor_class: The Class of chip power monitors.
+            This is a parameter to avoid circular or ugly importing here
+        """
         with self.transaction() as cursor:
-            for _ in cursor.execute(
-                    """
-                    SELECT name FROM sqlite_master
-                    WHERE type='table' AND name='chip_power_monitor'
-                     """):
-                # Already exists so no need to run again
-                return
-
             cursor.execute(
                 """
-                CREATE TABLE chip_power_monitors(
+                CREATE TABLE IF NOT EXISTS chip_power_monitors(
                     cpm_id INTEGER PRIMARY KEY autoincrement,
                     core_id INTEGER NOT NULL
                         REFERENCES core(core_id) ON DELETE RESTRICT,
@@ -311,24 +317,31 @@ class BufferDatabase(BaseDatabase):
 
             cursor.execute(
                 """
-                CREATE VIEW chip_power_monitors_view AS
+                CREATE VIEW IF NOT EXISTS chip_power_monitors_view AS
                 SELECT core_id, x, y, processor, sampling_frequency
                     FROM core NATURAL JOIN chip_power_monitors
                 """)
 
             for placement in FecDataView.iterate_placements_by_vertex_type(
-                    ChipPowerMonitorMachineVertex):
+                    monitor_class):
                 core_id = self._get_core_id(
                     cursor, placement.x, placement.y, placement.p)
                 cursor.execute(
                     """
-                    INSERT INTO chip_power_monitors(
+                    REPLACE INTO chip_power_monitors(
                         core_id, sampling_frequency)
                     VALUES (?, ?)
                     """, (core_id, placement.vertex.sampling_frequency))
                 assert cursor.rowcount == 1
 
     def iterate_chip_power_monitor_cores(self):
+        """
+        Iterates of the chip power monintors
+
+        :return: iterates of dict like object contaning "x", "y" ,"processor"
+        and "sampling_frequency" fields
+        :rtpye: sqlite3.Row
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
