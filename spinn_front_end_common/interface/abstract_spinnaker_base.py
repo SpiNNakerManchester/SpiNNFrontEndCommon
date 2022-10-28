@@ -111,12 +111,12 @@ from spinn_front_end_common.utilities.report_functions import (
     memory_map_on_host_chip_report, network_specification,
     router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
-    write_json_machine, write_json_placements,
+    write_chip_active_report, write_json_machine, write_json_placements,
     write_json_routing_tables, write_timer_report, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
-    DataSpeedUpPacketGatherMachineVertex)
+    DataSpeedUpPacketGatherMachineVertex,  ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
     generate_comparison_router_report, partitioner_report,
     placer_reports_with_application_graph,
@@ -2286,10 +2286,33 @@ class AbstractSpinnakerBase(ConfigHandler):
         for error in errors:
             logger.error(error)
 
+    def _execute_prepare_chip_power(self):
+        with FecTimer("Prepare Chip Power", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+            db = BufferDatabase()
+            db.store_chip_power_monitors(ChipPowerMonitorMachineVertex)
+            db.close()
+
+    def _report_chip_active(self):
+        with FecTimer("Prepare Chip Power", TimerWork.REPORT) as timer:
+            if timer.skip_if_cfg_false("Reports", "write_energy_report"):
+                return
+            if timer.skip_if_virtual_board():
+                return
+            write_chip_active_report()
+
+    def _do_end_of_run(self):
+        if not self._data_writer.is_ran_last():
+            return
+        self._execute_prepare_chip_power()
+        self._report_chip_active()
+
     def reset(self):
         """ Code that puts the simulation back at time zero
         """
-        FecTimer.start_category(TimerCategory.RESETTING)
         if not self._data_writer.is_ran_last():
             if not self._data_writer.is_ran_ever():
                 logger.error("Ignoring the reset before the run")
@@ -2297,7 +2320,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 logger.error("Ignoring the repeated reset call")
             return
 
+        FecTimer.start_category(TimerCategory.RESETTING)
         logger.info("Resetting")
+
+        self._do_end_of_run()
 
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
@@ -2387,6 +2413,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                   not get_config_bool("Reports", "read_provenance_data")):
                 set_config("Reports", "read_provenance_data", "True")
                 self._do_read_provenance()
+
+            self._do_end_of_run()
 
         except Exception as e:
             self._recover_from_error(e)

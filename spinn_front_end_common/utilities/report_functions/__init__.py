@@ -16,6 +16,7 @@
 from .bit_field_compressor_report import bitfield_compressor_report
 from .bit_field_summary import BitFieldSummary
 from .board_chip_report import board_chip_report
+from .chip_active_report import write_chip_active_report
 from .energy_report import EnergyReport
 from .fixed_route_from_machine_report import fixed_route_from_machine_report
 from .memory_map_on_host_chip_report import memory_map_on_host_chip_report
@@ -45,6 +46,7 @@ __all__ = [
     "router_collision_potential_report",
     "routing_table_from_machine_report",
     "tags_from_machine_report",
+    "write_chip_active_report",
     "write_json_machine",
     "write_json_placements",
     "write_json_routing_tables",

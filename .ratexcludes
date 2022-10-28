@@ -17,5 +17,4 @@
 **/PACMAN/**
 **/DataSpecification/**
 **/spalloc/**
-**/my_timer.rpt
-**/timer_report.rpt
+**/unittests/**/*.rpt
