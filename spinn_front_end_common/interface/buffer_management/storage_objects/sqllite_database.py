@@ -204,7 +204,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             """, (x, y, p))
         return cursor.lastrowid
 
-    def __get_region_id(self, cursor, x, y, p, region):
+    def _get_region_id(self, cursor, x, y, p, region):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
@@ -248,7 +248,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
         with self.transaction() as cursor:
-            region_id = self.__get_region_id(cursor, x, y, p, region)
+            region_id = self._get_region_id(cursor, x, y, p, region)
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
                     """
