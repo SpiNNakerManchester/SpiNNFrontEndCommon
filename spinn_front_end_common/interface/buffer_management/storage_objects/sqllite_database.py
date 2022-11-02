@@ -136,46 +136,44 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 """, locus)
             return True
 
-    def __read_contents(self, cursor, x, y, p, region):
+    def _read_contents(self, cursor, region_id):
         """
         :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
+        :param int region_id:
         :rtype: memoryview
         """
         for row in cursor.execute(
                 """
-                SELECT region_id, content, have_extra
+                SELECT content
                 FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? LIMIT 1
-                """, (x, y, p, region)):
-            r_id, data, extra = (
-                row["region_id"], row["content"], row["have_extra"])
+                WHERE region_id = ? 
+                LIMIT 1
+                """, (region_id,)):
+            data =row["content"]
             break
         else:
-            raise LookupError("no record for region ({},{},{}:{})".format(
-                x, y, p, region))
-        if extra:
-            c_buffer = None
-            for row in cursor.execute(
-                    """
-                    SELECT r.content_len + (
-                        SELECT SUM(x.content_len)
-                        FROM region_extra AS x
-                        WHERE x.region_id = r.region_id) AS len
-                    FROM region AS r WHERE region_id = ? LIMIT 1
-                    """, (r_id, )):
+            raise LookupError(f"no record for region {region_id}")
+
+        c_buffer = None
+        for row in cursor.execute(
+                """
+                SELECT r.content_len + (
+                    SELECT SUM(x.content_len)
+                    FROM region_extra AS x
+                    WHERE x.region_id = r.region_id) AS len
+                FROM region AS r WHERE region_id = ? LIMIT 1
+                """, (region_id, )):
+            if row["len"] is not None:
                 c_buffer = bytearray(row["len"])
                 c_buffer[:len(data)] = data
+
+        if c_buffer is not None:
             idx = len(data)
             for row in cursor.execute(
                     """
                     SELECT content FROM region_extra
                     WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (r_id, )):
+                    """, (region_id, )):
                 item = row["content"]
                 c_buffer[idx:idx + len(item)] = item
                 idx += len(item)
@@ -309,7 +307,8 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         """
         try:
             with self.transaction() as cursor:
-                data = self.__read_contents(cursor, x, y, p, region)
+                region_id = self._get_region_id(cursor, x, y, p, region)
+                data = self._read_contents(cursor, region_id)
                 # TODO missing data
                 return data, False
         except LookupError:
