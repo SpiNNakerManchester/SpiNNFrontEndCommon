@@ -439,6 +439,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._do_mapping(total_run_time)
 
+        if not self._data_writer.is_ran_last():
+            self._do_write_metadata()
+
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
@@ -887,6 +890,11 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _do_write_metadata(self):
+        """
+        Do the various functions to write metadata to the sqlite files
+        """
 
     def _execute_system_multicast_routing_generator(self):
         """
