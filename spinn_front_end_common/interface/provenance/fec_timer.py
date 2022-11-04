@@ -50,13 +50,17 @@ else:
         """
         return timedelta(seconds=time_diff)
 
-_simulator = None
-_provenance_path = None
-_print_timings = False
-
 
 class FecTimer(object):
 
+    _simulator = None
+    _provenance_path = None
+    _print_timings = False
+    _category_id = None
+    _category = None
+    _category_time = None
+    _machine_on = False
+    _previous = []
     __slots__ = [
 
         # The start time when the timer was set off
@@ -65,51 +69,52 @@ class FecTimer(object):
         # Name of algorithm what is being timed
         "_algorithm",
 
-        # Name of category what is being timed
-        "_category",
+        # Type of work being done
+        "_work"
         ]
+
+    # Algorithm Names used elsewhere
+    APPLICATION_RUNNER = "Application runner"
 
     @classmethod
     def setup(cls, simulator):
         # pylint: disable=global-statement, protected-access
-        global _simulator, _provenance_path, _print_timings
-        _simulator = simulator
+        cls._simulator = simulator
         if get_config_bool("Reports", "write_algorithm_timings"):
-            _provenance_path = os.path.join(
+            cls._provenance_path = os.path.join(
                 FecDataView.get_run_dir_path(),
                 "algorithm_timings.rpt")
         else:
-            _provenance_path = None
-        _print_timings = get_config_bool(
+            cls._provenance_path = None
+        cls._print_timings = get_config_bool(
             "Reports", "display_algorithm_timings")
 
-    def __init__(self, category, algorithm):
+    def __init__(self, algorithm, work):
         self._start_time = None
-        self._category = category
         self._algorithm = algorithm
+        self._work = work
 
     def __enter__(self):
         self._start_time = _now()
         return self
 
     def _report(self, message):
-        if _provenance_path is not None:
-            with open(_provenance_path, "a", encoding="utf-8") as p_file:
+        if self._provenance_path is not None:
+            with open(self._provenance_path, "a", encoding="utf-8") as p_file:
                 p_file.write(f"{message}\n")
-        if _print_timings:
+        if self._print_timings:
             logger.info(message)
 
     def skip(self, reason):
         message = f"{self._algorithm} skipped as {reason}"
-        time_taken = self._stop_timer()
+        timedelta = self._stop_timer()
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_loops, reason)
+            db.insert_timing(self._category_id, self._algorithm, self._work,
+                             timedelta, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
-        if _simulator.has_ran:
+        if self._simulator.has_ran:
             return False
         else:
             self.skip("simulator.has_run")
@@ -150,12 +155,11 @@ class FecTimer(object):
             return True
 
     def error(self, reason):
-        time_taken = self._stop_timer()
-        message = f"{self._algorithm} failed after {time_taken} as {reason}"
+        timedelta = self._stop_timer()
+        message = f"{self._algorithm} failed after {timedelta} as {reason}"
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_loops, reason)
+            db.insert_timing(self._category_id, self._algorithm,
+                             self._work, timedelta, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -172,23 +176,90 @@ class FecTimer(object):
     def __exit__(self, exc_type, exc_value, traceback):
         if self._start_time is None:
             return False
-        time_taken = self._stop_timer()
+        timedelta = self._stop_timer()
         if exc_type is None:
-            message = f"{self._algorithm} took {time_taken} "
+            message = f"{self._algorithm} took {timedelta} "
             skip = None
         else:
             try:
                 message = (f"{self._algorithm} exited with "
-                           f"{exc_type.__name__} after {time_taken}")
+                           f"{exc_type.__name__} after {timedelta}")
                 skip = exc_type.__name__
             except Exception as ex:  # pylint: disable=broad-except
                 message = f"{self._algorithm} exited with an exception" \
-                          f"after {time_taken}"
+                          f"after {timedelta}"
                 skip = f"Exception {ex}"
 
         with ProvenanceWriter() as db:
-            db.insert_timing(
-                self._category, self._algorithm, time_taken.microseconds,
-                _simulator.n_loops, skip)
+            db.insert_timing(self._category_id, self._algorithm, self._work,
+                             timedelta, skip)
         self._report(message)
         return False
+
+    @classmethod
+    def __stop_category(cls):
+        """
+        Stops the current category and logs how long it took
+
+        :return: Time the stop happened
+        """
+        time_now = _now()
+        if cls._category_id:
+            with ProvenanceWriter() as db:
+                diff = _convert_to_timedelta(time_now - cls._category_time)
+                db.insert_category_timing(cls._category_id, diff)
+        return time_now
+
+    @classmethod
+    def _change_category(cls, category):
+        """
+        This method should only be called via the View!
+
+        :param TimerCategory category: Category to switch to
+        """
+        time_now = cls.__stop_category()
+        with ProvenanceWriter() as db:
+            cls._category_id = db.insert_category(category, cls._machine_on)
+        cls._category = category
+        cls._category_time = time_now
+
+    @classmethod
+    def start_category(cls, category, machine_on=None):
+        """
+        This method should only be called via the View!
+
+        :param TimerCategory category: category to switch to
+        :param machine_on: What to change machine on too.
+            Or None to leave as is
+        :type machine_on: None or bool
+        """
+        cls._previous.append(cls._category)
+        if cls._category != category:
+            cls._change_category(category)
+        if machine_on is not None:
+            cls._machine_on = machine_on
+
+    @classmethod
+    def end_category(cls, category):
+        """
+        This method should only be
+        called via the View!
+
+        :param SimulatorStage category: Stage to end
+        """
+        if cls._category != category:
+            raise ValueError(
+                f"Current category is {cls._category} not {category}")
+        previous = cls._previous.pop()
+        if previous is None:
+            raise NotImplementedError(
+                "Use stop_category_timing to end the last category")
+        if category != previous:
+            cls._change_category(previous)
+
+    @classmethod
+    def stop_category_timing(cls):
+        cls.__stop_category()
+        cls._previous = []
+        cls._category = None
+        cls._category_id = None
