@@ -1799,6 +1799,13 @@
       <anchor>a61dadd085c1777f559549e05962b2c9ea7913873b92ba0d517ed68aa06348b5de</anchor>
       <arglist></arglist>
     </member>
+    <member kind="function" static="yes">
+      <type>static void</type>
+      <name>verify_checksum</name>
+      <anchorfile>data__specification_8c.html</anchorfile>
+      <anchor>a49e9389321a5d8298c69dc6712fffed0</anchor>
+      <arglist>(data_specification_metadata_t *ds_regions, uint32_t region)</arglist>
+    </member>
     <member kind="function">
       <type>data_specification_metadata_t *</type>
       <name>data_specification_get_data_address</name>

@@ -114,7 +114,7 @@
     <span class="n">chip_io_buf_clearer</span><span class="p">,</span> <span class="n">chip_io_buf_extractor</span><span class="p">,</span>
     <span class="n">chip_provenance_updater</span><span class="p">,</span> <span class="n">chip_runtime_updater</span><span class="p">,</span> <span class="n">compute_energy_used</span><span class="p">,</span>
     <span class="n">create_notification_protocol</span><span class="p">,</span> <span class="n">database_interface</span><span class="p">,</span>
-    <span class="n">dsg_region_reloader</span><span class="p">,</span> <span class="n">energy_provenance_reporter</span><span class="p">,</span>
+    <span class="n">reload_dsg_regions</span><span class="p">,</span> <span class="n">energy_provenance_reporter</span><span class="p">,</span>
     <span class="n">execute_application_data_specs</span><span class="p">,</span> <span class="n">execute_system_data_specs</span><span class="p">,</span>
     <span class="n">graph_binary_gatherer</span><span class="p">,</span> <span class="n">graph_data_specification_writer</span><span class="p">,</span>
     <span class="n">graph_provenance_gatherer</span><span class="p">,</span>
@@ -1932,7 +1932,7 @@
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;DSG region reloader&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
                 <span class="k">return</span>
-            <span class="n">dsg_region_reloader</span><span class="p">()</span>
+            <span class="n">reload_dsg_regions</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_graph_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

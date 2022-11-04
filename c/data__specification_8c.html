@@ -102,6 +102,9 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a49e9389321a5d8298c69dc6712fffed0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__specification_8c.html#a49e9389321a5d8298c69dc6712fffed0">verify_checksum</a> (<a class="el" href="data__specification_8h.html#structdata__specification__metadata__t">data_specification_metadata_t</a> *ds_regions, uint32_t region)</td></tr>
+<tr class="memdesc:a49e9389321a5d8298c69dc6712fffed0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Verify the checksum of a region; on failure, RTE.  <a href="data__specification_8c.html#a49e9389321a5d8298c69dc6712fffed0">More...</a><br /></td></tr>
+<tr class="separator:a49e9389321a5d8298c69dc6712fffed0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77cda8f0103039e98d16777000de889a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="data__specification_8h.html#structdata__specification__metadata__t">data_specification_metadata_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="data__specification_8c.html#a77cda8f0103039e98d16777000de889a">data_specification_get_data_address</a> (void)</td></tr>
 <tr class="memdesc:a77cda8f0103039e98d16777000de889a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the location of the data for this core using the user0 entry of the SARK VCPU structure.  <a href="data__specification_8c.html#a77cda8f0103039e98d16777000de889a">More...</a><br /></td></tr>
 <tr class="separator:a77cda8f0103039e98d16777000de889a"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -143,6 +146,53 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a49e9389321a5d8298c69dc6712fffed0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a49e9389321a5d8298c69dc6712fffed0">&#9670;&nbsp;</a></span>verify_checksum()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void verify_checksum </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="data__specification_8h.html#structdata__specification__metadata__t">data_specification_metadata_t</a> *&#160;</td>
+          <td class="paramname"><em>ds_regions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>region</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Verify the checksum of a region; on failure, RTE. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ds_regions</td><td>The array of region metadata </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">region</td><td>The region to verify </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="data__specification_8c_source.html#l00049">49</a> of file <a class="el" href="data__specification_8c_source.html">data_specification.c</a>.</p>
+
+</div>
+</div>
 <a id="a77cda8f0103039e98d16777000de889a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a77cda8f0103039e98d16777000de889a">&#9670;&nbsp;</a></span>data_specification_get_data_address()</h2>
 
@@ -161,9 +211,9 @@ Functions</h2></td></tr>
 
 <p>Gets the location of the data for this core using the user0 entry of the SARK VCPU structure. </p>
 <p>Locates the start address for a core in SDRAM. This value is loaded into the user0 register of the core during the tool chain loading.</p>
-<p>Does not validate the value! That's <a class="el" href="data__specification_8c.html#acfeb7a17f6fd55f4fde96be91a8a4b0a" title="Reads the header from the address given and checks if the parameters are of the correct values.">data_specification_read_header()</a> </p><dl class="section return"><dt>Returns</dt><dd>The address of the generated data </dd></dl>
+<p>Does not validate the value! That's <a class="el" href="data__specification_8h.html#acfeb7a17f6fd55f4fde96be91a8a4b0a" title="Reads the header from the address given and checks if the parameters are of the correct values.">data_specification_read_header()</a> </p><dl class="section return"><dt>Returns</dt><dd>The address of the generated data </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="data__specification_8c_source.html#l00051">51</a> of file <a class="el" href="data__specification_8c_source.html">data_specification.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__specification_8c_source.html#l00077">77</a> of file <a class="el" href="data__specification_8c_source.html">data_specification.c</a>.</p>
 
 </div>
 </div>
@@ -193,7 +243,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if a valid header was found, or false if was not </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="data__specification_8c_source.html#l00075">75</a> of file <a class="el" href="data__specification_8c_source.html">data_specification.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="data__specification_8c_source.html#l00096">96</a> of file <a class="el" href="data__specification_8c_source.html">data_specification.c</a>.</p>
 
 </div>
 </div>
