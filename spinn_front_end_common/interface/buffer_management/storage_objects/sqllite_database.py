@@ -146,10 +146,10 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 """
                 SELECT content
                 FROM region_view
-                WHERE region_id = ? 
+                WHERE region_id = ?
                 LIMIT 1
                 """, (region_id,)):
-            data =row["content"]
+            data = row["content"]
             break
         else:
             raise LookupError(f"no record for region {region_id}")
