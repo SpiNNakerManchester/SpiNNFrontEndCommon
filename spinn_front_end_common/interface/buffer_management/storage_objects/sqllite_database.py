@@ -50,10 +50,11 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
 
     def __init__(self, database_file=None):
         """
-        :param str database_file:
+        :param database_file:
             The name of a file that contains (or will contain) an SQLite
             database holding the data.
             If omitted the default location will be used.
+        :type database_file: None or str
         """
         if database_file is None:
             database_file = self.default_database_file()
