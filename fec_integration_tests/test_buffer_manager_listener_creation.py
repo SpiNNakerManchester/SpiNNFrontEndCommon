@@ -72,8 +72,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         transceiver = Transceiver(version=5, connections=connections)
         writer.set_transceiver(transceiver)
         # Alternatively, one can register a udp listener for testing via:
-        # trnx.register_udp_listener(callback=None,
-        #        connection_class=EIEIOConnection)
+        # trnx.register_eieio_listener(callback=None)
 
         # Create buffer manager
         bm = BufferManager()
