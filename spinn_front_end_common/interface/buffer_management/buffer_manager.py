@@ -21,7 +21,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
-from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     EIEIOCommandMessage, StopRequests, SpinnakerRequestBuffers,
     HostSendSequencedData, EventStopRequest)
