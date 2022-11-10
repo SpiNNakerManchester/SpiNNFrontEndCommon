@@ -81,6 +81,8 @@ struct lpg_config {
     uint32_t sdp_dest;
     //! Maximum number of packets to send per timestep, or 0 for "send them all"
     uint32_t packets_per_timestamp;
+    //! Shift to apply to received key
+    uint32_t received_key_right_shift;
     //! The number of entries in the translation table
     uint32_t n_translation_entries;
     //! Translation table
@@ -212,13 +214,19 @@ static inline bool find_translation_entry(uint32_t key, uint32_t *index) {
 static inline uint32_t translated_key(uint32_t key) {
     uint32_t index = 0;
 
-    // If there isn't an entry, don't translated
-    if (!find_translation_entry(key, &index)) {
-        return key;
+    // Pre-shift the key as requested
+    uint32_t shifted_key = key;
+    if (config->received_key_right_shift) {
+        shifted_key = key >> config->received_key_right_shift;
+    }
+
+    // If there isn't an entry, don't translate
+    if (!find_translation_entry(shifted_key, &index)) {
+        return shifted_key;
     }
 
     key_translation_entry entry = config->translation_table[index];
-    return (key & ~entry.mask) + entry.lo_atom;
+    return (shifted_key & ~entry.mask) + entry.lo_atom;
 }
 
 //! \brief Because _WHY OH WHY_ would you use aligned memory? At least with this

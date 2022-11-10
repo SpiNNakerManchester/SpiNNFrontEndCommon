@@ -154,7 +154,7 @@ class ReverseIpTagMultiCastSource(
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
     def get_sdram_used_by_atoms(self, vertex_slice):
         return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-            self.__filtered_send_buffer_times(vertex_slice),
+            self._filtered_send_buffer_times(vertex_slice),
             self._is_recording, self._receive_rate, vertex_slice.n_atoms)
 
     @property
@@ -184,7 +184,7 @@ class ReverseIpTagMultiCastSource(
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, sdram, label=None):
-        send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
+        send_buffer_times = self._filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
             label=label, app_vertex=self,
@@ -204,7 +204,7 @@ class ReverseIpTagMultiCastSource(
             assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
-    def __filtered_send_buffer_times(self, vertex_slice):
+    def _filtered_send_buffer_times(self, vertex_slice):
         ids = vertex_slice.get_raster_ids(self.atoms_shape)
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
