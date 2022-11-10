@@ -70,6 +70,8 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         # Create transceiver
         transceiver = Transceiver(version=5, connections=connections)
+        # Should be no connection listeners yet; they're made later
+        self.assertEqual(transceiver._num_listeners, 0)
         writer.set_transceiver(transceiver)
         # Alternatively, one can register a udp listener for testing via:
         # trnx.register_eieio_listener(callback=None)
@@ -82,16 +84,10 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         bm._add_buffer_listeners(vertex=v1)
         bm._add_buffer_listeners(vertex=v2)
 
-        number_of_listeners = 0
-        for i in transceiver._udp_listenable_connections_by_class[
-                EIEIOConnection]:
-            # Check if listener is registered on connection - we only expect
-            # one listener to be registered, as all connections can use the
-            # same listener for the buffer manager
-            if not i[1] is None:
-                number_of_listeners += 1
-            print(i)
-        self.assertEqual(number_of_listeners, 1)
+        # Check if a listener is registered in the transceiver - we only expect
+        # one listener to be registered, as all connections can use the
+        # same listener for the buffer manager
+        self.assertEqual(transceiver._num_listeners, 1)
 
 
 if __name__ == "__main__":
