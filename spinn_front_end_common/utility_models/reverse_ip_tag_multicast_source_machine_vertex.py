@@ -455,10 +455,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 len(self._send_buffer_times)):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
-                self.app_vertex.fill_send_buffer_2d(key_to_send)
+                self._fill_send_buffer_2d(key_to_send)
             else:
                 # Work with a single list
-                self.app_vertex.fill_send_buffer_1d(key_to_send)
+                self._fill_send_buffer_1d(key_to_send)
 
     def _fill_send_buffer_2d(self, key_base):
         """ Add the keys with different times for each atom.
