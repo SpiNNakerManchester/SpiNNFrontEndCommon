@@ -2162,7 +2162,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_create_database_interface</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_create_notifiaction_protocol</span><span class="p">()</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">()</span> <span class="ow">and</span>
-                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">()):</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_mapping</span><span class="p">()</span> <span class="ow">and</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_requires_data_generation</span><span class="p">()):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_execute_dsg_region_reloader</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_runtime_update</span><span class="p">(</span><span class="n">n_sync_steps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_runner</span><span class="p">(</span><span class="n">n_sync_steps</span><span class="p">,</span> <span class="n">run_time</span><span class="p">)</span>
