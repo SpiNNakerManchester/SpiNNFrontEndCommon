@@ -75,6 +75,7 @@ class _FecDataModel(object):
         "_max_run_time_steps",
         "_monitor_map",
         "_run_number",
+        "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -148,6 +149,7 @@ class _FecDataModel(object):
         """
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
+        self._run_step = None
 
     def _clear_notification_protocol(self):
         if self._notification_protocol:
@@ -454,6 +456,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._run_number is None:
             raise cls._exception("run_number")
         return cls.__fec_data._run_number
+
+    @classmethod
+    def get_run_step(cls):
+        """
+        Get the auto pause and resume step currently running if any.
+
+        If and only if currently in an auto pause and resume loop this will
+        report the number of the step. Starting at 1
+
+        In most cases this will return None, including when running without
+        steps.
+
+        :rtype: None or int
+        """
+        return cls.__fec_data._run_step
 
     # Report directories
     # There are NO has or get methods for directories

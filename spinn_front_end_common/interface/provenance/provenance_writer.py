@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017-2022 The University of Manchester
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import logging
 import os
 import re
@@ -62,7 +63,7 @@ class ProvenanceWriter(SQLiteDB):
             database_file = os.path.join(
                 FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
         self._database_file = database_file
-        super().__init__(database_file, ddl_file=_DDL_FILE)
+        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
 
     def insert_version(self, description, the_value):
         """
@@ -94,51 +95,70 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, n_loop):
+    def insert_category(self, category, machine_on):
         """
-        Inserts algorithms run times into the timer_provenance table
+        Inserts category into the category_timer_provenance  returning id
 
-        :param str category: Category of the Algorithms run
-        :param ~datetime.timedelta timedelta: Time to be recorded
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param TimerCategory category: Name of Category starting
+        :param bool machine_on: If the machine was done during all
+            or some of the time
         """
-        the_value = (
-                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, machine_on, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                """,
+                [category.category_name, machine_on,
+                 FecDataView.get_run_number(),
+                 FecDataView.get_run_step()])
+            return cur.lastrowid
+
+    def insert_category_timing(self, category_id, timedelta):
+        """
+        Inserts run time into the category
+
+        :param int category_id: id of the Category finished
+        :param ~datetime.timedelta timedelta: Time to be recorded
+       """
+        time_taken = (
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO category_timer_provenance(
-                    category, the_value, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category, the_value, FecDataView.get_run_number(), n_loop])
+                UPDATE category_timer_provenance
+                SET
+                    time_taken = ?
+                WHERE category_id = ?
+                """, (time_taken, category_id))
 
     def insert_timing(
-            self, category, algorithm, the_value, n_loop, skip_reason):
+            self, category, algorithm, work, timedelta, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
-        :param str category: Category of the Algorithm
+        :param int category: Category Id of the Algorithm
         :param str algorithm: Algorithm name
-        :param int the_value: Runtime
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param TimerWork work: Type of work being done
+        :param ~datetime.timedelta timedelta: Time to be recorded
         :param skip_reason: The reason the algorthm was skipped or None if
             it was not skipped
         :tpye skip_reason: str or None
         """
+        time_taken = (
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
-                    category, algorithm, the_value, n_run, n_loop, skip_reason)
-                VALUES(?, ?, ?, ?, ?, ?)
+                    category_id, algorithm, work, time_taken, skip_reason)
+                VALUES(?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, the_value, FecDataView.get_run_number(),
-                 n_loop, skip_reason])
+                [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """
@@ -270,12 +290,12 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?)
                 """, [message])
             recorded = cur.lastrowid
-            cutoff = get_config_int("Reports", "provenance_report_cutoff")
-            if cutoff is None or recorded < cutoff:
-                logger.warning(message)
-            elif recorded == cutoff:
-                logger.warning(f"Additional interesting provenace items in "
-                               f"{self._database_file}")
+        cutoff = get_config_int("Reports", "provenance_report_cutoff")
+        if cutoff is None or recorded < cutoff:
+            logger.warning(message)
+        elif recorded == cutoff:
+            logger.warning(f"Additional interesting provenace items in "
+                           f"{self._database_file}")
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
@@ -317,3 +337,38 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES (?, ?, ?)
                 """, ((x, y, ipaddress)
                       for ((x, y), ipaddress) in connections.items()))
+
+    def store_log(self, level, message, timestamp=None):
+        """
+        Stores log messages into the database
+
+        :param int level:
+        :param str message:
+        """
+        if timestamp is None:
+            timestamp = datetime.now()
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO p_log_provenance(
+                    timestamp, level, message)
+                VALUES(?, ?, ?)
+                """,
+                [timestamp, level, message])
+
+    def _test_log_locked(self, text):
+        """
+        THIS IS A TESTING METHOD.
+
+        This will lock the database and then try to do a log
+        """
+        with self.transaction() as cur:
+            # lock the database
+            cur.execute(
+                """
+                INSERT INTO reports(message)
+                VALUES(?)
+                """, [text])
+            cur.lastrowid
+            # try logging and storing while locked.
+            logger.warning(text)

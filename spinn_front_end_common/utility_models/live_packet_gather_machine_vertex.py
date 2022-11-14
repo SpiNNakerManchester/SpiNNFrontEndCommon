@@ -55,18 +55,14 @@ class LivePacketGatherMachineVertex(
     KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
     def __init__(
-            self, lpg_params, app_vertex=None, constraints=None, label=None):
+            self, lpg_params, app_vertex=None, label=None):
         """
         :param LivePacketGatherParameters lpg_params:
         :param str label:
-        :param constraints:
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         """
         # inheritance
         super().__init__(
-            label or lpg_params.label, constraints=constraints,
-            app_vertex=app_vertex)
+            label or lpg_params.label, app_vertex=app_vertex)
 
         # app specific data items
         self._lpg_params = lpg_params
@@ -226,8 +222,8 @@ class LivePacketGatherMachineVertex(
             for vertex, partition_id in self._incoming_sources:
                 r_info = routing_info.get_routing_info_from_pre_vertex(
                     vertex, partition_id)
-                spec.write_value(r_info.first_key)
-                spec.write_value(r_info.first_mask)
+                spec.write_value(r_info.key)
+                spec.write_value(r_info.mask)
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):

@@ -117,16 +117,15 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             self.set_report_dir_path(
                 self._child_folder(default_report_file_path, REPORTS_DIRNAME))
 
-    @classmethod
-    def __create_timestamp_directory(cls):
+    def __create_timestamp_directory(self):
         while True:
             try:
                 now = datetime.datetime.now()
                 timestamp = (
                     f"{now.year:04}-{now.month:02}-{now.day:02}-{now.hour:02}"
                     f"-{now.minute:02}-{now.second:02}-{now.microsecond:06}")
-                cls.__fec_data._timestamp_dir_path = cls._child_folder(
-                    cls.get_report_dir_path(), timestamp, must_create=True)
+                self.__fec_data._timestamp_dir_path = self._child_folder(
+                    self.get_report_dir_path(), timestamp, must_create=True)
                 return
             except OSError:
                 time.sleep(0.5)
@@ -568,3 +567,29 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def add_vertex(cls, vertex):
         # Avoid the safety check in FecDataView
         PacmanDataWriter.add_vertex(vertex)
+
+    def next_run_step(self):
+        """
+        Starts or increases the run step count.
+
+        Run steps start at 1
+
+        :return: The next step number
+        :rtype: int
+        """
+        if self.__fec_data._run_step is None:
+            self.__fec_data._run_step = 1
+        else:
+            self.__fec_data._run_step += 1
+        return self.__fec_data._run_step
+
+    def clear_run_steps(self):
+        """
+        Clears the run step
+
+        get_run_step will go back to returning None
+
+        next_run_step will restart at 1
+
+        """
+        self.__fec_data._run_step = None

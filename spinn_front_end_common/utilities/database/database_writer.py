@@ -117,14 +117,6 @@ class DatabaseWriter(SQLiteDB):
             cur.executemany(
                 """
                 INSERT INTO Machine_chip(
-                    no_processors, chip_x, chip_y, machine_id)
-                VALUES (?, ?, ?, ?)
-                """, (
-                    (chip.n_processors, chip.x, chip.y, self._machine_id)
-                    for chip in machine.chips if chip.virtual))
-            cur.executemany(
-                """
-                INSERT INTO Machine_chip(
                     no_processors, chip_x, chip_y, machine_id,
                     ip_address, nearest_ethernet_x, nearest_ethernet_y)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -132,7 +124,7 @@ class DatabaseWriter(SQLiteDB):
                     (chip.n_processors, chip.x, chip.y, self._machine_id,
                      chip.ip_address,
                      chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-                    for chip in machine.chips if not chip.virtual))
+                    for chip in machine.chips))
 
     def add_application_vertices(self):
         """ Stores the main application graph description (vertices, edges).

@@ -20,7 +20,7 @@ from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    APPLICATION_RUNNER, LOADING, ProvenanceReader)
+    FecTimer, ProvenanceReader, TimerCategory)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
@@ -173,11 +173,10 @@ class EnergyReport(object):
 
         # sort what to report by chip
         active_chips = defaultdict(dict)
-        for placement in FecDataView.iterate_placemements():
-            vertex = placement.vertex
-            if not isinstance(vertex, ChipPowerMonitorMachineVertex):
-                labels = active_chips[placement.x, placement.y]
-                labels[placement.p] = vertex.label
+        for placement in FecDataView.iterate_placements_by_vertex_type(
+                ChipPowerMonitorMachineVertex):
+            labels = active_chips[placement.x, placement.y]
+            labels[placement.p] = placement.vertex.label
         for xy in active_chips:
             self._write_chips_active_cost(
                 xy, active_chips[xy], runtime_total_ms, power_used, f)
@@ -311,7 +310,7 @@ class EnergyReport(object):
 
         # find time in milliseconds
         reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_category(LOADING)
+        total_time_ms = reader.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -338,7 +337,8 @@ class EnergyReport(object):
 
         # find time
         reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_algorithm(APPLICATION_RUNNER)
+        total_time_ms = reader.get_timer_sum_by_algorithm(
+            FecTimer.APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (

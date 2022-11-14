@@ -100,7 +100,7 @@ bool standalone(void) {
 
 //! \brief the main entrance.
 void c_main(void) {
-    log_info("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
+    log_debug("%u bytes of free DTCM", sark_heap_max(sark.heap, 0));
     malloc_extras_turn_off_safety();
     malloc_extras_initialise_no_fake_heap_data();
 

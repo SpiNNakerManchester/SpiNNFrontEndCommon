@@ -84,12 +84,12 @@ def _add_rinfo(
         app_vertex, partition_id, routing_info, base_key, app_mask, mac_mask,
         m_vertex_shift):
     routing_info.add_routing_info(AppVertexRoutingInfo(
-        [BaseKeyAndMask(base_key, app_mask)], partition_id, app_vertex,
+        BaseKeyAndMask(base_key, app_mask), partition_id, app_vertex,
         mac_mask, 1, 1))
     for i, m_vertex in enumerate(app_vertex.machine_vertices):
         routing_info.add_routing_info(MachineVertexRoutingInfo(
-            [BaseKeyAndMask(
-                base_key | i << m_vertex_shift, app_mask | mac_mask)],
+            BaseKeyAndMask(
+                base_key | i << m_vertex_shift, app_mask | mac_mask),
             partition_id, m_vertex, i))
 
 

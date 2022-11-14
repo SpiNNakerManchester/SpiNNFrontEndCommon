@@ -15,17 +15,15 @@
 
 from .application_finisher import application_finisher
 from .application_runner import application_runner
-from .buffer_extractor import buffer_extractor
 from .chip_iobuf_clearer import chip_io_buf_clearer
 from .chip_iobuf_extractor import chip_io_buf_extractor
-from .buffer_manager_creator import buffer_manager_creator
 from .chip_provenance_updater import chip_provenance_updater
 from .chip_runtime_updater import chip_runtime_updater
 from .compute_energy_used import compute_energy_used
 from .database_interface import database_interface
 from .system_multicast_routing_generator import (
     system_multicast_routing_generator)
-from .dsg_region_reloader import dsg_region_reloader
+from .dsg_region_reloader import reload_dsg_regions
 from .energy_provenance_reporter import energy_provenance_reporter
 from .find_application_chips_used import FindApplicationChipsUsed
 from .graph_binary_gatherer import graph_binary_gatherer
@@ -63,13 +61,11 @@ from .command_sender_adder import add_command_senders
 
 
 __all__ = [
-    "application_finisher",
-    "application_runner", "buffer_extractor",
-    "buffer_manager_creator", "chip_io_buf_clearer",
+    "application_finisher", "application_runner", "chip_io_buf_clearer",
     "chip_io_buf_extractor", "chip_provenance_updater",
     "chip_runtime_updater", "create_notification_protocol",
     "compute_energy_used", "database_interface",
-    "dsg_region_reloader",
+    "reload_dsg_regions",
     "energy_provenance_reporter", "execute_application_data_specs",
     "execute_system_data_specs", "FindApplicationChipsUsed",
     "graph_binary_gatherer", "graph_data_specification_writer",

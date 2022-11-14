@@ -33,8 +33,7 @@ class ReverseIpTagMultiCastSource(
     """
 
     def __init__(
-            self, n_keys, label=None, constraints=None,
-            max_atoms_per_core=sys.maxsize,
+            self, n_keys, label=None, max_atoms_per_core=sys.maxsize,
 
             # Live input parameters
             receive_port=None,
@@ -62,9 +61,6 @@ class ReverseIpTagMultiCastSource(
         :param int n_keys:
             The number of keys to be sent via this multicast source
         :param str label: The label of this vertex
-        :param constraints: Any initial constraints to this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         :param int max_atoms_per_core:
         :param board_address: The IP address of the board on which to place
             this vertex if receiving data, either buffered or live (by
@@ -111,8 +107,7 @@ class ReverseIpTagMultiCastSource(
         :type splitter: None or AbstractSplitterCommon
         """
         # pylint: disable=too-many-arguments
-        super().__init__(
-            label, constraints, max_atoms_per_core, splitter=splitter)
+        super().__init__(label, max_atoms_per_core, splitter=splitter)
 
         # basic items
         self._n_atoms = self.round_n_atoms(n_keys, "n_keys")
@@ -152,7 +147,7 @@ class ReverseIpTagMultiCastSource(
         return numpy.array(send_buffer_times)
 
     @property
-    @overrides(LegacyPartitionerAPI.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return self._n_atoms
 
@@ -188,11 +183,11 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, sdram, label=None, constraints=None):
+            self, vertex_slice, sdram, label=None):
         send_buffer_times = self.__filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=vertex_slice,
-            label=label, constraints=constraints, app_vertex=self,
+            label=label, app_vertex=self,
             receive_port=self._receive_port,
             receive_sdp_port=self._receive_sdp_port,
             receive_tag=self._receive_tag,

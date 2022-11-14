@@ -34,15 +34,14 @@ def fixed_route_from_machine_report():
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
-            if not chip.virtual:
-                fixed_route = transceiver.read_fixed_route(
-                    chip.x, chip.y, app_id)
-                f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
-                    str(chip.x), str(chip.y),
-                    _reduce_route_value(
-                        fixed_route.processor_ids, fixed_route.link_ids),
-                    _expand_route_value(
-                        fixed_route.processor_ids, fixed_route.link_ids)))
+            fixed_route = transceiver.read_fixed_route(
+                chip.x, chip.y, app_id)
+            f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
+                str(chip.x), str(chip.y),
+                _reduce_route_value(
+                    fixed_route.processor_ids, fixed_route.link_ids),
+                _expand_route_value(
+                    fixed_route.processor_ids, fixed_route.link_ids)))
 
 
 def _reduce_route_value(processors_ids, link_ids):

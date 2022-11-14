@@ -27,16 +27,12 @@ class CommandSender(
         simulation events (e.g., starting and stopping).
     """
 
-    def __init__(self, label, constraints):
+    def __init__(self, label):
         """
         :param str label: The label of this vertex
-        :param constraints: Any initial constraints to this vertex
-        :type constraints:
-            iterable(~pacman.model.constraints.AbstractConstraint)
         """
         super().__init__(
-            CommandSenderMachineVertex(label, constraints, self),
-            label, constraints)
+            CommandSenderMachineVertex(label, self), label)
 
     def add_commands(
             self, start_resume_commands, pause_stop_commands,

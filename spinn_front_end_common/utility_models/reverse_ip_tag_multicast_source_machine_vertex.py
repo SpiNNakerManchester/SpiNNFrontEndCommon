@@ -80,8 +80,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :type app_vertex: ReverseIpTagMultiCastSource or None
     :param int n_keys: The number of keys to be sent via this mulitcast source
         (can't be None if vertex_slice is also None)
-    :param iterable(~pacman.model.constraints.AbstractConstraint) constraints:
-        Any initial constraints to this vertex
     :param str board_address:
         The IP address of the board on which to place this vertex if receiving
         data, either buffered or live (by default, any board is chosen)
@@ -152,7 +150,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             vertex_slice=None,
             app_vertex=None,
             n_keys=None,
-            constraints=None,
 
             # Live input parameters
             receive_port=None,
@@ -186,7 +183,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 "Can't specify both send_buffer_partition_id and"
                 " injection_partition_id")
 
-        super().__init__(label, constraints, app_vertex, vertex_slice)
+        super().__init__(label, app_vertex, vertex_slice)
 
         self._reverse_iptags = []
         self._n_keys = vertex_slice.n_atoms
@@ -589,8 +586,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
-                self._virtual_key = rinfo.first_key
-                self._mask = rinfo.first_mask
+                self._virtual_key = rinfo.key
+                self._mask = rinfo.mask
 
         if self._virtual_key is not None and self._prefix is None:
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
