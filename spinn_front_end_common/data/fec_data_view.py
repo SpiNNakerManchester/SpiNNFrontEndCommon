@@ -65,6 +65,7 @@ class _FecDataModel(object):
         "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
+        "_live_output_vertices",
         "_n_boards_required",
         "_n_chips_required",
         "_n_chips_in_graph",
@@ -105,6 +106,7 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
+        self._live_output_vertices = set()
         self._java_caller = None
         self._n_boards_required = None
         self._n_chips_required = None
@@ -121,7 +123,7 @@ class _FecDataModel(object):
 
     def _hard_reset(self):
         """
-        Clears out all data that should change after a reset and graaph change
+        Clears out all data that should change after a reset and graph change
         """
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
@@ -1056,3 +1058,23 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._notification_protocol is None:
             raise cls._exception("notification_protocol")
         return cls.__fec_data._notification_protocol
+
+    @classmethod
+    def add_live_output_vertex(cls, vertex, partition_id):
+        """
+        Add a vertex that is to be output live, and so wants its atom IDs
+        recorded in the database.
+
+        :param ApplicationVertex vertex: The vertex to add
+        :param str partition_id: The partition to get the IDs of
+        """
+        cls.__fec_data._live_output_vertices.add((vertex, partition_id))
+
+    @classmethod
+    def iter_live_output_vertices(cls):
+        """
+        Get an iterator over the live output vertices and partition ids
+
+        :rtype: set((ApplicationVertex, str))
+        """
+        return iter(cls.__fec_data._live_output_vertices)
