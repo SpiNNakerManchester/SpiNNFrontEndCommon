@@ -79,9 +79,10 @@ def _write_to_db(
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)
                 and vertex.is_in_injection_mode]
             machine_vertices.extend(lpg_source_machine_vertices)
+            live_vertices = FecDataView.iterate_live_output_vertices()
             machine_vertices.extend(
                 (m_vertex, part_id)
-                for vertex, part_id in FecDataView.iterate_partitions()
+                for vertex, part_id in live_vertices
                 for m_vertex in vertex.machine_vertices)
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()

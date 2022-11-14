@@ -1071,7 +1071,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
 
     @classmethod
-    def iter_live_output_vertices(cls):
+    def iterate_live_output_vertices(cls):
         """
         Get an iterator over the live output vertices and partition ids
 
