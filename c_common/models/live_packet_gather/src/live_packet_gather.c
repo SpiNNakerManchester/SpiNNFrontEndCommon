@@ -225,9 +225,9 @@ static inline uint32_t translated_key(uint32_t key) {
     key_translation_entry entry = config->translation_table[index];
 
     // Pre-shift the key as requested
-    uint32_t shifted_key = key;
+    uint32_t shifted_key = key & ~entry.mask;
     if (config->received_key_right_shift) {
-        shifted_key = (key & ~entry.mask) >> config->received_key_right_shift;
+        shifted_key = shifted_key >> config->received_key_right_shift;
     }
     return shifted_key + entry.lo_atom;
 }
