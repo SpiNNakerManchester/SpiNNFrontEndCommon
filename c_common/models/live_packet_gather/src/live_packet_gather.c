@@ -81,8 +81,10 @@ struct lpg_config {
     uint32_t sdp_dest;
     //! Maximum number of packets to send per timestep, or 0 for "send them all"
     uint32_t packets_per_timestamp;
-    //! Shift to apply to received key
-    uint32_t received_key_right_shift;
+    //! Mask to apply to non-translated keys
+    uint32_t received_key_mask;
+    //! Shift to apply to received and translated keys
+    uint32_t translated_key_right_shift;
     //! The number of entries in the translation table
     uint32_t n_translation_entries;
     //! Translation table
@@ -216,18 +218,15 @@ static inline uint32_t translated_key(uint32_t key) {
 
     // If there isn't an entry, don't translate
     if (!find_translation_entry(key, &index)) {
-        if (config->received_key_right_shift) {
-            return key >> config->received_key_right_shift;
-        }
-        return key;
+        return key & config->received_key_mask;
     }
 
     key_translation_entry entry = config->translation_table[index];
 
     // Pre-shift the key as requested
     uint32_t shifted_key = key & ~entry.mask;
-    if (config->received_key_right_shift) {
-        shifted_key = shifted_key >> config->received_key_right_shift;
+    if (config->translated_key_right_shift) {
+        shifted_key = shifted_key >> config->translated_key_right_shift;
     }
     return shifted_key + entry.lo_atom;
 }
