@@ -744,6 +744,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(SendsBuffersFromHostPreBufferedImpl.rewind)
     def rewind(self, region):
+        # reset theses so fill send buffer will run when send_buffers called
+        self._first_machine_time_step = None
+        self._run_until_timesteps = None
         # Avoid update_buffer as not needed and called during reset
         self._send_buffers[region].rewind()
 
