@@ -88,6 +88,21 @@ repositories as all methods are available to subclasses</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.add_live_output_vertex">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_live_output_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.add_live_output_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.add_live_output_vertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a vertex that is to be output live, and so wants its atom IDs
+recorded in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vertex</strong> (<em>ApplicationVertex</em>) – The vertex to add</p></li>
+<li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The partition to get the IDs of</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_live_packet_gatherer_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_record_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.add_live_packet_gatherer_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds parameters for a new LPG if needed, or adds to the tracker             for parameters.</p>
@@ -874,6 +889,17 @@ There is never a case when some are known and others not</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_live_output_vertices">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_live_output_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_live_output_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_live_output_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an iterator over the live output vertices and partition ids</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)">set</a>((ApplicationVertex, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_monitor_items">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_monitor_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_monitor_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_monitor_items" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterates over the (X,y) and ExtraMonitorSupportMachineVertex</p>
@@ -923,6 +949,7 @@ There is never a case when some are known and others not</p>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView"><code class="docutils literal notranslate"><span class="pre">FecDataView</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_database_socket_address"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_database_socket_address()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_database_socket_addresses"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_database_socket_addresses()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_live_output_vertex"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_live_output_vertex()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters"><code class="docutils literal notranslate"><span class="pre">FecDataView.add_live_packet_gatherer_parameters()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_app_provenance_dir_path()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_buffer_manager"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_buffer_manager()</span></code></a></li>
@@ -978,6 +1005,7 @@ There is never a case when some are known and others not</p>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_database_socket_addresses"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_database_socket_addresses()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_gather_items"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_gather_items()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_gathers"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_gathers()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_live_output_vertices"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_live_output_vertices()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitor_items"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitor_items()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.iterate_monitors"><code class="docutils literal notranslate"><span class="pre">FecDataView.iterate_monitors()</span></code></a></li>
 </ul>

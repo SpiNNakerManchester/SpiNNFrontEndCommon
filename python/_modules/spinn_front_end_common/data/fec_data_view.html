@@ -105,6 +105,7 @@
         <span class="s2">&quot;_ipaddress&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_java_caller&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_live_packet_recorder_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_live_output_vertices&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_n_boards_required&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_n_chips_required&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_n_chips_in_graph&quot;</span><span class="p">,</span>
@@ -145,6 +146,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_hardware_time_step_ms</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hardware_time_step_us</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_live_packet_recorder_params</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_live_output_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_boards_required</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_required</span> <span class="o">=</span> <span class="kc">None</span>
@@ -161,7 +163,7 @@
 
     <span class="k">def</span> <span class="nf">_hard_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Clears out all data that should change after a reset and graaph change</span>
+<span class="sd">        Clears out all data that should change after a reset and graph change</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_in_multicast_key_to_chip_map</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1096,6 +1098,26 @@
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_notification_protocol</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_exception</span><span class="p">(</span><span class="s2">&quot;notification_protocol&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_notification_protocol</span></div>
+
+<div class="viewcode-block" id="FecDataView.add_live_output_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_live_output_vertex">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">add_live_output_vertex</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a vertex that is to be output live, and so wants its atom IDs</span>
+<span class="sd">        recorded in the database.</span>
+
+<span class="sd">        :param ApplicationVertex vertex: The vertex to add</span>
+<span class="sd">        :param str partition_id: The partition to get the IDs of</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_live_output_vertices</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FecDataView.iterate_live_output_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_live_output_vertices">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">iterate_live_output_vertices</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an iterator over the live output vertices and partition ids</span>
+
+<span class="sd">        :rtype: set((ApplicationVertex, str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_live_output_vertices</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
