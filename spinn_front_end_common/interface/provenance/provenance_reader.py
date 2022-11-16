@@ -179,7 +179,7 @@ class ProvenanceReader(object):
         :rtype: str
         """
         query = """
-            SELECT algorithm, the_value AS "value"
+            SELECT algorithm, time_taken
             FROM timer_provenance
             WHERE algorithm LIKE ?
             """
@@ -199,9 +199,7 @@ class ProvenanceReader(object):
         """
         # We know the database actually stores microseconds for durations
         query = """
-            SELECT
-                description,
-                SUM(the_value) / 1000000.0 AS "value"
+            SELECT description, SUM(time_taken) / 1000000.0
             FROM timer_provenance
             GROUP BY description
             ORDER BY the_value
@@ -304,39 +302,94 @@ class ProvenanceReader(object):
         """
         Get the total runtime for one category of algorithms
 
-        :param str category:
+        :param  TimerCategory category:
         :return: total off all runtimes with this category
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
+             SELECT sum(time_taken)
              FROM category_timer_provenance
              WHERE category = ?
              """
-        data = self.run_query(query, [category])
+        data = self.run_query(query, [category.category_name])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
+
+    def get_category_timer_sums(self, category):
+        """
+        Get the runtime for one category of algorithms
+        split machine on, machine off
+
+        :param TimerCategory category:
+        :return: total on and off time of instances with this category
+        :rtype: int
+        """
+        on = 0
+        off = 0
+        query = """
+             SELECT sum(time_taken), machine_on
+             FROM category_timer_provenance
+             WHERE category = ?
+             GROUP BY machine_on
+             """
+        try:
+            for data in self.run_query(query, [category.category_name]):
+                if data[1]:
+                    on = data[0]
+                else:
+                    off = data[0]
+        except IndexError:
+            pass
+        return on, off
 
     def get_timer_sum_by_category(self, category):
         """
         Get the total runtime for one category of algorithms
 
-        :param str category:
+        :param TimerCategory category:
         :return: total off all runtimes with this category
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
-             FROM timer_provenance
+             SELECT sum(time_taken)
+             FROM full_timer_view
              WHERE category = ?
              """
-        data = self.run_query(query, [category])
+        data = self.run_query(query, [category.category_name])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
+
+    def get_timer_sum_by_work(self, work):
+        """
+        Get the total runtime for one work type of algorithms
+
+        :param TimerWork work:
+        :return: total off all runtimes with this category
+        :rtype: int
+        """
+        query = """
+             SELECT sum(time_taken)
+             FROM full_timer_view
+             WHERE work = ?
+             """
+        data = self.run_query(query, [work.work_name])
+        try:
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
+        except IndexError:
+            return 0
 
     def get_timer_sum_by_algorithm(self, algorithm):
         """
@@ -347,15 +400,18 @@ class ProvenanceReader(object):
         :rtype: int
         """
         query = """
-             SELECT sum(the_value)
+             SELECT sum(time_taken)
              FROM timer_provenance
              WHERE algorithm = ?
              """
         data = self.run_query(query, [algorithm])
         try:
-            return data[0][0]
+            info = data[0][0]
+            if info is None:
+                return 0
+            return info
         except IndexError:
-            return None
+            return 0
 
     def messages(self):
         """

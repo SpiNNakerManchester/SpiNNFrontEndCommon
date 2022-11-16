@@ -95,51 +95,70 @@ class ProvenanceWriter(SQLiteDB):
                 VALUES(?, ?)
                 """, [description, the_value])
 
-    def insert_category_timing(self, category, timedelta, n_loop):
+    def insert_category(self, category, machine_on):
         """
-        Inserts algorithms run times into the timer_provenance table
+        Inserts category into the category_timer_provenance  returning id
 
-        :param str category: Category of the Algorithms run
-        :param ~datetime.timedelta timedelta: Time to be recorded
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param TimerCategory category: Name of Category starting
+        :param bool machine_on: If the machine was done during all
+            or some of the time
         """
-        the_value = (
-                (timedelta.total_seconds() * MICRO_TO_MILLISECOND_CONVERSION) +
+        with self.transaction() as cur:
+            cur.execute(
+                """
+                INSERT INTO category_timer_provenance(
+                    category, machine_on, n_run, n_loop)
+                VALUES(?, ?, ?, ?)
+                """,
+                [category.category_name, machine_on,
+                 FecDataView.get_run_number(),
+                 FecDataView.get_run_step()])
+            return cur.lastrowid
+
+    def insert_category_timing(self, category_id, timedelta):
+        """
+        Inserts run time into the category
+
+        :param int category_id: id of the Category finished
+        :param ~datetime.timedelta timedelta: Time to be recorded
+       """
+        time_taken = (
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
         with self.transaction() as cur:
             cur.execute(
                 """
-                INSERT INTO category_timer_provenance(
-                    category, the_value, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category, the_value, FecDataView.get_run_number(), n_loop])
+                UPDATE category_timer_provenance
+                SET
+                    time_taken = ?
+                WHERE category_id = ?
+                """, (time_taken, category_id))
 
     def insert_timing(
-            self, category, algorithm, the_value, n_loop, skip_reason):
+            self, category, algorithm, work, timedelta, skip_reason):
         """
         Inserts algorithms run times into the timer_provenance table
 
-        :param str category: Category of the Algorithm
+        :param int category: Category Id of the Algorithm
         :param str algorithm: Algorithm name
-        :param int the_value: Runtime
-        :param n_loop: The run loop within the ned user run
-        :type n_loop: int or None
+        :param TimerWork work: Type of work being done
+        :param ~datetime.timedelta timedelta: Time to be recorded
         :param skip_reason: The reason the algorthm was skipped or None if
             it was not skipped
         :tpye skip_reason: str or None
         """
+        time_taken = (
+                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
+                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
         with self.transaction() as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
-                    category, algorithm, the_value, n_run, n_loop, skip_reason)
-                VALUES(?, ?, ?, ?, ?, ?)
+                    category_id, algorithm, work, time_taken, skip_reason)
+                VALUES(?, ?, ?, ?, ?)
                 """,
-                [category, algorithm, the_value, FecDataView.get_run_number(),
-                 n_loop, skip_reason])
+                [category, algorithm, work.work_name, time_taken, skip_reason])
 
     def insert_other(self, category, description, the_value):
         """
