@@ -61,6 +61,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">,</span> <span class="n">HasCustomAtomKeyMap</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="n">LivePacketGather</span>
+<span class="kn">from</span> <span class="nn">pacman.utilities.utility_calls</span> <span class="kn">import</span> <span class="n">get_field_based_keys</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 <span class="n">DB_NAME</span> <span class="o">=</span> <span class="s2">&quot;input_output_database.sqlite3&quot;</span>
@@ -274,7 +275,7 @@
                     <span class="c1"># at which point there is nothing to do here anyway</span>
                     <span class="k">if</span> <span class="n">r_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                         <span class="n">vertex_slice</span> <span class="o">=</span> <span class="n">m_vertex</span><span class="o">.</span><span class="n">vertex_slice</span>
-                        <span class="n">keys</span> <span class="o">=</span> <span class="n">r_info</span><span class="o">.</span><span class="n">get_keys</span><span class="p">(</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">n_atoms</span><span class="p">)</span>
+                        <span class="n">keys</span> <span class="o">=</span> <span class="n">get_field_based_keys</span><span class="p">(</span><span class="n">r_info</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="p">)</span>
                         <span class="n">start</span> <span class="o">=</span> <span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span>
                         <span class="n">atom_keys</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">start</span><span class="p">)]</span>
                 <span class="n">m_vertex_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">m_vertex</span><span class="p">]</span>

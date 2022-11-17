@@ -9638,6 +9638,20 @@
     </member>
     <member kind="variable">
       <type>uint32_t</type>
+      <name>received_key_mask</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a183d06f559edc256f05ebce4fb04aec9</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
+      <name>translated_key_right_shift</name>
+      <anchorfile>live__packet__gather_8c.html</anchorfile>
+      <anchor>a59489a9fe562c9af5e9de0494ccfe0cb</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint32_t</type>
       <name>n_translation_entries</name>
       <anchorfile>live__packet__gather_8c.html</anchorfile>
       <anchor>a06401e8fe3455e2c8078619e044fb2b9</anchor>

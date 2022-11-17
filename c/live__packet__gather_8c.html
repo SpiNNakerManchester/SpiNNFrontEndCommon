@@ -463,6 +463,18 @@ packets_per_timestamp</td>
 <td class="fielddoc">
 Maximum number of packets to send per timestep, or 0 for "send them all". </td></tr>
 <tr><td class="fieldtype">
+<a id="a183d06f559edc256f05ebce4fb04aec9"></a>uint32_t</td>
+<td class="fieldname">
+received_key_mask</td>
+<td class="fielddoc">
+Mask to apply to non-translated keys. </td></tr>
+<tr><td class="fieldtype">
+<a id="a59489a9fe562c9af5e9de0494ccfe0cb"></a>uint32_t</td>
+<td class="fieldname">
+translated_key_right_shift</td>
+<td class="fielddoc">
+Shift to apply to received and translated keys. </td></tr>
+<tr><td class="fieldtype">
 <a id="a06401e8fe3455e2c8078619e044fb2b9"></a>uint32_t</td>
 <td class="fieldname">
 n_translation_entries</td>
@@ -505,7 +517,7 @@ Translation table. </td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00091">91</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00095">95</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -560,7 +572,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00230">230</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00240">240</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -614,7 +626,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00241">241</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00251">251</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -645,7 +657,7 @@ Translation table. </td></tr>
 <p>Get how many events there are waiting to be sent. </p>
 <dl class="section return"><dt>Returns</dt><dd>The number of events waiting </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00248">248</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00258">258</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -681,7 +693,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00295">295</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00305">305</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -729,7 +741,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00309">309</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00319">319</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -760,7 +772,7 @@ Translation table. </td></tr>
 <p>Flush events to the outside world if our internal buffers are now full. </p>
 <p>Calls <a class="el" href="live__packet__gather_8c.html#a91cdc1c4e765f059eab4831e97c9af38" title="Send buffered events to host via SDP AER message and clear internal buffers.">flush_events()</a> to do the flush. </p>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00336">336</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00346">346</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -796,7 +808,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00344">344</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00354">354</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -843,7 +855,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00376">376</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00386">386</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -893,7 +905,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00421">421</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00431">431</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -941,7 +953,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00450">450</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00460">460</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -989,7 +1001,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00470">470</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00480">480</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -1026,7 +1038,7 @@ Translation table. </td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00489">489</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00499">499</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -1063,7 +1075,7 @@ Translation table. </td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if initialisation succeeds. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00526">526</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00536">536</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
@@ -1094,7 +1106,7 @@ Translation table. </td></tr>
 <p>Sets up the AER EIEIO data message. </p>
 <dl class="section return"><dt>Returns</dt><dd>bool where True was successful init and false otherwise. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00559">559</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="live__packet__gather_8c_source.html#l00569">569</a> of file <a class="el" href="live__packet__gather_8c_source.html">live_packet_gather.c</a>.</p>
 
 </div>
 </div>
