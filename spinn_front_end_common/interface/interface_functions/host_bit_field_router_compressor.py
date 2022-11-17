@@ -113,8 +113,7 @@ def generate_key_to_atom_map():
                 partition.identifier):
             key = routing_infos.get_first_key_from_pre_vertex(
                 vertex, partition.identifier)
-            key_to_n_atoms_map[key] = (
-                vertex.get_n_keys_for_partition(partition))
+            key_to_n_atoms_map[key] = vertex.vertex_slice.n_atoms
     return key_to_n_atoms_map
 
 
