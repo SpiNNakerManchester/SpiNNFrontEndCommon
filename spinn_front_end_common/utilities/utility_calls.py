@@ -24,8 +24,7 @@ from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
-from spinnman.spalloc.abstract_classes import (
-    SpallocEIEIOListener, SpallocEIEIOConnection)
+from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
 from data_specification.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from data_specification.data_specification_generator import (

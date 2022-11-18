@@ -79,7 +79,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         :param int chip_x: ethernet chip x location
         :param int chip_y: ethernet chip y location
 
-        :rtype: ~spinnman.connections.abstract_classes.EIEIOSender
+        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
 
     @abstractmethod
@@ -87,7 +87,7 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         """
         Open an unbound EIEIO connection.
 
-        :rtype: ~spinnman.connections.abstract_classes.EIEIOReceiver
+        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
 
     @property

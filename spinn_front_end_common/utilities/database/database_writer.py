@@ -20,7 +20,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
-from spinnman.spalloc.abstract_classes import SpallocJob
+from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.utility_models import LivePacketGather
 from pacman.utilities.utility_calls import get_field_based_keys
 
