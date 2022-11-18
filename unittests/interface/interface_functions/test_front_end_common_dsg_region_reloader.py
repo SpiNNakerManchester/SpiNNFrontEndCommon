@@ -24,13 +24,14 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
-    dsg_region_reloader)
+    reload_dsg_regions)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
 from spinnman.model import CPUInfo
+from data_specification import DataSpecificationExecutor
 
 # test specific stuff
 reload_region_data = [
@@ -99,7 +100,10 @@ class _MockTransceiver(Transceiver):
 
     @overrides(Transceiver.read_memory)
     def read_memory(self, x, y, base_address, length, cpu=0):
-        addresses = [(i + base_address, 0, 0) for i in range(MAX_MEM_REGIONS)]
+        ptr_table_end = get_region_base_address_offset(
+            base_address, MAX_MEM_REGIONS)
+        addresses = [((i * 512) + ptr_table_end, 0, 0)
+                     for i in range(MAX_MEM_REGIONS)]
         addresses = [j for lst in addresses for j in lst]
         return n_word_struct(MAX_MEM_REGIONS * 3).pack(*addresses)
 
@@ -134,14 +138,15 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         ])
 
         user_0_addresses = {
-            placement.location: i * 1000
+            placement.location: i * MAX_MEM_REGIONS * 512
             for i, placement in enumerate(placements.placements)
         }
         transceiver = _MockTransceiver(user_0_addresses)
         writer.set_transceiver(transceiver)
         writer.set_placements(placements)
         writer.set_ipaddress("localhost")
-        dsg_region_reloader()
+
+        reload_dsg_regions()
 
         regions_rewritten = transceiver._regions_rewritten
 
@@ -150,18 +155,22 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         self.assertEqual(regenerate_call_count, placements.n_placements)
 
         # Check that the number of regions rewritten is correct
+        # (time 2 as there are 2 writes per region)
         self.assertEqual(
-            len(transceiver._regions_rewritten),
-            placements.n_placements * len(reload_region_data))
+            len(regions_rewritten),
+            placements.n_placements * len(reload_region_data) * 2)
 
         # Check that the data rewritten is correct
         for i, placement in enumerate(placements.placements):
             user_0_address = user_0_addresses[placement.location]
+            ptr_table_addr = get_region_base_address_offset(user_0_address, 0)
+            ptr_table = numpy.frombuffer(transceiver.read_memory(
+                placement.x, placement.y, ptr_table_addr, 0),
+                dtype=DataSpecificationExecutor.TABLE_TYPE)
             for j in range(len(reload_region_data)):
-                pos = (i * len(reload_region_data)) + j
+                pos = ((i * len(reload_region_data)) + j) * 2
                 region, data = reload_region_data[j]
-                address = get_region_base_address_offset(
-                    user_0_address, 0) + region
+                address = ptr_table[region]["pointer"]
                 data = bytearray(numpy.array(data, dtype="uint32").tobytes())
 
                 # Check that the base address and data written is correct

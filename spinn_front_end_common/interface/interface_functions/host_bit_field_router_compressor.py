@@ -93,7 +93,7 @@ def generate_report_path():
     :rtype: str
     """
     report_folder_path = os.path.join(
-        FecDataView.get_report_dir_path(), _REPORT_FOLDER_NAME)
+        FecDataView.get_run_dir_path(), _REPORT_FOLDER_NAME)
     if not os.path.exists(report_folder_path):
         os.mkdir(report_folder_path)
     return report_folder_path
@@ -113,8 +113,7 @@ def generate_key_to_atom_map():
                 partition.identifier):
             key = routing_infos.get_first_key_from_pre_vertex(
                 vertex, partition.identifier)
-            key_to_n_atoms_map[key] = (
-                vertex.get_n_keys_for_partition(partition))
+            key_to_n_atoms_map[key] = vertex.vertex_slice.n_atoms
     return key_to_n_atoms_map
 
 
@@ -268,7 +267,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
-        for placement in FecDataView.iterate_placements_with_vertex_type(
+        for placement in FecDataView.iterate_placements_by_xy_and_type(
                 chip_x, chip_y, AbstractSupportsBitFieldRoutingCompression):
             vertex = placement.vertex
             base_addresses[placement.p] = vertex.bit_field_base_address(

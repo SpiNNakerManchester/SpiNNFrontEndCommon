@@ -65,6 +65,7 @@ class _FecDataModel(object):
         "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
+        "_live_output_vertices",
         "_n_boards_required",
         "_n_chips_required",
         "_n_chips_in_graph",
@@ -74,6 +75,7 @@ class _FecDataModel(object):
         "_max_run_time_steps",
         "_monitor_map",
         "_run_number",
+        "_run_step",
         "_simulation_time_step_ms",
         "_simulation_time_step_per_ms",
         "_simulation_time_step_per_s",
@@ -104,6 +106,7 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
+        self._live_output_vertices = set()
         self._java_caller = None
         self._n_boards_required = None
         self._n_chips_required = None
@@ -120,7 +123,7 @@ class _FecDataModel(object):
 
     def _hard_reset(self):
         """
-        Clears out all data that should change after a reset and graaph change
+        Clears out all data that should change after a reset and graph change
         """
         self._buffer_manager = None
         self._data_in_multicast_key_to_chip_map = None
@@ -146,6 +149,7 @@ class _FecDataModel(object):
         """
         self._current_run_timesteps = 0
         self._first_machine_time_step = 0
+        self._run_step = None
 
     def _clear_notification_protocol(self):
         if self._notification_protocol:
@@ -426,6 +430,21 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._run_number is None:
             raise cls._exception("run_number")
         return cls.__fec_data._run_number
+
+    @classmethod
+    def get_run_step(cls):
+        """
+        Get the auto pause and resume step currently running if any.
+
+        If and only if currently in an auto pause and resume loop this will
+        report the number of the step. Starting at 1
+
+        In most cases this will return None, including when running without
+        steps.
+
+        :rtype: None or int
+        """
+        return cls.__fec_data._run_step
 
     # Report directories
     # There are NO has or get methods for directories
@@ -1039,3 +1058,23 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._notification_protocol is None:
             raise cls._exception("notification_protocol")
         return cls.__fec_data._notification_protocol
+
+    @classmethod
+    def add_live_output_vertex(cls, vertex, partition_id):
+        """
+        Add a vertex that is to be output live, and so wants its atom IDs
+        recorded in the database.
+
+        :param ApplicationVertex vertex: The vertex to add
+        :param str partition_id: The partition to get the IDs of
+        """
+        cls.__fec_data._live_output_vertices.add((vertex, partition_id))
+
+    @classmethod
+    def iterate_live_output_vertices(cls):
+        """
+        Get an iterator over the live output vertices and partition ids
+
+        :rtype: set((ApplicationVertex, str))
+        """
+        return iter(cls.__fec_data._live_output_vertices)

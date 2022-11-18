@@ -50,7 +50,7 @@ class LivePacketGatherMachineVertex(
     TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
     _N_ADDITIONAL_PROVENANCE_ITEMS = 4
-    _CONFIG_SIZE = 13 * BYTES_PER_WORD
+    _CONFIG_SIZE = 15 * BYTES_PER_WORD
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
     KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
@@ -213,6 +213,12 @@ class LivePacketGatherMachineVertex(
         # number of packets to send per time stamp
         spec.write_value(self._lpg_params.number_of_packets_sent_per_time_step)
 
+        # Received key mask
+        spec.write_value(self._lpg_params.received_key_mask)
+
+        # Translated key right shift
+        spec.write_value(self._lpg_params.translated_key_right_shift)
+
         # Key Translation
         if not self._lpg_params.translate_keys:
             spec.write_value(0)
@@ -222,8 +228,8 @@ class LivePacketGatherMachineVertex(
             for vertex, partition_id in self._incoming_sources:
                 r_info = routing_info.get_routing_info_from_pre_vertex(
                     vertex, partition_id)
-                spec.write_value(r_info.first_key)
-                spec.write_value(r_info.first_mask)
+                spec.write_value(r_info.key)
+                spec.write_value(r_info.mask)
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):

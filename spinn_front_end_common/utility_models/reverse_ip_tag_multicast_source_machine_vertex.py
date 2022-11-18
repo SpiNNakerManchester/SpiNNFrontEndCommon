@@ -420,7 +420,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         if recording and send_buffering:
             return 5
-        elif recording or send_buffering:
+        if recording or send_buffering:
             return 4
         return 3
 
@@ -444,18 +444,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._install_send_buffer(send_buffer_times)
 
     @staticmethod
-    def _is_in_range(
-            time_stamp_in_ticks,
-            first_machine_time_step, n_machine_time_steps):
+    def _is_in_range(step, first_step, end_step):
         """
-        :param int time_stamp_in_ticks:
-        :param int first_machine_time_step:
-        :param n_machine_time_steps:
+        :param int step: The time step to check
+        :param int first_step: The smallest support step
+        :param int end_step: The step after the end
         :type n_machine_time_steps: int or None
         """
-        return (n_machine_time_steps is None) or (
-            first_machine_time_step <= time_stamp_in_ticks <
-            n_machine_time_steps)
+        return end_step is None or (first_step <= step < end_step)
 
     def _fill_send_buffer(self):
         """ Fill the send buffer with keys to send.
@@ -478,37 +474,42 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 len(self._send_buffer_times)):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
-                self.__fill_send_buffer_2d(
-                    key_to_send, first_machine_time_step, run_until_timesteps)
+                self._fill_send_buffer_2d(key_to_send)
             else:
                 # Work with a single list
-                self.__fill_send_buffer_1d(
-                    key_to_send, first_machine_time_step, run_until_timesteps)
+                self._fill_send_buffer_1d(key_to_send)
 
-    def __fill_send_buffer_2d(
-            self, key_base, first_time_step, n_time_steps):
-        """
-        :param int key_base:
-        :param int first_time_step:
-        :param int n_time_steps:
-        """
-        keys = get_field_based_keys(key_base, self._vertex_slice)
-        for key in range(self._n_keys):
-            for tick in sorted(self._send_buffer_times[key]):
-                if self._is_in_range(tick, first_time_step, n_time_steps):
-                    self._send_buffer.add_key(tick, keys[key])
+    def _fill_send_buffer_2d(self, key_base):
+        """ Add the keys with different times for each atom.
+            Can be overridden to override keys.
 
-    def __fill_send_buffer_1d(
-            self, key_base, first_time_step, n_time_steps):
+        :param int key_base: The base key to use
         """
-        :param int key_base:
-        :param int first_time_step:
-        :param int n_time_steps:
-        """
+        first_time_step = FecDataView.get_first_machine_time_step()
+        end_time_step = FecDataView.get_current_run_timesteps()
+        if first_time_step == end_time_step:
+            return
         keys = get_field_based_keys(key_base, self._vertex_slice)
-        key_list = [keys[key] for key in range(self._n_keys)]
+        for atom in range(self._vertex_slice.n_atoms):
+            for tick in sorted(self._send_buffer_times[atom]):
+                if self._is_in_range(tick, first_time_step, end_time_step):
+                    self._send_buffer.add_key(tick, keys[atom])
+
+    def _fill_send_buffer_1d(self, key_base):
+        """ Add the keys from the given vertex slice within the given time
+            range into the given send buffer, with the same times for each
+            atom.  Can be overridden to override keys.
+
+        :param int key_base: The base key to use
+        """
+        first_time_step = FecDataView.get_first_machine_time_step()
+        end_time_step = FecDataView.get_current_run_timesteps()
+        if first_time_step == end_time_step:
+            return
+        keys = get_field_based_keys(key_base, self._vertex_slice)
+        key_list = [keys[atom] for atom in range(self._vertex_slice.n_atoms)]
         for tick in sorted(self._send_buffer_times):
-            if self._is_in_range(tick, first_time_step, n_time_steps):
+            if self._is_in_range(tick, first_time_step, end_time_step):
                 self._send_buffer.add_keys(tick, key_list)
 
     @staticmethod
@@ -586,8 +587,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # if no edge leaving this vertex, no key needed
             if rinfo is not None:
-                self._virtual_key = rinfo.first_key
-                self._mask = rinfo.first_mask
+                self._virtual_key = rinfo.key
+                self._mask = rinfo.mask
 
         if self._virtual_key is not None and self._prefix is None:
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
