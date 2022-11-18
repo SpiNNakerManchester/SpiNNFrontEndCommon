@@ -257,7 +257,7 @@ def spalloc_allocator(
         host, connections, mac = _allocate_job_new(
             spalloc_server, n_boards, bearer_token)
     else:
-        host, connections, mac = _alloc_job_old(spalloc_server, n_boards)
+        host, connections, mac = _allocate_job_old(spalloc_server, n_boards)
     return (host, _MACHINE_VERSION, None, False, False, connections, mac)
 
 
@@ -300,7 +300,7 @@ def _allocate_job_new(
         return (root, connections, allocation_controller)
 
 
-def _alloc_job_old(spalloc_server: str, n_boards: int) -> Tuple[
+def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
         str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
