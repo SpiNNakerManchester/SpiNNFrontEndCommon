@@ -32,7 +32,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, n_word_struct)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
-from spinn_front_end_common.utilities.utility_calls import retarget_tag
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
@@ -42,12 +41,11 @@ from spinn_front_end_common.utilities.utility_objs import (
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_region_base_address_offset)
+    get_region_base_address_offset, open_scp_connection, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         SetRouterTimeoutProcess, ClearQueueProcess)
-from spinn_front_end_common.utilities.globals_variables import get_simulator
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -585,8 +583,13 @@ class DataSpeedUpPacketGatherMachineVertex(
             data=payload)
 
     def __open_connection(self):
-        connection = get_simulator().open_scp_connection(
-            self._x, self._y, self._ip_address)
+        """
+        Open an SCP connection and make our tag target it.
+
+        :return: The opened connection, ready for use.
+        :rtype: SCAMPConnection
+        """
+        connection = open_scp_connection(self._x, self._y, self._ip_address)
         retarget_tag(connection, self._x, self._y, self._remote_tag)
         return connection
 
@@ -602,95 +605,97 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int start_address: the base SDRAM address
         """
         # Set up the connection
-        self._connection = self.__open_connection()
+        with self.__open_connection() as self._connection:
+            # how many packets after first one we need to send
+            self._max_seq_num = ceildiv(
+                len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
 
-        # how many packets after first one we need to send
-        self._max_seq_num = ceildiv(
-            len(data_to_write), BYTES_IN_FULL_PACKET_WITH_KEY)
+            # determine board chip IDs, as the LPG does not know
+            # machine scope IDs
+            machine = FecDataView.get_machine()
+            chip = FecDataView.get_chip_at(
+                destination_chip_x, destination_chip_y)
+            dest_x, dest_y = machine.get_local_xy(chip)
+            self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
-        # determine board chip IDs, as the LPG does not know machine scope IDs
-        machine = FecDataView.get_machine()
-        chip = FecDataView.get_chip_at(destination_chip_x, destination_chip_y)
-        dest_x, dest_y = machine.get_local_xy(chip)
-        self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
+            # for safety, check the transaction id from the machine before
+            # updating
+            self.update_transaction_id_from_machine()
+            self._transaction_id = (
+                self._transaction_id + 1) & TRANSACTION_ID_CAP
+            time_out_count = 0
 
-        # for safety, check the transaction id from the machine before updating
-        self.update_transaction_id_from_machine()
-        self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
-        time_out_count = 0
-
-        # verify completed
-        received_confirmation = False
-        while not received_confirmation:
-
-            # send initial attempt at sending all the data
-            self._send_all_data_based_packets(data_to_write, start_address)
-
-            # Don't create a missing buffer until at least one packet has
-            # come back.
-            missing = None
-
+            # verify completed
+            received_confirmation = False
             while not received_confirmation:
-                try:
-                    # try to receive a confirmation of some sort from spinnaker
-                    data = self._connection.receive(
-                        timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                    time_out_count = 0
 
-                    # Read command and transaction id
-                    (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
+                # send initial attempt at sending all the data
+                self._send_all_data_based_packets(data_to_write, start_address)
 
-                    # If wrong transaction id, ignore packet
-                    if self._transaction_id != transaction_id:
-                        continue
+                # Don't create a missing buffer until at least one packet has
+                # come back.
+                missing = None
 
-                    # Decide what to do with the packet
-                    if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
-                        received_confirmation = True
-                        break
+                while not received_confirmation:
+                    try:
+                        # try to receive a confirmation of some sort from
+                        # spinnaker
+                        data = self._connection.receive(
+                            timeout=self._TIMEOUT_PER_RECEIVE_IN_SECONDS)
+                        time_out_count = 0
 
-                    if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA.value:
-                        raise Exception("Unknown command {} received".format(
-                            cmd))
+                        # Read command and transaction id
+                        (cmd, transaction_id) = _TWO_WORDS.unpack_from(data, 0)
 
-                    # The currently received packet has missing sequence
-                    # numbers. Accumulate and dispatch transactionId when
-                    # we've got them all.
-                    if missing is None:
-                        missing = set()
-                        self._missing_seq_nums_data_in.append(missing)
-                    seen_last, seen_all = self._read_in_missing_seq_nums(
-                        data, BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
-                        missing)
+                        # If wrong transaction id, ignore packet
+                        if self._transaction_id != transaction_id:
+                            continue
 
-                    # Check that you've seen something that implies ready
-                    # to retransmit.
-                    if seen_all or seen_last:
+                        # Decide what to do with the packet
+                        if cmd == DATA_IN_COMMANDS.RECEIVE_FINISHED.value:
+                            received_confirmation = True
+                            break
+
+                        if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA\
+                                .value:
+                            raise Exception(f"Unknown command {cmd} received")
+
+                        # The currently received packet has missing sequence
+                        # numbers. Accumulate and dispatch transactionId when
+                        # we've got them all.
+                        if missing is None:
+                            missing = set()
+                            self._missing_seq_nums_data_in.append(missing)
+                        seen_last, seen_all = self._read_in_missing_seq_nums(
+                            data,
+                            BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER,
+                            missing)
+
+                        # Check that you've seen something that implies ready
+                        # to retransmit.
+                        if seen_all or seen_last:
+                            self._outgoing_retransmit_missing_seq_nums(
+                                data_to_write, missing)
+                            missing.clear()
+
+                    except SpinnmanTimeoutException as e:
+                        # if the timeout has not occurred x times, keep trying
+                        time_out_count += 1
+                        if time_out_count > TIMEOUT_RETRY_LIMIT:
+                            emergency_recover_state_from_failure(
+                                self, self._placement)
+                            raise SpinnFrontEndException(
+                                TIMEOUT_MESSAGE.format(
+                                    time_out_count)) from e
+
+                        # If we never received a packet, we will never have
+                        # created the buffer, so send everything again
+                        if missing is None:
+                            break
+
                         self._outgoing_retransmit_missing_seq_nums(
-                            data_to_write, missing)
+                                data_to_write, missing)
                         missing.clear()
-
-                except SpinnmanTimeoutException as e:
-                    # if the timeout has not occurred x times, keep trying
-                    time_out_count += 1
-                    if time_out_count > TIMEOUT_RETRY_LIMIT:
-                        emergency_recover_state_from_failure(
-                            self, self._placement)
-                        raise SpinnFrontEndException(
-                            TIMEOUT_MESSAGE.format(
-                                time_out_count)) from e
-
-                    # If we never received a packet, we will never have
-                    # created the buffer, so send everything again
-                    if missing is None:
-                        break
-
-                    self._outgoing_retransmit_missing_seq_nums(
-                            data_to_write, missing)
-                    missing.clear()
-
-        # Close the connection
-        self._connection.close()
 
     def _read_in_missing_seq_nums(self, data, position, seq_nums):
         """ handles a missing seq num packet from spinnaker
@@ -1024,31 +1029,30 @@ class DataSpeedUpPacketGatherMachineVertex(
         transceiver = FecDataView.get_transceiver()
 
         # Update the IP Tag to work through a NAT firewall
-        connection = self.__open_connection()
+        with self.__open_connection() as connection:
+            # update transaction id for extra monitor
+            extra_monitor.update_transaction_id()
+            transaction_id = extra_monitor.transaction_id
 
-        # update transaction id for extra monitor
-        extra_monitor.update_transaction_id()
-        transaction_id = extra_monitor.transaction_id
+            # send
+            connection.send_sdp_message(self.__make_sdp_message(
+                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+                _FOUR_WORDS.pack(
+                    DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
+                    memory_address, length_in_bytes)))
 
-        # send
-        connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _FOUR_WORDS.pack(
-                DATA_OUT_COMMANDS.START_SENDING.value, transaction_id,
-                memory_address, length_in_bytes)))
+            # receive
+            self._output = bytearray(length_in_bytes)
+            self._view = memoryview(self._output)
+            self._max_seq_num = self.calculate_max_seq_num()
+            lost_seq_nums = self._receive_data(
+                transceiver, placement, connection, transaction_id)
 
-        # receive
-        self._output = bytearray(length_in_bytes)
-        self._view = memoryview(self._output)
-        self._max_seq_num = self.calculate_max_seq_num()
-        lost_seq_nums = self._receive_data(
-            transceiver, placement, connection, transaction_id)
-
-        # Stop anything else getting through (and reduce traffic)
-        connection.send_sdp_message(self.__make_sdp_message(
-            placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
-            _TWO_WORDS.pack(DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
-        connection.close()
+            # Stop anything else getting through (and reduce traffic)
+            connection.send_sdp_message(self.__make_sdp_message(
+                placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP,
+                _TWO_WORDS.pack(
+                    DATA_OUT_COMMANDS.CLEAR.value, transaction_id)))
 
         end = float(time.time())
         with ProvenanceWriter() as db:

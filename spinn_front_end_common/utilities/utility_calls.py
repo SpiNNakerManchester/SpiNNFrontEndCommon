@@ -22,6 +22,7 @@ import tempfile
 import threading
 from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
@@ -187,3 +188,26 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
         reprogram_tag_to_listener(connection, x, y, ip_address, tag, strip)
     else:
         reprogram_tag(connection, tag, strip)
+
+
+def open_scp_connection(chip_x, chip_y, chip_ip_address):
+    """
+    Create an SCP connection to the given ethernet chip. SpiNNaker will
+    not be configured to map that connection to a tag; that is the
+    caller's responsibility.
+
+    :param int chip_x:
+        X coordinate of the ethernet chip to connect to.
+    :param int chip_y:
+        Y coordinate of the ethernet chip to connect to.
+    :param str chip_ip_address:
+        IP address of the ethernet chip to connect to.
+    :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
+    """
+    if FecDataView.has_allocation_controller():
+        # See if the allocation controller wants to do it
+        conn = FecDataView.get_allocation_controller().open_sdp_connection(
+            chip_x, chip_y)
+        if conn:
+            return conn
+    return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)

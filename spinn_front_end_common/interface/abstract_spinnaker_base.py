@@ -33,7 +33,6 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import CoreSubsets, Machine
 
 from spinnman import __version__ as spinnman_version
-from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums.cpu_state import CPUState
@@ -2355,28 +2354,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if FecDataView.has_allocation_controller():
             FecDataView.get_allocation_controller().close()
             self._data_writer.set_allocation_controller(None)
-
-    def open_scp_connection(self, chip_x, chip_y, chip_ip_address):
-        """
-        Create an SCP connection to the given ethernet chip. SpiNNaker will
-        not be configured to map that connection to a tag; that is the
-        caller's responsibility.
-
-        :param int chip_x:
-            X coordinate of the ethernet chip to connect to.
-        :param int chip_y:
-            Y coordinate of the ethernet chip to connect to.
-        :param str chip_ip_address:
-            IP address of the ethernet chip to connect to.
-        :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
-        """
-        if FecDataView.has_allocation_controller():
-            # See if the allocation controller wants to do it
-            conn = FecDataView.get_allocation_controller().open_sdp_connection(
-                chip_x, chip_y)
-            if conn:
-                return conn
-        return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
 
     def stop(self):
         """
