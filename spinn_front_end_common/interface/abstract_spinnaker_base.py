@@ -21,6 +21,7 @@ import os
 import signal
 import sys
 import threading
+import requests
 from threading import Condition
 from numpy import __version__ as numpy_version
 
@@ -252,8 +253,20 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: The OIDC bearer token
         :rtype: str or None
         """
-        # TODO: this should be obtained *SOMEHOW* but how?
-        return None
+        # Try using Jupyter if we have the right variables
+        jupyter_token = os.getenv("JUPYTERHUB_API_TOKEN")
+        jupyter_ip = os.getenv("JUPYTERHUB_SERVICE_HOST")
+        jupyter_port = os.getenv("JUPYTERHUB_SERVICE_PORT")
+        if (jupyter_token is not None and jupyter_ip is not None and
+                jupyter_port is not None):
+            jupyter_url = (f"http://{jupyter_ip}:{jupyter_port}/services/"
+                           "access-token-service/access-token")
+            headers = {"Authorization": f"Token {jupyter_token}"}
+            response = requests.get(jupyter_url, headers=headers)
+            return response.json().get('access_token')
+
+        # Try a simple environment variable, or None if that doesn't exist
+        return os.getenv("OIDC_BEARER_TOKEN")
 
     def exception_handler(self, exctype, value, traceback_obj):
         """ Handler of exceptions
