@@ -105,6 +105,7 @@ class BufferManager(object):
         self._db = BufferDatabase()
 
         if FecDataView.has_java_caller():
+            self._db.write_session_credentials_to_db()
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors()
@@ -188,6 +189,7 @@ class BufferManager(object):
         """
         #
         self._db.reset()
+        self._db.write_session_credentials_to_db()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
