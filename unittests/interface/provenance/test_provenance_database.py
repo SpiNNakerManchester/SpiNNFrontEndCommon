@@ -87,7 +87,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             data = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
             self.assertEqual(134 + 344 + 4, data)
             data = db.get_timer_sum_by_category(TimerCategory.SHUTTING_DOWN)
-            self.assertEquals(0, data)
+            self.assertEqual(0, data)
             data = db.get_timer_sum_by_algorithm("router_report")
             self.assertEqual(123, data)
             data = db.get_timer_sum_by_algorithm("clear")
