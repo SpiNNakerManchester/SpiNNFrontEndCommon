@@ -21,7 +21,6 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
-from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     EIEIOCommandMessage, StopRequests, SpinnakerRequestBuffers,
     HostSendSequencedData, EventStopRequest)
@@ -243,8 +242,8 @@ class BufferManager(object):
         :param ~spinn_machine.tags.IPTag tag:
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
-        connection = FecDataView.get_transceiver().register_udp_listener(
-            self._receive_buffer_command_message, EIEIOConnection,
+        connection = FecDataView.get_transceiver().register_eieio_listener(
+            self._receive_buffer_command_message,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
         utility_functions.send_port_trigger_message(
