@@ -330,4 +330,3 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
-
