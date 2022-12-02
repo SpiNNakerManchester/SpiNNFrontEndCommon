@@ -51,7 +51,9 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
     @abstractmethod
     def create_transceiver(self):
         """
-        Create a transceiver for talking to the allocated machine.
+        Create a transceiver for talking to the allocated machine, and
+        make sure everything is ready for use (i.e. boot and discover
+        connections if needed).
 
         :rtype: ~spinnman.transceiver.Transceiver
         """

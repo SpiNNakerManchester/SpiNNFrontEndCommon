@@ -120,7 +120,8 @@ class SpallocJobController(MachineAllocationController):
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
         """
-        return self._job.create_transceiver()
+        txrx = self._job.create_transceiver()
+        txrx.ensure_board_is_ready()
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):

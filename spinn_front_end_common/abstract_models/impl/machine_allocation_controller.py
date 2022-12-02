@@ -84,10 +84,13 @@ class MachineAllocationController(
     def create_transceiver(self):
         if not self.__hostname:
             return None
-        return create_transceiver_from_hostname(
+        txrx = create_transceiver_from_hostname(
             hostname=self.__hostname,
             bmp_connection_data=None,
             version=5, auto_detect_bmp=False)
+        txrx.ensure_board_is_ready()
+        txrx.discover_scamp_connections()
+        return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):

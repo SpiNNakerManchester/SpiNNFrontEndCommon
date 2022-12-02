@@ -74,8 +74,6 @@ def machine_generator(
         # are already fully configured
         txrx = FecDataView.get_allocation_controller().create_transceiver()
         if txrx:
-            txrx.ensure_board_is_ready()
-            # Assume all connections are pre-discovered
             return txrx.get_machine_details(), txrx
 
     txrx = create_transceiver_from_hostname(
