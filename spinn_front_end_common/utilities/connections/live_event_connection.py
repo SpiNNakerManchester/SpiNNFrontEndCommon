@@ -287,7 +287,7 @@ class LiveEventConnection(DatabaseConnection):
                     # No port trigger necessary; proxied already
                 else:
                     retarget_tag(
-                        self.__receiver_connection, 0, 0, tag,
+                        self.__receiver_connection, x, y, tag,
                         ip_address=board_address)
                     send_port_trigger_message(
                         self.__receiver_connection, board_address)
