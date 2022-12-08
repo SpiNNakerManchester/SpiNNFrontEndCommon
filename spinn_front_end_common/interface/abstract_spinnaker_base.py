@@ -443,7 +443,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
-            self._execute_record_core_names()
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -898,10 +897,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Do the various functions to write metadata to the sqlite files
         """
-
-    def _execute_record_core_names(self):
         with FecTimer(
-                "Record core names to databse", TimerWork.REPORT):
+                "Record vertex labels to database", TimerWork.REPORT):
             with BufferDatabase() as db:
                 db.store_vertex_labels()
 
