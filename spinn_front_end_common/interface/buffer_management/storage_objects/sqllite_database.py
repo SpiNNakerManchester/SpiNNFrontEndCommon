@@ -53,11 +53,10 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
             database holding the data.
-            If omitted the default location will be used.
+            If omitted the default location will be used
         """
         if database_file is None:
             database_file = self.default_database_file()
-
         super().__init__(database_file, ddl_file=_DDL_FILE)
 
     @classmethod
@@ -274,7 +273,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                         region_id, content, content_len)
                     VALUES (?, CAST(? AS BLOB), ?)
                     """, (region_id, datablob, len(data)))
-            assert cursor.rowcount == 1
+                assert cursor.rowcount == 1
 
     def __use_main_table(self, cursor, region_id):
         """
@@ -314,3 +313,100 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def store_placements(self):
+        exists = False
+        with self.transaction() as cursor:
+            for row in cursor.execute("PRAGMA TABLE_INFO(core)"):
+                if row["name"] == "label":
+                    exists = True
+
+            if exists:
+                return
+                # already done so no need to repeat
+
+            cursor.execute("ALTER TABLE core ADD COLUMN label STRING")
+
+            for placement in FecDataView.iterate_placemements():
+                core_id = self.__get_core_id(
+                    cursor, placement.x, placement.y, placement.p)
+                cursor.execute(
+                    "UPDATE core SET label = ? WHERE core_id = ?",
+                    (placement.vertex.label, core_id))
+                assert cursor.rowcount == 1
+
+            for chip in FecDataView.get_machine().chips:
+                for processor in chip.processors:
+                    if processor.is_monitor:
+                        core_id = self.__get_core_id(
+                            cursor, chip.x, chip.y, processor.processor_id)
+                        cursor.execute(
+                            """
+                            UPDATE core SET label = 'MONITOR'
+                            WHERE core_id = ?
+                            """, [core_id])
+                        assert cursor.rowcount == 1
+
+    def get_label(self, x, y, p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT label
+                    FROM core
+                    WHERE x = ? AND y = ? and processor = ?
+                    """, (x, y, p)):
+                return str(row["label"], 'utf8')
+        return ""
+
+    def store_chip_power_monitors(self):
+        # delayed import due to circular refrences
+        from spinn_front_end_common.utility_models.\
+            chip_power_monitor_machine_vertex import (
+                ChipPowerMonitorMachineVertex)
+
+        with self.transaction() as cursor:
+            for _ in cursor.execute(
+                    """
+                    SELECT name FROM sqlite_master
+                    WHERE type='table' AND name='chip_power_monitor'
+                     """):
+                # Already exists so no need to run again
+                return
+
+            cursor.execute(
+                """
+                CREATE TABLE chip_power_monitors(
+                    cpm_id INTEGER PRIMARY KEY autoincrement,
+                    core_id INTEGER NOT NULL
+                        REFERENCES core(core_id) ON DELETE RESTRICT,
+                    sampling_frequency  FLOAT NOT NULL)
+                """)
+
+            cursor.execute(
+                """
+                CREATE VIEW chip_power_monitors_view AS
+                SELECT core_id, x, y, processor, sampling_frequency
+                    FROM core NATURAL JOIN chip_power_monitors
+                """)
+
+            for placement in FecDataView.iterate_placements_by_vertex_type(
+                    ChipPowerMonitorMachineVertex):
+                core_id = self.__get_core_id(
+                    cursor, placement.x, placement.y, placement.p)
+                cursor.execute(
+                    """
+                    INSERT INTO chip_power_monitors(
+                        core_id, sampling_frequency)
+                    VALUES (?, ?)
+                    """, (core_id, placement.vertex.sampling_frequency))
+                assert cursor.rowcount == 1
+
+    def iterate_chip_power_monitor_cores(self):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, processor, sampling_frequency
+                    FROM chip_power_monitors_view
+                    ORDER BY core_id
+                    """):
+                yield row
