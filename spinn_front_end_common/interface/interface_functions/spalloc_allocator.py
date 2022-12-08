@@ -166,7 +166,8 @@ def _launch_checked_job(n_boards, spalloc_kw_args):
         connections = job.connections
         info = str(connections).replace("{", "[").replace("}", "]")
         logger.info("boards: " + info)
-        ProvenanceWriter().insert_board_provenance(connections)
+        with ProvenanceWriter() as db:
+            db.insert_board_provenance(connections)
         if hostname in avoid_boards:
             avoid_jobs.append(job)
             logger.warning(
