@@ -273,6 +273,8 @@ typedef struct reinjector_status_response_packet_t {
     uint n_processor_dumped_packets;
     //! What packet types are we reinjecting
     uint packet_types_reinjected;
+    //! The link / processor bit fields of dropped packets
+    uint link_proc_bits;
 } reinjector_status_response_packet_t;
 
 //! how the reinjection configuration is laid out in memory.
@@ -385,6 +387,9 @@ static uint reinject_n_link_dumped_packets;
 //! \brief Estimated count of packets dropped by router because a destination
 //! core (local) is busy.
 static uint reinject_n_processor_dumped_packets;
+
+//! \brief Which links and processors packets were dumped from (cumulative bit field)
+static uint reinject_link_proc_bits;
 
 // Determine what to reinject
 
@@ -773,6 +778,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
                 // was meant to go to.
                 reinject_n_processor_dumped_packets +=
                         __builtin_popcount(rtr_dump_outputs.processor);
+                reinject_link_proc_bits |= rtr_dump_outputs.processor << 6;
             }
 
             if (rtr_dump_outputs.link > 0) {
@@ -781,6 +787,7 @@ static INT_HANDLER reinjection_dropped_packet_callback(void) {
                 // meant to go to.
                 reinject_n_link_dumped_packets +=
                         __builtin_popcount(rtr_dump_outputs.link);
+                reinject_link_proc_bits |= rtr_dump_outputs.link & 0x3F;
             }
         }
 
@@ -956,6 +963,7 @@ static inline int reinjection_get_status(sdp_msg_t *msg) {
     data->n_reinjected_packets = reinject_n_reinjected_packets;
     data->n_link_dumped_packets = reinject_n_link_dumped_packets;
     data->n_processor_dumped_packets = reinject_n_processor_dumped_packets;
+    data->link_proc_bits = reinject_link_proc_bits;
 
     // Put the current services enabled in the packet
     data->packet_types_reinjected = 0;
@@ -982,6 +990,7 @@ static inline int reinjection_reset_counters(sdp_msg_t *msg) {
     reinject_n_reinjected_packets = 0;
     reinject_n_link_dumped_packets = 0;
     reinject_n_processor_dumped_packets = 0;
+    reinject_link_proc_bits = 0;
 
     // set SCP command to OK, as successfully completed
     msg->cmd_rc = RC_OK;
