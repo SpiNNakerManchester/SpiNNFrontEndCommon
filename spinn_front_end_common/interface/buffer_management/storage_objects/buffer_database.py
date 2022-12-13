@@ -44,50 +44,6 @@ class BufferDatabase(BaseDatabase):
 
     __slots__ = []
 
-    def __init__(self, database_file=None):
-        """
-        :param database_file:
-            The name of a file that contains (or will contain) an SQLite
-            database holding the data.
-            If omitted the default location will be used.
-        :type database_file: None or str
-        """
-        super().__init__(database_file)
-
-    def reset(self):
-        """
-        UGLY SHOULD NOT NEVER DELETE THE FILE!
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        database_file = self.default_database_file()
-        self.close()
-        if os.path.exists(database_file):
-            os.remove(database_file)
-        super().__init__(database_file, ddl_file=_DDL_FILE)
-
-    def clear(self):
-        """ Clears the data for all regions.
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                UPDATE region SET
-                    content = CAST('' AS BLOB), content_len = 0,
-                    fetches = 0, append_time = NULL
-                """)
-            cursor.execute("DELETE FROM region_extra")
-
     def clear_region(self, x, y, p, region):
         """ Clears the data for a single region.
 
