@@ -226,7 +226,7 @@ void sort_table(void) {
             // Find the place to put the route in its group
             uint32_t new_pos = route_offset[route_index]++;
             if (new_pos >= n_entries) {
-                log_error("New table position %u out of range!");
+                log_error("New table position %u out of range!", new_pos);
                 rt_error(RTE_SWERR);
             }
 
