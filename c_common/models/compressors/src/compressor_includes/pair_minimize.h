@@ -203,6 +203,7 @@ void sort_table(void) {
     uint32_t pos_index = 0;
     uint32_t next_index_offset = routes_frequency[0];
     uint32_t n_entries = routing_table_get_n_entries();
+    log_info("Table has %u entries", n_entries);
     while (pos < n_entries) {
         // Get the entry
         entry_t entry = *routing_table_get_entry(pos++);
@@ -212,6 +213,8 @@ void sort_table(void) {
 
         // Where are we now?
         uint32_t current_index = pos_index;
+
+        log_info("Pos %u, route_index %u, current_index %u", pos, route_index, current_index);
 
         // Where are we next
         if (pos == next_index_offset) {
@@ -227,6 +230,7 @@ void sort_table(void) {
 
             // Swap out the existing entry with the new one
             entry_t old_entry = *routing_table_get_entry(new_pos);
+            log_info("    Writing route 0x%08x to %u", entry.route, new_pos);
             routing_table_put_entry(&entry, new_pos);
             entry = old_entry;
 
@@ -235,6 +239,8 @@ void sort_table(void) {
 
             // Find the index of the item we swapped out so it can be swapped next
             route_index = find_route_index(entry.route);
+
+            log_info("    route_index = %u, current_index = %u", route_index, current_index);
         }
     }
 }
