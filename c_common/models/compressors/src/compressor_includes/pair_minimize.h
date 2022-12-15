@@ -214,8 +214,6 @@ void sort_table(void) {
         // Where are we now?
         uint32_t current_index = pos_index;
 
-        log_info("Pos %u, route_index %u, current_index %u", pos, route_index, current_index);
-
         // Where are we next
         if (pos == next_index_offset) {
             pos_index += 1;
@@ -227,11 +225,19 @@ void sort_table(void) {
 
             // Find the place to put the route in its group
             uint32_t new_pos = route_offset[route_index]++;
+            if (new_pos >= n_entries) {
+                log_error("New table position %u out of range!");
+                rt_error(RTE_SWERR);
+            }
 
             // Swap out the existing entry with the new one
             entry_t old_entry = *routing_table_get_entry(new_pos);
-            log_info("    Writing route 0x%08x to %u", entry.route, new_pos);
             routing_table_put_entry(&entry, new_pos);
+
+            // Get out if we are going over old ground
+            if (new_pos <= pos) {
+                break;
+            }
             entry = old_entry;
 
             // The current position is where we are now
@@ -239,8 +245,6 @@ void sort_table(void) {
 
             // Find the index of the item we swapped out so it can be swapped next
             route_index = find_route_index(entry.route);
-
-            log_info("    route_index = %u, current_index = %u", route_index, current_index);
         }
     }
 }
