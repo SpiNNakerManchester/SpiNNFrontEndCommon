@@ -652,7 +652,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_value(
             ((int(math.ceil(max_offset / self._n_vertices)) *
               ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-              int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
+             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(
