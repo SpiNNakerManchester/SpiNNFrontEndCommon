@@ -121,45 +121,6 @@ static inline void compress_by_route(int left, int right) {
     }
 }
 
-//! \brief Compare routes based on their index
-//! \param[in] route_a: The first route
-//! \param[in] route_b: The second route
-//! \return Ordering term (-1, 0, 1)
-static inline int compare_routes(uint32_t route_a, uint32_t route_b) {
-    if (route_a == route_b) {
-        return 0;
-    }
-    for (uint i = 0; i < routes_count; i++) {
-        if (routes[i] == route_a) {
-            return -1;
-        }
-        if (routes[i] == route_b) {
-            return 1;
-        }
-    }
-    log_error("Routes not found %u %u", route_a, route_b);
-    // set the failed flag and exit
-    malloc_extras_terminate(EXIT_FAIL);
-
-    return 0;
-}
-
-//! \brief Implementation of insertion sort for routes based on route
-//!     information
-//! \param[in] table_size: The size of the routing table
-static void sort_table(uint32_t table_size) {
-    uint32_t i, j;
-
-    for (i = 1; i < table_size; i++) {
-        entry_t tmp = *routing_table_get_entry(i);
-        for (j = i; j > 0 && compare_routes(
-                routing_table_get_entry(j - 1)->route, tmp.route) > 0; j--) {
-            routing_table_put_entry(routing_table_get_entry(j - 1), j);
-        }
-        routing_table_put_entry(&tmp, j);
-    }
-}
-
 //! \brief Implementation of insertion sort for routes based on frequency.
 //! \details The routes must be non-overlapping pre-minimisation routes.
 static void sort_routes(void) {
@@ -207,6 +168,74 @@ static inline bool update_frequency(int index) {
     return true;
 }
 
+static inline uint32_t find_route_index(uint32_t route) {
+    for (uint32_t i = 0; i < routes_count; i++) {
+        if (route == routes[i]) {
+            return i;
+        }
+    }
+    log_error("Route 0x%08x not found!", route);
+    rt_error(RTE_SWERR);
+    return 0xFFFFFFFF;
+}
+
+//! \brief Implementation of insertion sort for routes based on route
+//!     information
+//! \param[in] table_size: The size of the routing table
+void sort_table(void) {
+    if (routes_count == 0) {
+        return;
+    }
+
+    // Set up a pointer for each of the routes
+    uint16_t route_offset[routes_count];
+    uint32_t offset = 0;
+    for (uint32_t i = 0; i < routes_count; i++) {
+        route_offset[i] = offset;
+        offset += routes_frequency[i];
+    }
+
+    // Go through and move things into position
+    uint32_t pos = 0;
+    uint32_t pos_index = 0;
+    uint32_t next_index_offset = routes_frequency[0];
+    uint32_t n_entries = routing_table_get_n_entries();
+    while (pos < n_entries) {
+        // Get the entry
+        entry_t entry = *routing_table_get_entry(pos++);
+
+        // Where does the route need to go
+        uint32_t route_index = find_route_index(entry.route);
+
+        // Where are we now?
+        uint32_t current_index = pos_index;
+
+        // Where are we next
+        if (pos == next_index_offset) {
+            pos_index += 1;
+            next_index_offset += routes_frequency[pos_index];
+        }
+
+        // Keep swapping things until they are in the right place
+        while (route_index != current_index) {
+
+            // Find the place to put the route in its group
+            uint32_t new_pos = route_offset[route_index]++;
+
+            // Swap out the existing entry with the new one
+            entry_t old_entry = *routing_table_get_entry(new_pos);
+            routing_table_put_entry(&entry, new_pos);
+            entry = old_entry;
+
+            // The current position is where we are now
+            current_index = route_index;
+
+            // Find the index of the item we swapped out so it can be swapped next
+            route_index = find_route_index(entry.route);
+        }
+    }
+}
+
 //! \brief Implementation of minimise()
 //! \param[in] target_length: ignored
 //! \param[out] failed_by_malloc: Never changed but required by api
@@ -216,7 +245,7 @@ static inline bool update_frequency(int index) {
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);
-	use(target_length);
+    use(target_length);
 
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
@@ -251,7 +280,7 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     log_debug("do sort_table by route %u", table_size);
-    sort_table(table_size);
+    sort_table();
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
