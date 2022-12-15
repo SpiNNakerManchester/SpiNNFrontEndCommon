@@ -175,6 +175,9 @@ static inline uint32_t find_route_index(uint32_t route) {
         }
     }
     log_error("Route 0x%08x not found!", route);
+    for (uint32_t i = 0; i < routes_count; i++) {
+        log_error("Route %u = 0x%08x", i, routes[i]);
+    }
     rt_error(RTE_SWERR);
     return 0xFFFFFFFF;
 }
