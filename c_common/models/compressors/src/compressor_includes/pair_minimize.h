@@ -204,7 +204,7 @@ void sort_table(void) {
     uint32_t next_index_offset = routes_frequency[0];
     uint32_t n_entries = routing_table_get_n_entries();
     log_info("Table has %u entries", n_entries);
-    io_printf(IO_BUF, "Sorting starting...");
+    io_printf(IO_BUF, "Sorting starting...\n");
     tc[T2_LOAD] = 0xFFFFFFFF;
     tc[T2_CONTROL] = 0x83;
     while (pos < n_entries) {
@@ -251,7 +251,7 @@ void sort_table(void) {
         }
     }
     uint32_t duration = 0xFFFFFFFF - tc[T2_COUNT];
-    io_printf(IO_BUF, "Sorting took %u cycles", duration);
+    io_printf(IO_BUF, "Sorting took %u cycles\n", duration);
 }
 
 //! \brief Implementation of minimise()
