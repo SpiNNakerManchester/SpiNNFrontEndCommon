@@ -216,7 +216,7 @@ static inline bool update_frequency(int index) {
 bool minimise_run(int target_length, bool *failed_by_malloc,
         volatile bool *stop_compressing) {
     use(failed_by_malloc);
-	use(target_length);
+    use(target_length);
 
     // Verify constant used to build arrays is correct
     if (MAX_NUM_ROUTES != rtr_alloc_max()){
@@ -251,7 +251,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     log_debug("do sort_table by route %u", table_size);
+    tc[T2_LOAD] = 0xFFFFFFFF;
+    tc[T2_CONTROL] = 0x83;
     sort_table(table_size);
+    uint32_t duration = 0xFFFFFFFF - tc[T2_COUNT];
+    tc[T2_CONTROL] = 0;
+    log_info("Sorting took %u cycles", duration);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
@@ -272,7 +277,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         }
         remaining_index = right + 1;
         log_debug("compress %u %u", left, right);
+        tc[T2_LOAD] = 0xFFFFFFFF;
+        tc[T2_CONTROL] = 0x83;
         compress_by_route(left, right);
+        duration = 0xFFFFFFFF - tc[T2_COUNT];
+        tc[T2_CONTROL] = 0;
+        log_info("Compress of %u entries took %u cycles", right - left + 1, duration);
         if (write_index > rtr_alloc_max()){
             if (standalone()) {
                 log_error("Compression not possible as already found %d "
