@@ -80,21 +80,20 @@ static inline void _entry(const entry_t* entry, int index) {
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
-static inline bool find_merge(int left, int index) {
+static inline bool find_merge(entry_t *left, entry_t *index, entry_t *merged) {
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);
-    const entry_t merged = merge(entry1, entry2);
+    *merged = merge(entry1, entry2);
 
     for (int check = remaining_index;
             check < routing_table_get_n_entries();
             check++) {
         const entry_t *check_entry =
                 routing_table_get_entry(check);
-        if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
+        if (key_mask_intersect(check_entry->key_mask, merged->key_mask)) {
             return false;
         }
     }
-    routing_table_put_entry(&merged, left);
     return true;
 }
 
@@ -102,6 +101,7 @@ static inline bool find_merge(int left, int index) {
 //! \param[in] left: The start of the section of table to compress
 //! \param[in] right: The end of the section of table to compress
 static inline void compress_by_route(int left, int right) {
+    int orig_right
     while (left < right) {
         bool merged = false;
 
@@ -198,7 +198,6 @@ void sort_table(void) {
         route_offset[i] = offset;
         offset += routes_frequency[i];
         route_end[i] = offset - 1;
-        log_info("Route 0x%08x has %u entries starting at %u", routes[i], routes_frequency[i], route_offset[i]);
     }
 
     // Go through and move things into position
@@ -236,7 +235,8 @@ void sort_table(void) {
             }
 
             if (new_pos > route_end[route_index]) {
-                log_error("New table position %u of region %u is out of range!", new_pos, route_index);
+                log_error("New table position %u of region %u is out of range!",
+                        new_pos, route_index);
                 rt_error(RTE_SWERR);
             }
             route_offset[route_index] += 1;
