@@ -192,10 +192,13 @@ void sort_table(void) {
 
     // Set up a pointer for each of the routes
     uint16_t route_offset[routes_count];
+    uint16_t route_end[routes_count];
     uint32_t offset = 0;
     for (uint32_t i = 0; i < routes_count; i++) {
         route_offset[i] = offset;
         offset += routes_frequency[i];
+        route_end[i] = offset - 1;
+        log_info("Route 0x%08x has %u entries starting at %u", routes[i], routes_frequency[i], route_offset[i]);
     }
 
     // Go through and move things into position
@@ -203,55 +206,63 @@ void sort_table(void) {
     uint32_t pos_index = 0;
     uint32_t next_index_offset = routes_frequency[0];
     uint32_t n_entries = routing_table_get_n_entries();
-    log_info("Table has %u entries", n_entries);
-    io_printf(IO_BUF, "Sorting starting...\n");
-    tc[T2_LOAD] = 0xFFFFFFFF;
-    tc[T2_CONTROL] = 0x83;
     while (pos < n_entries) {
         // Get the entry
-        entry_t entry = *routing_table_get_entry(pos++);
+        entry_t entry = *routing_table_get_entry(pos);
 
         // Where does the route need to go
         uint32_t route_index = find_route_index(entry.route);
 
-        // Where are we now?
-        uint32_t current_index = pos_index;
+        // Where are we reading from?
+        uint32_t read_index = pos_index;
 
-        // Where are we next
-        if (pos == next_index_offset) {
-            pos_index += 1;
-            next_index_offset += routes_frequency[pos_index];
+        // If we are in the right region
+        bool skip = false;
+        if (route_index == read_index) {
+            // If we already put this item here, don't move it
+            if (pos < route_offset[route_index]) {
+                skip = true;
+            }
         }
 
         // Keep swapping things until they are in the right place
-        while (route_index != current_index) {
+        while (!skip) {
 
             // Find the place to put the route in its group
-            uint32_t new_pos = route_offset[route_index]++;
+            uint32_t new_pos = route_offset[route_index];
             if (new_pos >= n_entries) {
                 log_error("New table position %u out of range!", new_pos);
                 rt_error(RTE_SWERR);
             }
 
+            if (new_pos > route_end[route_index]) {
+                log_error("New table position %u of region %u is out of range!", new_pos, route_index);
+                rt_error(RTE_SWERR);
+            }
+            route_offset[route_index] += 1;
+
             // Swap out the existing entry with the new one
             entry_t old_entry = *routing_table_get_entry(new_pos);
             routing_table_put_entry(&entry, new_pos);
 
-            // Get out if we are going over old ground
+            // We can quit because we should have moved this one
             if (new_pos <= pos) {
                 break;
             }
             entry = old_entry;
-
-            // The current position is where we are now
-            current_index = route_index;
+            read_index = route_index;
 
             // Find the index of the item we swapped out so it can be swapped next
             route_index = find_route_index(entry.route);
         }
+
+        // Where are we next
+        pos++;
+        if (pos == next_index_offset) {
+            pos_index += 1;
+            next_index_offset += routes_frequency[pos_index];
+        }
     }
-    uint32_t duration = 0xFFFFFFFF - tc[T2_COUNT];
-    io_printf(IO_BUF, "Sorting took %u cycles\n", duration);
 }
 
 //! \brief Implementation of minimise()
@@ -298,7 +309,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
     }
 
     log_debug("do sort_table by route %u", table_size);
+    tc[T2_LOAD] = 0xFFFFFFFF;
+    tc[T2_CONTROL] = 0x83;
     sort_table();
+    uint32_t duration = 0xFFFFFFFF - tc[T2_COUNT];
+    tc[T2_CONTROL] = 0;
+    log_info("Sorting table took %u clock cycles", duration);
     if (*stop_compressing) {
         log_info("Stopping before compression as asked to stop");
         return false;
@@ -319,7 +335,12 @@ bool minimise_run(int target_length, bool *failed_by_malloc,
         }
         remaining_index = right + 1;
         log_debug("compress %u %u", left, right);
+        tc[T2_LOAD] = 0xFFFFFFFF;
+        tc[T2_CONTROL] = 0x83;
         compress_by_route(left, right);
+        duration = 0xFFFFFFFF - tc[T2_COUNT];
+        tc[T2_CONTROL] = 0;
+        log_info("Compressing %u routes took %u", right - left + 1, duration);
         if (write_index > rtr_alloc_max()){
             if (standalone()) {
                 log_error("Compression not possible as already found %d "
