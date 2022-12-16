@@ -22,6 +22,13 @@ CREATE TABLE IF NOT EXISTS configuration_parameters(
     value REAL,
     PRIMARY KEY (parameter_id));
 
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);
+
 CREATE TABLE IF NOT EXISTS Machine_layout(
     machine_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x_dimension INTEGER,
@@ -124,16 +131,20 @@ CREATE VIEW IF NOT EXISTS app_output_tag_view AS SELECT
     IP_tags.board_address AS board_address,
     IP_tags.tag AS tag,
     pre_app_vertices.vertex_label AS pre_vertex_label,
-    post_lpg_vertices.label AS post_vertex_label
+    lpg_vertices.label AS post_vertex_label,
+    lpg_placements.chip_x AS chip_x,
+    lpg_placements.chip_y AS chip_y
 FROM m_vertex_to_lpg_vertex
     JOIN IP_Tags
         ON m_vertex_to_lpg_vertex.post_vertex_id = IP_tags.vertex_id
-    JOIN Machine_vertices as post_lpg_vertices
-        ON m_vertex_to_lpg_vertex.post_vertex_id = post_lpg_vertices.vertex_id
+    JOIN Machine_vertices AS lpg_vertices
+        ON m_vertex_to_lpg_vertex.post_vertex_id = lpg_vertices.vertex_id
     JOIN graph_mapper_vertex AS pre_mapper
         ON m_vertex_to_lpg_vertex.pre_vertex_id = pre_mapper.machine_vertex_id
     JOIN Application_vertices AS pre_app_vertices
-        ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id;
+        ON pre_mapper.application_vertex_id = pre_app_vertices.vertex_id
+    JOIN Placements AS lpg_placements
+        ON lpg_placements.vertex_id = lpg_vertices.vertex_id;
 
 CREATE VIEW IF NOT EXISTS application_vertex_placements AS SELECT
     Placements.chip_x AS x,

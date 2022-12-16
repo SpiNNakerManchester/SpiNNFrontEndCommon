@@ -14,35 +14,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import threading
 import ctypes
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.constants import UDP_MESSAGE_MAX_SIZE
-from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages import (
-    EIEIOCommandMessage, StopRequests, SpinnakerRequestBuffers,
-    HostSendSequencedData, EventStopRequest)
-from spinnman.utilities import utility_functions
-from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
+from spinnman.messages.eieio.command_messages import EventStopRequest
 from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import (BuffersSentDeque, BufferedReceivingData)
+    import (BuffersSentDeque)
 from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
+    import (AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.utility_models.streaming_context_manager import (
     StreamingContextManager)
 from .recording_utilities import get_recording_header_size
+
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -80,8 +75,6 @@ class BufferManager(object):
     """
 
     __slots__ = [
-        # Set of (ip_address, port) that are being listened to for the tags
-        "_seen_tags",
 
         # Set of vertices with buffers to be sent
         "_sender_vertices",
@@ -90,28 +83,17 @@ class BufferManager(object):
         "_sent_messages",
 
         # storage area for received data from cores
-        "_received_data",
-
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_out",
-
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_in",
-
-        # bool flag
-        "_finished",
-
-        # listener port
-        "_listener_port",
+        "_db",
 
         # Support class to help call Java
-        "_java_caller"
+        "_java_caller",
+
+        # The machine controller, in case it wants to make proxied connections
+        # for us
+        "_machine_controller"
     ]
 
     def __init__(self):
-        # pylint: disable=too-many-arguments
-        # Set of (ip_address, port) that are being listened to for the tags
-        self._seen_tags = set()
 
         # Set of vertices with buffers to be sent
         self._sender_vertices = set()
@@ -120,21 +102,21 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData()
-
-        # Lock to avoid multiple messages being processed at the same time
-        self._thread_lock_buffer_out = threading.RLock()
-        self._thread_lock_buffer_in = threading.RLock()
-
-        self._finished = False
-        self._listener_port = None
+        self._db = BufferDatabase()
 
         if FecDataView.has_java_caller():
+            self._db.write_session_credentials_to_db()
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors()
         else:
             self._java_caller = None
+
+        for placement in FecDataView.iterate_placements_by_vertex_type(
+                AbstractSendsBuffersFromHost):
+            vertex = placement.vertex
+            if vertex.buffering_input():
+                self._sender_vertices.add(vertex)
 
     def _request_data(self, placement_x, placement_y, address, length):
         """ Uses the extra monitor cores for data extraction.
@@ -186,108 +168,6 @@ class BufferManager(object):
             if extra_mon_element != txrx_element:
                 raise Exception("WRONG (at index {})".format(index))
 
-    def _receive_buffer_command_message(self, packet):
-        """ Handle an EIEIO command message for the buffers.
-
-        :param packet: The EIEIO message received
-        :type packet:
-            ~spinnman.messages.eieio.command_messages.EIEIOCommandMessage
-        """
-        # pylint: disable=broad-except
-        if isinstance(packet, SpinnakerRequestBuffers):
-            # noinspection PyBroadException
-            try:
-                self.__request_buffers(packet)
-            except Exception:
-                logger.exception("problem when sending messages")
-        elif isinstance(packet, EIEIOCommandMessage):
-            logger.error(
-                "The command packet is invalid for buffer management: "
-                "command ID {}", packet.eieio_header.command)
-        else:
-            logger.error(
-                "The command packet is invalid for buffer management")
-
-    # Factored out of receive_buffer_command_message to keep code readable
-    def __request_buffers(self, packet):
-        """
-        :param packet: The EIEIO message received
-        :type packet:
-            ~spinnman.messages.eieio.command_messages.SpinnakerRequestBuffers
-        """
-        if not self._finished:
-            with self._thread_lock_buffer_in:
-                vertex = FecDataView.get_placement_on_processor(
-                    packet.x, packet.y, packet.p).vertex
-                if vertex in self._sender_vertices:
-                    self._send_messages(
-                        packet.space_available, vertex,
-                        packet.region_id, packet.sequence_no)
-
-    def _create_connection(self, tag):
-        """
-        :param ~spinn_machine.tags.IPTag tag:
-        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
-        """
-        connection = FecDataView.get_transceiver().register_udp_listener(
-            self._receive_buffer_command_message, EIEIOConnection,
-            local_port=tag.port, local_host=tag.ip_address)
-        self._seen_tags.add((tag.ip_address, connection.local_port))
-        utility_functions.send_port_trigger_message(
-            connection, tag.board_address)
-        logger.info(
-            "Listening for packets using tag {} on {}:{}",
-            tag.tag, connection.local_ip_address, connection.local_port)
-        return connection
-
-    def _add_buffer_listeners(self, vertex):
-        """ Add listeners for buffered data for the given vertex
-
-        :param ~pacman.model.graphs.machine.MachineVertex vertex:
-        """
-
-        # Find a tag for receiving buffer data
-        tags = FecDataView.get_tags().get_ip_tags_for_vertex(vertex)
-
-        if tags is not None:
-            # locate tag associated with the buffer manager traffic
-            for tag in tags:
-                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
-                    # If the tag port is not assigned create a connection and
-                    # assign the port.  Note that this *should* update the
-                    # port number in any tags being shared.
-                    if tag.port is None:
-                        # If connection already setup, ensure subsequent
-                        # boards use same listener port in their tag
-                        if self._listener_port is None:
-                            connection = self._create_connection(tag)
-                            tag.port = connection.local_port
-                            self._listener_port = connection.local_port
-                        else:
-                            tag.port = self._listener_port
-
-                    # In case we have tags with different specified ports,
-                    # also allow the tag to be created here
-                    elif (tag.ip_address, tag.port) not in self._seen_tags:
-                        self._create_connection(tag)
-
-    def add_receiving_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices which require\
-            buffers to be received from them during runtime.
-
-        :param AbstractReceiveBuffersToHost vertex: the vertex to be managed
-        """
-        self._add_buffer_listeners(vertex)
-
-    def add_sender_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices which require\
-            buffers to be sent to them during runtime.
-
-        :param AbstractSendsBuffersFromHost vertex: the vertex to be managed
-        """
-        self._sender_vertices.add(vertex)
-        self._add_buffer_listeners(vertex)
-
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using memory writes.
         """
@@ -307,22 +187,18 @@ class BufferManager(object):
             beginning of its expected regions and clears the buffered out\
             data files.
         """
-        self._received_data.reset()
+        #
+        self._db.reset()
+        self._db.write_session_credentials_to_db()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 vertex.rewind(region)
 
-        self._finished = False
-
     def resume(self):
         """ Resets any data structures needed before starting running again.
         """
-
-        # update the received data items
-        self._received_data.resume()
-        self._finished = False
 
     def clear_recorded_data(self, x, y, p, recording_region_id):
         """ Removes the recorded data stored in memory.
@@ -332,7 +208,7 @@ class BufferManager(object):
         :param int p: placement p coordinate
         :param int recording_region_id: the recording region ID
         """
-        self._received_data.clear(x, y, p, recording_region_id)
+        self._db.clear_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -437,124 +313,27 @@ class BufferManager(object):
         FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
-    def _send_messages(self, size, vertex, region, sequence_no):
-        """ Send a set of messages.
-
-        :param int size:
-        :param AbstractSendsBuffersFromHost vertex:
-        :param int region:
-        :param int sequence_no:
+    def __get_recording_placements(self):
         """
-        # Get the sent messages for the vertex
-        if vertex not in self._sent_messages:
-            self._sent_messages[vertex] = BuffersSentDeque(region)
-        sent_messages = self._sent_messages[vertex]
-
-        # If the sequence number is outside the window, return now with no
-        # messages sent
-        if not sent_messages.update_last_received_sequence_number(sequence_no):
-            return
-
-        # Remote the existing packets from the size available
-        bytes_to_go = size
-        for message in sent_messages.messages:
-            if isinstance(message.eieio_data_message, EIEIODataMessage):
-                bytes_to_go -= message.eieio_data_message.size
-            else:
-                bytes_to_go -= (message.eieio_data_message
-                                .get_min_packet_length())
-
-        # Add messages up to the limits
-        while (vertex.is_next_timestamp(region) and
-                not sent_messages.is_full and bytes_to_go > 0):
-
-            space_available = min(
-                bytes_to_go,
-                UDP_MESSAGE_MAX_SIZE -
-                HostSendSequencedData.get_min_packet_length())
-            # logger.debug(
-            #     "Bytes to go {}, space available {}".format(
-            #         bytes_to_go, space_available))
-            next_message = self._create_message_to_send(
-                space_available, vertex, region)
-            if next_message is None:
-                break
-            sent_messages.add_message_to_send(next_message)
-            bytes_to_go -= next_message.size
-            # logger.debug("Adding additional buffer of {} bytes".format(
-            #     next_message.size))
-
-        # If the vertex is empty, send the stop messages if there is space
-        if (not sent_messages.is_full and
-                not vertex.is_next_timestamp(region) and
-                bytes_to_go >= EventStopRequest.get_min_packet_length()):
-            sent_messages.send_stop_message()
-
-        # If there are no more messages, turn off requests for more messages
-        if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
-            # logger.debug("Sending stop")
-            self._send_request(vertex, StopRequests())
-
-        # Send the messages
-        for message in sent_messages.messages:
-            # logger.debug("Sending message with sequence {}".format(
-            #     message.sequence_no))
-            self._send_request(vertex, message)
-
-    def _send_request(self, vertex, message):
-        """ Sends a request.
-
-        :param AbstractSendsBuffersFromHost vertex: The vertex to send to
-        :param message: The message to send
-        :type message:
-            ~spinman.messages.eieio.command_messages.EIEIOCommandMessage
+        :rtype: list(~.Placement)
         """
-
-        placement = FecDataView.get_placement_of_vertex(vertex)
-        sdp_header = SDPHeader(
-            destination_chip_x=placement.x, destination_chip_y=placement.y,
-            destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
-        sdp_message = SDPMessage(sdp_header, message.bytestring)
-        FecDataView.get_transceiver().send_sdp_message(sdp_message)
-
-    def stop(self):
-        """ Indicates that the simulation has finished, so no further\
-            outstanding requests need to be processed.
-        """
-        with self._thread_lock_buffer_in:
-            with self._thread_lock_buffer_out:
-                self._finished = True
-
-    def __count_regions(self):
-        """
-        :rtype: tuple(int, list(~.Placement))
-        """
-        # Count the regions to be read
-        n_regions_to_read = 0
         recording_placements = list()
         for placement in FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost):
-            vertex = placement.vertex
-            n_regions_to_read += len(vertex.get_recorded_region_ids())
             recording_placements.append(placement)
-        return n_regions_to_read, recording_placements
+        return recording_placements
 
     def get_placement_data(self):
-        with self._thread_lock_buffer_out:
-            if self._java_caller is not None:
-                self.__get_data_for_placements_using_java()
+        if self._java_caller is not None:
+            self.__get_data_for_placements_using_java()
+        else:
+            recording_placements = self.__get_recording_placements()
+            if get_config_bool(
+                    "Machine", "enable_advanced_monitor_support"):
+                self.__python_get_data_for_placements_with_monitors(
+                    recording_placements)
             else:
-                n_regions, recording_placements = self.__count_regions()
-                progress = ProgressBar(
-                    n_regions,  "Extracting buffers from the last run")
-                if get_config_bool(
-                        "Machine", "enable_advanced_monitor_support"):
-                    self.__old_get_data_for_placements_with_monitors(
-                        recording_placements, progress)
-                else:
-                    self.__old_get_data_for_placements(
-                        recording_placements, progress)
+                self.__python_get_data_for_placements(recording_placements)
 
     def __get_data_for_placements_using_java(self):
         logger.info("Starting buffer extraction using Java")
@@ -563,13 +342,11 @@ class BufferManager(object):
                 AbstractReceiveBuffersToHost))
         self._java_caller.get_all_data()
 
-    def __old_get_data_for_placements_with_monitors(
-            self, recording_placements, progress):
+    def __python_get_data_for_placements_with_monitors(
+            self, recording_placements):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
-        :param progress: How to measure/display the progress.
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
         """
         # locate receivers
         receivers = list(OrderedSet(
@@ -582,21 +359,20 @@ class BufferManager(object):
 
         with StreamingContextManager(receivers):
             # get data
-            self.__old_get_data_for_placements(recording_placements, progress)
+            self.__python_get_data_for_placements(recording_placements)
 
-    def __old_get_data_for_placements(self, recording_placements, progress):
+    def __python_get_data_for_placements(self, recording_placements):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
-        :param progress: How to measure/display the progress.
-        :type progress: ~spinn_utilities.progress_bar.ProgressBar or None
-        """
+       """
         # get data
-        for placement in recording_placements:
-            vertex = placement.vertex
-            for recording_region_id in vertex.get_recorded_region_ids():
-                self._retreive_by_placement(placement, recording_region_id)
-                progress.update()
+        progress = ProgressBar(
+            len(recording_placements),
+            "Extracting buffers from the last run")
+
+        for placement in progress.over(recording_placements):
+            self._retreive_by_placement(placement)
 
     def get_data_by_placement(self, placement, recording_region_id):
         """ Get the data container for all the data retrieved\
@@ -614,41 +390,33 @@ class BufferManager(object):
             raise NotImplementedError(
                 "vertex {} does not implement AbstractReceiveBuffersToHost "
                 "so no data read".format(placement.vertex))
-        with self._thread_lock_buffer_out:
-            # data flush has been completed - return appropriate data
-            return self._received_data.get_region_data(
-                placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retreive_by_placement(self, placement, region):
+        # data flush has been completed - return appropriate data
+        return self._db.get_region_data(
+            placement.x, placement.y, placement.p, recording_region_id)
+
+    def _retreive_by_placement(self, placement):
         """ Retrieve the data for a vertex; must be locked first.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region
         """
-
-        # Has the region information been read
-        if not self._received_data.has_region_information(
-                placement.x, placement.y, placement.p):
-
-            addr = placement.vertex.get_recording_region_base_address(
-                placement)
-            self._get_region_information(
-                addr, placement.x, placement.y, placement.p)
+        vertex = placement.vertex
+        addr = vertex.get_recording_region_base_address(placement)
+        sizes_and_addresses = self._get_region_information(
+                addr, placement.x, placement.y)
 
         # Read the data if not already received
-        if not self._received_data.is_data_from_region_flushed(
-                placement.x, placement.y, placement.p, region):
-
+        for region in vertex.get_recorded_region_ids():
             # Now read the data and store it
-            size, addr, missing = self._received_data.get_region_information(
-                placement.x, placement.y, placement.p, region)
+            size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
-            self._received_data.store_data_in_region_buffer(
+            self._db.store_data_in_region_buffer(
                 placement.x, placement.y, placement.p, region, missing, data)
 
-    def _get_region_information(self, addr, x, y, p):
+    def _get_region_information(self, addr, x, y):
         """ Get the recording information from all regions of a core
 
         :param addr: The recording region base address
@@ -664,8 +432,7 @@ class BufferManager(object):
         regions = data_type.from_buffer_copy(data)
         sizes_and_addresses = [
             (r.size, r.data, bool(r.missing)) for r in regions]
-        self._received_data.store_region_information(
-            x, y, p, sizes_and_addresses)
+        return sizes_and_addresses
 
     @property
     def sender_vertices(self):

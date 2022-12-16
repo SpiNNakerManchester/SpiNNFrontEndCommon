@@ -25,6 +25,7 @@ from spinn_utilities.exceptions import (
 from spinnman.messages.scp.enums.signal import Signal
 from spinn_utilities.socket_address import SocketAddress
 from spinnman.model import ExecutableTargets
+from pacman.model.placements import Placements
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman_test_objects import SimpleTestVertex
 from spinn_front_end_common.data import FecDataView
@@ -76,6 +77,7 @@ class TestSimulatorData(unittest.TestCase):
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_buffer_manager()
         self.assertFalse(FecDataView.has_buffer_manager())
+        writer.set_placements(Placements())
         bm = BufferManager()
         writer.set_buffer_manager(bm)
         self.assertEqual(bm, FecDataView.get_buffer_manager())
@@ -380,22 +382,22 @@ class TestSimulatorData(unittest.TestCase):
         # required higher than in graph
         writer.set_n_required(None, 20)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
         writer.set_n_chips_in_graph(15)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         # required higher than in graph
         writer.set_n_chips_in_graph(25)
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         # reset does not remove required
         writer.start_run()
         writer.finish_run()
         writer.hard_reset()
         self.assertFalse(FecDataView.has_n_boards_required())
-        self.assertEquals(20, FecDataView.get_n_chips_needed())
+        self.assertEqual(20, FecDataView.get_n_chips_needed())
 
         writer = FecDataWriter.setup()
         self.assertFalse(FecDataView.has_n_boards_required())
@@ -403,7 +405,7 @@ class TestSimulatorData(unittest.TestCase):
 
         # in graph only
         writer.set_n_chips_in_graph(25)
-        self.assertEquals(25, FecDataView.get_n_chips_needed())
+        self.assertEqual(25, FecDataView.get_n_chips_needed())
 
         # reset clears in graph
         writer.start_run()
@@ -414,19 +416,19 @@ class TestSimulatorData(unittest.TestCase):
         # N boards
         writer = FecDataWriter.setup()
         writer.set_n_required(5, None)
-        self.assertEquals(5, FecDataView.get_n_boards_required())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
         self.assertFalse(FecDataView.has_n_chips_needed())
 
         # boards does not hide in graph
         writer.set_n_chips_in_graph(40)
-        self.assertEquals(5, FecDataView.get_n_boards_required())
-        self.assertEquals(40, FecDataView.get_n_chips_needed())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
+        self.assertEqual(40, FecDataView.get_n_chips_needed())
 
         # reset does not clear required
         writer.start_run()
         writer.finish_run()
         writer.hard_reset()
-        self.assertEquals(5, FecDataView.get_n_boards_required())
+        self.assertEqual(5, FecDataView.get_n_boards_required())
         self.assertFalse(FecDataView.has_n_chips_needed())
 
         # two Nones fine

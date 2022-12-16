@@ -48,6 +48,7 @@ class _FecDataModel(object):
 
     __slots__ = [
         # Data values cached
+        "_allocation_controller",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -65,6 +66,7 @@ class _FecDataModel(object):
         "_ipaddress",
         "_java_caller",
         "_live_packet_recorder_params",
+        "_live_output_vertices",
         "_n_boards_required",
         "_n_chips_required",
         "_n_chips_in_graph",
@@ -105,6 +107,7 @@ class _FecDataModel(object):
         self._hardware_time_step_ms = None
         self._hardware_time_step_us = None
         self._live_packet_recorder_params = None
+        self._live_output_vertices = set()
         self._java_caller = None
         self._n_boards_required = None
         self._n_chips_required = None
@@ -121,9 +124,10 @@ class _FecDataModel(object):
 
     def _hard_reset(self):
         """
-        Clears out all data that should change after a reset and graaph change
+        Clears out all data that should change after a reset and graph change
         """
         self._buffer_manager = None
+        self._allocation_controller = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
@@ -206,6 +210,32 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
+
+    # _allocation_controller
+    @classmethod
+    def has_allocation_controller(cls):
+        """
+        Reports if an AllocationController object has already been set
+
+        :return: True if and only if an AllocationController has been added and
+            not reset.
+        :rtype: bool
+        """
+        return cls.__fec_data._allocation_controller is not None
+
+    @classmethod
+    def get_allocation_controller(cls):
+        """
+        Returns the allocation controller if known
+
+        :rtype: AbstractMachineAllocationController
+        :raises SpiNNUtilsException:
+            If the buffer manager unavailable
+        """
+        if cls.__fec_data._allocation_controller is None:
+            raise cls._exception("allocation_controller")
+
+        return cls.__fec_data._allocation_controller
 
     # _buffer_manager
     @classmethod
@@ -1056,3 +1086,23 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._notification_protocol is None:
             raise cls._exception("notification_protocol")
         return cls.__fec_data._notification_protocol
+
+    @classmethod
+    def add_live_output_vertex(cls, vertex, partition_id):
+        """
+        Add a vertex that is to be output live, and so wants its atom IDs
+        recorded in the database.
+
+        :param ApplicationVertex vertex: The vertex to add
+        :param str partition_id: The partition to get the IDs of
+        """
+        cls.__fec_data._live_output_vertices.add((vertex, partition_id))
+
+    @classmethod
+    def iterate_live_output_vertices(cls):
+        """
+        Get an iterator over the live output vertices and partition ids
+
+        :rtype: set((ApplicationVertex, str))
+        """
+        return iter(cls.__fec_data._live_output_vertices)
