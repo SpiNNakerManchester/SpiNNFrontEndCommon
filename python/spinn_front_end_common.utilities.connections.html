@@ -56,7 +56,9 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.connections.</span></span><span class="sig-name descname"><span class="pre">LiveEventConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gather_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseConnection</span></code></p>
-<p>A connection for receiving and sending live events from and to        SpiNNaker</p>
+<p>A connection for receiving and sending live events from and to        SpiNNaker.</p>
+<p>Note that this class is intended to be potentially usable from another
+process than the one that the simulator is present in.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

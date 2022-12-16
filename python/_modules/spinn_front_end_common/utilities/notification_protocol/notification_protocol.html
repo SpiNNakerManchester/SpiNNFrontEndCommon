@@ -54,13 +54,13 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>  <span class="c1"># @UnresolvedImport</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">DatabaseConfirmation</span><span class="p">,</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">,</span>
+    <span class="n">NotificationProtocolDatabaseLocation</span><span class="p">,</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">,</span>
     <span class="n">NotificationProtocolStartResume</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
@@ -72,7 +72,11 @@
 
 <span class="k">class</span> <span class="nc">NotificationProtocol</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; The protocol which hand shakes with external devices about the\</span>
-<span class="sd">        database and starting execution</span>
+<span class="sd">        database and starting execution.</span>
+
+<span class="sd">    The messages sent by this are received by instances of</span>
+<span class="sd">    :py:class:`DatabaseConnection` (and its subclasses). They are not routed</span>
+<span class="sd">    via SpiNNaker.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;__database_message_connections&quot;</span><span class="p">,</span>
@@ -89,12 +93,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_database_socket_addresses</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EIEIOConnection</span><span class="p">(</span>
+        <span class="c1"># These connections are not used to talk to SpiNNaker boards</span>
+        <span class="c1"># but rather to code running on the current host computer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">EIEIOConnection</span><span class="p">(</span>
                 <span class="n">local_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">listen_port</span><span class="p">,</span>
                 <span class="n">remote_host</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_host_name</span><span class="p">,</span>
-                <span class="n">remote_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_port_no</span><span class="p">))</span>
+                <span class="n">remote_port</span><span class="o">=</span><span class="n">socket_address</span><span class="o">.</span><span class="n">notify_port_no</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">socket_address</span> <span class="ow">in</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_database_socket_addresses</span><span class="p">()]</span>
 
 <div class="viewcode-block" id="NotificationProtocol.wait_for_confirmation"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">[docs]</a>    <span class="k">def</span> <span class="nf">wait_for_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; If asked to wait for confirmation, waits for all external systems\</span>
@@ -151,13 +158,11 @@
 <div class="viewcode-block" id="NotificationProtocol.send_read_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sends notifications to all devices which have expressed an\</span>
 <span class="sd">            interest in when the database has been written</span>
-
-<span class="sd">        :param str database_path: the path to the database file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">notification_thread</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
+        <span class="n">notification_task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_send_read_notification</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">notification_thread</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">notification_task</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Sends notifications to a list of socket addresses that the\</span>
@@ -183,7 +188,7 @@
                 <span class="s2">&quot;via the command packet, please set the file path manually &quot;</span>
                 <span class="s2">&quot;and set the .cfg parameter [Database] send_file_path to &quot;</span>
                 <span class="s2">&quot;False&quot;</span><span class="p">)</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="n">DatabaseConfirmation</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">NotificationProtocolDatabaseLocation</span><span class="p">(</span><span class="n">database_path</span><span class="p">)</span>
 
         <span class="c1"># Send command and wait for response</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
@@ -203,18 +208,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># if the system needs to wait, try receiving a packet back</span>
-        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
                     <span class="n">c</span><span class="o">.</span><span class="n">receive_eieio_message</span><span class="p">()</span>
                     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                         <span class="s2">&quot;** Confirmation from </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> received, continuing **&quot;</span><span class="p">,</span>
                         <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">)</span>
-            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                    <span class="s2">&quot;*** Failed to receive notification from external &quot;</span>
-                    <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the database ***&quot;</span><span class="p">,</span>
-                    <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;*** Failed to receive notification from external &quot;</span>
+                        <span class="s2">&quot;application on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> about the database ***&quot;</span><span class="p">,</span>
+                        <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sent_visualisation_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -225,12 +230,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span>
 
 <div class="viewcode-block" id="NotificationProtocol.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Closes the thread pool</span>
+        <span class="sd">&quot;&quot;&quot; Closes the thread pool and the connections.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="kc">None</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__database_message_connections</span><span class="p">:</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>

@@ -26,12 +26,6 @@
       <arglist></arglist>
     </member>
     <member kind="enumvalue">
-      <name>DATABASE_CONFIRMATION</name>
-      <anchorfile>buffered__eieio__defs_8h.html</anchorfile>
-      <anchor>a632d15c8a0e55138305d1dac276a9154ad85c85d943f2761b4f0dfceeff11c31b</anchor>
-      <arglist></arglist>
-    </member>
-    <member kind="enumvalue">
       <name>EVENT_PADDING</name>
       <anchorfile>buffered__eieio__defs_8h.html</anchorfile>
       <anchor>a632d15c8a0e55138305d1dac276a9154aa7ea36a576b5065e1ed0da51c8cded4c</anchor>

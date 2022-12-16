@@ -88,6 +88,7 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># Data values cached</span>
+        <span class="s2">&quot;_allocation_controller&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_buffer_manager&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_current_run_timesteps&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_data_in_multicast_key_to_chip_map&quot;</span><span class="p">,</span>
@@ -166,6 +167,7 @@
 <span class="sd">        Clears out all data that should change after a reset and graph change</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_in_multicast_key_to_chip_map</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_in_multicast_routing_tables</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_database_file_path</span> <span class="o">=</span> <span class="kc">None</span>
@@ -248,6 +250,32 @@
             <span class="k">return</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">*</span>
                 <span class="bp">cls</span><span class="o">.</span><span class="n">get_simulation_time_step_ms</span><span class="p">())</span></div>
+
+    <span class="c1"># _allocation_controller</span>
+<div class="viewcode-block" id="FecDataView.has_allocation_controller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_allocation_controller">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">has_allocation_controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reports if an AllocationController object has already been set</span>
+
+<span class="sd">        :return: True if and only if an AllocationController has been added and</span>
+<span class="sd">            not reset.</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_allocation_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FecDataView.get_allocation_controller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_allocation_controller">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_allocation_controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the allocation controller if known</span>
+
+<span class="sd">        :rtype: AbstractMachineAllocationController</span>
+<span class="sd">        :raises SpiNNUtilsException:</span>
+<span class="sd">            If the buffer manager unavailable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_allocation_controller</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_exception</span><span class="p">(</span><span class="s2">&quot;allocation_controller&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_allocation_controller</span></div>
 
     <span class="c1"># _buffer_manager</span>
 <div class="viewcode-block" id="FecDataView.has_buffer_manager"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_buffer_manager">[docs]</a>    <span class="nd">@classmethod</span>

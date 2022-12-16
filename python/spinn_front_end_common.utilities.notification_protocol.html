@@ -56,22 +56,20 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.notification_protocol.</span></span><span class="sig-name descname"><span class="pre">NotificationProtocol</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
-<p>The protocol which hand shakes with external devices about the        database and starting execution</p>
+<p>The protocol which hand shakes with external devices about the        database and starting execution.</p>
+<p>The messages sent by this are received by instances of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseConnection</span></code> (and its subclasses). They are not routed
+via SpiNNaker.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Closes the thread pool</p>
+<dd><p>Closes the thread pool and the connections.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">
 <span class="sig-name descname"><span class="pre">send_read_notification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_read_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sends notifications to all devices which have expressed an            interest in when the database has been written</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>database_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the path to the database file</p>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">

@@ -53,7 +53,6 @@
 <span class="c1">#</span>
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
-
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -65,8 +64,6 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanTimeoutException</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp</span> <span class="kn">import</span> <span class="n">SDPMessage</span><span class="p">,</span> <span class="n">SDPHeader</span><span class="p">,</span> <span class="n">SDPFlag</span>
-<span class="kn">from</span> <span class="nn">spinnman.messages.scp.impl.iptag_set</span> <span class="kn">import</span> <span class="n">IPTagSet</span>
-<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.model.enums.cpu_state</span> <span class="kn">import</span> <span class="n">CPUState</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.machine</span> <span class="kn">import</span> <span class="n">MachineVertex</span>
 <span class="kn">from</span> <span class="nn">pacman.model.resources</span> <span class="kn">import</span> <span class="n">ConstantSDRAM</span><span class="p">,</span> <span class="n">IPtagResource</span>
@@ -85,7 +82,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">SDP_PORTS</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">,</span> <span class="n">BYTES_PER_KB</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">get_region_base_address_offset</span><span class="p">)</span>
+    <span class="n">get_region_base_address_offset</span><span class="p">,</span> <span class="n">open_scp_connection</span><span class="p">,</span> <span class="n">retarget_tag</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">SpinnFrontEndException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_objs.</span>\
     <span class="n">extra_monitor_scp_processes</span> <span class="kn">import</span> <span class="p">(</span>
@@ -392,6 +389,7 @@
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+        <span class="c1"># pylint: disable=unsubscriptable-object</span>
         <span class="c1"># update my placement for future knowledge</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span> <span class="o">=</span> <span class="n">placement</span>
 
@@ -625,6 +623,17 @@
                 <span class="n">flags</span><span class="o">=</span><span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_NOT_EXPECTED</span><span class="p">),</span>
             <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">__open_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open an SCP connection and make our tag target it.</span>
+
+<span class="sd">        :return: The opened connection, ready for use.</span>
+<span class="sd">        :rtype: SCAMPConnection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">connection</span> <span class="o">=</span> <span class="n">open_scp_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_address</span><span class="p">)</span>
+        <span class="n">retarget_tag</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tag</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">connection</span>
+
     <span class="k">def</span> <span class="nf">_send_data_via_extra_monitors</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span>
             <span class="n">data_to_write</span><span class="p">):</span>
@@ -637,97 +646,97 @@
 <span class="sd">        :param int start_address: the base SDRAM address</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set up the connection</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span> <span class="o">=</span> <span class="n">SCAMPConnection</span><span class="p">(</span>
-            <span class="n">chip_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="n">remote_host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_address</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__reprogram_tag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__open_connection</span><span class="p">()</span> <span class="k">as</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="p">:</span>
+            <span class="c1"># how many packets after first one we need to send</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="n">ceildiv</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">),</span> <span class="n">BYTES_IN_FULL_PACKET_WITH_KEY</span><span class="p">)</span>
 
-        <span class="c1"># how many packets after first one we need to send</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="n">ceildiv</span><span class="p">(</span>
-            <span class="nb">len</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">),</span> <span class="n">BYTES_IN_FULL_PACKET_WITH_KEY</span><span class="p">)</span>
+            <span class="c1"># determine board chip IDs, as the LPG does not know</span>
+            <span class="c1"># machine scope IDs</span>
+            <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
+            <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span>
+                <span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">)</span>
+            <span class="n">dest_x</span><span class="p">,</span> <span class="n">dest_y</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_local_xy</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_coord_word</span> <span class="o">=</span> <span class="p">(</span><span class="n">dest_x</span> <span class="o">&lt;&lt;</span> <span class="n">DEST_X_SHIFT</span><span class="p">)</span> <span class="o">|</span> <span class="n">dest_y</span>
 
-        <span class="c1"># determine board chip IDs, as the LPG does not know machine scope IDs</span>
-        <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
-        <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">)</span>
-        <span class="n">dest_x</span><span class="p">,</span> <span class="n">dest_y</span> <span class="o">=</span> <span class="n">machine</span><span class="o">.</span><span class="n">get_local_xy</span><span class="p">(</span><span class="n">chip</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_coord_word</span> <span class="o">=</span> <span class="p">(</span><span class="n">dest_x</span> <span class="o">&lt;&lt;</span> <span class="n">DEST_X_SHIFT</span><span class="p">)</span> <span class="o">|</span> <span class="n">dest_y</span>
+            <span class="c1"># for safety, check the transaction id from the machine before</span>
+            <span class="c1"># updating</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">TRANSACTION_ID_CAP</span>
+            <span class="n">time_out_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1"># for safety, check the transaction id from the machine before updating</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">update_transaction_id_from_machine</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">TRANSACTION_ID_CAP</span>
-        <span class="n">time_out_count</span> <span class="o">=</span> <span class="mi">0</span>
-
-        <span class="c1"># verify completed</span>
-        <span class="n">received_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="n">received_confirmation</span><span class="p">:</span>
-
-            <span class="c1"># send initial attempt at sending all the data</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_send_all_data_based_packets</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">,</span> <span class="n">start_address</span><span class="p">)</span>
-
-            <span class="c1"># Don&#39;t create a missing buffer until at least one packet has</span>
-            <span class="c1"># come back.</span>
-            <span class="n">missing</span> <span class="o">=</span> <span class="kc">None</span>
-
+            <span class="c1"># verify completed</span>
+            <span class="n">received_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">while</span> <span class="ow">not</span> <span class="n">received_confirmation</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="c1"># try to receive a confirmation of some sort from spinnaker</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span>
-                        <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMEOUT_PER_RECEIVE_IN_SECONDS</span><span class="p">)</span>
-                    <span class="n">time_out_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-                    <span class="c1"># Read command and transaction id</span>
-                    <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span> <span class="o">=</span> <span class="n">_TWO_WORDS</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="c1"># send initial attempt at sending all the data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_send_all_data_based_packets</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">,</span> <span class="n">start_address</span><span class="p">)</span>
 
-                    <span class="c1"># If wrong transaction id, ignore packet</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">!=</span> <span class="n">transaction_id</span><span class="p">:</span>
-                        <span class="k">continue</span>
+                <span class="c1"># Don&#39;t create a missing buffer until at least one packet has</span>
+                <span class="c1"># come back.</span>
+                <span class="n">missing</span> <span class="o">=</span> <span class="kc">None</span>
 
-                    <span class="c1"># Decide what to do with the packet</span>
-                    <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_FINISHED</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-                        <span class="n">received_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="k">break</span>
+                <span class="k">while</span> <span class="ow">not</span> <span class="n">received_confirmation</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="c1"># try to receive a confirmation of some sort from</span>
+                        <span class="c1"># spinnaker</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span>
+                            <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_TIMEOUT_PER_RECEIVE_IN_SECONDS</span><span class="p">)</span>
+                        <span class="n">time_out_count</span> <span class="o">=</span> <span class="mi">0</span>
 
-                    <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_MISSING_SEQ_DATA</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unknown command </span><span class="si">{}</span><span class="s2"> received&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">cmd</span><span class="p">))</span>
+                        <span class="c1"># Read command and transaction id</span>
+                        <span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span> <span class="o">=</span> <span class="n">_TWO_WORDS</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-                    <span class="c1"># The currently received packet has missing sequence</span>
-                    <span class="c1"># numbers. Accumulate and dispatch transactionId when</span>
-                    <span class="c1"># we&#39;ve got them all.</span>
-                    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
-                    <span class="n">seen_last</span><span class="p">,</span> <span class="n">seen_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_in_missing_seq_nums</span><span class="p">(</span>
-                        <span class="n">data</span><span class="p">,</span> <span class="n">BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER</span><span class="p">,</span>
-                        <span class="n">missing</span><span class="p">)</span>
+                        <span class="c1"># If wrong transaction id, ignore packet</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">!=</span> <span class="n">transaction_id</span><span class="p">:</span>
+                            <span class="k">continue</span>
 
-                    <span class="c1"># Check that you&#39;ve seen something that implies ready</span>
-                    <span class="c1"># to retransmit.</span>
-                    <span class="k">if</span> <span class="n">seen_all</span> <span class="ow">or</span> <span class="n">seen_last</span><span class="p">:</span>
+                        <span class="c1"># Decide what to do with the packet</span>
+                        <span class="k">if</span> <span class="n">cmd</span> <span class="o">==</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_FINISHED</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                            <span class="n">received_confirmation</span> <span class="o">=</span> <span class="kc">True</span>
+                            <span class="k">break</span>
+
+                        <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_MISSING_SEQ_DATA</span>\
+                                <span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown command </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> received&quot;</span><span class="p">)</span>
+
+                        <span class="c1"># The currently received packet has missing sequence</span>
+                        <span class="c1"># numbers. Accumulate and dispatch transactionId when</span>
+                        <span class="c1"># we&#39;ve got them all.</span>
+                        <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">missing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_missing_seq_nums_data_in</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span>
+                        <span class="n">seen_last</span><span class="p">,</span> <span class="n">seen_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_in_missing_seq_nums</span><span class="p">(</span>
+                            <span class="n">data</span><span class="p">,</span>
+                            <span class="n">BYTES_FOR_RECEPTION_COMMAND_AND_ADDRESS_HEADER</span><span class="p">,</span>
+                            <span class="n">missing</span><span class="p">)</span>
+
+                        <span class="c1"># Check that you&#39;ve seen something that implies ready</span>
+                        <span class="c1"># to retransmit.</span>
+                        <span class="k">if</span> <span class="n">seen_all</span> <span class="ow">or</span> <span class="n">seen_last</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_outgoing_retransmit_missing_seq_nums</span><span class="p">(</span>
+                                <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
+                            <span class="n">missing</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+                    <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="c1"># if the timeout has not occurred x times, keep trying</span>
+                        <span class="n">time_out_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">time_out_count</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
+                            <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
+                                <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                    <span class="n">time_out_count</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+
+                        <span class="c1"># If we never received a packet, we will never have</span>
+                        <span class="c1"># created the buffer, so send everything again</span>
+                        <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="k">break</span>
+
                         <span class="bp">self</span><span class="o">.</span><span class="n">_outgoing_retransmit_missing_seq_nums</span><span class="p">(</span>
-                            <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
+                                <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
                         <span class="n">missing</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-
-                <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                    <span class="c1"># if the timeout has not occurred x times, keep trying</span>
-                    <span class="n">time_out_count</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="n">time_out_count</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
-                        <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
-                        <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
-                            <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                <span class="n">time_out_count</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
-
-                    <span class="c1"># If we never received a packet, we will never have</span>
-                    <span class="c1"># created the buffer, so send everything again</span>
-                    <span class="k">if</span> <span class="n">missing</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="k">break</span>
-
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_outgoing_retransmit_missing_seq_nums</span><span class="p">(</span>
-                            <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">)</span>
-                    <span class="n">missing</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-
-        <span class="c1"># Close the connection</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_read_in_missing_seq_nums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; handles a missing seq num packet from spinnaker</span>
@@ -1025,26 +1034,6 @@
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t get core state&quot;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">__reprogram_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Make our tag deliver to the given connection.</span>
-
-<span class="sd">        :param ~.SCAMPConnection connection: The connection to deliver to.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="n">IPTagSet</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tag</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_sender</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_scp_data</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
-        <span class="n">exn</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">connection</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">receive_scp_response</span><span class="p">()</span>
-                <span class="n">request</span><span class="o">.</span><span class="n">get_scp_response</span><span class="p">()</span><span class="o">.</span><span class="n">read_bytestring</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
-                <span class="k">return</span>
-            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">exn</span> <span class="o">=</span> <span class="n">e</span>
-        <span class="k">raise</span> <span class="n">exn</span> <span class="ow">or</span> <span class="n">SpinnmanTimeoutException</span>
-
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
             <span class="n">length_in_bytes</span><span class="p">):</span>
@@ -1081,33 +1070,30 @@
         <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
 
         <span class="c1"># Update the IP Tag to work through a NAT firewall</span>
-        <span class="n">connection</span> <span class="o">=</span> <span class="n">SCAMPConnection</span><span class="p">(</span>
-            <span class="n">chip_x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="n">remote_host</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_address</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__reprogram_tag</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__open_connection</span><span class="p">()</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+            <span class="c1"># update transaction id for extra monitor</span>
+            <span class="n">extra_monitor</span><span class="o">.</span><span class="n">update_transaction_id</span><span class="p">()</span>
+            <span class="n">transaction_id</span> <span class="o">=</span> <span class="n">extra_monitor</span><span class="o">.</span><span class="n">transaction_id</span>
 
-        <span class="c1"># update transaction id for extra monitor</span>
-        <span class="n">extra_monitor</span><span class="o">.</span><span class="n">update_transaction_id</span><span class="p">()</span>
-        <span class="n">transaction_id</span> <span class="o">=</span> <span class="n">extra_monitor</span><span class="o">.</span><span class="n">transaction_id</span>
+            <span class="c1"># send</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
+                <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
+                <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+                    <span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">START_SENDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">,</span>
+                    <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">)))</span>
 
-        <span class="c1"># send</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
-            <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
-            <span class="n">_FOUR_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
-                <span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">START_SENDING</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">,</span>
-                <span class="n">memory_address</span><span class="p">,</span> <span class="n">length_in_bytes</span><span class="p">)))</span>
+            <span class="c1"># receive</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">length_in_bytes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_seq_num</span><span class="p">()</span>
+            <span class="n">lost_seq_nums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_data</span><span class="p">(</span>
+                <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span>
 
-        <span class="c1"># receive</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_output</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">length_in_bytes</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="nb">memoryview</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_seq_num</span><span class="p">()</span>
-        <span class="n">lost_seq_nums</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_data</span><span class="p">(</span>
-            <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)</span>
-
-        <span class="c1"># Stop anything else getting through (and reduce traffic)</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
-            <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
-            <span class="n">_TWO_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">CLEAR</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)))</span>
-        <span class="n">connection</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="c1"># Stop anything else getting through (and reduce traffic)</span>
+            <span class="n">connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
+                <span class="n">placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_SPEED_UP</span><span class="p">,</span>
+                <span class="n">_TWO_WORDS</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span>
+                    <span class="n">DATA_OUT_COMMANDS</span><span class="o">.</span><span class="n">CLEAR</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">)))</span>
 
         <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>

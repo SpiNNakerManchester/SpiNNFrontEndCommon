@@ -77,7 +77,15 @@
 <span class="sd">    .. note::</span>
 <span class="sd">        The machine description database reader can only be used while the</span>
 <span class="sd">        registered database callbacks are running.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This class coordinates with the :py:class:`NotificationProtocol` class</span>
+<span class="sd">        without routing messages via SpiNNaker.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># This class must NOT be proxied! It does not handle messages from</span>
+    <span class="c1"># SpiNNaker itself, but rather between the toolchain and any visualisation</span>
+    <span class="c1"># tools plugged into it. The message it receives in __run() is sent by</span>
+    <span class="c1"># NotificationProtocol._send_read_notification</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;__database_callbacks&quot;</span><span class="p">,</span>
@@ -132,19 +140,7 @@
             <span class="s2">&quot;ready&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__running</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">data</span><span class="p">,</span> <span class="n">address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive_with_address</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-                <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__read_db</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-
-                <span class="c1"># Wait for the start of the simulation</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume</span><span class="p">()</span>
-
-                <span class="c1"># Wait for the end of the simulation</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__process_run_cycle</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Failure processing database callback&quot;</span><span class="p">,</span>
                          <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -152,7 +148,26 @@
         <span class="k">finally</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__running</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">__read_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__process_run_cycle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Heart of :py:meth:`__run`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Wait to be told by the toolchain where the DB is located</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">toolchain_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive_with_address</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__read_db</span><span class="p">(</span><span class="n">toolchain_address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Wait for the start of the simulation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume</span><span class="p">()</span>
+
+        <span class="c1"># Wait for the end of the simulation</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__read_db</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">toolchain_address</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="c1"># Read the read packet confirmation</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> Reading database&quot;</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">local_ip_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_port</span><span class="p">)</span>
@@ -169,13 +184,13 @@
 
         <span class="c1"># Send the response</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Notifying the toolchain that the database has been read&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_command</span><span class="p">(</span><span class="n">CMDS</span><span class="o">.</span><span class="n">DATABASE_CONFIRMATION</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__send_command</span><span class="p">(</span><span class="n">CMDS</span><span class="o">.</span><span class="n">DATABASE</span><span class="p">,</span> <span class="n">toolchain_address</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__start_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="s2">&quot;Waiting for message to indicate that the simulation has &quot;</span>
             <span class="s2">&quot;started or resumed&quot;</span><span class="p">)</span>
-        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_command</span><span class="p">()</span>
+        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_command</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">command_code</span> <span class="o">!=</span> <span class="n">CMDS</span><span class="o">.</span><span class="n">START_RESUME_NOTIFICATION</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SpinnmanInvalidPacketException</span><span class="p">(</span>
                 <span class="s2">&quot;command_code&quot;</span><span class="p">,</span>
@@ -188,7 +203,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="s2">&quot;Waiting for message to indicate that the simulation has &quot;</span>
             <span class="s2">&quot;stopped or paused&quot;</span><span class="p">)</span>
-        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_receive_command</span><span class="p">()</span>
+        <span class="n">command_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_command</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">command_code</span> <span class="o">!=</span> <span class="n">CMDS</span><span class="o">.</span><span class="n">STOP_PAUSE_NOTIFICATION</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SpinnmanInvalidPacketException</span><span class="p">(</span>
                 <span class="s2">&quot;command_code&quot;</span><span class="p">,</span>
@@ -197,10 +212,11 @@
         <span class="c1"># Call the callback</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pause_and_stop_callback</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_send_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span><span class="n">EIEIOCommandHeader</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">bytestring</span><span class="p">,</span> <span class="n">address</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">__send_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">,</span> <span class="n">toolchain_address</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span><span class="n">EIEIOCommandHeader</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">bytestring</span><span class="p">,</span>
+                     <span class="n">toolchain_address</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_receive_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__receive_command</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">EIEIOCommandHeader</span><span class="o">.</span><span class="n">from_bytestring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">receive</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">command</span>
 
 <div class="viewcode-block" id="DatabaseConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

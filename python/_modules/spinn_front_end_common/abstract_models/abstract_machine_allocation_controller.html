@@ -54,6 +54,7 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_base</span> <span class="kn">import</span> <span class="n">AbstractBase</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">SCP_SCAMP_PORT</span>
 
 
 <span class="k">class</span> <span class="nc">AbstractMachineAllocationController</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
@@ -86,6 +87,59 @@
 <span class="sd">        :return: (cabinet, frame, board)</span>
 <span class="sd">        :rtype: tuple(int,int,int)</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractMachineAllocationController.create_transceiver"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.create_transceiver">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">create_transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a transceiver for talking to the allocated machine, and</span>
+<span class="sd">        make sure everything is ready for use (i.e. boot and discover</span>
+<span class="sd">        connections if needed).</span>
+
+<span class="sd">        :rtype: ~spinnman.transceiver.Transceiver</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractMachineAllocationController.open_sdp_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">open_sdp_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">udp_port</span><span class="o">=</span><span class="n">SCP_SCAMP_PORT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open a connection to a specific ethernet chip. Caller will have to</span>
+<span class="sd">        arrange for SpiNNaker to pay attention to the connection.</span>
+
+<span class="sd">        :param int chip_x: ethernet chip x location</span>
+<span class="sd">        :param int chip_y: ethernet chip y location</span>
+<span class="sd">        :param int udp_port:</span>
+<span class="sd">            the UDP port on the chip to connect to; connecting to a non-SCP</span>
+<span class="sd">            port will result in a connection that can&#39;t easily be configured.</span>
+<span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.SDPConnection</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">open_eieio_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open a connection to a specific ethernet chip for EIEIO. Caller will</span>
+<span class="sd">        have to arrange for SpiNNaker to pay attention to the connection.</span>
+
+<span class="sd">        :param int chip_x: ethernet chip x location</span>
+<span class="sd">        :param int chip_y: ethernet chip y location</span>
+
+<span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_listener"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">open_eieio_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open an unbound EIEIO connection.</span>
+
+<span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">proxying</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether this is a proxying connection. False unless overridden.</span>
+
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span>
 </pre></div>
 
             <div class="clearer"></div>

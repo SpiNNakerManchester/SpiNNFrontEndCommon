@@ -98,18 +98,17 @@ typedef uint16_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:a632d15c8a0e55138305d1dac276a9154"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154">eieio_command_messages</a> { <br />
-&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154ad85c85d943f2761b4f0dfceeff11c31b">DATABASE_CONFIRMATION</a> = 1
-, <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154aa7ea36a576b5065e1ed0da51c8cded4c">EVENT_PADDING</a>
+&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154aa7ea36a576b5065e1ed0da51c8cded4c">EVENT_PADDING</a> = 2
 , <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154acd433713fe08bf0672f9e4614ebc7699">EVENT_STOP_COMMANDS</a>
 , <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a16ff911ae72af6ac8becb083fa6d32d7">STOP_SENDING_REQUESTS</a>
+, <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154abac1b14bec1109683b57f057363aa647">START_SENDING_REQUESTS</a>
 , <br />
-&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154abac1b14bec1109683b57f057363aa647">START_SENDING_REQUESTS</a>
-, <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a2d1161ddebefb717018ce85e654086e5">SPINNAKER_REQUEST_BUFFERS</a>
+&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a2d1161ddebefb717018ce85e654086e5">SPINNAKER_REQUEST_BUFFERS</a>
 , <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a553036ced5cf1677cfea25a1a686ca42">HOST_SEND_SEQUENCED_DATA</a>
 , <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a3c551962f15f1df5fdca201ab1f6fa17">SPINNAKER_REQUEST_READ_DATA</a>
+, <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626">HOST_DATA_READ</a>
 , <br />
-&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a78bd33182d3446399b98f456a154a626">HOST_DATA_READ</a>
-, <a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254">HOST_DATA_READ_ACK</a> = 12
+&#160;&#160;<a class="el" href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154a9b2476cbb47aa712ee051c690774f254">HOST_DATA_READ_ACK</a> = 12
 <br />
  }</td></tr>
 <tr class="memdesc:a632d15c8a0e55138305d1dac276a9154"><td class="mdescLeft">&#160;</td><td class="mdescRight">The different command message IDs.  <a href="buffered__eieio__defs_8h.html#a632d15c8a0e55138305d1dac276a9154">More...</a><br /></td></tr>
@@ -140,9 +139,7 @@ Enumerations</h2></td></tr>
 
 <p>The different command message IDs. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a632d15c8a0e55138305d1dac276a9154ad85c85d943f2761b4f0dfceeff11c31b"></a>DATABASE_CONFIRMATION&#160;</td><td class="fielddoc"><p>Database handshake with visualiser. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a632d15c8a0e55138305d1dac276a9154aa7ea36a576b5065e1ed0da51c8cded4c"></a>EVENT_PADDING&#160;</td><td class="fielddoc"><p>Fill in buffer area with padding. </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a632d15c8a0e55138305d1dac276a9154aa7ea36a576b5065e1ed0da51c8cded4c"></a>EVENT_PADDING&#160;</td><td class="fielddoc"><p>Fill in buffer area with padding. </p>
 </td></tr>
 <tr><td class="fieldname"><a id="a632d15c8a0e55138305d1dac276a9154acd433713fe08bf0672f9e4614ebc7699"></a>EVENT_STOP_COMMANDS&#160;</td><td class="fielddoc"><p>End of all buffers, stop execution. </p>
 </td></tr>
@@ -186,7 +183,7 @@ Enumerations</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="buffered__eieio__defs_8h_source.html#l00053">53</a> of file <a class="el" href="buffered__eieio__defs_8h_source.html">buffered_eieio_defs.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="buffered__eieio__defs_8h_source.html#l00051">51</a> of file <a class="el" href="buffered__eieio__defs_8h_source.html">buffered_eieio_defs.h</a>.</p>
 
 </div>
 </div>

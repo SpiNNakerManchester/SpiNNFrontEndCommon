@@ -60,6 +60,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractSupportsDatabaseInjection</span><span class="p">,</span> <span class="n">HasCustomAtomKeyMap</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinnman.spalloc</span> <span class="kn">import</span> <span class="n">SpallocJob</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utility_models</span> <span class="kn">import</span> <span class="n">LivePacketGather</span>
 <span class="kn">from</span> <span class="nn">pacman.utilities.utility_calls</span> <span class="kn">import</span> <span class="n">get_field_based_keys</span>
 
@@ -216,11 +217,23 @@
                     <span class="p">(</span><span class="s2">&quot;runtime&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runtime</span><span class="p">),</span>
                     <span class="p">(</span><span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">())])</span></div>
 
+<div class="viewcode-block" id="DatabaseWriter.add_proxy_configuration"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_proxy_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">add_proxy_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Store the proxy configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="n">mac</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_allocation_controller</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">mac</span><span class="o">.</span><span class="n">proxying</span><span class="p">:</span>
+            <span class="c1"># This is now assumed to be a SpallocJobController;</span>
+            <span class="c1"># can&#39;t check that because of import circularity.</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">mac</span><span class="o">.</span><span class="n">_job</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">SpallocJob</span><span class="p">):</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+                    <span class="n">job</span><span class="o">.</span><span class="n">_write_session_credentials_to_db</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="DatabaseWriter.add_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">[docs]</a>    <span class="k">def</span> <span class="nf">add_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Adds the placements objects into the database</span>
-
-<span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
-<span class="sd">            the placements object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="c1"># Make sure machine vertices are represented</span>

@@ -54,26 +54,21 @@
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EIEIODataMessage</span><span class="p">,</span> <span class="n">KeyPayloadDataElement</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span><span class="p">,</span> <span class="n">AbstractEIEIOMessage</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections</span> <span class="kn">import</span> <span class="n">ConnectionListener</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">NOTIFY_PORT</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.database</span> <span class="kn">import</span> <span class="n">DatabaseConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_flag</span> <span class="kn">import</span> <span class="n">SDPFlag</span>
-<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections.utils</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">update_sdp_header_for_udp_send</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinnman.messages.scp.impl.iptag_set</span> <span class="kn">import</span> <span class="n">IPTagSet</span>
-<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanTimeoutException</span>
 <span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">SCP_SCAMP_PORT</span>
 <span class="kn">from</span> <span class="nn">spinnman.utilities.utility_functions</span> <span class="kn">import</span> <span class="n">send_port_trigger_message</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_message</span> <span class="kn">import</span> <span class="n">SDPMessage</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_header</span> <span class="kn">import</span> <span class="n">SDPHeader</span>
-<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">UDPConnection</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">NOTIFY_PORT</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.database</span> <span class="kn">import</span> <span class="n">DatabaseConnection</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="n">retarget_tag</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -86,12 +81,13 @@
 <span class="c1"># The maximum number of 32-bit keys with payloads that will fit in a packet</span>
 <span class="n">_MAX_FULL_KEYS_PAYLOADS_PER_PACKET</span> <span class="o">=</span> <span class="mi">31</span>
 
-<span class="n">_TWO_SKIP</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;2x&quot;</span><span class="p">)</span>
-
 
 <span class="k">class</span> <span class="nc">LiveEventConnection</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A connection for receiving and sending live events from and to\</span>
-<span class="sd">        SpiNNaker</span>
+<span class="sd">        SpiNNaker.</span>
+
+<span class="sd">    Note that this class is intended to be potentially usable from another</span>
+<span class="sd">    process than the one that the simulator is present in.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;_atom_id_to_key&quot;</span><span class="p">,</span>
@@ -107,7 +103,9 @@
         <span class="s2">&quot;__send_address_details&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__send_labels&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__sender_connection&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__start_resume_callbacks&quot;</span><span class="p">]</span>
+        <span class="s2">&quot;__start_resume_callbacks&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__simulator&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__spalloc_job&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gather_label</span><span class="p">,</span> <span class="n">receive_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">send_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">NOTIFY_PORT</span><span class="p">):</span>
@@ -291,7 +289,11 @@
 <span class="sd">        :param dict(str,int) vertex_sizes:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span> <span class="o">=</span> <span class="n">UDPConnection</span><span class="p">()</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_job</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">job</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">open_listener_connection</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span> <span class="o">=</span> <span class="n">EIEIOConnection</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_labels</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__send_address_details</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_live_input_details</span><span class="p">(</span>
                 <span class="n">db</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
@@ -306,19 +308,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set up a single connection for receive</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">EIEIOConnection</span><span class="p">()</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">get_job</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">job</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">open_listener_connection</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">EIEIOConnection</span><span class="p">()</span>
+        <span class="n">indirect</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="s2">&quot;update_tag&quot;</span><span class="p">)</span>
         <span class="n">receivers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">label_id</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receive_labels</span><span class="p">):</span>
-            <span class="n">_</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_live_output_details</span><span class="p">(</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_live_output_details</span><span class="p">(</span>
                 <span class="n">db</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
 
             <span class="c1"># Update the tag if not already done</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">board_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">receivers</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__update_tag</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
                 <span class="n">receivers</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">board_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
-                <span class="n">send_port_trigger_message</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">indirect</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+                    <span class="c1"># No port trigger necessary; proxied already</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">retarget_tag</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span>
+                        <span class="n">ip_address</span><span class="o">=</span><span class="n">board_address</span><span class="p">)</span>
+                    <span class="n">send_port_trigger_message</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Listening for traffic from </span><span class="si">{}</span><span class="s2"> on board </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -352,7 +364,7 @@
         <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span>
 
     <span class="k">def</span> <span class="nf">__get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_reader</span><span class="p">,</span> <span class="n">receive_label</span><span class="p">):</span>
-        <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> \
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">strip_sdp</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span> <span class="o">=</span> \
             <span class="n">db_reader</span><span class="o">.</span><span class="n">get_live_output_details</span><span class="p">(</span>
                 <span class="n">receive_label</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__live_packet_gather_label</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">host</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -362,34 +374,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">strip_sdp</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Currently, only IP tags which strip the SDP &quot;</span>
                             <span class="s2">&quot;headers are supported&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span>
-
-    <span class="k">def</span> <span class="nf">__update_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
-        <span class="c1"># Update an IP Tag with the sender&#39;s address and port</span>
-        <span class="c1"># This avoids issues with NAT firewalls</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Updating tag for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">board_address</span><span class="p">))</span>
-        <span class="n">request</span> <span class="o">=</span> <span class="n">IPTagSet</span><span class="p">(</span>
-            <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_sender</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">request</span><span class="o">.</span><span class="n">sdp_header</span><span class="o">.</span><span class="n">flags</span> <span class="o">=</span> <span class="n">SDPFlag</span><span class="o">.</span><span class="n">REPLY_EXPECTED_NO_P2P</span>
-        <span class="n">update_sdp_header_for_udp_send</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">sdp_header</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="n">bytestring</span>
-        <span class="n">sent</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="n">tries_to_go</span> <span class="o">=</span> <span class="mi">3</span>
-        <span class="k">while</span> <span class="ow">not</span> <span class="n">sent</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">connection</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">board_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span>
-                <span class="n">response_data</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
-                <span class="n">request</span><span class="o">.</span><span class="n">get_scp_response</span><span class="p">()</span><span class="o">.</span><span class="n">read_bytestring</span><span class="p">(</span>
-                    <span class="n">response_data</span><span class="p">,</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-                <span class="n">sent</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">tries_to_go</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No more tries - Error!&quot;</span><span class="p">)</span>
-                    <span class="k">raise</span> <span class="n">e</span>
-
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Timeout, retrying&quot;</span><span class="p">)</span>
-                <span class="n">tries_to_go</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Done updating tag for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">board_address</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span>
 
     <span class="k">def</span> <span class="nf">__handle_possible_rerun_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># reset from possible previous calls</span>
@@ -529,9 +514,7 @@
                 <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">events_in_packet</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__get_sdp_data</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span>
-                <span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_event_with_payload"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event_with_payload">[docs]</a>    <span class="k">def</span> <span class="nf">send_event_with_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Send an event with a payload from a single atom</span>
@@ -565,9 +548,7 @@
                 <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">events</span> <span class="o">+=</span> <span class="mi">1</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__get_sdp_data</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span>
-                <span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_eieio_message"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_eieio_message">[docs]</a>    <span class="k">def</span> <span class="nf">send_eieio_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Send an EIEIO message (using one-way the live input) to the \</span>
@@ -581,16 +562,19 @@
         <span class="k">if</span> <span class="n">target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span> <span class="o">=</span> <span class="n">target</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__get_sdp_data</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span>
-            <span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LiveEventConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__handle_possible_rerun_state</span><span class="p">()</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    <span class="k">def</span> <span class="nf">_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">AbstractEIEIOMessage</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send an EIEIO message to a particular core.</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__get_sdp_data</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<span class="sd">        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:</span>
+<span class="sd">            The EIEIO message to send</span>
+<span class="sd">        :param int x: Destination chip X coordinate</span>
+<span class="sd">        :param int y: Destination chip Y coordinate</span>
+<span class="sd">        :param int p: Destination core number</span>
+<span class="sd">        :param str ip_address: What ethernet chip to send via</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Create an SDP message - no reply so source is unimportant</span>
         <span class="c1"># SDP port can be anything except 0 as the target doesn&#39;t care</span>
         <span class="n">sdp_message</span> <span class="o">=</span> <span class="n">SDPMessage</span><span class="p">(</span>
@@ -601,7 +585,14 @@
                 <span class="n">source_port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_cpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">source_chip_x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">source_chip_y</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
             <span class="n">data</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">bytestring</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">_TWO_SKIP</span><span class="o">.</span><span class="n">pack</span><span class="p">()</span> <span class="o">+</span> <span class="n">sdp_message</span><span class="o">.</span><span class="n">bytestring</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sender_connection</span><span class="o">.</span><span class="n">send_to</span><span class="p">(</span>
+            <span class="c1"># Prefix padding: two empty bytes</span>
+            <span class="sa">b</span><span class="s1">&#39;</span><span class="se">\0\0</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">sdp_message</span><span class="o">.</span><span class="n">bytestring</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span>
+
+<div class="viewcode-block" id="LiveEventConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__handle_possible_rerun_state</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
 
             <div class="clearer"></div>

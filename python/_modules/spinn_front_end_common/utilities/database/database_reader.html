@@ -53,18 +53,21 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
+<span class="kn">from</span> <span class="nn">spinnman.spalloc</span> <span class="kn">import</span> <span class="n">SpallocClient</span>
 
 
 <span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; A reader for the database.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;__job&quot;</span><span class="p">,</span> <span class="s2">&quot;__looked_for_job&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str database_path: The path to the database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_path</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__job</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__looked_for_job</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">__exec_one</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
@@ -74,6 +77,21 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__r2t</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DatabaseReader.get_job"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_job">[docs]</a>    <span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the job described in the database. If no job exists, direct</span>
+<span class="sd">        connection to boards should be used.</span>
+
+<span class="sd">        :return: Job handle, if one exists. ``None`` otherwise.</span>
+<span class="sd">        :rtype: ~spinnman.spalloc.SpallocJob</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># This is maintaining an object we only make once</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__looked_for_job</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__job</span> <span class="o">=</span> <span class="n">SpallocClient</span><span class="o">.</span><span class="n">open_job_from_database</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__looked_for_job</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__job</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_key_to_atom_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get a mapping of event key to atom ID for a given vertex</span>
@@ -112,8 +130,9 @@
 <span class="sd">            stripped from the output from a vertex</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
-<span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag)</span>
-<span class="sd">        :rtype: tuple(str, int, bool, str, int)</span>
+<span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag,</span>
+<span class="sd">            chip_x, chip_y)</span>
+<span class="sd">        :rtype: tuple(str, int, bool, str, int, int, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
@@ -122,7 +141,8 @@
 <span class="sd">                WHERE pre_vertex_label = ?</span>
 <span class="sd">                    AND post_vertex_label LIKE ?</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">receiver_label</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">)</span></div>
+            <span class="s2">&quot;ip_address&quot;</span><span class="p">,</span> <span class="s2">&quot;port&quot;</span><span class="p">,</span> <span class="s2">&quot;strip_sdp&quot;</span><span class="p">,</span> <span class="s2">&quot;board_address&quot;</span><span class="p">,</span> <span class="s2">&quot;tag&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;chip_x&quot;</span><span class="p">,</span> <span class="s2">&quot;chip_y&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_configuration_parameter_value"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>

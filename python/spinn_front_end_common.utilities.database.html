@@ -62,6 +62,11 @@
 <p>The machine description database reader can only be used while the
 registered database callbacks are running.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class coordinates with the <code class="xref py py-class docutils literal notranslate"><span class="pre">NotificationProtocol</span></code> class
+without routing messages via SpiNNaker.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -163,6 +168,21 @@ needed further, and the return response will be sent.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_job">
+<span class="sig-name descname"><span class="pre">get_job</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_job"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_job" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the job described in the database. If no job exists, direct
+connection to boards should be used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Job handle, if one exists. <code class="docutils literal notranslate"><span class="pre">None</span></code> otherwise.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.spalloc/#spinnman.spalloc.SpallocJob" title="(in SpiNNMan v6.0)"><em>SpallocJob</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">
 <span class="sig-name descname"><span class="pre">get_key_to_atom_id_mapping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_reader.html#DatabaseReader.get_key_to_atom_id_mapping"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a mapping of event key to atom ID for a given vertex</p>
@@ -188,10 +208,11 @@ needed further, and the return response will be sent.</p>
 <dd class="field-odd"><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The label of the vertex</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple of (IP address, port, strip SDP, board address, tag)</p>
+<dd class="field-even"><p>tuple of (IP address, port, strip SDP, board address, tag,
+chip_x, chip_y)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -275,11 +296,12 @@ or case-insensitive (default).</p></li>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">
 <span class="sig-name descname"><span class="pre">add_placements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_placements"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds the placements objects into the database</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements object</p>
-</dd>
-</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.database.DatabaseWriter.add_proxy_configuration">
+<span class="sig-name descname"><span class="pre">add_proxy_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/database/database_writer.html#DatabaseWriter.add_proxy_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_proxy_configuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store the proxy configuration.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -354,6 +376,7 @@ or case-insensitive (default).</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_atom_id_to_key_mapping()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_configuration_parameter_value()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_ip_address()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_job"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_job()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_key_to_atom_id_mapping()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_live_output_details()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseReader.get_placements"><code class="docutils literal notranslate"><span class="pre">DatabaseReader.get_placements()</span></code></a></li>
@@ -364,6 +387,7 @@ or case-insensitive (default).</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_lpg_mapping"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_lpg_mapping()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_machine_objects()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_placements()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_proxy_configuration"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_proxy_configuration()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_system_params()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.add_tags()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database"><code class="docutils literal notranslate"><span class="pre">DatabaseWriter.auto_detect_database()</span></code></a></li>

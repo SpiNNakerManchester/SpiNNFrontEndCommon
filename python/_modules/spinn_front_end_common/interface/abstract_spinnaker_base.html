@@ -61,6 +61,7 @@
 <span class="kn">import</span> <span class="nn">signal</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">requests</span>
 <span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Condition</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">numpy_version</span>
 
@@ -107,6 +108,7 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.abstract_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractVertexWithEdgeToDependentVertices</span><span class="p">,</span>
     <span class="n">AbstractCanReset</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data.fec_data_view</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management</span> <span class="kn">import</span> <span class="n">BufferManager</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
@@ -181,9 +183,6 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># The IP-address of the SpiNNaker machine</span>
 
-        <span class="c1"># the connection to allocted spalloc and HBP machines</span>
-        <span class="s2">&quot;_machine_allocation_controller&quot;</span><span class="p">,</span>
-
         <span class="c1"># Condition object used for waiting for stop</span>
         <span class="c1"># Set during init and the used but never new object</span>
         <span class="s2">&quot;_state_condition&quot;</span><span class="p">,</span>
@@ -231,7 +230,6 @@
         <span class="c1"># store for Live Packet Gatherers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_vertices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
 
         <span class="c1"># holder for timing and running related values</span>
@@ -288,6 +286,27 @@
 
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;User has cancelled simulation&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shutdown</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">__bearer_token</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :return: The OIDC bearer token</span>
+<span class="sd">        :rtype: str or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Try using Jupyter if we have the right variables</span>
+        <span class="n">jupyter_token</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;JUPYTERHUB_API_TOKEN&quot;</span><span class="p">)</span>
+        <span class="n">jupyter_ip</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;JUPYTERHUB_SERVICE_HOST&quot;</span><span class="p">)</span>
+        <span class="n">jupyter_port</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;JUPYTERHUB_SERVICE_PORT&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">jupyter_token</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">jupyter_ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
+                <span class="n">jupyter_port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">jupyter_url</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">jupyter_ip</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">jupyter_port</span><span class="si">}</span><span class="s2">/services/&quot;</span>
+                           <span class="s2">&quot;access-token-service/access-token&quot;</span><span class="p">)</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;Authorization&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Token </span><span class="si">{</span><span class="n">jupyter_token</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">}</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">jupyter_url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;access_token&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Try a simple environment variable, or None if that doesn&#39;t exist</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OIDC_BEARER_TOKEN&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.exception_handler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">[docs]</a>    <span class="k">def</span> <span class="nf">exception_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Handler of exceptions</span>
@@ -440,8 +459,8 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting execution process&quot;</span><span class="p">)</span>
 
         <span class="n">n_machine_time_steps</span><span class="p">,</span> <span class="n">total_run_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_run_time</span><span class="p">(</span><span class="n">run_time</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">(</span>
+        <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_allocation_controller</span><span class="p">()</span><span class="o">.</span><span class="n">extend_allocation</span><span class="p">(</span>
                 <span class="n">total_run_time</span><span class="p">)</span>
 
         <span class="n">n_sync_steps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__timesteps</span><span class="p">(</span><span class="n">sync_time</span><span class="p">)</span>
@@ -665,7 +684,7 @@
 <span class="sd">        Runs, times and logs the SpallocAllocator or HBPAllocator if required</span>
 
 <span class="sd">        :param total_run_time: The total run time to request</span>
-<span class="sd">        type total_run_time: int or None</span>
+<span class="sd">        :type total_run_time: int or None</span>
 <span class="sd">        :return: machine name, machine version, BMP details (if any),</span>
 <span class="sd">            reset on startup flag, auto-detect BMP, SCAMP connection details,</span>
 <span class="sd">            boot port, allocation controller</span>
@@ -676,9 +695,10 @@
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;spalloc_server&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;SpallocAllocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
-                <span class="k">return</span> <span class="n">spalloc_allocator</span><span class="p">()</span>
+                <span class="k">return</span> <span class="n">spalloc_allocator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__bearer_token</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;remote_spinnaker_url&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;HBPAllocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
+                <span class="c1"># TODO: Would passing the bearer token to this ever make sense?</span>
                 <span class="k">return</span> <span class="n">hbp_allocator</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_machine_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">):</span>
@@ -713,9 +733,10 @@
         <span class="k">elif</span> <span class="n">allocator_data</span><span class="p">:</span>
             <span class="p">(</span><span class="n">ipaddress</span><span class="p">,</span> <span class="n">board_version</span><span class="p">,</span> <span class="n">bmp_details</span><span class="p">,</span>
              <span class="n">reset_machine</span><span class="p">,</span> <span class="n">auto_detect_bmp</span><span class="p">,</span> <span class="n">scamp_connection_data</span><span class="p">,</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span>
-             <span class="p">)</span> <span class="o">=</span> <span class="n">allocator_data</span>
+             <span class="n">machine_allocation_controller</span><span class="p">)</span> <span class="o">=</span> <span class="n">allocator_data</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_ipaddress</span><span class="p">(</span><span class="n">ipaddress</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_allocation_controller</span><span class="p">(</span>
+                <span class="n">machine_allocation_controller</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -2006,8 +2027,7 @@
                 <span class="k">return</span> <span class="p">[]</span>
 
             <span class="c1"># TODO runtime is None</span>
-            <span class="n">power_used</span> <span class="o">=</span> <span class="n">compute_energy_used</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="p">)</span>
+            <span class="n">power_used</span> <span class="o">=</span> <span class="n">compute_energy_used</span><span class="p">()</span>
 
             <span class="n">energy_provenance_reporter</span><span class="p">(</span><span class="n">power_used</span><span class="p">)</span>
 
@@ -2384,9 +2404,9 @@
                     <span class="n">router_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">router_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__close_allocation_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_allocation_controller</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_allocation_controller</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_allocation_controller</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>

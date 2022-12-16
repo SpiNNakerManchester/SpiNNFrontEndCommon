@@ -57,6 +57,10 @@
 <li class="toctree-l2"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#module-spinn_front_end_common.abstract_models.impl">Module contents</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController.close"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController.create_transceiver"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.create_transceiver()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_connection"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.open_eieio_connection()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_listener"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.open_eieio_listener()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_sdp_connection"><code class="docutils literal notranslate"><span class="pre">MachineAllocationController.open_sdp_connection()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineDataSpecableVertex"><code class="docutils literal notranslate"><span class="pre">MachineDataSpecableVertex</span></code></a><ul>
@@ -163,6 +167,19 @@ All Vertices and all edges in the original graph
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.create_transceiver">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_transceiver</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.create_transceiver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.create_transceiver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a transceiver for talking to the allocated machine, and
+make sure everything is ready for use (i.e. boot and discover
+connections if needed).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extend_allocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_total_run_time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.extend_allocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extend the allocation of the machine from the original run time.</p>
@@ -170,6 +187,66 @@ All Vertices and all edges in the original graph
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new_total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The total run time that is now required starting from when the
 machine was first allocated</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open_eieio_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.open_eieio_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a connection to a specific ethernet chip for EIEIO. Caller will
+have to arrange for SpiNNaker to pay attention to the connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip x location</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip y location</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.EIEIOConnection" title="(in SpiNNMan v6.0)"><em>EIEIOConnection</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open_eieio_listener</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.open_eieio_listener"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open an unbound EIEIO connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.EIEIOConnection" title="(in SpiNNMan v6.0)"><em>EIEIOConnection</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">open_sdp_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">udp_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17893</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/abstract_machine_allocation_controller.html#AbstractMachineAllocationController.open_sdp_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open a connection to a specific ethernet chip. Caller will have to
+arrange for SpiNNaker to pay attention to the connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip x location</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip y location</p></li>
+<li><p><strong>udp_port</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the UDP port on the chip to connect to; connecting to a non-SCP
+port will result in a connection that can’t easily be configured.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.SDPConnection" title="(in SpiNNMan v6.0)"><em>SDPConnection</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.AbstractMachineAllocationController.proxying">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">proxying</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.proxying" title="Permalink to this definition">¶</a></dt>
+<dd><p>Whether this is a proxying connection. False unless overridden.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -498,7 +575,12 @@ and keys for a given partition.</p>
 </li>
 <li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.close()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.create_transceiver"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.create_transceiver()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.extend_allocation()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.open_eieio_connection()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.open_eieio_listener()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.open_sdp_connection()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.proxying"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.proxying</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine"><code class="docutils literal notranslate"><span class="pre">AbstractMachineAllocationController.where_is_machine()</span></code></a></li>
 </ul>
 </li>
