@@ -18,6 +18,7 @@ import logging
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
+from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .data_row_writer import DataRowWriter
@@ -446,3 +447,18 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: DataRowWriter
         """
         return DataRowWriter(x, y, p, self)
+
+    def write_session_credentials_to_db(self):
+        """ Write Spalloc session credentials to the database if in use
+        """
+        # pylint: disable=protected-access
+        if not FecDataView.has_allocation_controller():
+            return
+        mac = FecDataView.get_allocation_controller()
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't check that because of import circularity.
+            job = mac._job
+            if isinstance(job, SpallocJob):
+                with self.transaction() as cur:
+                    job._write_session_credentials_to_db(cur)
