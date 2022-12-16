@@ -50,16 +50,16 @@ def database_interface(runtime):
     return None
 
 
-def _write_to_db(
-        writer, runtime):
+def _write_to_db(writer, runtime):
     """
+    :param DatabaseWriter writer:
     :param int runtime:
     """
-    # pylint: disable=too-many-arguments
 
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
         w.add_system_params(runtime)
+        w.add_proxy_configuration()
         p.update()
         w.add_machine_objects()
         p.update()

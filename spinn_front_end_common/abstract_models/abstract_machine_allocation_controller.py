@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinnman.constants import SCP_SCAMP_PORT
 
 
 class AbstractMachineAllocationController(object, metaclass=AbstractBase):
@@ -46,3 +47,56 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         :return: (cabinet, frame, board)
         :rtype: tuple(int,int,int)
         """
+
+    @abstractmethod
+    def create_transceiver(self):
+        """
+        Create a transceiver for talking to the allocated machine, and
+        make sure everything is ready for use (i.e. boot and discover
+        connections if needed).
+
+        :rtype: ~spinnman.transceiver.Transceiver
+        """
+
+    @abstractmethod
+    def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
+        """
+        Open a connection to a specific ethernet chip. Caller will have to
+        arrange for SpiNNaker to pay attention to the connection.
+
+        :param int chip_x: ethernet chip x location
+        :param int chip_y: ethernet chip y location
+        :param int udp_port:
+            the UDP port on the chip to connect to; connecting to a non-SCP
+            port will result in a connection that can't easily be configured.
+        :rtype: ~spinnman.connections.udp_packet_connections.SDPConnection
+        """
+
+    @abstractmethod
+    def open_eieio_connection(self, chip_x, chip_y):
+        """
+        Open a connection to a specific ethernet chip for EIEIO. Caller will
+        have to arrange for SpiNNaker to pay attention to the connection.
+
+        :param int chip_x: ethernet chip x location
+        :param int chip_y: ethernet chip y location
+
+        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
+        """
+
+    @abstractmethod
+    def open_eieio_listener(self):
+        """
+        Open an unbound EIEIO connection.
+
+        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
+        """
+
+    @property
+    def proxying(self):
+        """
+        Whether this is a proxying connection. False unless overridden.
+
+        :rtype: bool
+        """
+        return False

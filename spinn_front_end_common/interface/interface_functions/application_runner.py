@@ -99,12 +99,8 @@ class _ApplicationRunner(object):
             logger.info("Application is set to run forever; exiting")
         else:
             # Wait for the application to finish
-            try:
-                self._run_wait(
-                    run_until_complete, runtime, time_threshold)
-            finally:
-                # Stop the buffer manager after run
-                buffer_manager.stop()
+            self._run_wait(
+                run_until_complete, runtime, time_threshold)
 
             # Send stop notification to external applications
             notification_interface.send_stop_pause_notification()
