@@ -80,20 +80,21 @@ static inline void _entry(const entry_t* entry, int index) {
 //! \param[in] left: The index of the first route to consider.
 //! \param[in] index: The index of the second route to consider.
 //! \return True if the entries were merged
-static inline bool find_merge(entry_t *left, entry_t *index, entry_t *merged) {
+static inline bool find_merge(int left, int index) {
     const entry_t *entry1 = routing_table_get_entry(left);
     const entry_t *entry2 = routing_table_get_entry(index);
-    *merged = merge(entry1, entry2);
+    const entry_t merged = merge(entry1, entry2);
 
     for (int check = remaining_index;
             check < routing_table_get_n_entries();
             check++) {
         const entry_t *check_entry =
                 routing_table_get_entry(check);
-        if (key_mask_intersect(check_entry->key_mask, merged->key_mask)) {
+        if (key_mask_intersect(check_entry->key_mask, merged.key_mask)) {
             return false;
         }
     }
+    routing_table_put_entry(&merged, left);
     return true;
 }
 
@@ -101,7 +102,6 @@ static inline bool find_merge(entry_t *left, entry_t *index, entry_t *merged) {
 //! \param[in] left: The start of the section of table to compress
 //! \param[in] right: The end of the section of table to compress
 static inline void compress_by_route(int left, int right) {
-    int orig_right
     while (left < right) {
         bool merged = false;
 
