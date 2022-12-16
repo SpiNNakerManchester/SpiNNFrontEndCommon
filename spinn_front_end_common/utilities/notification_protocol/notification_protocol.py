@@ -14,13 +14,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
-    DatabaseConfirmation, NotificationProtocolPauseStop,
+    NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
@@ -32,7 +32,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 class NotificationProtocol(AbstractContextManager):
     """ The protocol which hand shakes with external devices about the\
-        database and starting execution
+        database and starting execution.
+
+    The messages sent by this are received by instances of
+    :py:class:`DatabaseConnection` (and its subclasses). They are not routed
+    via SpiNNaker.
     """
     __slots__ = [
         "__database_message_connections",
@@ -49,12 +53,15 @@ class NotificationProtocol(AbstractContextManager):
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
-        self.__database_message_connections = list()
-        for socket_address in FecDataView.iterate_database_socket_addresses():
-            self.__database_message_connections.append(EIEIOConnection(
+        # These connections are not used to talk to SpiNNaker boards
+        # but rather to code running on the current host computer
+        self.__database_message_connections = [
+            EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
-                remote_port=socket_address.notify_port_no))
+                remote_port=socket_address.notify_port_no)
+            for socket_address in
+            FecDataView.iterate_database_socket_addresses()]
 
     def wait_for_confirmation(self):
         """ If asked to wait for confirmation, waits for all external systems\
@@ -111,13 +118,11 @@ class NotificationProtocol(AbstractContextManager):
     def send_read_notification(self):
         """ Sends notifications to all devices which have expressed an\
             interest in when the database has been written
-
-        :param str database_path: the path to the database file
         """
-        notification_thread = self.__wait_pool.submit(
+        notification_task = self.__wait_pool.submit(
             self._send_read_notification)
         if self.__wait_for_read_confirmation:
-            self.__wait_futures.append(notification_thread)
+            self.__wait_futures.append(notification_task)
 
     def _send_read_notification(self):
         """ Sends notifications to a list of socket addresses that the\
@@ -143,7 +148,7 @@ class NotificationProtocol(AbstractContextManager):
                 "via the command packet, please set the file path manually "
                 "and set the .cfg parameter [Database] send_file_path to "
                 "False")
-        message = DatabaseConfirmation(database_path)
+        message = NotificationProtocolDatabaseLocation(database_path)
 
         # Send command and wait for response
         logger.info(
@@ -163,18 +168,18 @@ class NotificationProtocol(AbstractContextManager):
         self.__sent_visualisation_confirmation = True
 
         # if the system needs to wait, try receiving a packet back
-        for c in self.__database_message_connections:
-            try:
-                if self.__wait_for_read_confirmation:
+        if self.__wait_for_read_confirmation:
+            for c in self.__database_message_connections:
+                try:
                     c.receive_eieio_message()
                     logger.info(
                         "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
-            except Exception:  # pylint: disable=broad-except
-                logger.warning(
-                    "*** Failed to receive notification from external "
-                    "application on {}:{} about the database ***",
-                    c.remote_ip_address, c.remote_port, exc_info=True)
+                except Exception:  # pylint: disable=broad-except
+                    logger.warning(
+                        "*** Failed to receive notification from external "
+                        "application on {}:{} about the database ***",
+                        c.remote_ip_address, c.remote_port, exc_info=True)
 
     @property
     def sent_visualisation_confirmation(self):
@@ -185,9 +190,11 @@ class NotificationProtocol(AbstractContextManager):
         return self.__sent_visualisation_confirmation
 
     def close(self):
-        """ Closes the thread pool
+        """ Closes the thread pool and the connections.
         """
         if self.__wait_pool:
             self.__wait_pool.shutdown()
             self.__wait_futures = list()
             self.__wait_pool = None
+        for c in self.__database_message_connections:
+            c.close()

@@ -271,7 +271,6 @@ static inline uint16_t calculate_eieio_packet_command_size(
     uint16_t command_number = data_hdr_value & ~0xC000;
 
     switch (command_number) {
-    case DATABASE_CONFIRMATION:
     case EVENT_PADDING:
     case EVENT_STOP_COMMANDS:
     case STOP_SENDING_REQUESTS:
