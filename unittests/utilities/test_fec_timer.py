@@ -38,7 +38,7 @@ class MockSimulator(object):
 
 class TestFecTimer(unittest.TestCase):
 
-    def setUp(cls):
+    def setUp(self):
         unittest_setup()
         FecTimer.setup(MockSimulator())
 
@@ -57,7 +57,7 @@ class TestFecTimer(unittest.TestCase):
         with LogCapture() as lc:
             try:
                 with FecTimer("oops", TimerWork.OTHER):
-                    1/0
+                    1/0  # pylint: disable=pointless-statement
             except ZeroDivisionError:
                 pass
             found = False
