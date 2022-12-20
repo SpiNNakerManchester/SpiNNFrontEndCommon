@@ -263,7 +263,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                            "access-token-service/access-token")
             headers = {"Authorization": f"Token {jupyter_token}"}
             response = requests.get(jupyter_url, headers=headers)
-            return response.json().get('access_token')
+            return response.json().get('access_token', timeout=10)
 
         # Try a simple environment variable, or None if that doesn't exist
         return os.getenv("OIDC_BEARER_TOKEN")
