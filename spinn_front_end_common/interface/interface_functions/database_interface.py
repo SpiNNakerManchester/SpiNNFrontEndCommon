@@ -83,6 +83,7 @@ def _write_to_db(writer, runtime):
             machine_vertices.update(
                 (m_vertex, part_id)
                 for vertex, part_id in live_vertices
-                for m_vertex in vertex.machine_vertices)
+                for m_vertex in vertex.splitter.get_out_going_vertices(
+                    part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()
