@@ -82,9 +82,6 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         "_sent_messages",
 
-        # storage area for received data from cores
-        "_db",
-
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
 
@@ -113,11 +110,9 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages = dict()
 
-        # storage area for received data from cores
-        self._db = BufferDatabase()
-
         if FecDataView.has_java_caller():
-            self._db.write_session_credentials_to_db()
+            with BufferDatabase() as db:
+                db.write_session_credentials_to_db()
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors()
@@ -200,8 +195,9 @@ class BufferManager(object):
             data files.
         """
         #
-        self._db.reset()
-        self._db.write_session_credentials_to_db()
+        with BufferDatabase() as db:
+
+            db.write_session_credentials_to_db()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -405,9 +401,6 @@ class BufferManager(object):
                 "vertex {} does not implement AbstractReceiveBuffersToHost "
                 "so no data read".format(placement.vertex))
 
-        # data flush has been completed - return appropriate data
-        return self._db.get_region_data(
-            placement.x, placement.y, placement.p, recording_region_id)
         # data flush has been completed - return appropriate data
         with BufferDatabase() as db:
             return db.get_region_data(
