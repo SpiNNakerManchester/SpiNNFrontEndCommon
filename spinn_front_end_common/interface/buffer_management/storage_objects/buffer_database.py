@@ -15,7 +15,6 @@
 
 import sqlite3
 import time
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
