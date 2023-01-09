@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -57,12 +54,12 @@
 
 
 <span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A reader for the database.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; A reader for the database.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;__job&quot;</span><span class="p">,</span> <span class="s2">&quot;__looked_for_job&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str database_path: The path to the database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_path</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text_factory</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
@@ -79,7 +76,7 @@
         <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="kc">None</span> <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">row</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DatabaseReader.get_job"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_job">[docs]</a>    <span class="k">def</span> <span class="nf">get_job</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the job described in the database. If no job exists, direct</span>
 <span class="sd">        connection to boards should be used.</span>
 
@@ -94,7 +91,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__job</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_key_to_atom_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get a mapping of event key to atom ID for a given vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a mapping of event key to atom ID for a given vertex</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: dictionary of atom IDs indexed by event key</span>
@@ -104,13 +101,13 @@
             <span class="k">return</span> <span class="p">{</span>
                 <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT * FROM label_event_atom_view</span>
 <span class="sd">                    WHERE label = ?</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_atom_id_to_key_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_id_to_key_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get a mapping of atom ID to event key for a given vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a mapping of atom ID to event key for a given vertex</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: dictionary of event keys indexed by atom ID</span>
@@ -120,13 +117,13 @@
             <span class="k">return</span> <span class="p">{</span>
                 <span class="n">row</span><span class="p">[</span><span class="s2">&quot;atom&quot;</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;event&quot;</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT * FROM label_event_atom_view</span>
 <span class="sd">                    WHERE label = ?</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
 <span class="sd">            stripped from the output from a vertex</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
@@ -136,7 +133,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__r2t</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                SELECT * FROM app_output_tag_view</span>
 <span class="sd">                WHERE pre_vertex_label = ?</span>
 <span class="sd">                    AND post_vertex_label LIKE ?</span>
@@ -145,14 +142,14 @@
             <span class="s2">&quot;chip_x&quot;</span><span class="p">,</span> <span class="s2">&quot;chip_y&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_configuration_parameter_value"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>
 
 <span class="sd">        :param str parameter_name: The name of the parameter</span>
 <span class="sd">        :return: The value of the parameter</span>
 <span class="sd">        :rtype: float or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            SELECT value FROM configuration_parameters</span>
 <span class="sd">            WHERE parameter_id = ?</span>
 <span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">)</span>
@@ -163,7 +160,7 @@
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="DatabaseReader.get_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the placements of an application vertex with a given label</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the placements of an application vertex with a given label</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: A list of x, y, p coordinates of the vertices</span>
@@ -172,13 +169,13 @@
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">[</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__xyp</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT x, y, p FROM application_vertex_placements</span>
 <span class="sd">                    WHERE vertex_label = ?</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))]</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_ip_address"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get an IP address to contact a chip</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get an IP address to contact a chip</span>
 
 <span class="sd">        :param int x: The x-coordinate of the chip</span>
 <span class="sd">        :param int y: The y-coordinate of the chip</span>
@@ -186,7 +183,7 @@
 <span class="sd">        :rtype: str or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exec_one</span><span class="p">(</span>
-            <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            SELECT eth_ip_address FROM chip_eth_info</span>
 <span class="sd">            WHERE x = ? AND y = ? OR x = 0 AND y = 0</span>
 <span class="sd">            ORDER BY x DESC</span>
@@ -231,7 +228,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

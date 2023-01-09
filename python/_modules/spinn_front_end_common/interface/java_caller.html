@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -74,7 +71,7 @@
 
 
 <div class="viewcode-block" id="JavaCaller"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller">[docs]</a><span class="k">class</span> <span class="nc">JavaCaller</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Support class that holds all the stuff for running stuff in Java.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Support class that holds all the stuff for running stuff in Java.</span>
 <span class="sd">        This includes the work of preparing data for transmitting to Java and\</span>
 <span class="sd">        back.</span>
 
@@ -107,7 +104,7 @@
     <span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Creates a java caller and checks the user/config parameters.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates a java caller and checks the user/config parameters.</span>
 
 <span class="sd">        :raise ConfigurationException: if simple parameter checking fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -182,7 +179,7 @@
                     <span class="sa">f</span><span class="s2">&quot;No file found at java_jar_path: </span><span class="si">{</span><span class="n">java_jar_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="JavaCaller.set_advanced_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_advanced_monitors">[docs]</a>    <span class="k">def</span> <span class="nf">set_advanced_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
@@ -207,7 +204,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_chipxy_by_ethernet</span><span class="p">[</span><span class="n">ethernet</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chip_xy</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_machine_json</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Converts the machine in this class to JSON.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Converts the machine in this class to JSON.</span>
 
 <span class="sd">        :return: the name of the file containing the JSON</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -216,7 +213,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span>
 
 <div class="viewcode-block" id="JavaCaller.set_report_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder">[docs]</a>    <span class="k">def</span> <span class="nf">set_report_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Passes the database file in.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Passes the database file in.</span>
 
 <span class="sd">        :param str report_folder:</span>
 <span class="sd">            Path to directory with SQLite databases and into which java will</span>
@@ -225,7 +222,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">report_folder</span></div>
 
 <div class="viewcode-block" id="JavaCaller.set_placements"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">[docs]</a>    <span class="k">def</span> <span class="nf">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Passes in the placements leaving this class to decide pass it to</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Passes in the placements leaving this class to decide pass it to</span>
 <span class="sd">            Java.</span>
 
 <span class="sd">        Currently the extra information extracted is recording region base</span>
@@ -249,7 +246,7 @@
                 <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_json_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -275,7 +272,7 @@
         <span class="k">return</span> <span class="n">json_placement</span>
 
     <span class="k">def</span> <span class="nf">_json_iptag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iptag</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.tags.IPTag iptag:</span>
 <span class="sd">        :rtype: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -292,7 +289,7 @@
         <span class="k">return</span> <span class="n">json_tag</span>
 
     <span class="k">def</span> <span class="nf">_placements_grouped</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements recording_placementss:</span>
 <span class="sd">        :rtype: dict(tuple(int,int),dict(tuple(int,int),</span>
 <span class="sd">            ~pacman.model.placements.Placement))</span>
@@ -308,7 +305,7 @@
         <span class="k">return</span> <span class="n">by_ethernet</span>
 
     <span class="k">def</span> <span class="nf">_write_gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements used_placements:</span>
 <span class="sd">            placements that are being used. May not eb all placements</span>
 <span class="sd">        :param str path:</span>
@@ -349,7 +346,7 @@
         <span class="k">return</span> <span class="n">path</span>
 
     <span class="k">def</span> <span class="nf">_write_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            Placements that are being used. May not be all placements</span>
 <span class="sd">        :param str path:</span>
@@ -370,7 +367,7 @@
         <span class="k">return</span> <span class="n">path</span>
 
     <span class="k">def</span> <span class="nf">_run_java</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Does the actual running of JavaSpiNNaker. Arguments are those that</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Does the actual running of JavaSpiNNaker. Arguments are those that</span>
 <span class="sd">            will be processed by the `main` method on the Java side.</span>
 
 <span class="sd">        :rtype: int</span>
@@ -384,7 +381,7 @@
         <span class="k">return</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
 <div class="viewcode-block" id="JavaCaller.get_all_data"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.get_all_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Gets all the data from the previously set placements</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Gets all the data from the previously set placements</span>
 <span class="sd">            and put these in the previously set database.</span>
 
 <span class="sd">        :raises PacmanExternalAlgorithmFailedToCompleteException:</span>
@@ -408,7 +405,7 @@
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="JavaCaller.execute_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Writes all the data specs, uploading the result to the machine.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes all the data specs, uploading the result to the machine.</span>
 
 <span class="sd">        :raises PacmanExternalAlgorithmFailedToCompleteException:</span>
 <span class="sd">            On failure of the Java code.</span>
@@ -422,7 +419,7 @@
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="JavaCaller.execute_system_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_system_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Writes all the data specs for system cores,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes all the data specs for system cores,</span>
 <span class="sd">            uploading the result to the machine.</span>
 
 <span class="sd">        :raises PacmanExternalAlgorithmFailedToCompleteException:</span>
@@ -437,7 +434,7 @@
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="JavaCaller.execute_app_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_app_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_monitors</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Writes all the data specs for application cores,</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes all the data specs for application cores,</span>
 <span class="sd">            uploading the result to the machine.</span>
 
 <span class="sd">        .. note:</span>
@@ -498,7 +495,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

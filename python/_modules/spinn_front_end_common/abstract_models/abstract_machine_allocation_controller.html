@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -58,14 +55,14 @@
 
 
 <span class="k">class</span> <span class="nc">AbstractMachineAllocationController</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; An object that controls the allocation of a machine</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; An object that controls the allocation of a machine</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.extend_allocation"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.extend_allocation">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">extend_allocation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_total_run_time</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Extend the allocation of the machine from the original run time.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Extend the allocation of the machine from the original run time.</span>
 
 <span class="sd">        :param float new_total_run_time:</span>
 <span class="sd">            The total run time that is now required starting from when the</span>
@@ -74,12 +71,12 @@
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.close"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.close">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Indicate that the use of the machine is complete.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Indicate that the use of the machine is complete.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.where_is_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.where_is_machine">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">where_is_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Locates and returns cabinet, frame, board for a given chip in a\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Locates and returns cabinet, frame, board for a given chip in a\</span>
 <span class="sd">            machine allocated to this job.</span>
 
 <span class="sd">        :param int chip_x: chip x location</span>
@@ -90,7 +87,7 @@
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.create_transceiver"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.create_transceiver">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">create_transceiver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a transceiver for talking to the allocated machine, and</span>
 <span class="sd">        make sure everything is ready for use (i.e. boot and discover</span>
 <span class="sd">        connections if needed).</span>
@@ -100,7 +97,7 @@
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_sdp_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_sdp_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">udp_port</span><span class="o">=</span><span class="n">SCP_SCAMP_PORT</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open a connection to a specific ethernet chip. Caller will have to</span>
 <span class="sd">        arrange for SpiNNaker to pay attention to the connection.</span>
 
@@ -114,7 +111,7 @@
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_eieio_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open a connection to a specific ethernet chip for EIEIO. Caller will</span>
 <span class="sd">        have to arrange for SpiNNaker to pay attention to the connection.</span>
 
@@ -126,7 +123,7 @@
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_listener"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_eieio_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Open an unbound EIEIO connection.</span>
 
 <span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
@@ -134,7 +131,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">proxying</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Whether this is a proxying connection. False unless overridden.</span>
 
 <span class="sd">        :rtype: bool</span>
@@ -178,7 +175,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

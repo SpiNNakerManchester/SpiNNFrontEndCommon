@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -57,7 +54,7 @@
 
 
 <span class="k">class</span> <span class="nc">PowerUsed</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Describes the power used by a simulation.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Describes the power used by a simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -106,7 +103,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_chips</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The total number of chips used.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The total number of chips used.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -118,7 +115,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The total number of cores used, including for SCAMP.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The total number of cores used, including for SCAMP.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -130,7 +127,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_fpgas</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The total number of FPGAs used.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The total number of FPGAs used.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -142,7 +139,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">num_frames</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The total number of frames used.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The total number of frames used.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -154,7 +151,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken in total, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken in total, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -164,7 +161,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">booted_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken when the machine is booted, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken when the machine is booted, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -173,7 +170,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">exec_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken by active simulation running, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken by active simulation running, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -185,7 +182,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mapping_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken by the mapping phase, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken by the mapping phase, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -197,7 +194,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_gen_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken by data generation phase, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken by data generation phase, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -209,7 +206,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">loading_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken by data loading, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken by data loading, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -221,7 +218,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">saving_time_secs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Time taken by data extraction, in seconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Time taken by data extraction, in seconds.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -233,7 +230,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">total_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Total of all energy costs, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Total of all energy costs, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -245,7 +242,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">chip_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used by all SpiNNaker chips during active simulation\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used by all SpiNNaker chips during active simulation\</span>
 <span class="sd">            running, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
@@ -258,7 +255,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fpga_total_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used by all FPGAs in total, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used by all FPGAs in total, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -270,7 +267,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fpga_exec_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used by all FPGAs during active simulation running, in\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used by all FPGAs during active simulation running, in\</span>
 <span class="sd">            Joules. This is *included* in the total FPGA energy.</span>
 
 <span class="sd">        :rtype: float</span>
@@ -283,7 +280,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">baseline_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Baseline/idle energy used, in Joules. This is used by things like\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Baseline/idle energy used, in Joules. This is used by things like\</span>
 <span class="sd">            the frames the SpiNNaker boards are held in, the cooling system,\</span>
 <span class="sd">            etc.</span>
 
@@ -297,7 +294,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">packet_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used by packet transmission, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used by packet transmission, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -309,7 +306,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">mapping_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used during the mapping phase, in Joules. Assumes that\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used during the mapping phase, in Joules. Assumes that\</span>
 <span class="sd">            the SpiNNaker system has been shut down.</span>
 
 <span class="sd">        :rtype: float</span>
@@ -322,7 +319,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_gen_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used during the data generation phase, in Joules. Assumes\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used during the data generation phase, in Joules. Assumes\</span>
 <span class="sd">            that the SpiNNaker system has been shut down.</span>
 
 <span class="sd">        :rtype: float</span>
@@ -335,7 +332,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">loading_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used during data loading, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used during data loading, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -347,7 +344,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">saving_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used during data extraction, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used during data extraction, in Joules.</span>
 
 <span class="sd">        :rtype: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -358,7 +355,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__saving_energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PowerUsed.get_router_active_energy_joules"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_router_active_energy_joules">[docs]</a>    <span class="k">def</span> <span class="nf">get_router_active_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular router, in \</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular router, in \</span>
 <span class="sd">            Joules.</span>
 
 <span class="sd">        Unused routers always report 0.0 for this.</span>
@@ -370,7 +367,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PowerUsed.add_router_active_energy"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_router_active_energy">[docs]</a>    <span class="k">def</span> <span class="nf">add_router_active_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">joules</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds energy for a particular router. It can be called multiple\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Adds energy for a particular router. It can be called multiple\</span>
 <span class="sd">            times per router.</span>
 
 <span class="sd">        Only intended to be used during construction of this object.</span>
@@ -383,7 +380,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">active_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the routers that can report\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the routers that can report\</span>
 <span class="sd">            active energy usage.</span>
 
 <span class="sd">        :rtype: iterable(tuple(int, int))</span>
@@ -391,7 +388,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__router_energy</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
 <div class="viewcode-block" id="PowerUsed.get_core_active_energy_joules"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_core_active_energy_joules">[docs]</a>    <span class="k">def</span> <span class="nf">get_core_active_energy_joules</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular core, in Joules.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy used (above idle baseline) by a particular core, in Joules.</span>
 
 <span class="sd">        Unused cores always report 0.0 for this.</span>
 
@@ -403,7 +400,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__core_energy</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PowerUsed.add_core_active_energy"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_core_active_energy">[docs]</a>    <span class="k">def</span> <span class="nf">add_core_active_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">joules</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds energy for a particular core. It can be called multiple\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Adds energy for a particular core. It can be called multiple\</span>
 <span class="sd">            times per core.</span>
 
 <span class="sd">        Only intended to be used during construction of this object.</span>
@@ -417,7 +414,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">active_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the cores that can report active\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Enumeration of the coordinates of the cores that can report active\</span>
 <span class="sd">            energy usage.</span>
 
 <span class="sd">        :rtype: iterable(tuple(int, int, int))</span>
@@ -461,7 +458,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

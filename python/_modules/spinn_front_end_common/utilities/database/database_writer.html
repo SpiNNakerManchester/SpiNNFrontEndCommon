@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -74,7 +71,7 @@
 
 
 <span class="k">class</span> <span class="nc">DatabaseWriter</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; The interface for the database system for main front ends.\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; The interface for the database system for main front ends.\</span>
 <span class="sd">        Any special tables needed from a front end should be done\</span>
 <span class="sd">        by sub classes of this interface.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -108,7 +105,7 @@
 
 <div class="viewcode-block" id="DatabaseWriter.auto_detect_database"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.auto_detect_database">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">auto_detect_database</span><span class="p">():</span>
-        <span class="sd">&quot;&quot;&quot; Auto detects if there is a need to activate the database system</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Auto detects if there is a need to activate the database system</span>
 
 <span class="sd">        :return: whether the database is needed for the application</span>
 <span class="sd">        :rtype: bool</span>
@@ -123,13 +120,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">database_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_database_path</span>
 
     <span class="k">def</span> <span class="nf">__insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cur</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~sqlite3.Cursor cur:</span>
 <span class="sd">        :param str sql:</span>
 <span class="sd">        :rtype: int</span>
@@ -143,20 +140,20 @@
             <span class="k">raise</span>
 
 <div class="viewcode-block" id="DatabaseWriter.add_machine_objects"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_machine_objects">[docs]</a>    <span class="k">def</span> <span class="nf">add_machine_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the machine object into the database</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Store the machine object into the database</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__machine_to_id</span><span class="p">[</span><span class="n">machine</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__insert</span><span class="p">(</span>
                 <span class="n">cur</span><span class="p">,</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO Machine_layout(</span>
 <span class="sd">                    x_dimension, y_dimension)</span>
 <span class="sd">                VALUES(?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">machine</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO Machine_chip(</span>
 <span class="sd">                    no_processors, chip_x, chip_y, machine_id,</span>
 <span class="sd">                    ip_address, nearest_ethernet_x, nearest_ethernet_y)</span>
@@ -168,7 +165,7 @@
                     <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_application_vertices"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_application_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">add_application_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Stores the main application graph description (vertices, edges).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Stores the main application graph description (vertices, edges).</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
@@ -183,7 +180,7 @@
                     <span class="n">m_vertex_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__add_machine_vertex</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__insert</span><span class="p">(</span>
                         <span class="n">cur</span><span class="p">,</span>
-                        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                        INSERT INTO graph_mapper_vertex (</span>
 <span class="sd">                            application_vertex_id, machine_vertex_id)</span>
 <span class="sd">                        VALUES(?, ?)</span>
@@ -198,13 +195,13 @@
         <span class="k">return</span> <span class="n">m_vertex_id</span>
 
 <div class="viewcode-block" id="DatabaseWriter.add_system_params"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_system_params">[docs]</a>    <span class="k">def</span> <span class="nf">add_system_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Write system params into the database</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write system params into the database</span>
 
 <span class="sd">        :param int runtime: the amount of time the application is to run for</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO configuration_parameters (</span>
 <span class="sd">                    parameter_id, value)</span>
 <span class="sd">                VALUES (?, ?)</span>
@@ -218,7 +215,7 @@
                     <span class="p">(</span><span class="s2">&quot;app_id&quot;</span><span class="p">,</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">())])</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_proxy_configuration"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_proxy_configuration">[docs]</a>    <span class="k">def</span> <span class="nf">add_proxy_configuration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Store the proxy configuration.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Store the proxy configuration.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=protected-access</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
@@ -233,7 +230,7 @@
                     <span class="n">job</span><span class="o">.</span><span class="n">_write_session_credentials_to_db</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_placements">[docs]</a>    <span class="k">def</span> <span class="nf">add_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds the placements objects into the database</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Adds the placements objects into the database</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="c1"># Make sure machine vertices are represented</span>
@@ -242,7 +239,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">__add_machine_vertex</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">)</span>
             <span class="c1"># add records</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO Placements(</span>
 <span class="sd">                    vertex_id, chip_x, chip_y, chip_p, machine_id)</span>
 <span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
@@ -252,13 +249,13 @@
                     <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_tags"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_tags">[docs]</a>    <span class="k">def</span> <span class="nf">add_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds the tags into the database</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Adds the tags into the database</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tags</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO IP_tags(</span>
 <span class="sd">                    vertex_id, tag, board_address, ip_address, port,</span>
 <span class="sd">                    strip_sdp)</span>
@@ -269,7 +266,7 @@
                     <span class="k">for</span> <span class="n">ipt</span><span class="p">,</span> <span class="n">vert</span> <span class="ow">in</span> <span class="n">tags</span><span class="o">.</span><span class="n">ip_tags_vertices</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.create_atom_to_event_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.create_atom_to_event_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">create_atom_to_event_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_vertices</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
         <span class="c1"># This could happen if there are no LPGs</span>
@@ -293,7 +290,7 @@
                         <span class="n">atom_keys</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">start</span><span class="p">)]</span>
                 <span class="n">m_vertex_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__vertex_to_id</span><span class="p">[</span><span class="n">m_vertex</span><span class="p">]</span>
                 <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    INSERT INTO event_to_atom_mapping(</span>
 <span class="sd">                        vertex_id, event_id, atom_id)</span>
 <span class="sd">                    VALUES (?, ?, ?)</span>
@@ -301,7 +298,7 @@
                 <span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseWriter.add_lpg_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseWriter.add_lpg_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">add_lpg_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Add mapping from machine vertex to LPG machine vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add mapping from machine vertex to LPG machine vertex</span>
 
 <span class="sd">        :return: A list of (source vertex, partition id)</span>
 <span class="sd">        :rtype: list(MachineVertex, str)</span>
@@ -314,7 +311,7 @@
 
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
-                <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO m_vertex_to_lpg_vertex(</span>
 <span class="sd">                    pre_vertex_id, partition_id, post_vertex_id)</span>
 <span class="sd">                VALUES(?, ?, ?)</span>
@@ -361,7 +358,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

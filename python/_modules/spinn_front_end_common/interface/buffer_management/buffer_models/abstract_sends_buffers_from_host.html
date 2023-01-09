@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -60,7 +57,7 @@
 
 <span class="nd">@require_subclass</span><span class="p">(</span><span class="n">MachineVertex</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">AbstractSendsBuffersFromHost</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Interface to an object that sends buffers of keys to be\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Interface to an object that sends buffers of keys to be\</span>
 <span class="sd">        transmitted at given timestamps in the simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -68,14 +65,14 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.buffering_input"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.buffering_input">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">buffering_input</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Return True if the input of this vertex is to be buffered.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return True if the input of this vertex is to be buffered.</span>
 
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.get_regions"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_regions">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the set of regions for which there are keys to be sent</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the set of regions for which there are keys to be sent</span>
 
 <span class="sd">        :return: Iterable of region IDs</span>
 <span class="sd">        :rtype: iterable(int)</span>
@@ -83,7 +80,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.get_region_buffer_size"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_region_buffer_size">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_region_buffer_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the size of the buffer to be used in SDRAM on the machine\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the size of the buffer to be used in SDRAM on the machine\</span>
 <span class="sd">            for the region in bytes</span>
 
 <span class="sd">        :param int region: The region to get the buffer size of</span>
@@ -93,7 +90,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.is_next_timestamp"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_timestamp">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">is_next_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Determine if there is another timestamp with data to be sent</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if there is another timestamp with data to be sent</span>
 
 <span class="sd">        :param int region: The region to determine if there is more data for</span>
 <span class="sd">        :return: Whether there is more data</span>
@@ -102,7 +99,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.get_next_timestamp"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_timestamp">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_next_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the next timestamp at which there are still keys to be sent\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the next timestamp at which there are still keys to be sent\</span>
 <span class="sd">            for the given region</span>
 
 <span class="sd">        :param int region: The region to get the timestamp for</span>
@@ -112,7 +109,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.is_next_key"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_next_key">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">is_next_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Determine if there are still keys to be sent at the given\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if there are still keys to be sent at the given\</span>
 <span class="sd">            timestamp for the given region</span>
 
 <span class="sd">        :param int region: The region to determine if there are keys for</span>
@@ -124,7 +121,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.get_next_key"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.get_next_key">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_next_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the next key in the given region</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the next key in the given region</span>
 
 <span class="sd">        :param int region: The region to get the next key from</span>
 <span class="sd">        :return: The next key, or None if there are no more keys</span>
@@ -133,7 +130,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.is_empty"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.is_empty">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Return true if there are no spikes to be buffered for the\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return true if there are no spikes to be buffered for the\</span>
 <span class="sd">            specified region</span>
 
 <span class="sd">        :param int region: The region to get the next key from</span>
@@ -143,7 +140,7 @@
 
 <div class="viewcode-block" id="AbstractSendsBuffersFromHost.rewind"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.buffer_models.html#spinn_front_end_common.interface.buffer_management.buffer_models.AbstractSendsBuffersFromHost.rewind">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">rewind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Rewinds the internal buffer in preparation of re-sending\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Rewinds the internal buffer in preparation of re-sending\</span>
 <span class="sd">            the spikes</span>
 
 <span class="sd">        :param int region: The region to rewind</span>
@@ -186,7 +183,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

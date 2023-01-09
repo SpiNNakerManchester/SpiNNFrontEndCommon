@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
-    <script src="../../../../../_static/jquery.js"></script>
-    <script src="../../../../../_static/underscore.js"></script>
-    <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../../_static/doctools.js"></script>
     <script src="../../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
@@ -60,7 +57,7 @@
 
 
 <span class="k">class</span> <span class="nc">SetRouterTimeoutProcess</span><span class="p">(</span><span class="n">AbstractMultiConnectionProcess</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; How to send messages to set router timeouts. These messages need to be\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; How to send messages to set router timeouts. These messages need to be\</span>
 <span class="sd">        sent to cores running the extra monitor binary.</span>
 
 <span class="sd">    .. note::</span>
@@ -72,7 +69,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SetRouterTimeoutProcess.set_wait1_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The wait1 timeout is the time from when a packet is received to\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The wait1 timeout is the time from when a packet is received to\</span>
 <span class="sd">            when emergency routing becomes enabled.</span>
 
 <span class="sd">        :param int mantissa: Timeout mantissa (0 to 15)</span>
@@ -86,7 +83,7 @@
                     <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SetRouterTimeoutProcess.set_wait2_timeout"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.SetRouterTimeoutProcess.set_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">core_subsets</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The wait2 timeout is the time from when a packet has emergency\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The wait2 timeout is the time from when a packet has emergency\</span>
 <span class="sd">            routing enabled for it to when it is dropped.</span>
 
 <span class="sd">        :param int mantissa: Timeout mantissa (0 to 15)</span>
@@ -100,7 +97,7 @@
                     <span class="n">core_subset</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_set_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span> <span class="n">mantissa</span><span class="p">,</span> <span class="n">exponent</span><span class="p">,</span> <span class="n">wait</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Set a timeout for a router controlled by an extra monitor on a\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set a timeout for a router controlled by an extra monitor on a\</span>
 <span class="sd">            core. This is not a parallelised operation in order to aid\</span>
 <span class="sd">            debugging when it fails.</span>
 
@@ -153,7 +150,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -70,7 +67,7 @@
 
 
 <span class="k">class</span> <span class="nc">_FecDataModel</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Singleton data model</span>
 
 <span class="sd">    This class should not be accessed directly please use the DataView and</span>
@@ -138,7 +135,7 @@
         <span class="k">return</span> <span class="n">obj</span>
 
     <span class="k">def</span> <span class="nf">_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clears out all data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Can not be cleared during hard reset as previous runs data checked</span>
@@ -163,7 +160,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_hard_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clears out all data that should change after a reset and graph change</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer_manager</span> <span class="o">=</span> <span class="kc">None</span>
@@ -186,7 +183,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_clear_notification_protocol</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_soft_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Clears timing and other data that should changed every reset</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">=</span> <span class="mi">0</span>
@@ -205,7 +202,7 @@
 
 
 <span class="k">class</span> <span class="nc">FecDataView</span><span class="p">(</span><span class="n">PacmanDataView</span><span class="p">,</span> <span class="n">SpiNNManDataView</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adds the extra Methods to the View for spinn_front_end_commom level.</span>
 
 <span class="sd">    See UtilsDataView for a more detailed description.</span>
@@ -222,7 +219,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_current_run_timesteps"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_current_run_timesteps">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_current_run_timesteps</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The end of this or the previous do__run loop time in steps.</span>
 
 <span class="sd">        Will be zero if not yet run and not yet in the do_run_loop</span>
@@ -235,7 +232,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_current_run_time_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_current_run_time_ms">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_current_run_time_ms</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The end of this or the previous do__run loop time in ms.</span>
 
 <span class="sd">        Semantic sugar for current_run_timesteps * simulation_time_step_ms</span>
@@ -254,7 +251,7 @@
     <span class="c1"># _allocation_controller</span>
 <div class="viewcode-block" id="FecDataView.has_allocation_controller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_allocation_controller">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_allocation_controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reports if an AllocationController object has already been set</span>
 
 <span class="sd">        :return: True if and only if an AllocationController has been added and</span>
@@ -265,7 +262,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_allocation_controller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_allocation_controller">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_allocation_controller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the allocation controller if known</span>
 
 <span class="sd">        :rtype: AbstractMachineAllocationController</span>
@@ -280,7 +277,7 @@
     <span class="c1"># _buffer_manager</span>
 <div class="viewcode-block" id="FecDataView.has_buffer_manager"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_buffer_manager">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_buffer_manager</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reports if a BufferManager object has already been set</span>
 
 <span class="sd">        :return: True if and only if a Buffermanager has been added and not</span>
@@ -291,7 +288,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_buffer_manager"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_buffer_manager">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_buffer_manager</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the buffer manager if known</span>
 
 <span class="sd">        :rtype:</span>
@@ -306,7 +303,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_first_machine_time_step"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_first_machine_time_step">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_first_machine_time_step</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The start of this or the next do_run loop time in steps</span>
 
 <span class="sd">        Will be None if in run forever mode</span>
@@ -319,7 +316,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_max_run_time_steps"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_max_run_time_steps">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_max_run_time_steps</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the calculated longest time this or a future run loop could be</span>
 
 <span class="sd">        Mainly ued to indicate the number of timesteps the vertex can and</span>
@@ -338,7 +335,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_max_run_time_steps"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_max_run_time_steps">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_max_run_time_steps</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Indicates if max_run_time_steps is currently available</span>
 
 <span class="sd">        :rtype: bool</span>
@@ -349,7 +346,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_time_step"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_time_step">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_time_step</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check if any/all of the time_step values are known</span>
 
 <span class="sd">        True When all simulation/hardware_time_step methods are known</span>
@@ -362,7 +359,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_simulation_time_step_us"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_simulation_time_step_us">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_simulation_time_step_us</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The simulation timestep, in microseconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The simulation timestep, in microseconds</span>
 
 <span class="sd">        Previously know as &quot;machine_time_step&quot;</span>
 
@@ -376,7 +373,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_simulation_time_step_s"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_simulation_time_step_s">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_simulation_time_step_s</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The simulation timestep, in seconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The simulation timestep, in seconds</span>
 
 <span class="sd">        Semantic sugar for simulation_time_step() / 1,000,000.</span>
 
@@ -390,7 +387,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_simulation_time_step_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_simulation_time_step_ms</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The simulation time step, in milliseconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The simulation time step, in milliseconds</span>
 
 <span class="sd">        Semantic sugar for simulation_time_step_us / 1000.</span>
 
@@ -404,7 +401,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_simulation_time_step_per_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_ms">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_simulation_time_step_per_ms</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The number of simulation time steps in a millisecond</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The number of simulation time steps in a millisecond</span>
 
 <span class="sd">        Semantic sugar for 1000 / simulation_time_step_us</span>
 
@@ -418,7 +415,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_simulation_time_step_per_s"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_s">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_simulation_time_step_per_s</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The number of simulation time steps in a seconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The number of simulation time steps in a seconds</span>
 
 <span class="sd">        Semantic sugar for 1,000,000 / simulation_time_step_us</span>
 
@@ -432,7 +429,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_hardware_time_step_ms"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_hardware_time_step_ms">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_hardware_time_step_ms</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The hardware timestep, in milliseconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The hardware timestep, in milliseconds</span>
 
 <span class="sd">        Semantic sugar for simulation_time_step_ms * time_scale_factor</span>
 
@@ -446,7 +443,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_hardware_time_step_us"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_hardware_time_step_us">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_hardware_time_step_us</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The hardware timestep, in microseconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The hardware timestep, in microseconds</span>
 
 <span class="sd">        Semantic sugar for simulation_time_step_us * time_scale_factor</span>
 
@@ -462,7 +459,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_time_scale_factor"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_time_scale_factor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_time_scale_factor</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :rtype: int or float</span>
 <span class="sd">        :raises SpiNNUtilsException:</span>
@@ -476,7 +473,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_time_scale_factor"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_time_scale_factor">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_time_scale_factor</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -486,7 +483,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_run_number"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_run_number">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_run_number</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the number of this or the next run.</span>
 
 <span class="sd">        Run numbers start at 1</span>
@@ -501,7 +498,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_run_step"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_run_step">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_run_step</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the auto pause and resume step currently running if any.</span>
 
 <span class="sd">        If and only if currently in an auto pause and resume loop this will</span>
@@ -522,7 +519,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_n_boards_required"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_n_boards_required">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_n_boards_required</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reports if a user has sets the number of boards requested during setup</span>
 
 <span class="sd">        :rtype: bool</span>
@@ -533,7 +530,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_n_boards_required"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_boards_required">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_n_boards_required</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the number of boards requested by the user during setup if known.</span>
 
 <span class="sd">        Guaranteed to be positive</span>
@@ -548,7 +545,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_n_chips_needed"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_chips_needed">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_n_chips_needed</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the number of chips needed if set</span>
 
 <span class="sd">        This will be the number of chips requested by the user during setup,</span>
@@ -571,7 +568,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_n_chips_needed"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_n_chips_needed">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_n_chips_needed</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detects if the number of chips needed has been set.</span>
 
 <span class="sd">        This will be the number of chips requested by the use during setup or</span>
@@ -585,7 +582,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_timestamp_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_timestamp_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_timestamp_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns path to existing timestamped director in the reports directory</span>
 
 <span class="sd">        ..note: In unittest mode this returns a tempdir</span>
@@ -605,7 +602,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_data_in_multicast_key_to_chip_map"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_data_in_multicast_key_to_chip_map">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_data_in_multicast_key_to_chip_map</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retreive the data_in_multicast_key_to_chip_map if known</span>
 
 <span class="sd">        :rtype: dict</span>
@@ -618,7 +615,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_data_in_multicast_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_data_in_multicast_routing_tables">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_data_in_multicast_routing_tables</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retreive the data_in_multicast_routing_tables if known</span>
 
 <span class="sd">        :rtype: MulticastRoutingTables</span>
@@ -631,7 +628,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_system_multicast_router_timeout_keys"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_system_multicast_router_timeout_keys">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_system_multicast_router_timeout_keys</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retreive the system_multicast_router_timeout_keys if known</span>
 
 <span class="sd">        :rtype: dict</span>
@@ -647,7 +644,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_ipaddress"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_ipaddress">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_ipaddress</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detects if the ipaddress of the board with chip 0,0 if known</span>
 
 <span class="sd">        :return:</span>
@@ -656,7 +653,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_ipaddress"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_ipaddress">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_ipaddress</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the ipaddress of the board with chip 0,0 if it has been set</span>
 
 <span class="sd">        :rtype: str</span>
@@ -672,7 +669,7 @@
     <span class="c1"># fixed_routes</span>
 <div class="viewcode-block" id="FecDataView.get_fixed_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_fixed_routes">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_fixed_routes</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the fixed routes if they have been created</span>
 
 <span class="sd">        :rtype: dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)</span>
@@ -685,7 +682,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_java_caller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_java_caller">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_java_caller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reports if there is a Java called that can be used.</span>
 
 <span class="sd">        Equivellent to get_config_bool(&quot;Java&quot;, &quot;use_java&quot;) as the writer will</span>
@@ -699,7 +696,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_java_caller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_java_caller">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_java_caller</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the Java_caller</span>
 
 <span class="sd">        :rtype: str</span>
@@ -714,7 +711,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_json_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_json_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_json_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path to the directory that holds all json files</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
@@ -734,7 +731,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_provenance_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_provenance_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_provenance_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path to the directory that holds all provenance files</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
@@ -753,7 +750,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_app_provenance_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_app_provenance_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path to the directory that holds all app provenance files</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
@@ -774,7 +771,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_system_provenance_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_system_provenance_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the path to the directory that holds all provenance files</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
@@ -794,7 +791,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_child_folder</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">child_name</span><span class="p">,</span> <span class="n">must_create</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str parent:</span>
 <span class="sd">        :param str child_name:</span>
 <span class="sd">        :param bool must_create:</span>
@@ -817,7 +814,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_next_none_labelled_edge_number"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_next_none_labelled_edge_number">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_next_none_labelled_edge_number</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns an unused number for a none_labelled_edge</span>
 
 <span class="sd">        :rtpye int:</span>
@@ -827,7 +824,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_next_sync_signal"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_next_sync_signal">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_next_sync_signal</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns alteratively Signal.SYNC0 and Signal.SYNC1</span>
 
 <span class="sd">        :rtpye  ~spinnman.messages.scp.enums.signal.Signal:</span>
@@ -841,7 +838,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_executable_types"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_executable_types">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_executable_types</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets the _executable_types if they have been created</span>
 
 <span class="sd">        :rtype: dict(</span>
@@ -856,7 +853,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_live_packet_recorder_params"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_live_packet_recorder_params">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_live_packet_recorder_params</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reports if there are live_packet_recorder_params</span>
 
 <span class="sd">        If True the live_packet_recorder_params not be empty</span>
@@ -867,7 +864,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_live_packet_recorder_params"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_live_packet_recorder_params">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_live_packet_recorder_params</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Mapping of live_packet_gatherer_params to a list of tuples\</span>
 <span class="sd">        (vertex and list of ids))</span>
 
@@ -884,7 +881,7 @@
     <span class="k">def</span> <span class="nf">add_live_packet_gatherer_parameters</span><span class="p">(</span>
             <span class="bp">cls</span><span class="p">,</span> <span class="n">live_packet_gatherer_params</span><span class="p">,</span> <span class="n">vertex_to_record_from</span><span class="p">,</span>
             <span class="n">partition_ids</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Adds parameters for a new LPG if needed, or adds to the tracker \</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Adds parameters for a new LPG if needed, or adds to the tracker \</span>
 <span class="sd">            for parameters.</span>
 
 <span class="sd">            Note If the Application Graph is used the vertex must be an</span>
@@ -916,7 +913,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_database_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_database_file_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_database_file_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Will return the database_file_path if set or None if not set</span>
 <span class="sd">        or set to None</span>
 
@@ -926,7 +923,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_executable_targets"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_executable_targets">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_executable_targets</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        binaries to be executed.</span>
 
 <span class="sd">        :rtype: ExecutableTargets</span>
@@ -939,7 +936,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_dsg_targets"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_dsg_targets">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_dsg_targets</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; data Spec targets database</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; data Spec targets database</span>
 
 <span class="sd">        :rtype: DsSqlliteDatabase</span>
 <span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
@@ -951,7 +948,7 @@
 
 <div class="viewcode-block" id="FecDataView.has_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.has_monitors">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">has_monitors</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect is ExtraMonitorSupportMachineVertex(s) have been created</span>
 
 <span class="sd">        :rtype: bool</span>
@@ -960,7 +957,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_monitor_by_xy"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_monitor_by_xy">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_monitor_by_xy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; ExtraMonitorSupportMachineVertex for core x, y</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; ExtraMonitorSupportMachineVertex for core x, y</span>
 
 <span class="sd">        :rtype: ExtraMonitorSupportMachineVertex</span>
 <span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
@@ -974,7 +971,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_monitor_items"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_monitor_items">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_monitor_items</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterates over the (X,y) and ExtraMonitorSupportMachineVertex</span>
 
 <span class="sd">        get_n_monitors returns the number of items this iterable will provide</span>
@@ -990,7 +987,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_n_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_monitors">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_n_monitors</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Number of ExtraMonitorSupportMachineVertexs</span>
 
 <span class="sd">        :rtype: int</span>
@@ -1003,7 +1000,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_monitors"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_monitors">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_monitors</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterates over the ExtraMonitorSupportMachineVertex(s)</span>
 
 <span class="sd">        :rtype: iterable(ExtraMonitorSupportMachineVertex)</span>
@@ -1016,7 +1013,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_gatherer_by_xy"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_gatherer_by_xy">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_gatherer_by_xy</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; DataSpeedUpPacketGatherMachineVertex for core x, y</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; DataSpeedUpPacketGatherMachineVertex for core x, y</span>
 
 <span class="sd">        :rtype: DataSpeedUpPacketGatherMachineVertex</span>
 <span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
@@ -1030,7 +1027,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_gather_items"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_gather_items">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_gather_items</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex</span>
 
 <span class="sd">        get_n_gathers returns the number of items this iterable will provide</span>
@@ -1046,7 +1043,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_n_gathers"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_gathers">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_n_gathers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Number of DataSpeedUpPacketGatherMachineVertex(s)</span>
 
 <span class="sd">        :rtype: int</span>
@@ -1059,7 +1056,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_gathers"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_gathers">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_gathers</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterates over the DataSpeedUpPacketGatherMachineVertex(s)</span>
 
 <span class="sd">        :rtype: iterable(DataSpeedUpPacketGatherMachineVertex)</span>
@@ -1072,7 +1069,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_database_socket_addresses"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_database_socket_addresses">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_database_socket_addresses</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Iterates over the registered database_socket_addresses</span>
 
 <span class="sd">        :rtype: iterable(~spinn_utilities.socket_address.SocketAddress)</span>
@@ -1081,7 +1078,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_n_database_socket_addresses"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_n_database_socket_addresses">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_n_database_socket_addresses</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Number of registered database_socket_addresses</span>
 
 <span class="sd">        :rtype: int</span>
@@ -1090,7 +1087,7 @@
 
 <div class="viewcode-block" id="FecDataView.add_database_socket_address"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_database_socket_address">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">add_database_socket_address</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">database_socket_address</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adds a socket address to the list of known addresses</span>
 
 <span class="sd">        :param SocketAddress database_socket_address:</span>
@@ -1102,7 +1099,7 @@
 
 <div class="viewcode-block" id="FecDataView.add_database_socket_addresses"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_database_socket_addresses">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">add_database_socket_addresses</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">database_socket_addresses</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adds all socket addresses to the list of known addresses</span>
 
 <span class="sd">        :param iterable(SocketAddress) database_socket_addresses:</span>
@@ -1116,7 +1113,7 @@
 
 <div class="viewcode-block" id="FecDataView.get_notification_protocol"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_notification_protocol">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_notification_protocol</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        binaries to be executed.</span>
 
 <span class="sd">        :rtype: NotificationProtocol</span>
@@ -1129,7 +1126,7 @@
 
 <div class="viewcode-block" id="FecDataView.add_live_output_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.add_live_output_vertex">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">add_live_output_vertex</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a vertex that is to be output live, and so wants its atom IDs</span>
 <span class="sd">        recorded in the database.</span>
 
@@ -1140,7 +1137,7 @@
 
 <div class="viewcode-block" id="FecDataView.iterate_live_output_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.iterate_live_output_vertices">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">iterate_live_output_vertices</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get an iterator over the live output vertices and partition ids</span>
 
 <span class="sd">        :rtype: set((ApplicationVertex, str))</span>
@@ -1184,7 +1181,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

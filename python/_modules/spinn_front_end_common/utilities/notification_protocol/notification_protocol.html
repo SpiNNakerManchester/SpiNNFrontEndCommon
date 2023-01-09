@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -71,7 +68,7 @@
 
 
 <span class="k">class</span> <span class="nc">NotificationProtocol</span><span class="p">(</span><span class="n">AbstractContextManager</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; The protocol which hand shakes with external devices about the\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; The protocol which hand shakes with external devices about the\</span>
 <span class="sd">        database and starting execution.</span>
 
 <span class="sd">    The messages sent by this are received by instances of</span>
@@ -104,7 +101,7 @@
             <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_database_socket_addresses</span><span class="p">()]</span>
 
 <div class="viewcode-block" id="NotificationProtocol.wait_for_confirmation"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">[docs]</a>    <span class="k">def</span> <span class="nf">wait_for_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; If asked to wait for confirmation, waits for all external systems\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; If asked to wait for confirmation, waits for all external systems\</span>
 <span class="sd">            to confirm that they are configured and have read the database</span>
 
 <span class="sd">        :rtype: None</span>
@@ -116,7 +113,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="NotificationProtocol.send_start_resume_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_start_resume_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Either waits till all sources have confirmed read the database\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Either waits till all sources have confirmed read the database\</span>
 <span class="sd">            and are configured, and/or just sends the start notification\</span>
 <span class="sd">            (when the system is executing)</span>
 
@@ -137,7 +134,7 @@
                     <span class="n">c</span><span class="o">.</span><span class="n">remote_ip_address</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">remote_port</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="NotificationProtocol.send_stop_pause_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_stop_pause_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sends the pause / stop notifications when the script has either\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sends the pause / stop notifications when the script has either\</span>
 <span class="sd">            finished or paused</span>
 
 <span class="sd">        :rtype: None</span>
@@ -156,7 +153,7 @@
 
     <span class="c1"># noinspection PyPep8</span>
 <div class="viewcode-block" id="NotificationProtocol.send_read_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sends notifications to all devices which have expressed an\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sends notifications to all devices which have expressed an\</span>
 <span class="sd">            interest in when the database has been written</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">notification_task</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span>
@@ -165,7 +162,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">notification_task</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_send_read_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Sends notifications to a list of socket addresses that the\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sends notifications to a list of socket addresses that the\</span>
 <span class="sd">            database has been written. Message also includes the path to the\</span>
 <span class="sd">            database</span>
 
@@ -223,14 +220,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sent_visualisation_confirmation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Whether the external application has actually been notified yet.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Whether the external application has actually been notified yet.</span>
 
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span>
 
 <div class="viewcode-block" id="NotificationProtocol.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Closes the thread pool and the connections.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Closes the thread pool and the connections.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
@@ -276,7 +273,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

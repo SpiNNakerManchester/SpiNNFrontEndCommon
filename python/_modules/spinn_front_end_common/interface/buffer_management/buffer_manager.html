@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -96,7 +93,7 @@
 
 
 <span class="k">class</span> <span class="nc">_RecordingRegion</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">LittleEndianStructure</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Recording Region data</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Recording Region data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># Space available for recording</span>
@@ -111,7 +108,7 @@
 
 
 <span class="k">class</span> <span class="nc">BufferManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Manager of send buffers.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Manager of send buffers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -159,7 +156,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_sender_vertices</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">vertex</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_request_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Uses the extra monitor cores for data extraction.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Uses the extra monitor cores for data extraction.</span>
 
 <span class="sd">        :param int placement_x:</span>
 <span class="sd">            the placement x coord where data is to be extracted from</span>
@@ -209,7 +206,7 @@
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;WRONG (at index </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
 
 <div class="viewcode-block" id="BufferManager.load_initial_buffers"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.load_initial_buffers">[docs]</a>    <span class="k">def</span> <span class="nf">load_initial_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Load the initial buffers for the senders using memory writes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Load the initial buffers for the senders using memory writes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">total_data</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sender_vertices</span><span class="p">:</span>
@@ -223,7 +220,7 @@
         <span class="n">progress</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="BufferManager.reset"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Resets the buffered regions to start transmitting from the\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Resets the buffered regions to start transmitting from the\</span>
 <span class="sd">            beginning of its expected regions and clears the buffered out\</span>
 <span class="sd">            data files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -237,11 +234,11 @@
                 <span class="n">vertex</span><span class="o">.</span><span class="n">rewind</span><span class="p">(</span><span class="n">region</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BufferManager.resume"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.resume">[docs]</a>    <span class="k">def</span> <span class="nf">resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Resets any data structures needed before starting running again.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Resets any data structures needed before starting running again.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="BufferManager.clear_recorded_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.clear_recorded_data">[docs]</a>    <span class="k">def</span> <span class="nf">clear_recorded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Removes the recorded data stored in memory.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Removes the recorded data stored in memory.</span>
 
 <span class="sd">        :param int x: placement x coordinate</span>
 <span class="sd">        :param int y: placement y coordinate</span>
@@ -251,7 +248,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_create_message_to_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Creates a single message to send with the given boundaries.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates a single message to send with the given boundaries.</span>
 
 <span class="sd">        :param int size: The number of bytes available for the whole packet</span>
 <span class="sd">        :param AbstractSendsBuffersFromHost vertex:</span>
@@ -286,7 +283,7 @@
         <span class="k">return</span> <span class="n">message</span>
 
     <span class="k">def</span> <span class="nf">_send_initial_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">progress</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Send the initial set of messages.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send the initial set of messages.</span>
 
 <span class="sd">        :param AbstractSendsBuffersFromHost vertex:</span>
 <span class="sd">            The vertex to get the keys from</span>
@@ -354,7 +351,7 @@
             <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">region_base_address</span><span class="p">,</span> <span class="n">all_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__get_recording_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :rtype: list(~.Placement)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">recording_placements</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -384,7 +381,7 @@
 
     <span class="k">def</span> <span class="nf">__python_get_data_for_placements_with_monitors</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
 <span class="sd">            Where to get the data from.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -402,7 +399,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__python_get_data_for_placements</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__python_get_data_for_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recording_placements</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
 <span class="sd">            Where to get the data from.</span>
 <span class="sd">       &quot;&quot;&quot;</span>
@@ -415,7 +412,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_retreive_by_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BufferManager.get_data_by_placement"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the data container for all the data retrieved\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the data container for all the data retrieved\</span>
 <span class="sd">            during the simulation from a specific region area of a core.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
@@ -436,7 +433,7 @@
             <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_retreive_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Retrieve the data for a vertex; must be locked first.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Retrieve the data for a vertex; must be locked first.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            the placement to get the data from</span>
@@ -457,7 +454,7 @@
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Get the recording information from all regions of a core</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the recording information from all regions of a core</span>
 
 <span class="sd">        :param addr: The recording region base address</span>
 <span class="sd">        :param x: The x-coordinate of the chip containing the data</span>
@@ -476,7 +473,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sender_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; The vertices which are buffered.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; The vertices which are buffered.</span>
 
 <span class="sd">        :rtype: iterable(AbstractSendsBuffersFromHost)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -519,7 +516,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-    <script src="../../../../_static/jquery.js"></script>
-    <script src="../../../../_static/underscore.js"></script>
-    <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../../_static/doctools.js"></script>
     <script src="../../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -73,7 +70,7 @@
 
 
 <span class="k">class</span> <span class="nc">EnergyReport</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; This class creates a report about the approximate total energy\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; This class creates a report about the approximate total energy\</span>
 <span class="sd">        consumed by a SpiNNaker job execution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -87,7 +84,7 @@
     <span class="n">_SUMMARY_FILENAME</span> <span class="o">=</span> <span class="s2">&quot;summary_energy_report.rpt&quot;</span>
 
 <div class="viewcode-block" id="EnergyReport.write_energy_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.EnergyReport.write_energy_report">[docs]</a>    <span class="k">def</span> <span class="nf">write_energy_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Writes the report.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the report.</span>
 
 <span class="sd">        :param ~spinn_machine.Machine machine: the machine</span>
 <span class="sd">        :param PowerUsed power_used:</span>
@@ -111,7 +108,7 @@
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">_write_summary_report</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">power_used</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Write summary file</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write summary file</span>
 
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :param PowerUsed power_used:</span>
@@ -176,7 +173,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__report_time</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param float time:</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -186,7 +183,7 @@
             <span class="k">return</span> <span class="s2">&quot;(over </span><span class="si">{}</span><span class="s2"> seconds)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_detailed_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Write detailed report and calculate costs</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write detailed report and calculate costs</span>
 
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
@@ -222,7 +219,7 @@
                 <span class="n">xy</span><span class="p">,</span> <span class="n">active_chips</span><span class="p">[</span><span class="n">xy</span><span class="p">],</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Writes the warning about this being only an estimate</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the warning about this being only an estimate</span>
 
 <span class="sd">        :param ~io.TextIOBase f: the writer</span>
 <span class="sd">        :rtype: None</span>
@@ -251,7 +248,7 @@
                 <span class="n">MILLIWATTS_PER_FPGA</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_write_fpga_cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; FPGA cost calculation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; FPGA cost calculation</span>
 
 <span class="sd">        :param PowerUsed power_used: the runtime</span>
 <span class="sd">        :param ~io.TextIOBase f: the file writer</span>
@@ -306,7 +303,7 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_chips_active_cost</span><span class="p">(</span>
             <span class="n">xy</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Figure out the chip active cost during simulation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Figure out the chip active cost during simulation</span>
 
 <span class="sd">        :param (int, int) xy: the x,y of the chip to consider</span>
 <span class="sd">        :param dict(int, str) labels: vertex labels for the acte cores</span>
@@ -342,7 +339,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_load_time_cost</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Energy usage from the loading phase</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Energy usage from the loading phase</span>
 
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
@@ -369,7 +366,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_data_extraction_time_cost</span><span class="p">(</span><span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Data extraction cost</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Data extraction cost</span>
 
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
@@ -432,7 +429,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>

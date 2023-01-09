@@ -9,9 +9,6 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-    <script src="../../../_static/jquery.js"></script>
-    <script src="../../../_static/underscore.js"></script>
-    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../../_static/doctools.js"></script>
     <script src="../../../_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -70,7 +67,7 @@
 
 
 <div class="viewcode-block" id="locate_extra_monitor_mc_receiver"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_extra_monitor_mc_receiver">[docs]</a><span class="k">def</span> <span class="nf">locate_extra_monitor_mc_receiver</span><span class="p">(</span><span class="n">placement_x</span><span class="p">,</span> <span class="n">placement_y</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the data speed up gatherer that can be used to talk to a\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the data speed up gatherer that can be used to talk to a\</span>
 <span class="sd">        particular chip. This will be on the same board.</span>
 
 <span class="sd">    :param int placement_x: The X coordinate of the reference chip</span>
@@ -83,7 +80,7 @@
 
 
 <div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">data_format</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reads and converts a single data item from memory.</span>
 
 <span class="sd">    :param int x: chip x</span>
 <span class="sd">    :param int y: chip y</span>
@@ -99,7 +96,7 @@
 
 
 <div class="viewcode-block" id="write_address_to_user0"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user0">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user0</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Writes the given address into the user_0 register of the given core.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes the given address into the user_0 register of the given core.</span>
 
 <span class="sd">    :param int x: Chip coordinate.</span>
 <span class="sd">    :param int y: Chip coordinate.</span>
@@ -112,7 +109,7 @@
 
 
 <div class="viewcode-block" id="write_address_to_user1"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.write_address_to_user1">[docs]</a><span class="k">def</span> <span class="nf">write_address_to_user1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Writes the given address into the user_1 register of the given core.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Writes the given address into the user_1 register of the given core.</span>
 
 <span class="sd">    :param int x: Chip coordinate.</span>
 <span class="sd">    :param int y: Chip coordinate.</span>
@@ -125,7 +122,7 @@
 
 
 <div class="viewcode-block" id="get_region_base_address_offset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_region_base_address_offset">[docs]</a><span class="k">def</span> <span class="nf">get_region_base_address_offset</span><span class="p">(</span><span class="n">app_data_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Find the address of the of a given region for the DSG</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Find the address of the of a given region for the DSG</span>
 
 <span class="sd">    :param int app_data_base_address: base address for the core</span>
 <span class="sd">    :param int region: the region ID we&#39;re looking for</span>
@@ -136,7 +133,7 @@
 
 
 <div class="viewcode-block" id="locate_memory_region_for_placement"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.locate_memory_region_for_placement">[docs]</a><span class="k">def</span> <span class="nf">locate_memory_region_for_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the address of a region for a placement.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the address of a region for a placement.</span>
 
 <span class="sd">    :param int region: the region to locate the base address of</span>
 <span class="sd">    :param ~pacman.model.placements.Placement placement:</span>
@@ -159,7 +156,7 @@
 
 
 <div class="viewcode-block" id="convert_string_into_chip_and_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_string_into_chip_and_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_string_into_chip_and_core_subset</span><span class="p">(</span><span class="n">cores</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Translate a string list of cores into a core subset</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Translate a string list of cores into a core subset</span>
 
 <span class="sd">    :param cores:</span>
 <span class="sd">        string representing down cores formatted as x,y,p[:x,y,p]*</span>
@@ -175,7 +172,7 @@
 
 
 <div class="viewcode-block" id="flood_fill_binary_to_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.flood_fill_binary_to_spinnaker">[docs]</a><span class="k">def</span> <span class="nf">flood_fill_binary_to_spinnaker</span><span class="p">(</span><span class="n">binary</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Flood fills a binary to spinnaker on a given `app_id` \</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Flood fills a binary to spinnaker on a given `app_id` \</span>
 <span class="sd">        given the executable targets and binary.</span>
 
 <span class="sd">    :return: the number of cores it was loaded onto</span>
@@ -190,7 +187,7 @@
 
 
 <div class="viewcode-block" id="generate_unique_folder_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.generate_unique_folder_name">[docs]</a><span class="k">def</span> <span class="nf">generate_unique_folder_name</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">extension</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Generate a unique file name with a given extension in a given folder</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generate a unique file name with a given extension in a given folder</span>
 
 <span class="sd">    :param str folder: where to put this unique file</span>
 <span class="sd">    :param str filename:</span>
@@ -209,7 +206,7 @@
 
 
 <div class="viewcode-block" id="get_ethernet_chip"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_ethernet_chip">[docs]</a><span class="k">def</span> <span class="nf">get_ethernet_chip</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">board_address</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Locate the chip with the given board IP address</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Locate the chip with the given board IP address</span>
 
 <span class="sd">    :param ~spinn_machine.Machine machine: the SpiNNaker machine</span>
 <span class="sd">    :param str board_address: the board address to locate the chip of.</span>
@@ -227,7 +224,7 @@
 
 
 <div class="viewcode-block" id="determine_flow_states"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.determine_flow_states">[docs]</a><span class="k">def</span> <span class="nf">determine_flow_states</span><span class="p">(</span><span class="n">executable_types</span><span class="p">,</span> <span class="n">no_sync_changes</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Get the start and end states for these executable types.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the start and end states for these executable types.</span>
 
 <span class="sd">    :param dict(ExecutableType,any) executable_types:</span>
 <span class="sd">        the execute types to locate start and end states from</span>
@@ -268,7 +265,7 @@
 
 
 <div class="viewcode-block" id="convert_vertices_to_core_subset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.convert_vertices_to_core_subset">[docs]</a><span class="k">def</span> <span class="nf">convert_vertices_to_core_subset</span><span class="p">(</span><span class="n">vertices</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Converts vertices into core subsets.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Converts vertices into core subsets.</span>
 
 <span class="sd">    :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:</span>
 <span class="sd">        the vertices to convert to core subsets</span>
@@ -283,7 +280,7 @@
 
 
 <div class="viewcode-block" id="n_word_struct"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.n_word_struct">[docs]</a><span class="k">def</span> <span class="nf">n_word_struct</span><span class="p">(</span><span class="n">n_words</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Manages a precompiled cache of structs for parsing blocks of words. \</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Manages a precompiled cache of structs for parsing blocks of words. \</span>
 <span class="sd">        Thus, this::</span>
 
 <span class="sd">        data = n_word_struct(n_words).unpack(data_blob)</span>
@@ -312,7 +309,7 @@
 
 
 <div class="viewcode-block" id="get_defaultable_source_id"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.helpful_functions.get_defaultable_source_id">[docs]</a><span class="k">def</span> <span class="nf">get_defaultable_source_id</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Hack to support the source requirement for the router compressor\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Hack to support the source requirement for the router compressor\</span>
 <span class="sd">        on chip.</span>
 
 <span class="sd">    :param ~spinn_machine.MulticastRoutingEntry entry:</span>
@@ -363,7 +360,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
     </div>
   </body>
 </html>
