@@ -15,6 +15,8 @@
 
 import sqlite3
 import time
+from spinn_utilities.abstract_context_manager import AbstractContextManager
+from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -258,6 +260,21 @@ class BufferDatabase(BaseDatabase):
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def write_session_credentials_to_db(self):
+        """ Write Spalloc session credentials to the database if in use
+        """
+        # pylint: disable=protected-access
+        if not FecDataView.has_allocation_controller():
+            return
+        mac = FecDataView.get_allocation_controller()
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't check that because of import circularity.
+            job = mac._job
+            if isinstance(job, SpallocJob):
+                with self.transaction() as cur:
+                    job._write_session_credentials_to_db(cur)
 
     def _set_core_name(self, cursor, x, y, p, core_name):
         """

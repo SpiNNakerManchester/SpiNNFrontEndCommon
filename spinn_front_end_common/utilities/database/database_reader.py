@@ -13,18 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinnman.spalloc import SpallocClient
 
 
 class DatabaseReader(SQLiteDB):
     """ A reader for the database.
     """
-    __slots__ = []
+    __slots__ = ("__job", "__looked_for_job")
 
     def __init__(self, database_path):
         """
         :param str database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
+        self.__job = None
+        self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
         with self.transaction() as cur:
@@ -34,6 +37,21 @@ class DatabaseReader(SQLiteDB):
     @staticmethod
     def __r2t(row, *args):
         return tuple(None if row is None else row[key] for key in args)
+
+    def get_job(self):
+        """
+        Get the job described in the database. If no job exists, direct
+        connection to boards should be used.
+
+        :return: Job handle, if one exists. ``None`` otherwise.
+        :rtype: ~spinnman.spalloc.SpallocJob
+        """
+        # This is maintaining an object we only make once
+        if not self.__looked_for_job:
+            with self.transaction() as cur:
+                self.__job = SpallocClient.open_job_from_database(cur)
+            self.__looked_for_job = True
+        return self.__job
 
     def get_key_to_atom_id_mapping(self, label):
         """ Get a mapping of event key to atom ID for a given vertex
@@ -72,8 +90,9 @@ class DatabaseReader(SQLiteDB):
             stripped from the output from a vertex
 
         :param str label: The label of the vertex
-        :return: tuple of (IP address, port, strip SDP, board address, tag)
-        :rtype: tuple(str, int, bool, str, int)
+        :return: tuple of (IP address, port, strip SDP, board address, tag,
+            chip_x, chip_y)
+        :rtype: tuple(str, int, bool, str, int, int, int)
         """
         return self.__r2t(
             self.__exec_one(
@@ -82,7 +101,8 @@ class DatabaseReader(SQLiteDB):
                 WHERE pre_vertex_label = ?
                     AND post_vertex_label LIKE ?
                 """, label, str(receiver_label) + "%"),
-            "ip_address", "port", "strip_sdp", "board_address", "tag")
+            "ip_address", "port", "strip_sdp", "board_address", "tag",
+            "chip_x", "chip_y")
 
     def get_configuration_parameter_value(self, parameter_name):
         """ Get the value of a configuration parameter

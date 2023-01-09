@@ -68,6 +68,13 @@ CREATE VIEW IF NOT EXISTS extra_view AS
     	region_extra.content_len AS content_len
 FROM core NATURAL JOIN region NATURAL JOIN region_extra;
 
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table holding the values for power provenance
 -- Except for engery used by cores or routers
