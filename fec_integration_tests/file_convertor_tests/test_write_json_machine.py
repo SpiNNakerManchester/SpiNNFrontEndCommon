@@ -21,6 +21,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
+from spinnman.exceptions import SpinnmanIOException
 import spinnman.transceiver as transceiver
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -110,7 +111,10 @@ class TestWriteJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
-        trans.ensure_board_is_ready()
+        try:
+            trans.ensure_board_is_ready()
+        except (SpinnmanIOException):
+            self.skipTest("Skipping as getting Job failed")
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
@@ -148,7 +152,7 @@ class TestWriteJson(unittest.TestCase):
         try:
             (hostname, version, _, _, _, _, m_allocation_controller) = \
                 spalloc_allocator()
-        except (JobDestroyedError):
+        except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)

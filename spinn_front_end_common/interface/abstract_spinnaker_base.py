@@ -21,6 +21,7 @@ import os
 import signal
 import sys
 import threading
+import requests
 from threading import Condition
 from numpy import __version__ as numpy_version
 
@@ -67,6 +68,7 @@ from spinn_front_end_common import common_model_binaries
 from spinn_front_end_common.abstract_models import (
     AbstractVertexWithEdgeToDependentVertices,
     AbstractCanReset)
+from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
@@ -143,9 +145,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     __slots__ = [
         # The IP-address of the SpiNNaker machine
 
-        # the connection to allocted spalloc and HBP machines
-        "_machine_allocation_controller",
-
         # Condition object used for waiting for stop
         # Set during init and the used but never new object
         "_state_condition",
@@ -193,7 +192,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
-        self._machine_allocation_controller = None
         self._hard_reset()
 
         # holder for timing and running related values
@@ -250,6 +248,27 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         logger.error("User has cancelled simulation")
         self._shutdown()
+
+    @property
+    def __bearer_token(self):
+        """
+        :return: The OIDC bearer token
+        :rtype: str or None
+        """
+        # Try using Jupyter if we have the right variables
+        jupyter_token = os.getenv("JUPYTERHUB_API_TOKEN")
+        jupyter_ip = os.getenv("JUPYTERHUB_SERVICE_HOST")
+        jupyter_port = os.getenv("JUPYTERHUB_SERVICE_PORT")
+        if (jupyter_token is not None and jupyter_ip is not None and
+                jupyter_port is not None):
+            jupyter_url = (f"http://{jupyter_ip}:{jupyter_port}/services/"
+                           "access-token-service/access-token")
+            headers = {"Authorization": f"Token {jupyter_token}"}
+            response = requests.get(jupyter_url, headers=headers)
+            return response.json().get('access_token')
+
+        # Try a simple environment variable, or None if that doesn't exist
+        return os.getenv("OIDC_BEARER_TOKEN")
 
     def exception_handler(self, exctype, value, traceback_obj):
         """ Handler of exceptions
@@ -402,8 +421,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         logger.info("Starting execution process")
 
         n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
-        if self._machine_allocation_controller is not None:
-            self._machine_allocation_controller.extend_allocation(
+        if FecDataView.has_allocation_controller():
+            FecDataView.get_allocation_controller().extend_allocation(
                 total_run_time)
 
         n_sync_steps = self.__timesteps(sync_time)
@@ -442,7 +461,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._do_mapping(total_run_time)
 
         if not self._data_writer.is_ran_last():
-            self._execute_record_core_names()
+            self._do_write_metadata()
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -630,7 +649,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the SpallocAllocator or HBPAllocator if required
 
         :param total_run_time: The total run time to request
-        type total_run_time: int or None
+        :type total_run_time: int or None
         :return: machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller
@@ -641,9 +660,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator()
+                return spalloc_allocator(self.__bearer_token)
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer("HBPAllocator", TimerWork.OTHER):
+                # TODO: Would passing the bearer token to this ever make sense?
                 return hbp_allocator(total_run_time)
 
     def _execute_machine_generator(self, allocator_data):
@@ -678,9 +698,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         elif allocator_data:
             (ipaddress, board_version, bmp_details,
              reset_machine, auto_detect_bmp, scamp_connection_data,
-             self._machine_allocation_controller
-             ) = allocator_data
+             machine_allocation_controller) = allocator_data
             self._data_writer.set_ipaddress(ipaddress)
+            self._data_writer.set_allocation_controller(
+                machine_allocation_controller)
         else:
             return
 
@@ -893,9 +914,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _execute_record_core_names(self):
+    def _do_write_metadata(self):
+        """
+        Do the various functions to write metadata to the sqlite files
+        """
         with FecTimer(
-                "Record core names to databse", TimerWork.REPORT):
+                "Record vertex labels to database", TimerWork.REPORT):
             with BufferDatabase() as db:
                 db.store_vertex_labels()
 
@@ -1977,8 +2001,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return []
 
             # TODO runtime is None
-            power_used = compute_energy_used(
-                self._machine_allocation_controller)
+            power_used = compute_energy_used()
 
             energy_provenance_reporter(power_used)
 
@@ -2355,9 +2378,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                     router_table.x, router_table.y)
 
     def __close_allocation_controller(self):
-        if self._machine_allocation_controller is not None:
-            self._machine_allocation_controller.close()
-            self._machine_allocation_controller = None
+        if FecDataView.has_allocation_controller():
+            FecDataView.get_allocation_controller().close()
+            self._data_writer.set_allocation_controller(None)
 
     def stop(self):
         """

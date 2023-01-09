@@ -15,6 +15,7 @@
 
 import sqlite3
 import time
+from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 
@@ -81,53 +82,73 @@ class BufferDatabase(BaseDatabase):
                 """, locus)
             return True
 
-    def __read_contents(self, cursor, x, y, p, region):
+    def _read_contents(self, cursor, region_id):
         """
         :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
+        :param int region_id:
         :rtype: memoryview
         """
         for row in cursor.execute(
                 """
-                SELECT region_id, content, have_extra
+                SELECT content
                 FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? LIMIT 1
-                """, (x, y, p, region)):
-            r_id, data, extra = (
-                row["region_id"], row["content"], row["have_extra"])
+                WHERE region_id = ?
+                LIMIT 1
+                """, (region_id,)):
+            data = row["content"]
             break
         else:
-            raise LookupError("no record for region ({},{},{}:{})".format(
-                x, y, p, region))
-        if extra:
-            c_buffer = None
-            for row in cursor.execute(
-                    """
-                    SELECT r.content_len + (
-                        SELECT SUM(x.content_len)
-                        FROM region_extra AS x
-                        WHERE x.region_id = r.region_id) AS len
-                    FROM region AS r WHERE region_id = ? LIMIT 1
-                    """, (r_id, )):
+            raise LookupError(f"no record for region {region_id}")
+
+        c_buffer = None
+        for row in cursor.execute(
+                """
+                SELECT r.content_len + (
+                    SELECT SUM(x.content_len)
+                    FROM region_extra AS x
+                    WHERE x.region_id = r.region_id) AS len
+                FROM region AS r WHERE region_id = ? LIMIT 1
+                """, (region_id, )):
+            if row["len"] is not None:
                 c_buffer = bytearray(row["len"])
                 c_buffer[:len(data)] = data
+
+        if c_buffer is not None:
             idx = len(data)
             for row in cursor.execute(
                     """
                     SELECT content FROM region_extra
                     WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (r_id, )):
+                    """, (region_id, )):
                 item = row["content"]
                 c_buffer[idx:idx + len(item)] = item
                 idx += len(item)
             data = c_buffer
         return memoryview(data)
 
-    def __get_region_id(self, cursor, x, y, p, region):
+    @staticmethod
+    def __get_core_id(cursor, x, y, p):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :rtype: int
+        """
+        for row in cursor.execute(
+                """
+                SELECT core_id FROM region_view
+                WHERE x = ? AND y = ? AND processor = ?
+                LIMIT 1
+                """, (x, y, p)):
+            return row["core_id"]
+        cursor.execute(
+            """
+            INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
+            """, (x, y, p))
+        return cursor.lastrowid
+
+    def _get_region_id(self, cursor, x, y, p, region):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
@@ -171,7 +192,7 @@ class BufferDatabase(BaseDatabase):
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
         with self.transaction() as cursor:
-            region_id = self.__get_region_id(cursor, x, y, p, region)
+            region_id = self._get_region_id(cursor, x, y, p, region)
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
                     """
@@ -232,11 +253,27 @@ class BufferDatabase(BaseDatabase):
         """
         try:
             with self.transaction() as cursor:
-                data = self.__read_contents(cursor, x, y, p, region)
+                region_id = self._get_region_id(cursor, x, y, p, region)
+                data = self._read_contents(cursor, region_id)
                 # TODO missing data
                 return data, False
         except LookupError:
             return memoryview(b''), True
+
+    def write_session_credentials_to_db(self):
+        """ Write Spalloc session credentials to the database if in use
+        """
+        # pylint: disable=protected-access
+        if not FecDataView.has_allocation_controller():
+            return
+        mac = FecDataView.get_allocation_controller()
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't check that because of import circularity.
+            job = mac._job
+            if isinstance(job, SpallocJob):
+                with self.transaction() as cur:
+                    job._write_session_credentials_to_db(cur)
 
     def _set_core_name(self, cursor, x, y, p, core_name):
         """

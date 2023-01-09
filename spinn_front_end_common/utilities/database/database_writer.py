@@ -20,6 +20,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
+from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.utility_models import LivePacketGather
 from pacman.utilities.utility_calls import get_field_based_keys
 
@@ -176,11 +177,23 @@ class DatabaseWriter(SQLiteDB):
                     ("runtime", -1 if runtime is None else runtime),
                     ("app_id", FecDataView.get_app_id())])
 
+    def add_proxy_configuration(self):
+        """ Store the proxy configuration.
+        """
+        # pylint: disable=protected-access
+        if not FecDataView.has_allocation_controller():
+            return
+        mac = FecDataView.get_allocation_controller()
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't check that because of import circularity.
+            job = mac._job
+            if isinstance(job, SpallocJob):
+                with self.transaction() as cur:
+                    job._write_session_credentials_to_db(cur)
+
     def add_placements(self):
         """ Adds the placements objects into the database
-
-        :param ~pacman.model.placements.Placements placements:
-            the placements object
         """
         with self.transaction() as cur:
             # Make sure machine vertices are represented
