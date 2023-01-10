@@ -40,6 +40,33 @@ enum {
 
 #define N_REGIONS 32
 
+// ITCM is 32K
+#define ITCM_LENGTH 0x7FFF
+
+// ITCM starts at 0
+#define ITCM_START 0
+
+static uint32_t binary_checksum;
+
+static inline uint32_t get_binary_checksum(void) {
+    uint32_t *ro_data = (uint32_t *) ITCM_START;
+    uint32_t sum = 0;
+    for (uint32_t i = 0; i < ITCM_LENGTH; i++) {
+        sum += ro_data[i];
+    }
+    return sum;
+}
+
+void data_specification_validate_binary(void) {
+    uint32_t sum = get_binary_checksum();
+
+    if (sum != binary_checksum) {
+        log_error("Binary checksum %u does not match computed checksum %u!",
+                binary_checksum, sum);
+        rt_error(RTE_SWERR);
+    }
+}
+
 
 /**
  * \brief Verify the checksum of a region; on failure, RTE
@@ -83,6 +110,7 @@ data_specification_metadata_t *data_specification_get_data_address(void) {
     uint user0 = virtual_processor_table[spin1_get_core_id()].user0;
 
     log_debug("SDRAM data begins at address: %08x", user0);
+    binary_checksum = get_binary_checksum();
 
     // Cast to the correct type
     data_specification_metadata_t *ds_regions = (data_specification_metadata_t *) user0;
