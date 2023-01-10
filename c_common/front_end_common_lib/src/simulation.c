@@ -21,6 +21,7 @@
  */
 
 #include "simulation.h"
+#include "data_specification.h"
 
 #include <stdbool.h>
 #include <debug.h>
@@ -422,6 +423,14 @@ bool simulation_is_finished(void) {
     if (finished || !n_sync_steps) {
         return finished;
     }
+
+    // Check the binary validity
+    if (!data_specification_validate_binary()) {
+        log_error("Binary checksum does not match computed checksum"
+                " at simulation time %u!", *pointer_to_current_time);
+        rt_error(RTE_SWERR);
+    }
+
     // If we are synchronized, check if this is a sync step (or should have been)
     if (*pointer_to_current_time >= next_sync_step) {
         log_debug("Sync at %d", next_sync_step);

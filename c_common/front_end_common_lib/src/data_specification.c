@@ -57,14 +57,13 @@ static inline uint32_t get_binary_checksum(void) {
     return sum;
 }
 
-void data_specification_validate_binary(void) {
-    uint32_t sum = get_binary_checksum();
-
-    if (sum != binary_checksum) {
-        log_error("Binary checksum %u does not match computed checksum %u!",
-                binary_checksum, sum);
-        rt_error(RTE_SWERR);
+bool data_specification_validate_binary(void) {
+    // Skip if we don't have a checksum stored (unlikely to be 0 though possible)
+    if (binary_checksum == 0) {
+        return true;
     }
+    uint32_t sum = get_binary_checksum();
+    return sum == binary_checksum;
 }
 
 
