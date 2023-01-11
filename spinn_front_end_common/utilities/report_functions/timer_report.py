@@ -99,7 +99,7 @@ def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
 
     len_name, len_time, len_runs = __get_sizes(reader)
     total = __report_category_sums(f, reader, len_name, len_time)
-    __report_works_sums(f, reader, len_name, len_time)
+    __report_works_sums(f, reader, total, len_name, len_time)
     __report_algorithms(
         f, reader, total, timer_report_ratio, timer_report_ms,
         len_name, len_time, len_runs)
@@ -147,16 +147,21 @@ def __report_category_sums(f, reader, len_name, len_time):
     return total_on + total_off
 
 
-def __report_works_sums(f, reader, len_name, len_time):
+def __report_works_sums(f, reader, total, len_name, len_time):
     """
 
      :param ~io.TextIOBase f: file writer
      :param ProvenanceReader reader:
      """
+    work_total = 0
     f.write(f"{'work type':{len_name}}   {'time':>{len_time}}\n")
     for work in TimerWork:
         time = reader.get_timer_sum_by_work(work)
+        work_total += time
         f.write(f"{work.work_name:{len_name}} {time:{len_time}.3f}ms\n")
+    if work_total < total:
+        f.write(f"{'Outside of Algorithms':{len_name}} "
+                f"{(total-work_total):{len_time}.3f}ms\n")
     f.write("\n\n")
 
 
