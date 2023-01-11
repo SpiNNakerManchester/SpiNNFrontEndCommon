@@ -406,7 +406,7 @@
 <span class="sd">                INSERT INTO reports(message)</span>
 <span class="sd">                VALUES(?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">text</span><span class="p">])</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">lastrowid</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">lastrowid</span>  <span class="c1"># pylint: disable=pointless-statement</span>
             <span class="c1"># try logging and storing while locked.</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 </pre></div>
@@ -447,7 +447,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>

@@ -144,10 +144,10 @@
 
 <div class="viewcode-block" id="FecTimer.skip"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.FecTimer.skip">[docs]</a>    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
         <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> skipped as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="n">timedelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span>
-                             <span class="n">timedelta</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+                             <span class="n">time_taken</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FecTimer.skip_if_has_not_run"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.FecTimer.skip_if_has_not_run">[docs]</a>    <span class="k">def</span> <span class="nf">skip_if_has_not_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -192,11 +192,11 @@
             <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="FecTimer.error"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.FecTimer.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
-        <span class="n">timedelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> failed after </span><span class="si">{</span><span class="n">timedelta</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> failed after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span>
-                             <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_stop_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -213,23 +213,23 @@
     <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="n">timedelta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> took </span><span class="si">{</span><span class="n">timedelta</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> took </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2"> &quot;</span>
             <span class="n">skip</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> exited with &quot;</span>
-                           <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">timedelta</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                           <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">skip</span> <span class="o">=</span> <span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
                 <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> exited with an exception&quot;</span> \
-                          <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">timedelta</span><span class="si">}</span><span class="s2">&quot;</span>
+                          <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">skip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span>
-                             <span class="n">timedelta</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
+                             <span class="n">time_taken</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -338,7 +338,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2014-2021.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
     </div>
   </body>
 </html>
