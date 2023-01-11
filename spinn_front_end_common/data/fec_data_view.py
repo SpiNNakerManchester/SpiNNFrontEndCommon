@@ -48,6 +48,7 @@ class _FecDataModel(object):
 
     __slots__ = [
         # Data values cached
+        "_allocation_controller",
         "_buffer_manager",
         "_current_run_timesteps",
         "_data_in_multicast_key_to_chip_map",
@@ -128,6 +129,7 @@ class _FecDataModel(object):
         Clears out all data that should change after a reset and graph change
         """
         self._buffer_manager = None
+        self._allocation_controller = None
         self._data_in_multicast_key_to_chip_map = None
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
@@ -210,6 +212,32 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return 0.0
         return (cls.__fec_data._current_run_timesteps *
                 cls.get_simulation_time_step_ms())
+
+    # _allocation_controller
+    @classmethod
+    def has_allocation_controller(cls):
+        """
+        Reports if an AllocationController object has already been set
+
+        :return: True if and only if an AllocationController has been added and
+            not reset.
+        :rtype: bool
+        """
+        return cls.__fec_data._allocation_controller is not None
+
+    @classmethod
+    def get_allocation_controller(cls):
+        """
+        Returns the allocation controller if known
+
+        :rtype: AbstractMachineAllocationController
+        :raises SpiNNUtilsException:
+            If the buffer manager unavailable
+        """
+        if cls.__fec_data._allocation_controller is None:
+            raise cls._exception("allocation_controller")
+
+        return cls.__fec_data._allocation_controller
 
     # _buffer_manager
     @classmethod
@@ -437,6 +465,28 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._reset_number is None:
             raise cls._exception("run_number")
         return cls.__fec_data._reset_number
+
+    @classmethod
+    def get_reset_str(cls):
+        """
+        Get the number of times a reset has happene as a string. Zero as ""
+
+        Only counts the first reset after each run.
+
+        So resets that are first soft then hard are ignored.
+        Double reset calls without a run and resets before run are ignored.
+
+        Reset numbers start at zero
+
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the run_number is currently unavailable
+        """
+        if cls.__fec_data._reset_number is None:
+            raise cls._exception("run_number")
+        if cls.__fec_data._reset_number:
+            return str(cls.__fec_data._reset_number)
+        else:
+            return ""
 
     #  run number
 

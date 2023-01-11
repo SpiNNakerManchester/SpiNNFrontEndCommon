@@ -58,18 +58,12 @@ MILLIWATTS_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
 N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
-def compute_energy_used(machine_allocation_controller=None):
+def compute_energy_used():
     """ This algorithm does the actual work of computing energy used by a\
         simulation (or other application) running on SpiNNaker.
 
-    :param MachineAllocationController machine_allocation_controller:
-        (optional)
     :rtype: PowerUsed
     """
-    # pylint: disable=too-many-arguments
-    runtime_total_ms = (
-            FecDataView.get_current_run_timesteps() *
-            FecDataView.get_time_scale_factor())
     machine = FecDataView.get_machine()
     with GlobalProvenance() as db:
         dsg_time = db.get_category_timer_sum(TimerCategory.DATA_GENERATION)
@@ -103,21 +97,20 @@ def compute_energy_used(machine_allocation_controller=None):
     total_booted_time = execute_time + load_time
     _compute_energy_consumption(
          machine, dsg_time, load_time, mapping_time, total_booted_time,
-         machine_allocation_controller, runtime_total_ms, power_used)
+         runtime_total_ms, power_used)
 
     return power_used
 
 
 def _compute_energy_consumption(
         machine, dsg_time, load_time, mapping_time, total_booted_time,
-        job, runtime_total_ms, power_used):
+        runtime_total_ms, power_used):
     """
     :param ~.Machine machine:
     :param float dsg_time:
     :param float load_time:
     :param float mapping_time:
     :param float total_booted_time:
-    :param MachineAllocationController job:
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     """
@@ -133,7 +126,7 @@ def _compute_energy_consumption(
 
     # figure how many frames are using, as this is a constant cost of
     # routers, cooling etc
-    power_used.num_frames = _calculate_n_frames(machine, job)
+    power_used.num_frames = _calculate_n_frames(machine)
 
     # figure load time cost
     power_used.loading_joules = _calculate_loading_energy(
@@ -141,11 +134,11 @@ def _compute_energy_consumption(
 
     # figure the down time idle cost for mapping
     power_used.mapping_joules = _calculate_power_down_energy(
-        mapping_time, machine, job, power_used.num_frames)
+        mapping_time, machine, power_used.num_frames)
 
     # figure the down time idle cost for DSG
     power_used.data_gen_joules = _calculate_power_down_energy(
-        dsg_time, machine, job, power_used.num_frames)
+        dsg_time, machine, power_used.num_frames)
 
     # figure extraction time cost
     power_used.saving_joules = _calculate_data_extraction_energy(
@@ -448,13 +441,11 @@ def _calculate_idle_cost(time, machine):
             machine.DEFAULT_MAX_CORES_PER_CHIP)
 
 
-def _calculate_power_down_energy(time, machine, job, n_frames):
+def _calculate_power_down_energy(time, machine, n_frames):
     """ Calculate power down costs
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:
-    :param AbstractMachineAllocationController job:
-        the spalloc job object
     :param int n_frames: number of frames used by this machine
     :return: energy in joules
     :rtype: float
@@ -462,7 +453,7 @@ def _calculate_power_down_energy(time, machine, job, n_frames):
     # pylint: disable=too-many-arguments
 
     # if spalloc or hbp
-    if job is not None:
+    if FecDataView.has_allocation_controller():
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
     # if 4 chip
     elif machine.n_chips <= 4:
@@ -472,25 +463,24 @@ def _calculate_power_down_energy(time, machine, job, n_frames):
         return time * MILLIWATTS_FOR_BOXED_48_CHIP_FRAME_IDLE_COST
 
 
-def _calculate_n_frames(machine, job):
+def _calculate_n_frames(machine):
     """ Figures out how many frames are being used in this setup.\
         A key of cabinet,frame will be used to identify unique frame.
 
     :param ~.Machine machine: the machine object
-    :param AbstractMachineAllocationController job:
-        the spalloc job object
     :return: number of frames
     :rtype: int
     """
 
     # if not spalloc, then could be any type of board, but unknown cooling
-    if job is None:
+    if not FecDataView.has_allocation_controller():
         return 0
 
-    # if using spalloc in some form
+    # using spalloc in some form; how many unique frames?
     cabinet_frame = set()
+    mac = FecDataView.get_allocation_controller()
     for ethernet_connected_chip in machine.ethernet_connected_chips:
-        cabinet, frame, _ = job.where_is_machine(
+        cabinet, frame, _ = mac.where_is_machine(
             ethernet_connected_chip.x, ethernet_connected_chip.y)
         cabinet_frame.add((cabinet, frame))
     return len(cabinet_frame)

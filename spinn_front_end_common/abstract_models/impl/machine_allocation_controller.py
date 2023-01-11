@@ -19,8 +19,12 @@ from threading import Thread
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinnman.constants import SCP_SCAMP_PORT
+from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.transceiver import create_transceiver_from_hostname
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -31,16 +35,21 @@ class MachineAllocationController(
     """
     __slots__ = [
         #: boolean flag for telling this thread when the system has ended
-        "_exited"
+        "_exited",
+        #: the address of the root board of the allocation
+        "__hostname",
+        "__connection_data"
     ]
 
-    def __init__(self, thread_name):
+    def __init__(self, thread_name, hostname=None, connection_data=None):
         """
         :param str thread_name:
         """
         thread = Thread(name=thread_name, target=self.__manage_allocation)
         thread.daemon = True
         self._exited = False
+        self.__hostname = hostname
+        self.__connection_data = connection_data
         thread.start()
 
     @overrides(AbstractMachineAllocationController.close)
@@ -70,3 +79,39 @@ class MachineAllocationController(
                 "The allocated machine has been released before the end of"
                 " the script; this script will now exit")
             sys.exit(1)
+
+    @overrides(AbstractMachineAllocationController.create_transceiver)
+    def create_transceiver(self):
+        if not self.__hostname:
+            return None
+        txrx = create_transceiver_from_hostname(
+            hostname=self.__hostname,
+            bmp_connection_data=None,
+            version=5, auto_detect_bmp=False)
+        txrx.ensure_board_is_ready()
+        txrx.discover_scamp_connections()
+        return txrx
+
+    @overrides(AbstractMachineAllocationController.open_sdp_connection)
+    def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
+        if not self.__connection_data:
+            return None
+        host = self.__connection_data[chip_x, chip_y]
+        if not host:
+            return None
+        return SCAMPConnection(
+            chip_x=chip_x, chip_y=chip_y,
+            remote_host=host, remote_port=udp_port)
+
+    @overrides(AbstractMachineAllocationController.open_eieio_connection)
+    def open_eieio_connection(self, chip_x, chip_y):
+        if not self.__connection_data:
+            return None
+        host = self.__connection_data[chip_x, chip_y]
+        if not host:
+            return None
+        return EIEIOConnection(remote_host=host, remote_port=SCP_SCAMP_PORT)
+
+    @overrides(AbstractMachineAllocationController.open_eieio_listener)
+    def open_eieio_listener(self):
+        return EIEIOConnection()
