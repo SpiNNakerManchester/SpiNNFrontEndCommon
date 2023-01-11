@@ -97,46 +97,72 @@ def __write_timer_report(f, reader, timer_report_ratio, timer_report_ms):
     """
     f.write("Summary timer report\n-------------------\n\n")
 
-    total = __report_category_sums(f, reader)
-    __report_works_sums(f, reader)
+    len_name, len_time, len_runs = __get_sizes(reader)
+    total = __report_category_sums(f, reader, len_name, len_time)
+    __report_works_sums(f, reader, len_name, len_time)
     __report_algorithms(
-        f, reader, total, timer_report_ratio, timer_report_ms)
+        f, reader, total, timer_report_ratio, timer_report_ms,
+        len_name, len_time, len_runs)
 
 
-def __report_category_sums(f, reader):
+def __get_sizes(reader):
+    len_name = 0
+    max_time = 0
+    max_runs = 0
+    for category in TimerCategory:
+        on, off = reader.get_category_timer_sums(category)
+        max_time = max(max_time, on, off)
+        len_name = max(len_name, len(category.category_name))
+    for work in TimerWork:
+        time = reader.get_timer_sum_by_work(work)
+        max_time = max(max_time, time)
+        len_name = max(len_name, len(work.work_name))
+    data = reader.get_all_timer_provenance()
+    for name, time, runs in data:
+        max_time = max(max_time, time)
+        len_name = max(len_name, len(name))
+        max_runs = max(max_runs, runs)
+    time_st = f"{max_time:.3f}"
+    run_st = f"{max_runs:d}"
+    return len_name, len(time_st), len(run_st)
+
+
+def __report_category_sums(f, reader, len_name, len_time):
     """
-
      :param ~io.TextIOBase f: file writer
      :param ProvenanceReader reader:
      """
     total_on = 0
     total_off = 0
-    f.write("category_name                  time_on     time_off\n")
+    f.write(f"{'category_name':{len_name}}   {'time_on':>{len_time}}   "
+            f"time_off{len_time}>\n")
     for category in TimerCategory:
         on, off = reader.get_category_timer_sums(category)
         total_on += on
         total_off += off
-        f.write(f"{category.category_name:18} {on:10.3f}ms {off:10.3f}ms \n")
-    f.write(f"\nIn total the script took {(total_on + total_off):10.2f} "
-            f"of which the machine was on for {total_on:10.2f}\n\n")
+        f.write(f"{category.category_name:{len_name}} {on:{len_time}.3f}ms "
+                f"{off:{len_time}.3f}ms \n")
+    f.write(f"\nIn total the script took {(total_on + total_off):10.2f}ms "
+            f"of which the machine was on for {total_on:10.2f}ms\n\n")
     return total_on + total_off
 
 
-def __report_works_sums(f, reader):
+def __report_works_sums(f, reader, len_name, len_time):
     """
 
      :param ~io.TextIOBase f: file writer
      :param ProvenanceReader reader:
      """
-    f.write("work type         time\n")
+    f.write(f"{'work type':{len_name}}   {'time':>{len_time}}\n")
     for work in TimerWork:
         time = reader.get_timer_sum_by_work(work)
-        f.write(f"{work.work_name:18} {time:10.3f}ms\n")
+        f.write(f"{work.work_name:{len_name}} {time:{len_time}.3f}ms\n")
     f.write("\n\n")
 
 
 def __report_algorithms(
-        f, reader, total, timer_report_ratio, timer_report_ms):
+        f, reader, total, timer_report_ratio, timer_report_ms,
+        len_name, len_time, len_runs):
     """ Write time report into the file
 
     :param ~io.TextIOBase f: file writer
@@ -169,8 +195,13 @@ def __report_algorithms(
         cutoff = timer_report_ms
         f.write(f"algorithms which ran for longer than {cutoff}ms\n")
     data = reader.get_all_timer_provenance()
-    f.write("Name                       total_time n_runs\n")
+    if len_time >= 8:
+        f.write(f"{'Name':{len_name}}   {'total_time':>{len_time}} n_runs\n")
+    else:
+        cat_len = len_name - 10
+        f.write(f"{'Name':{cat_len}} total_time n_runs\n")
     for name, time, count in data:
         if time > cutoff:
-            f.write(f"{name:35} {time:10.3f} {count}\n")
+            f.write(f"{name:{len_name}} {time:{len_time}.3f}ms     "
+                    f"{count:{len_runs}d}\n")
     f.write("\n\n")
