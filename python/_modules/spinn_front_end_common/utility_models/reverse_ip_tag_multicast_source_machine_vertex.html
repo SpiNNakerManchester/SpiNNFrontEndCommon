@@ -99,6 +99,8 @@
 
 <span class="c1"># The microseconds per timestep will be divided by this for the max offset</span>
 <span class="n">_MAX_OFFSET_DENOMINATOR</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="c1"># The max offset modulo to stop spikes in simple cases moving to the next ts</span>
+<span class="n">_MAX_OFFSET_MODULO</span> <span class="o">=</span> <span class="mi">1000</span>
 
 
 <span class="k">class</span> <span class="nc">ReverseIPTagMulticastSourceMachineVertex</span><span class="p">(</span>
@@ -686,9 +688,9 @@
         <span class="n">max_offset</span> <span class="o">=</span> <span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_hardware_time_step_us</span><span class="p">()</span> <span class="o">//</span> <span class="p">(</span>
             <span class="n">_MAX_OFFSET_DENOMINATOR</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span>
-            <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vertices</span><span class="p">))</span> <span class="o">*</span>
-             <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">_n_data_specs</span><span class="p">)</span> <span class="o">+</span>
-            <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span><span class="p">)))</span>
+            <span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vertices</span><span class="p">))</span> <span class="o">*</span>
+              <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">_n_data_specs</span><span class="p">)</span> <span class="o">+</span>
+             <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">max_offset</span><span class="p">)))</span> <span class="o">%</span> <span class="n">_MAX_OFFSET_MODULO</span><span class="p">)</span>
         <span class="n">ReverseIPTagMulticastSourceMachineVertex</span><span class="o">.</span><span class="n">_n_data_specs</span> <span class="o">+=</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="ReverseIPTagMulticastSourceMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
