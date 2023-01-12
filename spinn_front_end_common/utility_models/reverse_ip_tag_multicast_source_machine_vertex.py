@@ -576,7 +576,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self):
+    def update_virtual_key(self):
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None
@@ -661,7 +661,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             ):
-        self._update_virtual_key()
+        self.update_virtual_key()
 
         # Reserve regions
         self._reserve_regions(spec)
