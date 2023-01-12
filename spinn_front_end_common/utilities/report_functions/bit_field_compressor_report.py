@@ -23,8 +23,6 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import \
     (ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
-from spinn_front_end_common.utilities.exceptions import (
-    NoProvenanceDatabaseException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -62,11 +60,6 @@ def bitfield_compressor_report():
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", _FILE_NAME)
-        return
-    except NoProvenanceDatabaseException:
-        logger.exception(
-            "No proveance found to write bitfield_compressor_report")
-        return
 
 
 def _merged_component(to_merge_per_chip, writer):
