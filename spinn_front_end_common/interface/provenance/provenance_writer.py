@@ -35,7 +35,7 @@ class ProvenanceWriter(BaseDatabase):
 
     __slots__ = []
 
-    def __init__(self, database_file=None, memory=False):
+    def __init__(self, database_file=None):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
