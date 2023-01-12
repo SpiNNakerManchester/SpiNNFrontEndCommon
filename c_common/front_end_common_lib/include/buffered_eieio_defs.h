@@ -27,10 +27,8 @@
 
 //! The different command message IDs
 typedef enum eieio_command_messages {
-    //! Database handshake with visualiser
-    DATABASE_CONFIRMATION = 1,
     //! Fill in buffer area with padding
-    EVENT_PADDING,
+    EVENT_PADDING = 2,
     //! End of all buffers, stop execution
     EVENT_STOP_COMMANDS,
     //! Stop complaining that there is SDRAM free space for buffers

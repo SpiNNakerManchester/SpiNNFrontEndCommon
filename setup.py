@@ -69,6 +69,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     packages=packages,
     package_data=package_data,
@@ -79,7 +80,6 @@ setup(
                       'SpiNNaker_DataSpecification == 1!6.0.1',
                       'spalloc == 1!6.0.1',
                       'requests >= 2.4.1',
-                      "scipy >= 0.16.0, < 1.6; python_version == '3.6'",
                       "scipy >= 0.16.0, < 1.8; python_version == '3.7'",
                       "scipy >= 0.16.0; python_version >= '3.8'"],
     extras_require={

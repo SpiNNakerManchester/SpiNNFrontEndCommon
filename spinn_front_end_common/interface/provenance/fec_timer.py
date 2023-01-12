@@ -107,10 +107,10 @@ class FecTimer(object):
 
     def skip(self, reason):
         message = f"{self._algorithm} skipped as {reason}"
-        timedelta = self._stop_timer()
+        time_taken = self._stop_timer()
         with ProvenanceWriter() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
-                             timedelta, reason)
+                             time_taken, reason)
         self._report(message)
 
     def skip_if_has_not_run(self):
@@ -155,11 +155,11 @@ class FecTimer(object):
             return True
 
     def error(self, reason):
-        timedelta = self._stop_timer()
-        message = f"{self._algorithm} failed after {timedelta} as {reason}"
+        time_taken = self._stop_timer()
+        message = f"{self._algorithm} failed after {time_taken} as {reason}"
         with ProvenanceWriter() as db:
             db.insert_timing(self._category_id, self._algorithm,
-                             self._work, timedelta, reason)
+                             self._work, time_taken, reason)
         self._report(message)
 
     def _stop_timer(self):
@@ -176,23 +176,23 @@ class FecTimer(object):
     def __exit__(self, exc_type, exc_value, traceback):
         if self._start_time is None:
             return False
-        timedelta = self._stop_timer()
+        time_taken = self._stop_timer()
         if exc_type is None:
-            message = f"{self._algorithm} took {timedelta} "
+            message = f"{self._algorithm} took {time_taken} "
             skip = None
         else:
             try:
                 message = (f"{self._algorithm} exited with "
-                           f"{exc_type.__name__} after {timedelta}")
+                           f"{exc_type.__name__} after {time_taken}")
                 skip = exc_type.__name__
             except Exception as ex:  # pylint: disable=broad-except
                 message = f"{self._algorithm} exited with an exception" \
-                          f"after {timedelta}"
+                          f"after {time_taken}"
                 skip = f"Exception {ex}"
 
         with ProvenanceWriter() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
-                             timedelta, skip)
+                             time_taken, skip)
         self._report(message)
         return False
 
