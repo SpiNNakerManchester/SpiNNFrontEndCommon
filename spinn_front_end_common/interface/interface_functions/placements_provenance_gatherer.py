@@ -81,10 +81,10 @@ def _add_structured_provenance(placement, errors):
         sdram_per_timestep = placement.vertex.sdram_required.per_timestep
 
         label = placement.vertex.label
-        slice = placement.vertex.vertex_slice
-        max_atom = slice.hi_atom
-        min_atom = slice.lo_atom
-        no_atoms = slice.n_atoms
+        vertex_slice = placement.vertex.vertex_slice
+        max_atom = vertex_slice.hi_atom
+        min_atom = vertex_slice.lo_atom
+        no_atoms = vertex_slice.n_atoms
 
         structured_provenance = [
             pop, label, min_atom, max_atom, no_atoms, fixed_sdram,
