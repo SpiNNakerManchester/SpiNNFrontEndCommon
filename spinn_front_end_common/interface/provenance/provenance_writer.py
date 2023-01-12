@@ -218,6 +218,6 @@ class ProvenanceWriter(BaseDatabase):
                 INSERT INTO reports(message)
                 VALUES(?)
                 """, [text])
-            cur.lastrowid
+            cur.lastrowid  # pylint: disable=pointless-statement
             # try logging and storing while locked.
             logger.warning(text)

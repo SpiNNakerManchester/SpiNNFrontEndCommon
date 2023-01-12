@@ -61,6 +61,8 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 # The microseconds per timestep will be divided by this for the max offset
 _MAX_OFFSET_DENOMINATOR = 10
+# The max offset modulo to stop spikes in simple cases moving to the next ts
+_MAX_OFFSET_MODULO = 1000
 
 
 class ReverseIPTagMulticastSourceMachineVertex(
@@ -648,9 +650,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            (int(math.ceil(max_offset / self._n_vertices)) *
-             ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-            int(math.ceil(max_offset)))
+            ((int(math.ceil(max_offset / self._n_vertices)) *
+              ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
+             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(
