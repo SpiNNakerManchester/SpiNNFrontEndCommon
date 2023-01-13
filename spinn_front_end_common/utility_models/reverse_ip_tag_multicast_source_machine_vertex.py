@@ -696,12 +696,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @property
-    def virtual_key(self):
+    def get_virtual_key(self):
         """
+        Updates and returns the virtual key. None is give a zero value
+
         :rtype: int or None
         """
-        return self._virtual_key
+        self.update_virtual_key()
+        if self._virtual_key:
+            return self._virtual_key
+        return 0
 
     @property
     def mask(self):
