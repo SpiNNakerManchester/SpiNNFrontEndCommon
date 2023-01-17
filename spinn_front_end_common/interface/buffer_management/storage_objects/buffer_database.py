@@ -126,28 +126,6 @@ class BufferDatabase(BaseDatabase):
             data = c_buffer
         return memoryview(data)
 
-    @staticmethod
-    def __get_core_id(cursor, x, y, p):
-        """
-        :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: int
-        """
-        for row in cursor.execute(
-                """
-                SELECT core_id FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                LIMIT 1
-                """, (x, y, p)):
-            return row["core_id"]
-        cursor.execute(
-            """
-            INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
-            """, (x, y, p))
-        return cursor.lastrowid
-
     def _get_region_id(self, cursor, x, y, p, region):
         """
         :param ~sqlite3.Cursor cursor:

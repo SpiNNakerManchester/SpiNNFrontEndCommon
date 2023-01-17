@@ -63,6 +63,7 @@ jobs:
       uses: ./support/actions/pylint
       with: 
         package: spinn_front_end_common
+        exitcheck: 39
 
     - name: Run rat copyright enforcement
       if: matrix.python-version == 3.8

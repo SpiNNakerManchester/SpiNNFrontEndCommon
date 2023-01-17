@@ -469,7 +469,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_reset_str(cls):
         """
-        Get the number of times a reset has happene as a string. Zero as ""
+        Get the number of times a reset has happened as a string.
+
+        An empty string is returned if the system has never been reset
+        (ie the reset number is 0)
 
         Only counts the first reset after each run.
 

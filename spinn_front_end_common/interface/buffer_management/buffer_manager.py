@@ -82,18 +82,6 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         "_sent_messages",
 
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_out",
-
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_in",
-
-        # bool flag
-        "_finished",
-
-        # listener port
-        "_listener_port",
-
         # Support class to help call Java
         "_java_caller",
 
