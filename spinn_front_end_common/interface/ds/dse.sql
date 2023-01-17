@@ -23,37 +23,44 @@ PRAGMA main.synchronous = OFF;
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the ethernets.
 CREATE TABLE IF NOT EXISTS ethernet(
-	ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	ethernet_x INTEGER NOT NULL,
-	ethernet_y INTEGER NOT NULL,
-	ip_address TEXT UNIQUE NOT NULL);
+    ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ethernet_x INTEGER NOT NULL,
+    ethernet_y INTEGER NOT NULL,
+    ip_address TEXT UNIQUE NOT NULL);
 -- Every ethernet has a unique chip location in virtual space.
 CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
-	ethernet_x ASC, ethernet_y ASC);
+    ethernet_x ASC, ethernet_y ASC);
 
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the cores and the DSE info to write to them.
 CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
-	x INTEGER NOT NULL,
-	y INTEGER NOT NULL,
-	processor INTEGER NOT NULL,
-	ethernet_id INTEGER NOT NULL
-		REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
-	is_system INTEGER DEFAULT 0,
-	app_id INTEGER,
-	content BLOB,
-	start_address INTEGER,
-	memory_used INTEGER,
-	memory_written INTEGER);
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    processor INTEGER NOT NULL,
+    ethernet_id INTEGER NOT NULL
+        REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
+    is_system INTEGER DEFAULT 0,
+    app_id INTEGER,
+    content BLOB,
+    start_address INTEGER,
+    memory_used INTEGER,
+    memory_written INTEGER);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
-	x ASC, y ASC, processor ASC);
+    x ASC, y ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-	SELECT ethernet_id, core_id,
-		ethernet_x, ethernet_y, ip_address,
-		x, y, processor, is_system, app_id, content,
-		start_address, memory_used, memory_written
-	FROM ethernet NATURAL JOIN core;
+    SELECT ethernet_id, core_id,
+        ethernet_x, ethernet_y, ip_address,
+        x, y, processor, is_system, app_id, content,
+        start_address, memory_used, memory_written
+    FROM ethernet NATURAL JOIN core;
+
+-- Information about how to access the connection proxying
+-- WARNING! May include credentials
+CREATE TABLE IF NOT EXISTS proxy_configuration(
+    kind TEXT NOT NULL,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL);

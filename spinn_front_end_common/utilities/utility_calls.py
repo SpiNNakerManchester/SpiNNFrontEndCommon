@@ -20,7 +20,12 @@ import io
 import os
 import tempfile
 import threading
+from urllib.parse import urlparse
 from spinn_utilities.config_holder import get_config_bool
+from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.utilities.utility_functions import (
+    reprogram_tag, reprogram_tag_to_listener)
+from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
 from data_specification.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from data_specification.data_specification_generator import (
@@ -122,3 +127,87 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))
     return io.TextIOWrapper(io.FileIO(name, "w"))
+
+
+def parse_old_spalloc(
+        spalloc_server, spalloc_port=22244, spalloc_user="unknown user"):
+    """
+    Parse a URL to the old-style service. This may take the form:
+
+        spalloc://user@spalloc.host.example.com:22244
+
+    The leading ``spalloc://`` is the mandatory part (as is the actual host
+    name). If the port and user are omitted, the defaults given in the other
+    arguments are used (or default defaults).
+
+    A bare hostname can be used instead. If that's the case (i.e., there's no
+    ``spalloc://`` prefix) then the port and user are definitely used.
+
+    :param str spalloc_server: Hostname or URL
+    :param int spalloc_port: Default port
+    :param str spalloc_user: Default user
+    :return: hostname, port, username
+    :rtype: tuple(str,int,str)
+    """
+    if spalloc_port is None or spalloc_port == "":
+        spalloc_port = 22244
+    if spalloc_user is None or spalloc_user == "":
+        spalloc_user = "unknown user"
+    parsed = urlparse(spalloc_server, "spalloc")
+    if parsed.netloc == "":
+        return spalloc_server, spalloc_port, spalloc_user
+    return parsed.hostname, (parsed.port or spalloc_port), \
+        (parsed.username or spalloc_user)
+
+
+def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
+    """
+    Make a tag deliver to the given connection.
+
+    :param ~.UDPConnection connection:
+        The connection to deliver to.
+    :param int x:
+        The X coordinate of the ethernet chip we are sending the message to.
+    :param int y:
+        The Y coordinate of the ethernet chip we are sending the message to.
+    :param int tag:
+        The ID of the tag to retarget.
+    :param str ip_address:
+        What IP address to send the message to. If ``None``, the connection is
+        assumed to be connected to a specific board already.
+    :param bool strip:
+        Whether the tag should strip the SDP header before sending to the
+        connection.
+    """
+    # If the connection itself knows how, delegate to it
+    if isinstance(connection, SpallocEIEIOListener):
+        connection.update_tag(x, y, tag)
+    elif isinstance(connection, SpallocEIEIOConnection):
+        connection.update_tag(tag)
+    elif ip_address:
+        reprogram_tag_to_listener(connection, x, y, ip_address, tag, strip)
+    else:
+        reprogram_tag(connection, tag, strip)
+
+
+def open_scp_connection(chip_x, chip_y, chip_ip_address):
+    """
+    Create an SCP connection to the given ethernet chip. SpiNNaker will
+    not be configured to map that connection to a tag; that is the
+    caller's responsibility.
+
+    :param int chip_x:
+        X coordinate of the ethernet chip to connect to.
+    :param int chip_y:
+        Y coordinate of the ethernet chip to connect to.
+    :param str chip_ip_address:
+        IP address of the ethernet chip to connect to.
+    :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
+    """
+    if FecDataView.has_allocation_controller():
+        # See if the allocation controller wants to do it
+        conn = FecDataView.get_allocation_controller().open_sdp_connection(
+            chip_x, chip_y)
+        if conn:
+            return conn
+    return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
