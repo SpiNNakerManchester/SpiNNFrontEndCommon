@@ -127,16 +127,6 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     return false;
 }
 
-__attribute__((noreturn))
-//! \brief Stop the program because of a bad recording request
-//! \param[in] data: The address we were seeking to record from
-//! \param[in] size: The amount of data we were seeking to record
-void recording_bad_offset(void *data, uint32_t size) {
-    log_error("DMA transfer of non-word data quantity in recording! "
-            "(data=0x%08x, size=0x%x)", data, size);
-    rt_error(RTE_SWERR);
-}
-
 void recording_finalise(void) {
     log_debug("Finalising recording channels");
 
