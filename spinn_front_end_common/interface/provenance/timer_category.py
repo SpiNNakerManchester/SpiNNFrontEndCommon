@@ -32,6 +32,9 @@ class TimerCategory(Enum):
     RUN_LOOP = (auto(), "Running Stage")
     RESETTING = (auto(), "Resetting")
     SHUTTING_DOWN = (auto(), "Shutting down")
+    POP_RECORD = (auto(), "Pop Record")
+    POP_GET_DATA = (auto(), "Pop Get Data")
+    POP_WRITE_DATA = (auto(), "Pop Write Data")
 
     def __new__(cls, value, category_name):
         # pylint: disable=protected-access
