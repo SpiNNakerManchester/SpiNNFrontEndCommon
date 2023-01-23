@@ -89,7 +89,7 @@ class SpallocJobController(MachineAllocationController):
         :param int chip_y:
         :rtype: tuple(int,int,int)
         """
-        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+        return self._job.where_is_machine(x=chip_x, y=chip_y)
 
     @overrides(MachineAllocationController._wait)
     def _wait(self):
