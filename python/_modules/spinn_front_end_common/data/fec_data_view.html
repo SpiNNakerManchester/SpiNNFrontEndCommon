@@ -112,6 +112,7 @@
         <span class="s2">&quot;_notification_protocol&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_max_run_time_steps&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_monitor_map&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_reset_number&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_run_number&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_run_step&quot;</span><span class="p">,</span>
         <span class="s2">&quot;_simulation_time_step_ms&quot;</span><span class="p">,</span>
@@ -149,6 +150,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_boards_required</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_chips_required</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_none_labelled_edge_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_number</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_number</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_simulation_time_step_ms</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_simulation_time_step_per_ms</span> <span class="o">=</span> <span class="kc">None</span>
@@ -478,6 +480,53 @@
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_time_scale_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+    <span class="c1">#  reset number</span>
+
+<div class="viewcode-block" id="FecDataView.get_reset_number"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_reset_number">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_reset_number</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of times a reset has happened.</span>
+
+<span class="sd">        Only counts the first reset after each run.</span>
+
+<span class="sd">        So resets that are first soft then hard are ignored.</span>
+<span class="sd">        Double reset calls without a run and resets before run are ignored.</span>
+
+<span class="sd">        Reset numbers start at zero</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
+<span class="sd">            If the run_number is currently unavailable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_reset_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_exception</span><span class="p">(</span><span class="s2">&quot;run_number&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_reset_number</span></div>
+
+<div class="viewcode-block" id="FecDataView.get_reset_str"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_reset_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_reset_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of times a reset has happened as a string.</span>
+
+<span class="sd">        An empty string is returned if the system has never been reset</span>
+<span class="sd">        (ie the reset number is 0)</span>
+
+<span class="sd">        Only counts the first reset after each run.</span>
+
+<span class="sd">        So resets that are first soft then hard are ignored.</span>
+<span class="sd">        Double reset calls without a run and resets before run are ignored.</span>
+
+<span class="sd">        Reset numbers start at zero</span>
+
+<span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
+<span class="sd">            If the run_number is currently unavailable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_reset_number</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_exception</span><span class="p">(</span><span class="s2">&quot;run_number&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_reset_number</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_reset_number</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
 
     <span class="c1">#  run number</span>
 

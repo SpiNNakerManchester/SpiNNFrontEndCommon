@@ -119,9 +119,6 @@
         <span class="c1"># Dictionary of sender vertex -&gt; buffers sent</span>
         <span class="s2">&quot;_sent_messages&quot;</span><span class="p">,</span>
 
-        <span class="c1"># storage area for received data from cores</span>
-        <span class="s2">&quot;_db&quot;</span><span class="p">,</span>
-
         <span class="c1"># Support class to help call Java</span>
         <span class="s2">&quot;_java_caller&quot;</span><span class="p">,</span>
 
@@ -138,11 +135,9 @@
         <span class="c1"># Dictionary of sender vertex -&gt; buffers sent</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sent_messages</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
-        <span class="c1"># storage area for received data from cores</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span> <span class="o">=</span> <span class="n">BufferDatabase</span><span class="p">()</span>
-
         <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_java_caller</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">write_session_credentials_to_db</span><span class="p">()</span>
+            <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">write_session_credentials_to_db</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_java_caller</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;enable_advanced_monitor_support&quot;</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_java_caller</span><span class="o">.</span><span class="n">set_advanced_monitors</span><span class="p">()</span>
@@ -225,8 +220,9 @@
 <span class="sd">            data files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1">#</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">write_session_credentials_to_db</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+
+            <span class="n">db</span><span class="o">.</span><span class="n">write_session_credentials_to_db</span><span class="p">()</span>
 
         <span class="c1"># rewind buffered in</span>
         <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sender_vertices</span><span class="p">:</span>
@@ -245,7 +241,8 @@
 <span class="sd">        :param int p: placement p coordinate</span>
 <span class="sd">        :param int recording_region_id: the recording region ID</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">clear_region</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_create_message_to_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Creates a single message to send with the given boundaries.</span>
@@ -402,14 +399,15 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements recording_placements:</span>
 <span class="sd">            Where to get the data from.</span>
-<span class="sd">       &quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># get data</span>
         <span class="n">progress</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="nb">len</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">),</span>
             <span class="s2">&quot;Extracting buffers from the last run&quot;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_retreive_by_placement</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">recording_placements</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_retreive_by_placement</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">placement</span><span class="p">)</span>
 
 <div class="viewcode-block" id="BufferManager.get_data_by_placement"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">[docs]</a>    <span class="k">def</span> <span class="nf">get_data_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the data container for all the data retrieved\</span>
@@ -429,12 +427,14 @@
                 <span class="s2">&quot;so no data read&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="p">))</span>
 
         <span class="c1"># data flush has been completed - return appropriate data</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">get_region_data</span><span class="p">(</span>
-            <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
+        <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">db</span><span class="o">.</span><span class="n">get_region_data</span><span class="p">(</span>
+                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">recording_region_id</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">_retreive_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_retreive_by_placement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Retrieve the data for a vertex; must be locked first.</span>
 
+<span class="sd">        :param db BufferDatabase: dtabase to store into</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            the placement to get the data from</span>
 <span class="sd">        :param int recording_region_id: desired recording data region</span>
@@ -450,7 +450,7 @@
             <span class="n">size</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="n">sizes_and_addresses</span><span class="p">[</span><span class="n">region</span><span class="p">]</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_request_data</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_db</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
+            <span class="n">db</span><span class="o">.</span><span class="n">store_data_in_region_buffer</span><span class="p">(</span>
                 <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_region_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>

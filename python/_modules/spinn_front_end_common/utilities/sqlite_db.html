@@ -149,7 +149,7 @@
         <span class="k">if</span> <span class="n">text_factory</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">text_factory</span> <span class="o">=</span> <span class="n">text_factory</span>
 
-        <span class="k">if</span> <span class="n">ddl_file</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">read_only</span> <span class="ow">and</span> <span class="n">ddl_file</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ddl_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">sql</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="o">.</span><span class="n">executescript</span><span class="p">(</span><span class="n">sql</span><span class="p">)</span>

@@ -57,8 +57,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_config_bool</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance.provenance_writer</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ProvenanceWriter</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.global_provenance</span> <span class="kn">import</span> <span class="n">GlobalProvenance</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -145,7 +144,7 @@
 <div class="viewcode-block" id="FecTimer.skip"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.FecTimer.skip">[docs]</a>    <span class="k">def</span> <span class="nf">skip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
         <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> skipped as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span>
                              <span class="n">time_taken</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
@@ -193,8 +192,8 @@
 
 <div class="viewcode-block" id="FecTimer.error"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.FecTimer.error">[docs]</a>    <span class="k">def</span> <span class="nf">error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reason</span><span class="p">):</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_timer</span><span class="p">()</span>
-        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> failed after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> failed after </span><span class="si">{</span><span class="n">timedelta</span><span class="si">}</span><span class="s2"> as </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span>
                              <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">,</span> <span class="n">reason</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
@@ -227,7 +226,7 @@
                           <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">skip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span>
 
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_timing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_work</span><span class="p">,</span>
                              <span class="n">time_taken</span><span class="p">,</span> <span class="n">skip</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -242,7 +241,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time_now</span> <span class="o">=</span> <span class="n">_now</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_category_id</span><span class="p">:</span>
-            <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
                 <span class="n">diff</span> <span class="o">=</span> <span class="n">_convert_to_timedelta</span><span class="p">(</span><span class="n">time_now</span> <span class="o">-</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_category_time</span><span class="p">)</span>
                 <span class="n">db</span><span class="o">.</span><span class="n">insert_category_timing</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_category_id</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">time_now</span>
@@ -255,7 +254,7 @@
 <span class="sd">        :param TimerCategory category: Category to switch to</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time_now</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__stop_category</span><span class="p">()</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="bp">cls</span><span class="o">.</span><span class="n">_category_id</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">insert_category</span><span class="p">(</span><span class="n">category</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_machine_on</span><span class="p">)</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_category</span> <span class="o">=</span> <span class="n">category</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_category_time</span> <span class="o">=</span> <span class="n">time_now</span>

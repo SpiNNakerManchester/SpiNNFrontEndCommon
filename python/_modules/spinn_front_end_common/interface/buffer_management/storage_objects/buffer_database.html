@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>spinn_front_end_common.interface.buffer_management.storage_objects.sqllite_database &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <title>spinn_front_end_common.interface.buffer_management.storage_objects.buffer_database &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../../../_static/sphinxdoc.css" />
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
@@ -25,7 +25,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.storage_objects.sqllite_database</a></li> 
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.storage_objects.buffer_database</a></li> 
       </ul>
     </div>  
 
@@ -34,7 +34,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for spinn_front_end_common.interface.buffer_management.storage_objects.sqllite_database</h1><div class="highlight"><pre>
+  <h1>Source code for spinn_front_end_common.interface.buffer_management.storage_objects.buffer_database</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Copyright (c) 2017-2019 The University of Manchester</span>
 <span class="c1">#</span>
 <span class="c1"># This program is free software: you can redistribute it and/or modify</span>
@@ -50,25 +50,21 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sqlite3</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
 <span class="kn">from</span> <span class="nn">spinnman.spalloc.spalloc_job</span> <span class="kn">import</span> <span class="n">SpallocJob</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.base_database</span> <span class="kn">import</span> <span class="n">BaseDatabase</span>
 
-<span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;db.sql&quot;</span><span class="p">)</span>
 <span class="n">_SECONDS_TO_MICRO_SECONDS_CONVERSION</span> <span class="o">=</span> <span class="mi">1000</span>
 <span class="c1">#: Name of the database in the data folder</span>
-<span class="n">DB_FILE_NAME</span> <span class="o">=</span> <span class="s2">&quot;buffer.sqlite3&quot;</span>
 
 
 <span class="k">def</span> <span class="nf">_timestamp</span><span class="p">():</span>
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="n">_SECONDS_TO_MICRO_SECONDS_CONVERSION</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">BufferDatabase</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">,</span> <span class="n">AbstractContextManager</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">BufferDatabase</span><span class="p">(</span><span class="n">BaseDatabase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    There should only ever be a single Database Object in use at any time.</span>
@@ -85,57 +81,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str database_file:</span>
-<span class="sd">            The name of a file that contains (or will contain) an SQLite</span>
-<span class="sd">            database holding the data.</span>
-<span class="sd">            If omitted the default location will be used.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">database_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">()</span>
-
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span><span class="p">)</span>
-
-<div class="viewcode-block" id="BufferDatabase.default_database_file"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">default_database_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">DB_FILE_NAME</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="BufferDatabase.reset"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        UGLY SHOULD NOT NEVER DELETE THE FILE!</span>
-
-<span class="sd">        .. note::</span>
-<span class="sd">            This method will be removed when the database moves to</span>
-<span class="sd">            keeping data after reset.</span>
-
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">database_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_file</span><span class="p">):</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="BufferDatabase.clear"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the data for all regions.</span>
-
-<span class="sd">        .. note::</span>
-<span class="sd">            This method will be removed when the database moves to</span>
-<span class="sd">            keeping data after reset.</span>
-
-<span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                UPDATE region SET</span>
-<span class="sd">                    content = CAST(&#39;&#39; AS BLOB), content_len = 0,</span>
-<span class="sd">                    fetches = 0, append_time = NULL</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&quot;DELETE FROM region_extra&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BufferDatabase.clear_region"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region">[docs]</a>    <span class="k">def</span> <span class="nf">clear_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the data for a single region.</span>
@@ -174,75 +119,51 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">locus</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">__read_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_read_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~sqlite3.Cursor cursor:</span>
-<span class="sd">        :param int x:</span>
-<span class="sd">        :param int y:</span>
-<span class="sd">        :param int p:</span>
-<span class="sd">        :param int region:</span>
+<span class="sd">        :param int region_id:</span>
 <span class="sd">        :rtype: memoryview</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT region_id, content, have_extra</span>
+<span class="sd">                SELECT content</span>
 <span class="sd">                FROM region_view</span>
-<span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
-<span class="sd">                    AND local_region_index = ? LIMIT 1</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)):</span>
-            <span class="n">r_id</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">extra</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">row</span><span class="p">[</span><span class="s2">&quot;region_id&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;have_extra&quot;</span><span class="p">])</span>
+<span class="sd">                WHERE region_id = ?</span>
+<span class="sd">                LIMIT 1</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">region_id</span><span class="p">,)):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
             <span class="k">break</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="s2">&quot;no record for region (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">extra</span><span class="p">:</span>
-            <span class="n">c_buffer</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                    SELECT r.content_len + (</span>
-<span class="sd">                        SELECT SUM(x.content_len)</span>
-<span class="sd">                        FROM region_extra AS x</span>
-<span class="sd">                        WHERE x.region_id = r.region_id) AS len</span>
-<span class="sd">                    FROM region AS r WHERE region_id = ? LIMIT 1</span>
-<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">r_id</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">LookupError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;no record for region </span><span class="si">{</span><span class="n">region_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">c_buffer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                SELECT r.content_len + (</span>
+<span class="sd">                    SELECT SUM(x.content_len)</span>
+<span class="sd">                    FROM region_extra AS x</span>
+<span class="sd">                    WHERE x.region_id = r.region_id) AS len</span>
+<span class="sd">                FROM region AS r WHERE region_id = ? LIMIT 1</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">region_id</span><span class="p">,</span> <span class="p">)):</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;len&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">c_buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;len&quot;</span><span class="p">])</span>
                 <span class="n">c_buffer</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="k">if</span> <span class="n">c_buffer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                    SELECT content FROM region_extra</span>
 <span class="sd">                    WHERE region_id = ? ORDER BY extra_id ASC</span>
-<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">r_id</span><span class="p">,</span> <span class="p">)):</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">region_id</span><span class="p">,</span> <span class="p">)):</span>
                 <span class="n">item</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]</span>
                 <span class="n">c_buffer</span><span class="p">[</span><span class="n">idx</span><span class="p">:</span><span class="n">idx</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)]</span> <span class="o">=</span> <span class="n">item</span>
                 <span class="n">idx</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">c_buffer</span>
         <span class="k">return</span> <span class="nb">memoryview</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">__get_core_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~sqlite3.Cursor cursor:</span>
-<span class="sd">        :param int x:</span>
-<span class="sd">        :param int y:</span>
-<span class="sd">        :param int p:</span>
-<span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                SELECT core_id FROM region_view</span>
-<span class="sd">                WHERE x = ? AND y = ? AND processor = ?</span>
-<span class="sd">                LIMIT 1</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)):</span>
-            <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;core_id&quot;</span><span class="p">]</span>
-        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            INSERT INTO core(x, y, processor) VALUES(?, ?, ?)</span>
-<span class="sd">            &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">lastrowid</span>
-
-    <span class="k">def</span> <span class="nf">__get_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_region_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~sqlite3.Cursor cursor:</span>
 <span class="sd">        :param int x:</span>
@@ -258,7 +179,7 @@
 <span class="sd">                LIMIT 1</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;region_id&quot;</span><span class="p">]</span>
-        <span class="n">core_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_core_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+        <span class="n">core_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_core_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
         <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            INSERT INTO region(</span>
@@ -286,7 +207,7 @@
         <span class="c1"># TODO: Use missing</span>
         <span class="n">datablob</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Binary</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-            <span class="n">region_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_region_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+            <span class="n">region_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_region_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__use_main_table</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">region_id</span><span class="p">):</span>
                 <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -347,7 +268,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__read_contents</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+                <span class="n">region_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_region_id</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_contents</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">region_id</span><span class="p">)</span>
                 <span class="c1"># TODO missing data</span>
                 <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="kc">False</span>
         <span class="k">except</span> <span class="ne">LookupError</span><span class="p">:</span>
@@ -367,6 +289,50 @@
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">job</span><span class="p">,</span> <span class="n">SpallocJob</span><span class="p">):</span>
                 <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
                     <span class="n">job</span><span class="o">.</span><span class="n">_write_session_credentials_to_db</span><span class="p">(</span><span class="n">cur</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_core_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">core_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param ~sqlite3.Cursor cursor:</span>
+<span class="sd">        :param int x:</span>
+<span class="sd">        :param int y:</span>
+<span class="sd">        :param int p:</span>
+<span class="sd">        :param str core_name:</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO core (x, y, processor, core_name)</span>
+<span class="sd">                VALUES (?, ?, ? ,?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">core_name</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE core SET core_name = ?</span>
+<span class="sd">                WHERE x = ? AND y = ? and processor = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">core_name</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+
+<div class="viewcode-block" id="BufferDatabase.store_vertex_labels"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_vertex_labels">[docs]</a>    <span class="k">def</span> <span class="nf">store_vertex_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_core_name</span><span class="p">(</span><span class="n">cursor</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                                    <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span><span class="o">.</span><span class="n">chips</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">processor</span> <span class="ow">in</span> <span class="n">chip</span><span class="o">.</span><span class="n">processors</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">processor</span><span class="o">.</span><span class="n">is_monitor</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_set_core_name</span><span class="p">(</span>
+                            <span class="n">cursor</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">processor</span><span class="o">.</span><span class="n">processor_id</span><span class="p">,</span>
+                            <span class="sa">f</span><span class="s2">&quot;SCAMP(OS)_</span><span class="si">{</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BufferDatabase.get_core_name"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_core_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_core_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                    SELECT core_name</span>
+<span class="sd">                    FROM core</span>
+<span class="sd">                    WHERE x = ? AND y = ? and processor = ?</span>
+<span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)):</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;core_name&quot;</span><span class="p">],</span> <span class="s1">&#39;utf8&#39;</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>
@@ -400,7 +366,7 @@
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.storage_objects.sqllite_database</a></li> 
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.storage_objects.buffer_database</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

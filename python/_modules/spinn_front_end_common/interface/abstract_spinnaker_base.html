@@ -107,6 +107,8 @@
     <span class="n">AbstractCanReset</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data.fec_data_view</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management</span> <span class="kn">import</span> <span class="n">BufferManager</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
+    <span class="kn">import</span> <span class="nn">BufferDatabase</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.config_handler</span> <span class="kn">import</span> <span class="n">ConfigHandler</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.interface_functions</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">application_finisher</span><span class="p">,</span> <span class="n">application_runner</span><span class="p">,</span>
@@ -137,7 +139,7 @@
     <span class="n">host_no_bitfield_router_compression</span> <span class="kn">import</span> <span class="p">(</span>
         <span class="n">ordered_covering_compression</span><span class="p">,</span> <span class="n">pair_compression</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">FecTimer</span><span class="p">,</span> <span class="n">ProvenanceWriter</span><span class="p">,</span> <span class="n">TimerCategory</span><span class="p">,</span> <span class="n">TimerWork</span><span class="p">)</span>
+    <span class="n">FecTimer</span><span class="p">,</span> <span class="n">GlobalProvenance</span><span class="p">,</span> <span class="n">TimerCategory</span><span class="p">,</span> <span class="n">TimerWork</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.splitter_selectors</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">splitter_selector</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.java_caller</span> <span class="kn">import</span> <span class="n">JavaCaller</span>
@@ -495,6 +497,9 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">_do_mapping</span><span class="p">(</span><span class="n">total_run_time</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_last</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_do_write_metadata</span><span class="p">()</span>
+
         <span class="c1"># Check if anything has per-timestep SDRAM usage</span>
         <span class="n">is_per_timestep_sdram</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_per_timestep_sdram</span><span class="p">()</span>
 
@@ -779,7 +784,7 @@
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="n">ProvenanceWriter</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;spinn_utilities_version&quot;</span><span class="p">,</span> <span class="n">spinn_utils_version</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;spinn_machine_version&quot;</span><span class="p">,</span> <span class="n">spinn_machine_version</span><span class="p">)</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;spalloc_version&quot;</span><span class="p">,</span> <span class="n">spalloc_version</span><span class="p">)</span>
@@ -945,6 +950,15 @@
                 <span class="s2">&quot;Only a single algorithm is supported for placer&quot;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
             <span class="sa">f</span><span class="s2">&quot;Unexpected cfg setting placer: </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_do_write_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Do the various functions to write metadata to the sqlite files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
+                <span class="s2">&quot;Record vertex labels to database&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
+                <span class="n">db</span><span class="o">.</span><span class="n">store_vertex_labels</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_system_multicast_routing_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2341,11 +2355,6 @@
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Resetting&quot;</span><span class="p">)</span>
 
-        <span class="c1"># rewind the buffers from the buffer manager, to start at the beginning</span>
-        <span class="c1"># of the simulation again and clear buffered out</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_buffer_manager</span><span class="p">():</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_buffer_manager</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_user_accessed_machine</span><span class="p">():</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;A reset after a get machine call is always hard and &quot;</span>
@@ -2353,6 +2362,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">soft_reset</span><span class="p">()</span>
+
+        <span class="c1"># rewind the buffers from the buffer manager, to start at the beginning</span>
+        <span class="c1"># of the simulation again and clear buffered out</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_buffer_manager</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_buffer_manager</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
         <span class="c1"># Reset the graph off the machine, to set things to time 0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__reset_graph_elements</span><span class="p">()</span>

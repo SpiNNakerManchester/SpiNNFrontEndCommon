@@ -166,6 +166,319 @@ Or None to leave as is</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">GlobalProvenance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a></p>
+<p>Specific implementation of the Database for SQLite 3.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><em>Not thread safe on the same database file.</em>
+Threads can access different DBs just fine.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This totally relies on the way SQLite’s type affinities function.
+You can’t port to a different database engine without a lot of work.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>database_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The name of a file that contains (or will contain) an SQLite
+database holding the data.
+If omitted, either the default file path or an unshared in-memory
+database will be used (suitable only for testing).</p></li>
+<li><p><strong>memory</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Flag to say unshared in-memory can be used.
+Otherwise a None file will mean the default should be used</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sum">
+<span class="sig-name descname"><span class="pre">get_category_timer_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_category_timer_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one category of algorithms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sums">
+<span class="sig-name descname"><span class="pre">get_category_timer_sums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_category_timer_sums"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sums" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the runtime for one category of algorithms
+split machine on, machine off</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total on and off time of instances with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_global_provenace_path">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_global_provenace_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_global_provenace_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_global_provenace_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the path of the current provenance database of the last run</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Calling this method between start/reset and run may result in a
+path to a database not yet created.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#ValueError" title="(in Python v3.8)"><strong>ValueError</strong></a> – if the system is in a state where path can’t be retrieved,
+for example before run is called</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_time_of_BufferExtractor">
+<span class="sig-name descname"><span class="pre">get_run_time_of_BufferExtractor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_run_time_of_BufferExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_time_of_BufferExtractor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the BufferExtractor provenance item(s) from the last run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
+like %BufferExtractor description_name: value</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_times">
+<span class="sig-name descname"><span class="pre">get_run_times</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_run_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_times" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the algorithm running times from the last run. If an algorithm is
+invoked multiple times in the run, its times are summed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
+like a line <code class="docutils literal notranslate"><span class="pre">description_name:</span> <span class="pre">time</span></code>. The times are in seconds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_provenance">
+<span class="sig-name descname"><span class="pre">get_timer_provenance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_timer_provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_provenance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the timer provenance item(s) from the last run</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The value to LIKE search for in the algorithm column.
+Can be the full name, or have <code class="docutils literal notranslate"><span class="pre">%</span></code>  and <code class="docutils literal notranslate"><span class="pre">_</span></code> wildcards.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A possibly multiline string with for each row which matches the
+like a line <code class="docutils literal notranslate"><span class="pre">algorithm:</span> <span class="pre">value</span></code></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_algorithm">
+<span class="sig-name descname"><span class="pre">get_timer_sum_by_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_timer_sum_by_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_algorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total off all runtimes with this algorithm</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_category">
+<span class="sig-name descname"><span class="pre">get_timer_sum_by_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_timer_sum_by_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one category of algorithms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_work">
+<span class="sig-name descname"><span class="pre">get_timer_sum_by_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">work</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.get_timer_sum_by_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_work" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the total runtime for one work type of algorithms</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>total off all runtimes with this category</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category">
+<span class="sig-name descname"><span class="pre">insert_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_on</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.insert_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts category into the category_timer_provenance  returning id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – Name of Category starting</p></li>
+<li><p><strong>machine_on</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If the machine was done during all
+or some of the time</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category_timing">
+<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category_timing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts run time into the category</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – id of the Category finished</p></li>
+<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.insert_timing">
+<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_timing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts algorithms run times into the timer_provenance table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Category Id of the Algorithm</p></li>
+<li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
+<li><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – Type of work being done</p></li>
+<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
+<li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
+it was not skipped</p></li>
+</ul>
+</dd>
+<dt class="field-even">Tpye skip_reason<span class="colon">:</span></dt>
+<dd class="field-even"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.insert_version">
+<span class="sig-name descname"><span class="pre">insert_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.insert_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts data into the version_provenance table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The package for which the version applies</p></li>
+<li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The version to be recorded</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.retreive_log_messages">
+<span class="sig-name descname"><span class="pre">retreive_log_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.retreive_log_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.retreive_log_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves all log messages at or above the min_level</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>min_level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.run_query">
+<span class="sig-name descname"><span class="pre">run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.run_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.run_query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens a connection to the database, runs a query, extracts the results
+and closes the connection</p>
+<p>The return type depends on the use_sqlite_rows param.
+By default this method returns tuples (lookup by index) but the
+advanced tuple type can be used instead, which supports lookup by name
+used in the query (use <code class="docutils literal notranslate"><span class="pre">AS</span> <span class="pre">name</span></code> in the query to set).</p>
+<p>This method will not allow queries that change the database unless the
+read_only flag is set to False.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is mainly provided as a support method for the later
+methods that return specific data. For new IntergationTests
+please add a specific method rather than call this directly.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The SQL query to be run. May include <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards</p></li>
+<li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.8)"><em>Iterable</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – The values to replace the <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards with.
+The number and types must match what the query expects</p></li>
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></p></li>
+<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list possibly empty of tuples/rows
+(one for each row in the database)
+where the number and type of the values corresponds to the where
+statement</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a> or <a class="reference external" href="https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Row" title="(in Python v3.8)"><em>Row</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.GlobalProvenance.store_log">
+<span class="sig-name descname"><span class="pre">store_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/global_provenance.html#GlobalProvenance.store_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.store_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores log messages into the database</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.LogStoreDB">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">LogStoreDB</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.LogStoreDB" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LogStore</span></code></p>
@@ -213,7 +526,7 @@ Or None to leave as is</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">ProvenanceReader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">provenance_data_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDatabase</span></code></p>
 <p>Provides a connection to a database containing provenance for the current
 run and some convenience methods for extracting provenance data from it.</p>
 <p>By default this will wrap around the database used to store the
@@ -260,41 +573,6 @@ where their where late arriving spikes.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum">
-<span class="sig-name descname"><span class="pre">get_category_timer_sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_category_timer_sum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the total runtime for one category of algorithms</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>total off all runtimes with this category</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums">
-<span class="sig-name descname"><span class="pre">get_category_timer_sums</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_category_timer_sums"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the runtime for one category of algorithms
-split machine on, machine off</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>total on and off time of instances with this category</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace">
 <span class="sig-name descname"><span class="pre">get_cores_with_provenace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_cores_with_provenace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the cores with provenance</p>
@@ -304,48 +582,6 @@ split machine on, machine off</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle">
-<span class="sig-name descname"><span class="pre">get_database_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sqlite_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_database_handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a handle to the open database.</p>
-<p>You <em>should</em> use this as a Python context handler. A typical usage
-pattern is this:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">reader</span><span class="o">.</span><span class="n">get_database_handler</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
-    <span class="k">with</span> <span class="n">db</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
-            <span class="c1"># process row</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method is mainly provided as a support method for the later
-methods that return specific data. For new IntergationTests
-please add a specific method rather than call this directly.</p>
-</div>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>It is the callers responsibility to close the database.
-The recommended usage is therefore a <code class="docutils literal notranslate"><span class="pre">with</span></code> statement</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If true will return a readonly database</p></li>
-<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> the results of <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_query()</span></code></a> will be
-<a class="reference external" href="https://docs.python.org/3.8/library/sqlite3.html#sqlite3.Row" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Row</span></code></a>s.
-If <code class="docutils literal notranslate"><span class="pre">False</span></code> the results of <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="xref py py-meth docutils literal notranslate"><span class="pre">run_query()</span></code></a> will be
-<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>s.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>an open sqlite3 connection</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB">SQLiteDB</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -425,107 +661,6 @@ like a line <code class="docutils literal notranslate"><span class="pre">descrip
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor">
-<span class="sig-name descname"><span class="pre">get_run_time_of_BufferExtractor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_run_time_of_BufferExtractor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the BufferExtractor provenance item(s) from the last run</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
-like %BufferExtractor description_name: value</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times">
-<span class="sig-name descname"><span class="pre">get_run_times</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_run_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the algorithm running times from the last run. If an algorithm is
-invoked multiple times in the run, its times are summed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A possibly multiline string with for each row which matches the
-like a line <code class="docutils literal notranslate"><span class="pre">description_name:</span> <span class="pre">time</span></code>. The times are in seconds.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance">
-<span class="sig-name descname"><span class="pre">get_timer_provenance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_timer_provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the timer provenance item(s) from the last run</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The value to LIKE search for in the algorithm column.
-Can be the full name, or have <code class="docutils literal notranslate"><span class="pre">%</span></code>  and <code class="docutils literal notranslate"><span class="pre">_</span></code> wildcards.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A possibly multiline string with for each row which matches the
-like a line <code class="docutils literal notranslate"><span class="pre">algorithm:</span> <span class="pre">value</span></code></p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm">
-<span class="sig-name descname"><span class="pre">get_timer_sum_by_algorithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_timer_sum_by_algorithm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the total runtime for one algorithm</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>total off all runtimes with this algorithm</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category">
-<span class="sig-name descname"><span class="pre">get_timer_sum_by_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_timer_sum_by_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the total runtime for one category of algorithms</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>total off all runtimes with this category</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work">
-<span class="sig-name descname"><span class="pre">get_timer_sum_by_work</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">work</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_timer_sum_by_work"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the total runtime for one work type of algorithms</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>total off all runtimes with this category</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.messages">
 <span class="sig-name descname"><span class="pre">messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.messages" title="Permalink to this definition">¶</a></dt>
 <dd><p>List all the provenance messages</p>
@@ -540,22 +675,8 @@ like a line <code class="docutils literal notranslate"><span class="pre">algorit
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages">
-<span class="sig-name descname"><span class="pre">retreive_log_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.retreive_log_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves all log messages at or above the min_level</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>min_level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query">
-<span class="sig-name descname"><span class="pre">run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sqlite_rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.run_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.run_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a connection to the database, runs a query, extracts the results
 and closes the connection</p>
 <p>The return type depends on the use_sqlite_rows param.
@@ -576,8 +697,8 @@ please add a specific method rather than call this directly.</p>
 <li><p><strong>query</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The SQL query to be run. May include <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards</p></li>
 <li><p><strong>params</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.8)"><em>Iterable</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – The values to replace the <code class="docutils literal notranslate"><span class="pre">?</span></code> wildcards with.
 The number and types must match what the query expects</p></li>
-<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></a></p></li>
-<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle" title="spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></a></p></li>
+<li><p><strong>read_only</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></p></li>
+<li><p><strong>use_sqlite_rows</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – see <code class="xref py py-meth docutils literal notranslate"><span class="pre">get_database_handle()</span></code></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -596,8 +717,8 @@ statement</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">ProvenanceWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">ProvenanceWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDatabase</span></code></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -622,59 +743,12 @@ Otherwise a None file will mean the default should be used</p></li>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name">
-<span class="sig-name descname"><span class="pre">add_core_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.add_core_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a vertex or similar name for the core to the core_mapping table</p>
-<p>A second call to the same core is silently ignored even if the name
-if different.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the chip</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the chip</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – id of the core</p></li>
-<li><p><strong>core_name</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name to assign</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance">
 <span class="sig-name descname"><span class="pre">insert_board_provenance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">connections</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_board_provenance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the conection treived from spalloc job</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>connections</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>: str</em><em>) or </em><em>None</em>) – {(x, y): hostname, …} or None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category">
-<span class="sig-name descname"><span class="pre">insert_category</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">machine_on</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts category into the category_timer_provenance  returning id</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – Name of Category starting</p></li>
-<li><p><strong>machine_on</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – If the machine was done during all
-or some of the time</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">
-<span class="sig-name descname"><span class="pre">insert_category_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_category_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts run time into the category</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>category_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – id of the Category finished</p></li>
-<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
-</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -749,23 +823,6 @@ or some of the time</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other">
-<span class="sig-name descname"><span class="pre">insert_other</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_other"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other" title="Permalink to this definition">¶</a></dt>
-<dd><p>Insert unforeseen provenance into the other_provenace_table</p>
-<p>This allows to add provenance that does not readily fit into any of
-the other categerogies</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – grouping from this provenance</p></li>
-<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Specific provenance being saved</p></li>
-<li><p><strong>the_value</strong> (<em>ste</em>) – Data</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power">
 <span class="sig-name descname"><span class="pre">insert_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inserts a general power value into the power_provenane table</p>
@@ -804,55 +861,6 @@ cfg provenance_report_cutoff</p>
 <li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – type of value</p></li>
 <li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – data</p></li>
 <li><p><strong>expected</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Flag to say this data was expected</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">
-<span class="sig-name descname"><span class="pre">insert_timing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">category</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">algorithm</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">work</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timedelta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_reason</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_timing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts algorithms run times into the timer_provenance table</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>category</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Category Id of the Algorithm</p></li>
-<li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
-<li><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – Type of work being done</p></li>
-<li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
-<li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
-it was not skipped</p></li>
-</ul>
-</dd>
-<dt class="field-even">Tpye skip_reason<span class="colon">:</span></dt>
-<dd class="field-even"><p>str or None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_version">
-<span class="sig-name descname"><span class="pre">insert_version</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">the_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.insert_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_version" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts data into the version_provenance table</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The package for which the version applies</p></li>
-<li><p><strong>the_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The version to be recorded</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceWriter.store_log">
-<span class="sig-name descname"><span class="pre">store_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_writer.html#ProvenanceWriter.store_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.store_log" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores log messages into the database</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1158,6 +1166,25 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.FecTimer.stop_category_timing"><code class="docutils literal notranslate"><span class="pre">FecTimer.stop_category_timing()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sum"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_category_timer_sum()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sums"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_category_timer_sums()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_global_provenace_path"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_global_provenace_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_time_of_BufferExtractor"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_run_time_of_BufferExtractor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_times"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_run_times()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_provenance"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_timer_provenance()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_algorithm"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_timer_sum_by_algorithm()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_category"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_timer_sum_by_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_work"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.get_timer_sum_by_work()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.insert_category()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category_timing"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.insert_category_timing()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_timing"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.insert_timing()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_version"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.insert_version()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.retreive_log_messages()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.run_query"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.run_query()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.GlobalProvenance.store_log"><code class="docutils literal notranslate"><span class="pre">GlobalProvenance.store_log()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB"><code class="docutils literal notranslate"><span class="pre">LogStoreDB</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.get_location"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.get_location()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.LogStoreDB.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">LogStoreDB.retreive_log_messages()</span></code></a></li>
@@ -1167,41 +1194,24 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.cores_with_late_spikes"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.cores_with_late_spikes()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.demo"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.demo()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sum"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_category_timer_sum()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_category_timer_sums"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_category_timer_sums()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_cores_with_provenace()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_database_handle"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_database_handle()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_last_run_database_path()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_monitor_by_chip"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_monitor_by_chip()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_router"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_provenance_for_router()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_router_by_chip"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_router_by_chip()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_time_of_BufferExtractor"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_run_time_of_BufferExtractor()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_run_times"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_run_times()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_provenance()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_algorithm"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_algorithm()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_category"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_category()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_timer_sum_by_work"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.get_timer_sum_by_work()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.messages()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.retreive_log_messages"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.retreive_log_messages()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query"><code class="docutils literal notranslate"><span class="pre">ProvenanceReader.run_query()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.add_core_name()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_board_provenance()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_category()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_category_timing()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_connector"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_connector()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_core"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_core()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_gatherer()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_monitor"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_monitor()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_other()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_power()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_report"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_report()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_router"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_router()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_timing()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_version"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.insert_version()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvenanceWriter.store_log"><code class="docutils literal notranslate"><span class="pre">ProvenanceWriter.store_log()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl"><code class="docutils literal notranslate"><span class="pre">ProvidesProvenanceDataFromMachineImpl</span></code></a><ul>

@@ -52,8 +52,8 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.storage_objects.</span></span><span class="sig-name descname"><span class="pre">BufferDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_factory=&lt;class</span> <span class="pre">'sqlite3.Row'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_factory=&lt;class</span> <span class="pre">'memoryview'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDatabase</span></code></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <p>There should only ever be a single Database Object in use at any time.
 In the case of application_graph_changed the first should closed and
@@ -73,24 +73,8 @@ If omitted the default location will be used.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear">
-<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the data for all regions.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method will be removed when the database moves to
-keeping data after reset.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region">
-<span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">clear_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.clear_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears the data for a single region.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -115,13 +99,13 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_database_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.default_database_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_core_name">
+<span class="sig-name descname"><span class="pre">get_core_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.get_core_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_core_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data">
-<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.get_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the data stored for a given region of a given core</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -148,24 +132,8 @@ necessarily shorter than 1GB.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>UGLY SHOULD NOT NEVER DELETE THE FILE!</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This method will be removed when the database moves to
-keeping data after reset.</p>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer">
-<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">store_data_in_region_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">missing</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.store_data_in_region_buffer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store some information in the corresponding buffer for a            specific chip, core and recording region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -187,8 +155,13 @@ keeping data after reset.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_vertex_labels">
+<span class="sig-name descname"><span class="pre">store_vertex_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.store_vertex_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_vertex_labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.write_session_credentials_to_db">
-<span class="sig-name descname"><span class="pre">write_session_credentials_to_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/sqllite_database.html#BufferDatabase.write_session_credentials_to_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.write_session_credentials_to_db" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_session_credentials_to_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/storage_objects/buffer_database.html#BufferDatabase.write_session_credentials_to_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.write_session_credentials_to_db" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write Spalloc session credentials to the database if in use</p>
 </dd></dl>
 
@@ -426,12 +399,11 @@ keeping data after reset.</p>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.buffer_management.storage_objects package</a><ul>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.buffer_management.storage_objects">Module contents</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase"><code class="docutils literal notranslate"><span class="pre">BufferDatabase</span></code></a><ul>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.clear()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.clear_region()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.default_database_file"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.default_database_file()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_core_name"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.get_core_name()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.get_region_data()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.reset"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.reset()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.store_data_in_region_buffer()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_vertex_labels"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.store_vertex_labels()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.write_session_credentials_to_db"><code class="docutils literal notranslate"><span class="pre">BufferDatabase.write_session_credentials_to_db()</span></code></a></li>
 </ul>
 </li>

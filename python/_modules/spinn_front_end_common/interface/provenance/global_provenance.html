@@ -1,0 +1,494 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.provenance.global_provenance &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.provenance.global_provenance</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.provenance.global_provenance</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017-2022 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
+
+<span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;global.sql&quot;</span><span class="p">)</span>
+<span class="n">_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)([_,:])(\d+)(?:\2(\d+))?&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">GlobalProvenance</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        *Not thread safe on the same database file.*</span>
+<span class="sd">        Threads can access different DBs just fine.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This totally relies on the way SQLite&#39;s type affinities function.</span>
+<span class="sd">        You can&#39;t port to a different database engine without a lot of work.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;_database_file&quot;</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="GlobalProvenance.get_global_provenace_path"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_global_provenace_path">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_global_provenace_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the path of the current provenance database of the last run</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            Calling this method between start/reset and run may result in a</span>
+<span class="sd">            path to a database not yet created.</span>
+
+<span class="sd">        :raises ValueError:</span>
+<span class="sd">            if the system is in a state where path can&#39;t be retrieved,</span>
+<span class="sd">            for example before run is called</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_timestamp_dir_path</span><span class="p">(),</span>
+            <span class="s2">&quot;global_provenance.sqlite3&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :param database_file:</span>
+<span class="sd">            The name of a file that contains (or will contain) an SQLite</span>
+<span class="sd">            database holding the data.</span>
+<span class="sd">            If omitted, either the default file path or an unshared in-memory</span>
+<span class="sd">            database will be used (suitable only for testing).</span>
+<span class="sd">        :type database_file: str or None</span>
+<span class="sd">        :param bool memory:</span>
+<span class="sd">            Flag to say unshared in-memory can be used.</span>
+<span class="sd">            Otherwise a None file will mean the default should be used</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">memory</span><span class="p">:</span>
+            <span class="n">database_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_global_provenace_path</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_database_file</span> <span class="o">=</span> <span class="n">database_file</span>
+        <span class="n">SQLiteDB</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span><span class="p">,</span>
+                          <span class="n">row_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">text_factory</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GlobalProvenance.insert_version"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_version">[docs]</a>    <span class="k">def</span> <span class="nf">insert_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts data into the version_provenance table</span>
+
+<span class="sd">        :param str description: The package for which the version applies</span>
+<span class="sd">        :param str the_value: The version to be recorded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO version_provenance(</span>
+<span class="sd">                    description, the_value)</span>
+<span class="sd">                VALUES(?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.insert_category"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category">[docs]</a>    <span class="k">def</span> <span class="nf">insert_category</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">machine_on</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts category into the category_timer_provenance  returning id</span>
+
+<span class="sd">        :param TimerCategory category: Name of Category starting</span>
+<span class="sd">        :param bool machine_on: If the machine was done during all</span>
+<span class="sd">            or some of the time</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO category_timer_provenance(</span>
+<span class="sd">                    category, machine_on, n_run, n_loop)</span>
+<span class="sd">                VALUES(?, ?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">,</span> <span class="n">machine_on</span><span class="p">,</span>
+                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_number</span><span class="p">(),</span>
+                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_step</span><span class="p">()])</span>
+            <span class="k">return</span> <span class="n">cur</span><span class="o">.</span><span class="n">lastrowid</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.insert_category_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_category_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_category_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category_id</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts run time into the category</span>
+
+<span class="sd">        :param int category_id: id of the Category finished</span>
+<span class="sd">        :param ~datetime.timedelta timedelta: Time to be recorded</span>
+<span class="sd">       &quot;&quot;&quot;</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                UPDATE category_timer_provenance</span>
+<span class="sd">                SET</span>
+<span class="sd">                    time_taken = ?</span>
+<span class="sd">                WHERE category_id = ?</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">time_taken</span><span class="p">,</span> <span class="n">category_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.insert_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.insert_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_timing</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Inserts algorithms run times into the timer_provenance table</span>
+
+<span class="sd">        :param int category: Category Id of the Algorithm</span>
+<span class="sd">        :param str algorithm: Algorithm name</span>
+<span class="sd">        :param TimerWork work: Type of work being done</span>
+<span class="sd">        :param ~datetime.timedelta timedelta: Time to be recorded</span>
+<span class="sd">        :param skip_reason: The reason the algorthm was skipped or None if</span>
+<span class="sd">            it was not skipped</span>
+<span class="sd">        :tpye skip_reason: str or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_taken</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>
+                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO timer_provenance(</span>
+<span class="sd">                    category_id, algorithm, work, time_taken, skip_reason)</span>
+<span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">work</span><span class="o">.</span><span class="n">work_name</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.store_log"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.store_log">[docs]</a>    <span class="k">def</span> <span class="nf">store_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stores log messages into the database</span>
+
+<span class="sd">        :param int level:</span>
+<span class="sd">        :param str message:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timestamp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO p_log_provenance(</span>
+<span class="sd">                    timestamp, level, message)</span>
+<span class="sd">                VALUES(?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">])</span></div>
+
+    <span class="k">def</span> <span class="nf">_test_log_locked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        THIS IS A TESTING METHOD.</span>
+
+<span class="sd">        This will lock the database and then try to do a log</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="c1"># lock the database</span>
+            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                INSERT INTO version_provenance(</span>
+<span class="sd">                    description, the_value)</span>
+<span class="sd">                VALUES(&quot;foo&quot;, &quot;bar&quot;)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="c1"># try logging and storing while locked.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GlobalProvenance.run_query"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.run_query">[docs]</a>    <span class="k">def</span> <span class="nf">run_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">()):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Opens a connection to the database, runs a query, extracts the results</span>
+<span class="sd">        and closes the connection</span>
+
+<span class="sd">        The return type depends on the use_sqlite_rows param.</span>
+<span class="sd">        By default this method returns tuples (lookup by index) but the</span>
+<span class="sd">        advanced tuple type can be used instead, which supports lookup by name</span>
+<span class="sd">        used in the query (use ``AS name`` in the query to set).</span>
+
+<span class="sd">        This method will not allow queries that change the database unless the</span>
+<span class="sd">        read_only flag is set to False.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This method is mainly provided as a support method for the later</span>
+<span class="sd">            methods that return specific data. For new IntergationTests</span>
+<span class="sd">            please add a specific method rather than call this directly.</span>
+
+<span class="sd">        :param str query: The SQL query to be run. May include ``?`` wildcards</span>
+<span class="sd">        :param ~collections.abc.Iterable(str or int) params:</span>
+<span class="sd">            The values to replace the ``?`` wildcards with.</span>
+<span class="sd">            The number and types must match what the query expects</span>
+<span class="sd">        :param bool read_only: see :py:meth:`get_database_handle`</span>
+<span class="sd">        :param bool use_sqlite_rows: see :py:meth:`get_database_handle`</span>
+<span class="sd">        :return: A list possibly empty of tuples/rows</span>
+<span class="sd">            (one for each row in the database)</span>
+<span class="sd">            where the number and type of the values corresponds to the where</span>
+<span class="sd">            statement</span>
+<span class="sd">        :rtype: list(tuple or ~sqlite3.Row)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_timer_provenance"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_provenance">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the timer provenance item(s) from the last run</span>
+
+<span class="sd">        :param str algorithm:</span>
+<span class="sd">            The value to LIKE search for in the algorithm column.</span>
+<span class="sd">            Can be the full name, or have ``%``  and ``_`` wildcards.</span>
+<span class="sd">        :return:</span>
+<span class="sd">            A possibly multiline string with for each row which matches the</span>
+<span class="sd">            like a line ``algorithm: value``</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT algorithm, time_taken</span>
+<span class="s2">            FROM timer_provenance</span>
+<span class="s2">            WHERE algorithm LIKE ?</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_run_times"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_times">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the algorithm running times from the last run. If an algorithm is</span>
+<span class="sd">        invoked multiple times in the run, its times are summed.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            A possibly multiline string with for each row which matches the</span>
+<span class="sd">            like a line ``description_name: time``. The times are in seconds.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We know the database actually stores microseconds for durations</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT description, SUM(time_taken) / 1000000.0</span>
+<span class="s2">            FROM timer_provenance</span>
+<span class="s2">            GROUP BY description</span>
+<span class="s2">            ORDER BY the_value</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> s&quot;</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_run_time_of_BufferExtractor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_time_of_BufferExtractor">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_time_of_BufferExtractor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the BufferExtractor provenance item(s) from the last run</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            A possibly multiline string with for each row which matches the</span>
+<span class="sd">            like %BufferExtractor description_name: value</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timer_provenance</span><span class="p">(</span><span class="s2">&quot;%BufferExtractor&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_category_timer_sum"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sum">[docs]</a>    <span class="k">def</span> <span class="nf">get_category_timer_sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one category of algorithms</span>
+
+<span class="sd">        :param  TimerCategory category:</span>
+<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM category_timer_provenance</span>
+<span class="s2">             WHERE category = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_category_timer_sums"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_category_timer_sums">[docs]</a>    <span class="k">def</span> <span class="nf">get_category_timer_sums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the runtime for one category of algorithms</span>
+<span class="sd">        split machine on, machine off</span>
+
+<span class="sd">        :param TimerCategory category:</span>
+<span class="sd">        :return: total on and off time of instances with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">on</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">off</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken), machine_on</span>
+<span class="s2">             FROM category_timer_provenance</span>
+<span class="s2">             WHERE category = ?</span>
+<span class="s2">             GROUP BY machine_on</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">on</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">off</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">on</span><span class="p">,</span> <span class="n">off</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_timer_sum_by_category"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_category">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_category</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one category of algorithms</span>
+
+<span class="sd">        :param TimerCategory category:</span>
+<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM full_timer_view</span>
+<span class="s2">             WHERE category = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_timer_sum_by_work"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_work">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_work</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">work</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one work type of algorithms</span>
+
+<span class="sd">        :param TimerWork work:</span>
+<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM full_timer_view</span>
+<span class="s2">             WHERE work = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">work</span><span class="o">.</span><span class="n">work_name</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.get_timer_sum_by_algorithm"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_timer_sum_by_algorithm">[docs]</a>    <span class="k">def</span> <span class="nf">get_timer_sum_by_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the total runtime for one algorithm</span>
+
+<span class="sd">        :param str algorithm:</span>
+<span class="sd">        :return: total off all runtimes with this algorithm</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">             SELECT sum(time_taken)</span>
+<span class="s2">             FROM timer_provenance</span>
+<span class="s2">             WHERE algorithm = ?</span>
+<span class="s2">             &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">algorithm</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">info</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">return</span> <span class="n">info</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="GlobalProvenance.retreive_log_messages"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.retreive_log_messages">[docs]</a>    <span class="k">def</span> <span class="nf">retreive_log_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_level</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all log messages at or above the min_level</span>
+
+<span class="sd">        :param int min_level:</span>
+<span class="sd">        :rtype: list(tuple(int, str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT message</span>
+<span class="s2">            FROM p_log_provenance</span>
+<span class="s2">            WHERE level &gt;= ?</span>
+<span class="s2">            &quot;&quot;&quot;</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[</span><span class="n">min_level</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">messages</span><span class="p">))</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.provenance.global_provenance</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    </div>
+  </body>
+</html>

@@ -50,24 +50,15 @@
 <span class="c1"># You should have received a copy of the GNU General Public License</span>
 <span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
 
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_int</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">,</span> <span class="n">PROVENANCE_DB</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.base_database</span> <span class="kn">import</span> <span class="n">BaseDatabase</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
-<span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;db.sql&quot;</span><span class="p">)</span>
-<span class="n">_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\d+)([_,:])(\d+)(?:\2(\d+))?&quot;</span><span class="p">)</span>
 
-
-<span class="k">class</span> <span class="nc">ProvenanceWriter</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ProvenanceWriter</span><span class="p">(</span><span class="n">BaseDatabase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    .. note::</span>
@@ -79,11 +70,9 @@
 <span class="sd">        You can&#39;t port to a different database engine without a lot of work.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s2">&quot;_database_file&quot;</span>
-    <span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param database_file:</span>
 <span class="sd">            The name of a file that contains (or will contain) an SQLite</span>
@@ -96,26 +85,7 @@
 <span class="sd">            Otherwise a None file will mean the default should be used</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">memory</span><span class="p">:</span>
-            <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_provenance_dir_path</span><span class="p">(),</span> <span class="n">PROVENANCE_DB</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_database_file</span> <span class="o">=</span> <span class="n">database_file</span>
-        <span class="n">SQLiteDB</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file</span><span class="p">,</span> <span class="n">ddl_file</span><span class="o">=</span><span class="n">_DDL_FILE</span><span class="p">)</span>
-
-<div class="viewcode-block" id="ProvenanceWriter.insert_version"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_version">[docs]</a>    <span class="k">def</span> <span class="nf">insert_version</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts data into the version_provenance table</span>
-
-<span class="sd">        :param str description: The package for which the version applies</span>
-<span class="sd">        :param str the_value: The version to be recorded</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO version_provenance(</span>
-<span class="sd">                    description, the_value)</span>
-<span class="sd">                VALUES(?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_power"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power">[docs]</a>    <span class="k">def</span> <span class="nf">insert_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -131,90 +101,6 @@
 <span class="sd">                    description, the_value)</span>
 <span class="sd">                VALUES(?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.insert_category"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category">[docs]</a>    <span class="k">def</span> <span class="nf">insert_category</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">machine_on</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts category into the category_timer_provenance  returning id</span>
-
-<span class="sd">        :param TimerCategory category: Name of Category starting</span>
-<span class="sd">        :param bool machine_on: If the machine was done during all</span>
-<span class="sd">            or some of the time</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO category_timer_provenance(</span>
-<span class="sd">                    category, machine_on, n_run, n_loop)</span>
-<span class="sd">                VALUES(?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">[</span><span class="n">category</span><span class="o">.</span><span class="n">category_name</span><span class="p">,</span> <span class="n">machine_on</span><span class="p">,</span>
-                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_number</span><span class="p">(),</span>
-                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_step</span><span class="p">()])</span>
-            <span class="k">return</span> <span class="n">cur</span><span class="o">.</span><span class="n">lastrowid</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.insert_category_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_category_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_category_timing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category_id</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts run time into the category</span>
-
-<span class="sd">        :param int category_id: id of the Category finished</span>
-<span class="sd">        :param ~datetime.timedelta timedelta: Time to be recorded</span>
-<span class="sd">       &quot;&quot;&quot;</span>
-        <span class="n">time_taken</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span>
-
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                UPDATE category_timer_provenance</span>
-<span class="sd">                SET</span>
-<span class="sd">                    time_taken = ?</span>
-<span class="sd">                WHERE category_id = ?</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">time_taken</span><span class="p">,</span> <span class="n">category_id</span><span class="p">))</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.insert_timing"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_timing">[docs]</a>    <span class="k">def</span> <span class="nf">insert_timing</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">work</span><span class="p">,</span> <span class="n">timedelta</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts algorithms run times into the timer_provenance table</span>
-
-<span class="sd">        :param int category: Category Id of the Algorithm</span>
-<span class="sd">        :param str algorithm: Algorithm name</span>
-<span class="sd">        :param TimerWork work: Type of work being done</span>
-<span class="sd">        :param ~datetime.timedelta timedelta: Time to be recorded</span>
-<span class="sd">        :param skip_reason: The reason the algorthm was skipped or None if</span>
-<span class="sd">            it was not skipped</span>
-<span class="sd">        :tpye skip_reason: str or None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">time_taken</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>
-                <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">microseconds</span> <span class="o">/</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">))</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO timer_provenance(</span>
-<span class="sd">                    category_id, algorithm, work, time_taken, skip_reason)</span>
-<span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">algorithm</span><span class="p">,</span> <span class="n">work</span><span class="o">.</span><span class="n">work_name</span><span class="p">,</span> <span class="n">time_taken</span><span class="p">,</span> <span class="n">skip_reason</span><span class="p">])</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.insert_other"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_other">[docs]</a>    <span class="k">def</span> <span class="nf">insert_other</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">category</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Insert unforeseen provenance into the other_provenace_table</span>
-
-<span class="sd">        This allows to add provenance that does not readily fit into any of</span>
-<span class="sd">        the other categerogies</span>
-
-<span class="sd">        :param str category: grouping from this provenance</span>
-<span class="sd">        :param str description: Specific provenance being saved</span>
-<span class="sd">        :param ste the_value: Data</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO other_provenance(</span>
-<span class="sd">                    category, description, the_value)</span>
-<span class="sd">                VALUES(?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">category</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_gatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bytes_read</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
                         <span class="n">the_value</span><span class="p">):</span>
@@ -284,32 +170,13 @@
 <span class="sd">        :param int the_value: data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
+            <span class="n">core_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_core_id</span><span class="p">(</span><span class="n">cur</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
             <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
 <span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">                INSERT INTO core_provenance(</span>
-<span class="sd">                    x, y, p, description, the_value)</span>
-<span class="sd">                VALUES(?, ?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.add_core_name"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.add_core_name">[docs]</a>    <span class="k">def</span> <span class="nf">add_core_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">core_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adds a vertex or similar name for the core to the core_mapping table</span>
-
-<span class="sd">        A second call to the same core is silently ignored even if the name</span>
-<span class="sd">        if different.</span>
-
-<span class="sd">        :param int x: X coordinate of the chip</span>
-<span class="sd">        :param int y: Y coordinate of the chip</span>
-<span class="sd">        :param int p: id of the core</span>
-<span class="sd">        :param str core_name: Name to assign</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT OR IGNORE INTO core_mapping(</span>
-<span class="sd">                    x, y, p, core_name)</span>
-<span class="sd">                VALUES(?, ?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">core_name</span><span class="p">])</span></div>
+<span class="sd">                    core_id, description, the_value)</span>
+<span class="sd">                VALUES(?, ?, ?)</span>
+<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">core_id</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_report">[docs]</a>    <span class="k">def</span> <span class="nf">insert_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -374,24 +241,6 @@
 <span class="sd">                VALUES (?, ?, ?)</span>
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ipaddress</span><span class="p">)</span>
                       <span class="k">for</span> <span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">ipaddress</span><span class="p">)</span> <span class="ow">in</span> <span class="n">connections</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span></div>
-
-<div class="viewcode-block" id="ProvenanceWriter.store_log"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.store_log">[docs]</a>    <span class="k">def</span> <span class="nf">store_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">timestamp</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Stores log messages into the database</span>
-
-<span class="sd">        :param int level:</span>
-<span class="sd">        :param str message:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">timestamp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cur</span><span class="p">:</span>
-            <span class="n">cur</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                INSERT INTO p_log_provenance(</span>
-<span class="sd">                    timestamp, level, message)</span>
-<span class="sd">                VALUES(?, ?, ?)</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span>
-                <span class="p">[</span><span class="n">timestamp</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">])</span></div>
 
     <span class="k">def</span> <span class="nf">_test_log_locked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

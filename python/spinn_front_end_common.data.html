@@ -568,6 +568,41 @@ shared by all path methods</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_reset_number">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_reset_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_reset_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_reset_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of times a reset has happened.</p>
+<p>Only counts the first reset after each run.</p>
+<p>So resets that are first soft then hard are ignored.
+Double reset calls without a run and resets before run are ignored.</p>
+<p>Reset numbers start at zero</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the run_number is currently unavailable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_reset_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_reset_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_reset_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_reset_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of times a reset has happened as a string.</p>
+<p>An empty string is returned if the system has never been reset
+(ie the reset number is 0)</p>
+<p>Only counts the first reset after each run.</p>
+<p>So resets that are first soft then hard are ignored.
+Double reset calls without a run and resets before run are ignored.</p>
+<p>Reset numbers start at zero</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.html#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the run_number is currently unavailable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_run_number">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_run_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_run_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_run_number" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of this or the next run.</p>
@@ -1008,6 +1043,8 @@ There is never a case when some are known and others not</p>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_next_sync_signal"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_next_sync_signal()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_notification_protocol"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_notification_protocol()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_provenance_dir_path"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_provenance_dir_path()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_reset_number"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_reset_number()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_reset_str"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_reset_str()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_run_number"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_run_number()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_run_step"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_run_step()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms"><code class="docutils literal notranslate"><span class="pre">FecDataView.get_simulation_time_step_ms()</span></code></a></li>

@@ -65,7 +65,8 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.buffer_models</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
-
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
+    <span class="kn">import</span> <span class="nn">BufferDatabase</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -81,8 +82,6 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;_chipxy_by_ethernet&quot;</span><span class="p">,</span>
-        <span class="c1"># The folder holding sqlite databases etc.</span>
-        <span class="s2">&quot;_report_folder&quot;</span><span class="p">,</span>
         <span class="c1"># The call to get java to work. Including the path if required.</span>
         <span class="s2">&quot;_java_call&quot;</span><span class="p">,</span>
         <span class="c1"># The location of the java jar file</span>
@@ -109,7 +108,6 @@
 <span class="sd">        :raise ConfigurationException: if simple parameter checking fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_recording</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Java&quot;</span><span class="p">,</span> <span class="s2">&quot;java_call&quot;</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_java_call</span><span class="p">,</span> <span class="s1">&#39;-version&#39;</span><span class="p">])</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -211,15 +209,6 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="n">write_json_machine</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span>
-
-<div class="viewcode-block" id="JavaCaller.set_report_folder"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_report_folder">[docs]</a>    <span class="k">def</span> <span class="nf">set_report_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">report_folder</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Passes the database file in.</span>
-
-<span class="sd">        :param str report_folder:</span>
-<span class="sd">            Path to directory with SQLite databases and into which java will</span>
-<span class="sd">            write.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span> <span class="o">=</span> <span class="n">report_folder</span></div>
 
 <div class="viewcode-block" id="JavaCaller.set_placements"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">[docs]</a>    <span class="k">def</span> <span class="nf">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Passes in the placements leaving this class to decide pass it to</span>
@@ -393,13 +382,16 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gatherer_iptags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
                 <span class="s1">&#39;download&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+                <span class="n">BufferDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
                 <span class="s1">&#39;gather&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+                <span class="n">BufferDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">,</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">PacmanExternalAlgorithmFailedToCompleteException</span><span class="p">(</span>
                 <span class="s2">&quot;Java call exited with value &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; see &quot;</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
@@ -411,9 +403,10 @@
 <span class="sd">            On failure of the Java code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
-            <span class="s1">&#39;dse&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+            <span class="s1">&#39;dse&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">,</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">PacmanExternalAlgorithmFailedToCompleteException</span><span class="p">(</span>
                 <span class="s2">&quot;Java call exited with value &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; see &quot;</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
@@ -426,9 +419,10 @@
 <span class="sd">            On failure of the Java code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
-            <span class="s1">&#39;dse_sys&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+            <span class="s1">&#39;dse_sys&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">,</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">PacmanExternalAlgorithmFailedToCompleteException</span><span class="p">(</span>
                 <span class="s2">&quot;Java call exited with value &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; see &quot;</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div>
@@ -448,12 +442,14 @@
         <span class="k">if</span> <span class="n">use_monitors</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
                 <span class="s1">&#39;dse_app_mon&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
-                <span class="s1">&#39;dse_app&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">)</span>
+                <span class="s1">&#39;dse_app&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_report_folder</span><span class="p">,</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">PacmanExternalAlgorithmFailedToCompleteException</span><span class="p">(</span>
                 <span class="s2">&quot;Java call exited with value &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; see &quot;</span>
                 <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; for logged info&quot;</span><span class="p">)</span></div></div>
