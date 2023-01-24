@@ -1465,8 +1465,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         n_sdp_sent, n_sdp_recvd, n_in_streams, n_out_streams = (
             _FOUR_WORDS.unpack_from(data))
         with ProvenanceWriter() as db:
-            db.add_core_name(
-                placement.x, placement.y, placement.p, placement.vertex.label)
             db.insert_core(
                 placement.x, placement.y, placement.p,
                 "Sent_SDP_Packets", n_sdp_sent)
