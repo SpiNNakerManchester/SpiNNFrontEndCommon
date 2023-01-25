@@ -355,7 +355,8 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
                 logger.debug("boards: {}",
                              str(connections).replace("{", "[").replace(
                                  "}", "]"))
-            ProvenanceWriter().insert_board_provenance(connections)
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
             if hostname not in avoid_boards:
                 break
             avoid_jobs.append(job)
