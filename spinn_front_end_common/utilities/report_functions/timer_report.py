@@ -64,12 +64,8 @@ def write_timer_report(
 
     # create report
     if timer_report_to_stdout is None:
-        try:
-            timer_report_to_stdout = get_config_bool(
-                "Reports", "timer_report_to_stdout")
-        except Exception:
-            logger.warning("No timer_report_to_stdout found so using False")
-            timer_report_to_stdout = False
+        timer_report_to_stdout = get_config_bool(
+            "Reports", "timer_report_to_stdout")
 
     with GlobalProvenance(
             database_file=database_file, read_only=True) as reader:
@@ -177,20 +173,10 @@ def __report_algorithms(
     :type timer_report_ms: None or float
     """
     if timer_report_ratio is None:
-        try:
-            timer_report_ratio = get_config_float(
-                "Reports", "timer_report_ratio")
-        except Exception:
-            logger.warning("No timer_report_ratio so using 1%")
-            timer_report_ratio = 0.01
+        timer_report_ratio = get_config_float("Reports", "timer_report_ratio")
 
     if timer_report_ms is None:
-        try:
-            timer_report_ms = get_config_float(
-                "Reports", "timer_report_ms")
-        except Exception:
-            logger.warning("No timer_report_ms so using 10ms")
-            timer_report_ms = 1000
+        timer_report_ms = get_config_float("Reports", "timer_report_ms")
 
     cutoff = total * timer_report_ratio
     if cutoff < timer_report_ms:
