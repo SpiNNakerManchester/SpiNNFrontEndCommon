@@ -385,6 +385,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
         except Exception:
+            # if in debug mode, do not shut down machine
+            if get_config_str("Mode", "mode") != "Debug":
+                try:
+                    self.stop()
+                except Exception as stop_e:
+                    logger.exception(f"Error {stop_e} when attempting to stop")
             self._data_writer.shut_down()
             raise
 
@@ -2185,13 +2191,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             sys.exit(1)
         except Exception as run_e:
             self._recover_from_error(run_e)
-
-            # if in debug mode, do not shut down machine
-            if get_config_str("Mode", "mode") != "Debug":
-                try:
-                    self.stop()
-                except Exception as stop_e:
-                    logger.exception(f"Error {stop_e} when attempting to stop")
 
             # reraise exception
             raise run_e
