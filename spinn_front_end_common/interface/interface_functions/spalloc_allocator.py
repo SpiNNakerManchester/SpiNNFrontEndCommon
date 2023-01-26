@@ -107,7 +107,7 @@ class SpallocJobController(MachineAllocationController):
     def _teardown(self):
         if not self._exited:
             self.__closer.close()
-            self._job.close()
+            self._job.destroy()
             self.__client.close()
         super()._teardown()
 
