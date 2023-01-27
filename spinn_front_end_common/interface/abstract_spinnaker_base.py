@@ -189,6 +189,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Will search these locations for binaries: {}",
             self._data_writer.get_executable_finder().binary_paths)
 
+        self._multicast_routes_loaded = False
+
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
