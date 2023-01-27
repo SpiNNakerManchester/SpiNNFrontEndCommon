@@ -808,6 +808,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_board_chip_report"):
                 return
             board_chip_report()
+            if FecDataView.has_allocation_controller():
+                filename = os.path.join(
+                    FecDataView.get_run_dir_path(), "machine_allocation.rpt")
+                FecDataView.get_allocation_controller().make_report(filename)
 
     def _execute_splitter_reset(self):
         """

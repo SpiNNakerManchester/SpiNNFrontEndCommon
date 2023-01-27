@@ -146,6 +146,11 @@ class SpallocJobController(MachineAllocationController):
     def proxying(self):
         return True
 
+    @overrides(MachineAllocationController.make_report)
+    def make_report(self, filename):
+        with open(filename, "w", encoding="utf-8") as report:
+            report.write(f"Job: {self._job}")
+
 
 class _OldSpallocJobController(MachineAllocationController):
     __slots__ = (
