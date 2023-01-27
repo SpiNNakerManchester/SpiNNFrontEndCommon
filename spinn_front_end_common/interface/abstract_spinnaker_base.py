@@ -192,8 +192,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
 
-        self._hard_reset()
-
         # holder for timing and running related values
         self._run_until_complete = False
         self._state_condition = Condition()
