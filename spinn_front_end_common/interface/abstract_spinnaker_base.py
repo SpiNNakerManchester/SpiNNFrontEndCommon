@@ -43,6 +43,7 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
+from pacman.exceptions import PacmanPlaceException
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
@@ -607,7 +608,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         for (x, y), sdram in usage_by_chip.items():
             size = self._data_writer.get_chip_at(x, y).sdram.size
             if sdram.fixed > size:
-                raise Exception(
+                raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
                     f" {sdram.fixed} of {size}")
             if sdram.per_timestep:
