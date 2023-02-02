@@ -36,7 +36,7 @@ class Close_Once(MachineAllocationController):
 
     def close(self):
         if self.closed:
-            raise Exception("Close called twice")
+            raise NotImplementedError("Close called twice")
         self.closed = True
         super().close()
 
