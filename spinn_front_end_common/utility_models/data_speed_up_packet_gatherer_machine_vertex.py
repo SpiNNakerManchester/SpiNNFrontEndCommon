@@ -519,7 +519,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if file, read in and then process as normal
         if is_filename:
             if offset != 0:
-                raise Value(
+                raise ValueError(
                     "when using a file, you can only have a offset of 0")
 
             with open(data, "rb") as reader:
