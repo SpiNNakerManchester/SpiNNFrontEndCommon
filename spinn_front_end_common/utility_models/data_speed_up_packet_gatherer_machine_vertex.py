@@ -519,7 +519,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if file, read in and then process as normal
         if is_filename:
             if offset != 0:
-                raise Exception(
+                raise Value(
                     "when using a file, you can only have a offset of 0")
 
             with open(data, "rb") as reader:
@@ -563,7 +563,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.error("verified:{}", verified_data.hex())
             for i, (a, b) in enumerate(zip(original_data, verified_data)):
                 if a != b:
-                    raise Exception("damn at " + str(i))
+                    raise ValueError(f"Mismatch found as position {i}")
 
     @staticmethod
     def __make_sdp_message(placement, port, payload):
@@ -658,7 +658,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                         if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA\
                                 .value:
-                            raise Exception(f"Unknown command {cmd} received")
+                            raise ValueError(
+                                f"Unknown command {cmd} received")
 
                         # The currently received packet has missing sequence
                         # numbers. Accumulate and dispatch transactionId when
@@ -789,7 +790,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             packet_data_length = len(data_to_write) - position
 
         if packet_data_length < 0:
-            raise Exception("weird packet data length.")
+            raise ValueError("weird packet data length.")
 
         # determine the true packet length (with header)
         packet_length = (
@@ -1295,10 +1296,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # check seq num not insane
         if seq_num > self._max_seq_num:
-            raise Exception(
-                "got an insane sequence number. got {} when "
-                "the max is {} with a length of {}".format(
-                    seq_num, self._max_seq_num, length_of_data))
+            raise ValueError(
+                f"got an insane sequence number. got {seq_num} when "
+                f"the max is {self._max_seq_num} "
+                f"with a length of {length_of_data}")
 
         # figure offset for where data is to be put
         offset = self._calculate_offset(seq_num)
@@ -1313,8 +1314,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_of_data != BYTES_FOR_SEQ_AND_TRANSACTION_ID):
             self._write_into_view(
                 offset, true_data_length, data,
-                BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data, seq_num,
-                length_of_data, False)
+                BYTES_FOR_SEQ_AND_TRANSACTION_ID, length_of_data)
 
         # add seq num to list
         seq_nums.add(seq_num)
@@ -1342,8 +1342,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _write_into_view(
             self, view_start_position, view_end_position,
-            data, data_start_position, data_end_position, seq_num,
-            packet_length, is_final):
+            data, data_start_position, data_end_position):
         """ Puts data into the view
 
         :param int view_start_position: where in view to start
@@ -1356,14 +1355,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # pylint: disable=too-many-arguments
         if view_end_position > len(self._output):
-            raise Exception(
-                "I'm trying to add to my output data, but am trying to add "
-                "outside my acceptable output positions! max is {} and I "
-                "received a request to fill to {} from {} for sequence num "
-                "{} from max sequence num {} length of packet {} and "
-                "final {}".format(
-                    len(self._output), view_end_position, view_start_position,
-                    seq_num, self._max_seq_num - 1, packet_length, is_final))
+            raise ValueError(
+                f"End position {view_end_position} > "
+                f"output length {len(self._output)}")
         self._view[view_start_position: view_end_position] = \
             data[data_start_position:data_end_position]
 
@@ -1378,7 +1372,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         seq_nums = sorted(seq_nums)
         max_needed = self.calculate_max_seq_num()
         if len(seq_nums) > max_needed + 1:
-            raise Exception("I've received more data than I was expecting!!")
+            raise ValueError(f"too many seg_nums: {len(seq_nums)}")
         return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):

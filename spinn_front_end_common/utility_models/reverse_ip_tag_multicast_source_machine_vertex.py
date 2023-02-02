@@ -181,7 +181,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         if (send_buffer_partition_id is not None and
                 injection_partition_id is not None):
-            raise Exception(
+            raise ValueError(
                 "Can't specify both send_buffer_partition_id and"
                 " injection_partition_id")
 

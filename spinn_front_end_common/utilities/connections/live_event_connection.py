@@ -28,6 +28,7 @@ from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_calls import retarget_tag
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -328,12 +329,11 @@ class LiveEventConnection(DatabaseConnection):
             db_reader.get_live_output_details(
                 receive_label, self.__live_packet_gather_label)
         if host is None:
-            raise Exception(
-                "no live output tag found for {} in app graph".format(
-                    receive_label))
+            raise ConfigurationException(
+                f"no live output tag found for {receive_label} in app graph")
         if not strip_sdp:
-            raise Exception("Currently, only IP tags which strip the SDP "
-                            "headers are supported")
+            raise receive_label("Currently, only IP tags which strip the SDP "
+                                "headers are supported")
         return host, port, board_address, tag, chip_x, chip_y
 
     def __handle_possible_rerun_state(self):
