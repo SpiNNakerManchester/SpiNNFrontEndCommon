@@ -219,7 +219,7 @@
 
         <span class="k">if</span> <span class="p">(</span><span class="n">send_buffer_partition_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>
                 <span class="n">injection_partition_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Can&#39;t specify both send_buffer_partition_id and&quot;</span>
                 <span class="s2">&quot; injection_partition_id&quot;</span><span class="p">)</span>
 

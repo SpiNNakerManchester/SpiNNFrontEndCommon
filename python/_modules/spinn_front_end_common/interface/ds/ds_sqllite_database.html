@@ -57,6 +57,7 @@
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.spalloc.spalloc_job</span> <span class="kn">import</span> <span class="n">SpallocJob</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">DsDatabaseException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 <span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
 
@@ -113,7 +114,7 @@
                 <span class="n">first_y</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;ethernet_y&quot;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">root_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Should only be reachable for an empty machine</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;No ethernet chip found&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;No ethernet chip found&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">first_x</span> <span class="ow">or</span> <span class="n">first_y</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="s2">&quot;No Ethernet chip found at 0,0 using </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> &quot;</span>
@@ -246,6 +247,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for cores there is a ds saved for</span>
 
 <span class="sd">        :rtype: int</span>
+<span class="sd">        :raises DsDatabaseException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -255,12 +257,13 @@
 <span class="sd">                    LIMIT 1</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_n_app_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_app_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for application cores there is a ds saved for</span>
 
 <span class="sd">        :rtype: int</span>
+<span class="sd">        :raises DsDatabaseException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -270,12 +273,13 @@
 <span class="sd">                    LIMIT 1</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_n_system_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_system_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for system cores there is a ds saved for</span>
 
 <span class="sd">        :rtype: int</span>
+<span class="sd">        :raises DsDatabaseException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -285,7 +289,7 @@
 <span class="sd">                    LIMIT 1</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.set_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the same app_id for all rows that have ds content</span>
@@ -441,6 +445,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for cores there is a info saved for.</span>
 
 <span class="sd">        :rtype: int</span>
+<span class="sd">        :raises DsDatabaseException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -450,7 +455,7 @@
 <span class="sd">                    LIMIT 1</span>
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.info_iteritems"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">info_iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys and values for the Info data.</span>

@@ -80,6 +80,7 @@
 <span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spalloc_version</span>
 
 <span class="kn">from</span> <span class="nn">pacman</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">pacman_version</span>
+<span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="n">PacmanPlaceException</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs.application</span> <span class="kn">import</span> <span class="n">ApplicationEdge</span>
 <span class="kn">from</span> <span class="nn">pacman.model.graphs</span> <span class="kn">import</span> <span class="n">AbstractVirtual</span>
 <span class="kn">from</span> <span class="nn">pacman.model.partitioner_splitters.splitter_reset</span> <span class="kn">import</span> <span class="n">splitter_reset</span>
@@ -644,7 +645,7 @@
         <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">sdram</span> <span class="ow">in</span> <span class="n">usage_by_chip</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">sdram</span><span class="o">.</span><span class="n">size</span>
             <span class="k">if</span> <span class="n">sdram</span><span class="o">.</span><span class="n">fixed</span> <span class="o">&gt;</span> <span class="n">size</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="k">raise</span> <span class="n">PacmanPlaceException</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Too much SDRAM has been allocated on chip </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">: &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot; </span><span class="si">{</span><span class="n">sdram</span><span class="o">.</span><span class="n">fixed</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">sdram</span><span class="o">.</span><span class="n">per_timestep</span><span class="p">:</span>

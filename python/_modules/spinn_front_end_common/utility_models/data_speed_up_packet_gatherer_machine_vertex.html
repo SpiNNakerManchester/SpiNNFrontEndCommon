@@ -557,7 +557,7 @@
         <span class="c1"># if file, read in and then process as normal</span>
         <span class="k">if</span> <span class="n">is_filename</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="s2">&quot;when using a file, you can only have a offset of 0&quot;</span><span class="p">)</span>
 
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">reader</span><span class="p">:</span>
@@ -601,7 +601,7 @@
             <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;verified:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">verified_data</span><span class="o">.</span><span class="n">hex</span><span class="p">())</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">verified_data</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;damn at &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mismatch found as position </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__make_sdp_message</span><span class="p">(</span><span class="n">placement</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
@@ -696,7 +696,8 @@
 
                         <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_MISSING_SEQ_DATA</span>\
                                 <span class="o">.</span><span class="n">value</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown command </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> received&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Unknown command </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> received&quot;</span><span class="p">)</span>
 
                         <span class="c1"># The currently received packet has missing sequence</span>
                         <span class="c1"># numbers. Accumulate and dispatch transactionId when</span>
@@ -827,7 +828,7 @@
             <span class="n">packet_data_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data_to_write</span><span class="p">)</span> <span class="o">-</span> <span class="n">position</span>
 
         <span class="k">if</span> <span class="n">packet_data_length</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;weird packet data length.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;weird packet data length.&quot;</span><span class="p">)</span>
 
         <span class="c1"># determine the true packet length (with header)</span>
         <span class="n">packet_length</span> <span class="o">=</span> <span class="p">(</span>
@@ -1333,10 +1334,10 @@
 
         <span class="c1"># check seq num not insane</span>
         <span class="k">if</span> <span class="n">seq_num</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">&quot;got an insane sequence number. got </span><span class="si">{}</span><span class="s2"> when &quot;</span>
-                <span class="s2">&quot;the max is </span><span class="si">{}</span><span class="s2"> with a length of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">seq_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="p">,</span> <span class="n">length_of_data</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;got an insane sequence number. got </span><span class="si">{</span><span class="n">seq_num</span><span class="si">}</span><span class="s2"> when &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;the max is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;with a length of </span><span class="si">{</span><span class="n">length_of_data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># figure offset for where data is to be put</span>
         <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_offset</span><span class="p">(</span><span class="n">seq_num</span><span class="p">)</span>
@@ -1351,8 +1352,7 @@
                 <span class="n">length_of_data</span> <span class="o">!=</span> <span class="n">BYTES_FOR_SEQ_AND_TRANSACTION_ID</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_write_into_view</span><span class="p">(</span>
                 <span class="n">offset</span><span class="p">,</span> <span class="n">true_data_length</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
-                <span class="n">BYTES_FOR_SEQ_AND_TRANSACTION_ID</span><span class="p">,</span> <span class="n">length_of_data</span><span class="p">,</span> <span class="n">seq_num</span><span class="p">,</span>
-                <span class="n">length_of_data</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">BYTES_FOR_SEQ_AND_TRANSACTION_ID</span><span class="p">,</span> <span class="n">length_of_data</span><span class="p">)</span>
 
         <span class="c1"># add seq num to list</span>
         <span class="n">seq_nums</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">seq_num</span><span class="p">)</span>
@@ -1380,8 +1380,7 @@
 
     <span class="k">def</span> <span class="nf">_write_into_view</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">view_start_position</span><span class="p">,</span> <span class="n">view_end_position</span><span class="p">,</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">data_start_position</span><span class="p">,</span> <span class="n">data_end_position</span><span class="p">,</span> <span class="n">seq_num</span><span class="p">,</span>
-            <span class="n">packet_length</span><span class="p">,</span> <span class="n">is_final</span><span class="p">):</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">data_start_position</span><span class="p">,</span> <span class="n">data_end_position</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Puts data into the view</span>
 
 <span class="sd">        :param int view_start_position: where in view to start</span>
@@ -1394,14 +1393,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="k">if</span> <span class="n">view_end_position</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="s2">&quot;I&#39;m trying to add to my output data, but am trying to add &quot;</span>
-                <span class="s2">&quot;outside my acceptable output positions! max is </span><span class="si">{}</span><span class="s2"> and I &quot;</span>
-                <span class="s2">&quot;received a request to fill to </span><span class="si">{}</span><span class="s2"> from </span><span class="si">{}</span><span class="s2"> for sequence num &quot;</span>
-                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> from max sequence num </span><span class="si">{}</span><span class="s2"> length of packet </span><span class="si">{}</span><span class="s2"> and &quot;</span>
-                <span class="s2">&quot;final </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">),</span> <span class="n">view_end_position</span><span class="p">,</span> <span class="n">view_start_position</span><span class="p">,</span>
-                    <span class="n">seq_num</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">packet_length</span><span class="p">,</span> <span class="n">is_final</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;End position </span><span class="si">{</span><span class="n">view_end_position</span><span class="si">}</span><span class="s2"> &gt; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;output length </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span><span class="p">[</span><span class="n">view_start_position</span><span class="p">:</span> <span class="n">view_end_position</span><span class="p">]</span> <span class="o">=</span> \
             <span class="n">data</span><span class="p">[</span><span class="n">data_start_position</span><span class="p">:</span><span class="n">data_end_position</span><span class="p">]</span>
 
@@ -1416,7 +1410,7 @@
         <span class="n">seq_nums</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span>
         <span class="n">max_needed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_max_seq_num</span><span class="p">()</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_needed</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;I&#39;ve received more data than I was expecting!!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;too many seg_nums: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_needed</span> <span class="o">+</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.calculate_max_seq_num"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.calculate_max_seq_num">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_max_seq_num</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
