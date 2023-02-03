@@ -22,6 +22,7 @@ from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
+from spinnman.exceptions import SpinnmanTimeoutException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
@@ -78,8 +79,9 @@ class NotificationProtocol(AbstractContextManager):
             results = wait(self.__wait_futures,
                            timeout=self.__wait_for_read_timeout)
             if results.not_done:
-                raise Exception("Timeout waiting for external sources: "
-                                f"{results.not_done}")
+                raise SpinnmanTimeoutException(
+                    f"waiting for external sources: {results.not_done}",
+                    self.__wait_for_read_timeout)
         self.__wait_futures = list()
 
     def send_start_resume_notification(self):
