@@ -122,6 +122,7 @@ class SpallocJobController(MachineAllocationController):
         """
         txrx = self._job.create_transceiver()
         txrx.ensure_board_is_ready()
+        return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
