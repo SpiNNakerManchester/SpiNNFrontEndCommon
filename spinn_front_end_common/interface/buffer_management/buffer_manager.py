@@ -82,18 +82,6 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         "_sent_messages",
 
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_out",
-
-        # Lock to avoid multiple messages being processed at the same time
-        "_thread_lock_buffer_in",
-
-        # bool flag
-        "_finished",
-
-        # listener port
-        "_listener_port",
-
         # Support class to help call Java
         "_java_caller",
 
@@ -173,7 +161,7 @@ class BufferManager(object):
         for index, (extra_mon_element, txrx_element) in enumerate(
                 zip(extra_mon_data, txrx_data)):
             if extra_mon_element != txrx_element:
-                raise Exception("WRONG (at index {})".format(index))
+                raise ValueError(f"WRONG (at index {index})")
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using memory writes.

@@ -19,6 +19,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import (
@@ -122,7 +123,7 @@ def regenerate_data_spec(placement, data_dir):
             new_size = ds_ptr_table[i]["n_words"]
             old_size = ptr_table[i]["n_words"]
             if old_size != -1 and new_size > old_size:
-                raise Exception(
+                raise SpinnFrontEndException(
                     f"Region {i} of {vertex} has grown from {old_size} bytes "
                     f"to {new_size} bytes and will overwrite the next region!")
             txrx.write_memory(

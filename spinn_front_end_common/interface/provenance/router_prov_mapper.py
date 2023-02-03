@@ -273,7 +273,7 @@ def main():
                     args.term, os.path.abspath(SINGLE_PLOTNAME))
         else:
             if args.sumcores:
-                raise Exception(
+                raise ValueError(
                     "cannot use --sumcores with default router provenance")
             for term in ROUTER_PLOTTABLES:
                 plotter.plot_per_chip_data(

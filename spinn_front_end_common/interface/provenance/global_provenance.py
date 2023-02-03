@@ -192,7 +192,6 @@ class GlobalProvenance(SQLiteDB):
                     description, the_value)
                 VALUES("foo", "bar")
                 """)
-            cur.lastrowid
             # try logging and storing while locked.
             logger.warning(text)
 

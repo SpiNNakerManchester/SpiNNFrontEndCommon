@@ -62,7 +62,7 @@ class CantFindSDRAMToUseException(SpinnFrontEndException):
     """
 
 
-class NoProvenanceDatabaseException(SpinnFrontEndException):
+class DsDatabaseException(SpinnFrontEndException):
     """
-    Raised when the Provenance database has not yet been created.
+    Raise when a query in the DataSpec database failed
     """

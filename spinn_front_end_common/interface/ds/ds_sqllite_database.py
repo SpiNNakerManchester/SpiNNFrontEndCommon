@@ -20,6 +20,7 @@ import sqlite3
 from spinn_utilities.log import FormatAdapter
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .data_row_writer import DataRowWriter
 
@@ -80,7 +81,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 first_y = row["ethernet_y"]
         if root_id is None:
             # Should only be reachable for an empty machine
-            raise Exception("No ethernet chip found")
+            raise DsDatabaseException("No ethernet chip found")
         if first_x or first_y:
             logger.warning(
                 "No Ethernet chip found at 0,0 using {},{} "
@@ -204,6 +205,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """ Returns the number for cores there is a ds saved for
 
         :rtype: int
+        :raises DsDatabaseException:
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -213,12 +215,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """):
                 return row["count"]
-        raise Exception("Count query failed")
+        raise DsDatabaseException("Count query failed")
 
     def ds_n_app_cores(self):
         """ Returns the number for application cores there is a ds saved for
 
         :rtype: int
+        :raises DsDatabaseException:
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -228,12 +231,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """):
                 return row["count"]
-        raise Exception("Count query failed")
+        raise DsDatabaseException("Count query failed")
 
     def ds_n_system_cores(self):
         """ Returns the number for system cores there is a ds saved for
 
         :rtype: int
+        :raises DsDatabaseException:
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -243,7 +247,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """):
                 return row["count"]
-        raise Exception("Count query failed")
+        raise DsDatabaseException("Count query failed")
 
     def set_app_id(self, app_id):
         """ Sets the same app_id for all rows that have ds content
@@ -399,6 +403,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """ Returns the number for cores there is a info saved for.
 
         :rtype: int
+        :raises DsDatabaseException:
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -408,7 +413,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """):
                 return row["count"]
-        raise Exception("Count query failed")
+        raise DsDatabaseException("Count query failed")
 
     def info_iteritems(self):
         """ Yields the keys and values for the Info data.
