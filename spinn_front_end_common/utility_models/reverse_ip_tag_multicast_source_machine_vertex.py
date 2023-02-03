@@ -61,6 +61,8 @@ _TWO_SHORTS = struct.Struct("<HH")
 
 # The microseconds per timestep will be divided by this for the max offset
 _MAX_OFFSET_DENOMINATOR = 10
+# The max offset modulo to stop spikes in simple cases moving to the next ts
+_MAX_OFFSET_MODULO = 1000
 
 
 class ReverseIPTagMulticastSourceMachineVertex(
@@ -179,7 +181,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         if (send_buffer_partition_id is not None and
                 injection_partition_id is not None):
-            raise Exception(
+            raise ValueError(
                 "Can't specify both send_buffer_partition_id and"
                 " injection_partition_id")
 
@@ -574,7 +576,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.reserve_provenance_data_region(spec)
 
-    def _update_virtual_key(self):
+    def update_virtual_key(self):
         routing_info = FecDataView.get_routing_infos()
         if self._virtual_key is None:
             rinfo = None
@@ -648,9 +650,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         max_offset = (FecDataView.get_hardware_time_step_us() // (
             _MAX_OFFSET_DENOMINATOR * 2))
         spec.write_value(
-            (int(math.ceil(max_offset / self._n_vertices)) *
-             ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
-            int(math.ceil(max_offset)))
+            ((int(math.ceil(max_offset / self._n_vertices)) *
+              ReverseIPTagMulticastSourceMachineVertex._n_data_specs) +
+             int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
     @overrides(
@@ -659,7 +661,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             ):
-        self._update_virtual_key()
+        self.update_virtual_key()
 
         # Reserve regions
         self._reserve_regions(spec)
@@ -694,12 +696,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @property
-    def virtual_key(self):
+    def get_virtual_key(self):
         """
+        Updates and returns the virtual key. None is give a zero value
+
         :rtype: int or None
         """
-        return self._virtual_key
+        self.update_virtual_key()
+        if self._virtual_key:
+            return self._virtual_key
+        return 0
 
     @property
     def mask(self):

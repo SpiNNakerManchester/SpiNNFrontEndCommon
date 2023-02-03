@@ -47,8 +47,6 @@ def energy_provenance_reporter(power_used):
                 db.insert_core(
                     x, y, p, "Energy (Joules)",
                     power_used.get_core_active_energy_joules(x, y, p))
-                if p == 0:
-                    db.add_core_name(x, y, p, "SCAMP(OS)")
             for x, y in power_used.active_routers:
                 db.insert_router(
                     x, y, "Energy (Joules)",

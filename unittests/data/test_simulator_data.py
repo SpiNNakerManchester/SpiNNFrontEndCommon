@@ -247,6 +247,8 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
+        self.assertEqual("", writer.get_reset_str())
         writer.start_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
@@ -259,7 +261,10 @@ class TestSimulatorData(unittest.TestCase):
         writer.finish_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
+        self.assertEqual("1", writer.get_reset_str())
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
         writer.start_run()
@@ -321,11 +326,14 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
+        self.assertEqual(0, writer.get_reset_number())
         writer.soft_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path changed by hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
@@ -601,7 +609,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -651,7 +659,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())
