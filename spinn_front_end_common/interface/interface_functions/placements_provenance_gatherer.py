@@ -18,7 +18,7 @@ import traceback
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine)
+    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
