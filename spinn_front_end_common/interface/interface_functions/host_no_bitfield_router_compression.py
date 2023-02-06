@@ -178,7 +178,8 @@ class Compression(object):
                 elif self.__result_register == 2:
                     result = transceiver.read_user_2(x, y, p)
                 else:
-                    raise Exception("Incorrect register")
+                    raise ValueError(
+                        "Incorrect register {self.__result_register}")
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self.__failures.append((x, y))
