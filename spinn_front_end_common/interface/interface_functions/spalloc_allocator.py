@@ -63,7 +63,7 @@ class SpallocJobController(MachineAllocationController):
         :param AbstractContextManager task:
         """
         if job is None:
-            raise Exception("must have a real job")
+            raise TypeError("must have a real job")
         self.__client = client
         self.__closer = task
         self._job = job
@@ -160,7 +160,7 @@ class _OldSpallocJobController(MachineAllocationController):
         :param ~spalloc.job.Job job:
         """
         if job is None:
-            raise Exception("must have a real job")
+            raise TypeError("must have a real job")
         self._job = job
         self._state = job.state
         super().__init__("SpallocJobController", host)
@@ -355,7 +355,8 @@ def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
                 logger.debug("boards: {}",
                              str(connections).replace("{", "[").replace(
                                  "}", "]"))
-            ProvenanceWriter().insert_board_provenance(connections)
+            with ProvenanceWriter() as db:
+                db.insert_board_provenance(connections)
             if hostname not in avoid_boards:
                 break
             avoid_jobs.append(job)

@@ -18,7 +18,7 @@ import traceback
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.provenance import (
-    AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
+    AbstractProvidesProvenanceDataFromMachine)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -56,9 +56,6 @@ def _add_placement_provenance(placement, errors):
         # get data
         try:
             placement.vertex.get_provenance_data_from_machine(placement)
-            with ProvenanceWriter() as db:
-                db.add_core_name(placement.x, placement.y, placement.p,
-                                 placement.vertex.label)
 
         except Exception:  # pylint: disable=broad-except
             errors.append(traceback.format_exc())

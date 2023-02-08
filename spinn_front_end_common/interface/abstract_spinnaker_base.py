@@ -43,6 +43,7 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
+from pacman.exceptions import PacmanPlaceException
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
@@ -70,6 +71,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
@@ -100,7 +103,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceWriter, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -458,6 +461,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             self._do_mapping(total_run_time)
 
+        if not self._data_writer.is_ran_last():
+            self._do_write_metadata()
+
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
@@ -602,7 +608,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         for (x, y), sdram in usage_by_chip.items():
             size = self._data_writer.get_chip_at(x, y).sdram.size
             if sdram.fixed > size:
-                raise Exception(
+                raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
                     f" {sdram.fixed} of {size}")
             if sdram.per_timestep:
@@ -742,7 +748,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
         """
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", spinn_utils_version)
             db.insert_version("spinn_machine_version", spinn_machine_version)
             db.insert_version("spalloc_version", spalloc_version)
@@ -908,6 +914,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _do_write_metadata(self):
+        """
+        Do the various functions to write metadata to the sqlite files
+        """
+        with FecTimer(
+                "Record vertex labels to database", TimerWork.REPORT):
+            with BufferDatabase() as db:
+                db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -2304,11 +2319,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         logger.info("Resetting")
 
-        # rewind the buffers from the buffer manager, to start at the beginning
-        # of the simulation again and clear buffered out
-        if self._data_writer.has_buffer_manager():
-            self._data_writer.get_buffer_manager().reset()
-
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
                 "A reset after a get machine call is always hard and "
@@ -2316,6 +2326,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._hard_reset()
         else:
             self._data_writer.soft_reset()
+
+        # rewind the buffers from the buffer manager, to start at the beginning
+        # of the simulation again and clear buffered out
+        if self._data_writer.has_buffer_manager():
+            self._data_writer.get_buffer_manager().reset()
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()
