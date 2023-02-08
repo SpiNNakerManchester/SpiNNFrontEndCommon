@@ -132,9 +132,12 @@ void recording_finalise(void) {
 
     // Loop through channels
     for (uint32_t channel = 0; channel < regions->n_regions; channel++) {
-        recording_channel_t *rec = &channels[channel];
-        // If this channel's in use, copy things back to SDRAM
-        if (has_been_initialised(rec)) {
+        recording_region_t *region = &regions->regions[channel];
+        uint32_t space = region->space;
+        if (space > 0) {
+
+            // If this channel's in use, copy things back to SDRAM
+            recording_channel_t *rec = &channels[channel];
             recording_region_t *reg = &regions->regions[channel];
             log_info("Recording channel %u, start=0x%08x, end=0x%08x, write=0x%08x, space=%u",
                     channel, rec->start, rec->end, rec->write, rec->space);
