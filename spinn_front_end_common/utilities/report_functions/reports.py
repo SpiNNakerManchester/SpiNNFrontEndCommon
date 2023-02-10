@@ -332,7 +332,7 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             binary = ""
             if isinstance(sv, AbstractHasAssociatedBinary):
-                binary = f" using binary file: {sv.binary_file_name}"
+                binary = f" using binary file: {sv.get_binary_file_name()}"
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
             f.write("  Slice {} on core ({}, {}, {}){} \n"
@@ -388,7 +388,7 @@ def _write_one_chip_application_placement(f, chip):
         app_vertex = vertex.app_vertex
         binary = ""
         if isinstance(vertex, AbstractHasAssociatedBinary):
-            binary = f" using binary file: {sv.binary_file_name}"
+            binary = f" using binary file: {vertex.get_binary_file_name()}"
         if app_vertex is not None:
             vertex_label = app_vertex.label
             vertex_model = app_vertex.__class__.__name__
