@@ -1,7 +1,7 @@
 # Minimal makefile for Sphinx documentation
 #
 
-# Copyright (c) 2017-2023 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
