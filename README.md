@@ -60,4 +60,4 @@ Documentation
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
-[Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)
+[Combined python documentation](http://spinnakermanchester.readthedocs.io)
