@@ -60,7 +60,6 @@
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.sqlite_db</span> <span class="kn">import</span> <span class="n">SQLiteDB</span>
 <span class="kn">from</span> <span class="nn">.data_row_writer</span> <span class="kn">import</span> <span class="n">DataRowWriter</span>
 
-<span class="n">DB_NAME</span> <span class="o">=</span> <span class="s2">&quot;ds.sqlite3&quot;</span>
 <span class="n">_DDL_FILE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s2">&quot;dse.sql&quot;</span><span class="p">)</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -76,7 +75,7 @@
 <span class="sd">        :param init:</span>
 <span class="sd">        :type init: bool or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">database_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">DB_NAME</span><span class="p">)</span>
+        <span class="n">database_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="n">init</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">init</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
@@ -85,6 +84,11 @@
         <span class="k">if</span> <span class="n">init</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__init_db_contents</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__find_root_id</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DsSqlliteDatabase.default_database_file"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.default_database_file">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">default_database_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span>
+                            <span class="sa">f</span><span class="s2">&quot;ds</span><span class="si">{</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_reset_str</span><span class="p">()</span><span class="si">}</span><span class="s2">.sqlite3&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__init_db_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Set up the database contents from the machine. &quot;&quot;&quot;</span>
@@ -119,15 +123,6 @@
                 <span class="s2">&quot;No Ethernet chip found at 0,0 using </span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2"> &quot;</span>
                 <span class="s2">&quot;for all boards with no IP address.&quot;</span><span class="p">,</span> <span class="n">first_x</span><span class="p">,</span> <span class="n">first_y</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">root_id</span>
-
-<div class="viewcode-block" id="DsSqlliteDatabase.clear_ds"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_ds">[docs]</a>    <span class="k">def</span> <span class="nf">clear_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clear all saved data specification data</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
-            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                DELETE FROM core</span>
-<span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.write_data_spec"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec">[docs]</a>    <span class="k">def</span> <span class="nf">write_data_spec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_x</span><span class="p">,</span> <span class="n">core_y</span><span class="p">,</span> <span class="n">core_p</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

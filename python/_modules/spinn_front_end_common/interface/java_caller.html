@@ -66,6 +66,7 @@
     <span class="n">AbstractReceiveBuffersToHost</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.buffer_management.storage_objects</span> \
     <span class="kn">import</span> <span class="nn">BufferDatabase</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.ds</span> <span class="kn">import</span> <span class="n">DsSqlliteDatabase</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -402,7 +403,9 @@
 <span class="sd">            On failure of the Java code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
-            <span class="s1">&#39;dse&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
+            <span class="s1">&#39;dse&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
+            <span class="n">DsSqlliteDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
@@ -418,7 +421,9 @@
 <span class="sd">            On failure of the Java code.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
-            <span class="s1">&#39;dse_sys&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
+            <span class="s1">&#39;dse_sys&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
+            <span class="n">DsSqlliteDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
+            <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;jspin.log&quot;</span><span class="p">)</span>
@@ -441,10 +446,12 @@
         <span class="k">if</span> <span class="n">use_monitors</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
                 <span class="s1">&#39;dse_app_mon&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement_json</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
-                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
+                <span class="n">DsSqlliteDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run_java</span><span class="p">(</span>
                 <span class="s1">&#39;dse_app&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json</span><span class="p">(),</span>
+                <span class="n">DsSqlliteDatabase</span><span class="o">.</span><span class="n">default_database_file</span><span class="p">(),</span>
                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">result</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
