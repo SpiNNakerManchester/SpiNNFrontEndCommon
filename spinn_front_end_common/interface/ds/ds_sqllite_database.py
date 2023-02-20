@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import io
 import logging
@@ -24,7 +23,6 @@ from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from .data_row_writer import DataRowWriter
 
-DB_NAME = "ds.sqlite3"
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -40,7 +38,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param init:
         :type init: bool or None
         """
-        database_file = os.path.join(FecDataView.get_run_dir_path(), DB_NAME)
+        database_file = self.default_database_file()
 
         if init is None:
             init = not os.path.exists(database_file)
@@ -49,6 +47,11 @@ class DsSqlliteDatabase(SQLiteDB):
         if init:
             self.__init_db_contents()
         self._root_ethernet_id = self.__find_root_id()
+
+    @classmethod
+    def default_database_file(cls):
+        return os.path.join(FecDataView.get_run_dir_path(),
+                            f"ds{FecDataView.get_reset_str()}.sqlite3")
 
     def __init_db_contents(self):
         """ Set up the database contents from the machine. """
@@ -83,15 +86,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 "No Ethernet chip found at 0,0 using {},{} "
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
-
-    def clear_ds(self):
-        """ Clear all saved data specification data
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM core
-                """)
 
     def write_data_spec(self, core_x, core_y, core_p, ds):
         """
