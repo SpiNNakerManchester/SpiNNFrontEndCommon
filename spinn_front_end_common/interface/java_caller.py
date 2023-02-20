@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import defaultdict
 import json
@@ -30,6 +29,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -366,7 +366,9 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
@@ -382,7 +384,9 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse_sys', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse_sys', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
@@ -405,10 +409,12 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                FecDataView.get_run_dir_path(), FecDataView.get_run_dir_path())
+                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'dse_app', self._machine_json(),
+                DsSqlliteDatabase.default_database_file(),
                 FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
