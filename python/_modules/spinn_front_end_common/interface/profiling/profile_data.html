@@ -116,7 +116,7 @@
         <span class="c1"># Convert count-down times to count up times from 1st sample</span>
         <span class="n">sample_times_ms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
             <span class="n">numpy</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">sample_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sample_times</span><span class="p">),</span>
-            <span class="n">_MS_SCALE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+            <span class="n">_MS_SCALE</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
         <span class="c1"># Slice tags and times into entry and exits</span>
         <span class="n">entry_tags</span> <span class="o">=</span> <span class="n">sample_tags</span><span class="p">[</span><span class="n">sample_entry_indices</span><span class="p">]</span>
