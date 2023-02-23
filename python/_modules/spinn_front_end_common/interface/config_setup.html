@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.config_setup &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.config_setup</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.config_setup</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">add_default_cfg</span><span class="p">,</span> <span class="n">clear_cfg_files</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinnman.config_setup</span> <span class="kn">import</span> <span class="n">add_spinnman_cfg</span>
+<span class="kn">from</span> <span class="nn">pacman.config_setup</span> <span class="kn">import</span> <span class="n">add_pacman_cfg</span>
+<span class="kn">from</span> <span class="nn">data_specification.config_setup</span> <span class="kn">import</span> <span class="n">add_data_specification_cfg</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data.fec_data_writer</span> <span class="kn">import</span> <span class="n">FecDataWriter</span>
+
+<span class="n">BASE_CONFIG_FILE</span> <span class="o">=</span> <span class="s2">&quot;spinnaker.cfg&quot;</span>
+
+
+<div class="viewcode-block" id="unittest_setup"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_setup.unittest_setup">[docs]</a><span class="k">def</span> <span class="nf">unittest_setup</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Does all the steps that may be required before a unittest</span>
+
+<span class="sd">    Resets the configs so only the local default configs are included.</span>
+
+<span class="sd">    Unsets any previous simulators and tempdirs</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This file should only be called from spinn_front_end_common tests</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">clear_cfg_files</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">add_spinnaker_cfg</span><span class="p">()</span>
+    <span class="n">FecDataWriter</span><span class="o">.</span><span class="n">mock</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="add_spinnaker_cfg"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_setup.add_spinnaker_cfg">[docs]</a><span class="k">def</span> <span class="nf">add_spinnaker_cfg</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add the local cfg and all dependent cfg files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">add_pacman_cfg</span><span class="p">()</span>  <span class="c1"># This add its dependencies too</span>
+    <span class="n">add_spinnman_cfg</span><span class="p">()</span>  <span class="c1"># double adds of dependencies ignored</span>
+    <span class="n">add_data_specification_cfg</span><span class="p">()</span>  <span class="c1"># double adds of dependencies ignored</span>
+    <span class="n">add_default_cfg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="n">BASE_CONFIG_FILE</span><span class="p">))</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.config_setup</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    </div>
+  </body>
+</html>

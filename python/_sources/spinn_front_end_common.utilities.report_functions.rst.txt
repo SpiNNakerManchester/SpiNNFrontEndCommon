@@ -4,10 +4,26 @@ spinn\_front\_end\_common.utilities.report\_functions package
 Submodules
 ----------
 
-spinn\_front\_end\_common.utilities.report\_functions.energy\_report module
----------------------------------------------------------------------------
+spinn\_front\_end\_common.utilities.report\_functions.reports module
+--------------------------------------------------------------------
 
-.. automodule:: spinn_front_end_common.utilities.report_functions.energy_report
+.. automodule:: spinn_front_end_common.utilities.report_functions.reports
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.report\_functions.router\_summary module
+----------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.report_functions.router_summary
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.report\_functions.routing\_compression\_report module
+-----------------------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.report_functions.routing_compression_report
    :members:
    :undoc-members:
    :show-inheritance:

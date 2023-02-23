@@ -10,6 +10,17 @@ Subpackages
    spinn_front_end_common.interface.buffer_management.buffer_models
    spinn_front_end_common.interface.buffer_management.storage_objects
 
+Submodules
+----------
+
+spinn\_front\_end\_common.interface.buffer\_management.recording\_utilities module
+----------------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.buffer_management.recording_utilities
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

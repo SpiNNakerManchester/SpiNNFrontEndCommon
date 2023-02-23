@@ -1,0 +1,291 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.utilities.utility_calls &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_calls</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.utilities.utility_calls</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2017 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="sd">&quot;&quot;&quot; Utility calls for interpreting bits of the DSG</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="kn">import</span> <span class="n">urlparse</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
+<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">SCAMPConnection</span>
+<span class="kn">from</span> <span class="nn">spinnman.utilities.utility_functions</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">reprogram_tag</span><span class="p">,</span> <span class="n">reprogram_tag_to_listener</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinnman.spalloc</span> <span class="kn">import</span> <span class="n">SpallocEIEIOListener</span><span class="p">,</span> <span class="n">SpallocEIEIOConnection</span>
+<span class="kn">from</span> <span class="nn">data_specification.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">APP_PTR_TABLE_HEADER_BYTE_SIZE</span><span class="p">,</span> <span class="n">APP_PTR_TABLE_REGION_BYTE_SIZE</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">data_specification.data_specification_generator</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">DataSpecificationGenerator</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
+
+<span class="c1"># used to stop file conflicts</span>
+<span class="n">_lock_condition</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Condition</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_mkdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Make a directory if it doesn&#39;t exist.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This code is not intended to be secure against malicious third parties</span>
+
+<span class="sd">    :param str directory: The directory to create</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Guarded to stop us from hitting things twice internally; it&#39;s not</span>
+    <span class="c1"># perfect since other processes could also happen along.</span>
+    <span class="k">with</span> <span class="n">_lock_condition</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="c1"># Assume an external race beat us</span>
+            <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="get_region_base_address_offset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_region_base_address_offset">[docs]</a><span class="k">def</span> <span class="nf">get_region_base_address_offset</span><span class="p">(</span><span class="n">app_data_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Find the address of the of a given region for the DSG</span>
+
+<span class="sd">    :param int app_data_base_address: base address for the core</span>
+<span class="sd">    :param int region: the region ID we&#39;re looking for</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">app_data_base_address</span> <span class="o">+</span>
+            <span class="n">APP_PTR_TABLE_HEADER_BYTE_SIZE</span> <span class="o">+</span>
+            <span class="p">(</span><span class="n">region</span> <span class="o">*</span> <span class="n">APP_PTR_TABLE_REGION_BYTE_SIZE</span><span class="p">))</span></div>
+
+
+<span class="n">_DAT_TMPL</span> <span class="o">=</span> <span class="s2">&quot;dataSpec_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.dat&quot;</span>
+<span class="n">_RPT_TMPL</span> <span class="o">=</span> <span class="s2">&quot;dataSpec_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.txt&quot;</span>
+<span class="n">_RPT_DIR</span> <span class="o">=</span> <span class="s2">&quot;data_spec_text_files&quot;</span>
+
+
+<div class="viewcode-block" id="get_data_spec_and_file_writer_filename"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_data_spec_and_file_writer_filename">[docs]</a><span class="k">def</span> <span class="nf">get_data_spec_and_file_writer_filename</span><span class="p">(</span>
+        <span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span>
+        <span class="n">application_run_time_report_folder</span><span class="o">=</span><span class="s2">&quot;TEMP&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Encapsulates the creation of the DSG writer and the file paths.</span>
+
+<span class="sd">    :param int processor_chip_x: x-coordinate of the chip</span>
+<span class="sd">    :param int processor_chip_y: y-coordinate of the chip</span>
+<span class="sd">    :param int processor_id: The processor ID</span>
+<span class="sd">    :param str application_run_time_report_folder:</span>
+<span class="sd">        The folder to contain the resulting specification files; if &#39;TEMP&#39;</span>
+<span class="sd">        then a temporary directory is used.</span>
+<span class="sd">    :return: the filename of the data writer and the data specification object</span>
+<span class="sd">    :rtype: tuple(str, DataSpecificationGenerator)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+    <span class="k">if</span> <span class="n">application_run_time_report_folder</span> <span class="o">==</span> <span class="s2">&quot;TEMP&quot;</span><span class="p">:</span>
+        <span class="n">application_run_time_report_folder</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">application_run_time_report_folder</span><span class="p">,</span> <span class="n">_DAT_TMPL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">))</span>
+    <span class="n">data_writer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">FileIO</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+
+    <span class="c1"># check if text reports are needed and if so initialise the report</span>
+    <span class="c1"># writer to send down to DSG</span>
+    <span class="n">report_writer</span> <span class="o">=</span> <span class="n">get_report_writer</span><span class="p">(</span>
+        <span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">)</span>
+
+    <span class="c1"># build the file writer for the spec</span>
+    <span class="n">spec</span> <span class="o">=</span> <span class="n">DataSpecificationGenerator</span><span class="p">(</span><span class="n">data_writer</span><span class="p">,</span> <span class="n">report_writer</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">filename</span><span class="p">,</span> <span class="n">spec</span></div>
+
+
+<div class="viewcode-block" id="get_report_writer"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_report_writer">[docs]</a><span class="k">def</span> <span class="nf">get_report_writer</span><span class="p">(</span><span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Check if text reports are needed, and if so initialise the report\</span>
+<span class="sd">        writer to send down to DSG.</span>
+
+<span class="sd">    :param int processor_chip_x: x-coordinate of the chip</span>
+<span class="sd">    :param int processor_chip_y: y-coordinate of the chip</span>
+<span class="sd">    :param int processor_id: The processor ID</span>
+<span class="sd">    :return: the report_writer_object, or None if not reporting</span>
+<span class="sd">    :rtype: ~io.FileIO or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=too-many-arguments</span>
+
+    <span class="c1"># check if text reports are needed at all</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">get_config_bool</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_text_specs&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># initialise the report writer to send down to DSG</span>
+    <span class="n">new_report_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_RPT_DIR</span><span class="p">)</span>
+    <span class="n">_mkdir</span><span class="p">(</span><span class="n">new_report_directory</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">new_report_directory</span><span class="p">,</span> <span class="n">_RPT_TMPL</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">io</span><span class="o">.</span><span class="n">TextIOWrapper</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">FileIO</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="parse_old_spalloc"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.parse_old_spalloc">[docs]</a><span class="k">def</span> <span class="nf">parse_old_spalloc</span><span class="p">(</span>
+        <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_port</span><span class="o">=</span><span class="mi">22244</span><span class="p">,</span> <span class="n">spalloc_user</span><span class="o">=</span><span class="s2">&quot;unknown user&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse a URL to the old-style service. This may take the form:</span>
+
+<span class="sd">        spalloc://user@spalloc.host.example.com:22244</span>
+
+<span class="sd">    The leading ``spalloc://`` is the mandatory part (as is the actual host</span>
+<span class="sd">    name). If the port and user are omitted, the defaults given in the other</span>
+<span class="sd">    arguments are used (or default defaults).</span>
+
+<span class="sd">    A bare hostname can be used instead. If that&#39;s the case (i.e., there&#39;s no</span>
+<span class="sd">    ``spalloc://`` prefix) then the port and user are definitely used.</span>
+
+<span class="sd">    :param str spalloc_server: Hostname or URL</span>
+<span class="sd">    :param int spalloc_port: Default port</span>
+<span class="sd">    :param str spalloc_user: Default user</span>
+<span class="sd">    :return: hostname, port, username</span>
+<span class="sd">    :rtype: tuple(str,int,str)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">spalloc_port</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spalloc_port</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">spalloc_port</span> <span class="o">=</span> <span class="mi">22244</span>
+    <span class="k">if</span> <span class="n">spalloc_user</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">spalloc_user</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">spalloc_user</span> <span class="o">=</span> <span class="s2">&quot;unknown user&quot;</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="n">urlparse</span><span class="p">(</span><span class="n">spalloc_server</span><span class="p">,</span> <span class="s2">&quot;spalloc&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">netloc</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">spalloc_server</span><span class="p">,</span> <span class="n">spalloc_port</span><span class="p">,</span> <span class="n">spalloc_user</span>
+    <span class="k">return</span> <span class="n">parsed</span><span class="o">.</span><span class="n">hostname</span><span class="p">,</span> <span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">port</span> <span class="ow">or</span> <span class="n">spalloc_port</span><span class="p">),</span> \
+        <span class="p">(</span><span class="n">parsed</span><span class="o">.</span><span class="n">username</span> <span class="ow">or</span> <span class="n">spalloc_user</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="retarget_tag"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.retarget_tag">[docs]</a><span class="k">def</span> <span class="nf">retarget_tag</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">ip_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strip</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a tag deliver to the given connection.</span>
+
+<span class="sd">    :param ~.UDPConnection connection:</span>
+<span class="sd">        The connection to deliver to.</span>
+<span class="sd">    :param int x:</span>
+<span class="sd">        The X coordinate of the ethernet chip we are sending the message to.</span>
+<span class="sd">    :param int y:</span>
+<span class="sd">        The Y coordinate of the ethernet chip we are sending the message to.</span>
+<span class="sd">    :param int tag:</span>
+<span class="sd">        The ID of the tag to retarget.</span>
+<span class="sd">    :param str ip_address:</span>
+<span class="sd">        What IP address to send the message to. If ``None``, the connection is</span>
+<span class="sd">        assumed to be connected to a specific board already.</span>
+<span class="sd">    :param bool strip:</span>
+<span class="sd">        Whether the tag should strip the SDP header before sending to the</span>
+<span class="sd">        connection.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If the connection itself knows how, delegate to it</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">SpallocEIEIOListener</span><span class="p">):</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">SpallocEIEIOConnection</span><span class="p">):</span>
+        <span class="n">connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">ip_address</span><span class="p">:</span>
+        <span class="n">reprogram_tag_to_listener</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">strip</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reprogram_tag</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">strip</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="open_scp_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.open_scp_connection">[docs]</a><span class="k">def</span> <span class="nf">open_scp_connection</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">chip_ip_address</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create an SCP connection to the given ethernet chip. SpiNNaker will</span>
+<span class="sd">    not be configured to map that connection to a tag; that is the</span>
+<span class="sd">    caller&#39;s responsibility.</span>
+
+<span class="sd">    :param int chip_x:</span>
+<span class="sd">        X coordinate of the ethernet chip to connect to.</span>
+<span class="sd">    :param int chip_y:</span>
+<span class="sd">        Y coordinate of the ethernet chip to connect to.</span>
+<span class="sd">    :param str chip_ip_address:</span>
+<span class="sd">        IP address of the ethernet chip to connect to.</span>
+<span class="sd">    :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
+        <span class="c1"># See if the allocation controller wants to do it</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_allocation_controller</span><span class="p">()</span><span class="o">.</span><span class="n">open_sdp_connection</span><span class="p">(</span>
+            <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conn</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">conn</span>
+    <span class="k">return</span> <span class="n">SCAMPConnection</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">remote_host</span><span class="o">=</span><span class="n">chip_ip_address</span><span class="p">)</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities.utility_calls</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    </div>
+  </body>
+</html>

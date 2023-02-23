@@ -42,6 +42,171 @@
             
   <section id="spinn-front-end-common-utility-models-package">
 <h1>spinn_front_end_common.utility_models package<a class="headerlink" href="#spinn-front-end-common-utility-models-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-spinn_front_end_common.utility_models.lpg_splitter">
+<span id="spinn-front-end-common-utility-models-lpg-splitter-module"></span><h2>spinn_front_end_common.utility_models.lpg_splitter module<a class="headerlink" href="#module-spinn_front_end_common.utility_models.lpg_splitter" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utility_models.lpg_splitter.</span></span><span class="sig-name descname"><span class="pre">LPGSplitter</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.partitioner_splitters.abstract_splitters/#pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSplitterCommon</span></code></a></p>
+<p>Splitter for the LivePacketGather vertex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>splitter_name</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_machine_vertices">
+<span class="sig-name descname"><span class="pre">create_machine_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_counter</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.create_machine_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_machine_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method for specific splitter objects to override.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chip_counter</strong> (<em>ChipCounter</em>) – counter of used chips</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices">
+<span class="sig-name descname"><span class="pre">create_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system_placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.create_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Special way of making LPG machine vertices, where one is placed
+on each Ethernet chip.  Note that this adds to system placements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_slices">
+<span class="sig-name descname"><span class="pre">get_in_coming_slices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.get_in_coming_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_slices" title="Permalink to this definition">¶</a></dt>
+<dd><p>The slices of the input vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of Slices</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_vertices">
+<span class="sig-name descname"><span class="pre">get_in_coming_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.get_in_coming_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get machine post vertices for a given partition.</p>
+<p>The input vertices are the ones that will serve as target vertices
+for external edges.  Note this method returns all that could be used
+for any source machine vertex in the given partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the incoming partition</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(MachineVertex)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_slices">
+<span class="sig-name descname"><span class="pre">get_out_going_slices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.get_out_going_slices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_slices" title="Permalink to this definition">¶</a></dt>
+<dd><p>The slices of the output vertices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of Slices</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_vertices">
+<span class="sig-name descname"><span class="pre">get_out_going_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.get_out_going_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get machine pre vertices</p>
+<p>The output vertices are the ones that will serve as source vertices
+for external edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the outgoing partition</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(MachineVertex)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_source_specific_in_coming_vertices">
+<span class="sig-name descname"><span class="pre">get_source_specific_in_coming_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_vertex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.get_source_specific_in_coming_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_source_specific_in_coming_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get machine post vertices for a given source.</p>
+<p>The input vertices are the ones that will serve as target vertices
+for external edges.  Note this method allows filtering of the targets
+for a specific source machine vertex.</p>
+<p>This default method makes every machine vertex a target for the source.
+This should be overridden if there are specific machine vertices for
+any given source vertex.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>source_vertex</strong> (<em>ApplicationVertex</em>) – The source to get incoming vertices for</p></li>
+<li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the incoming partition</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of tuples of (target machine vertex, list of source
+machine or application vertices that should hit the target)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(MachineVertex,
+<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(MachineVertex or ApplicationVertex)))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.machine_vertices_for_recording">
+<span class="sig-name descname"><span class="pre">machine_vertices_for_recording</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variable_to_record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.machine_vertices_for_recording"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.machine_vertices_for_recording" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the machine vertices which are recording this variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variable_to_record</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the variable to get machine verts for.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of machine vertices</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.reset_called">
+<span class="sig-name descname"><span class="pre">reset_called</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.reset_called"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.reset_called" title="Permalink to this definition">¶</a></dt>
+<dd><p>reset the splitter to be as if it has not operated a splitting yet.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.targeted_lpgs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">targeted_lpgs</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.targeted_lpgs" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Get which LPG machine vertex is targeted by which machine vertex</dt><dd><p>and partition</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A set of (lpg machine vertex, source machine vertex, partition_id)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)">set</a>(<a class="reference internal" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">LivePacketGatherMachineVertex</a>, MachineVertex, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-spinn_front_end_common.utility_models">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utility_models" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
@@ -250,7 +415,7 @@ running</p></li>
 <dd class="field-odd"><p>edges, partition IDs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<em>ApplicationEdge</em>),
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v6.0)"><em>ApplicationEdge</em></a>),
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
@@ -353,7 +518,7 @@ running</p></li>
 <dd class="field-odd"><p>edges, partition IDs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<em>MachineEdge</em>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v6.0)"><em>MachineEdge</em></a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -507,7 +672,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Where this gatherer is.</p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Where this gatherer is.</p></li>
 <li><p><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – How to talk directly to the chip where the gatherer is.</p></li>
-<li><p><strong>app_vertex</strong> (<em>ApplicationVertex</em><em> or </em><em>None</em>) – The application vertex that caused this machine vertex to be
+<li><p><strong>app_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a><em> or </em><em>None</em>) – The application vertex that caused this machine vertex to be
 created. If None, there is no such application vertex.</p></li>
 </ul>
 </dd>
@@ -1170,7 +1335,7 @@ Leave as None to delegate the choice of splitter to the selector.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
 <li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
-<li><p><strong>tags</strong> (<em>Tags</em>) – </p></li>
+<li><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1754,7 +1919,7 @@ send injected keys with</p></li>
 <dd class="field-even"><p>The created machine vertex</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>MachineVertex</em></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1847,6 +2012,23 @@ conditions.</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utility_models package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utility_models.lpg_splitter">spinn_front_end_common.utility_models.lpg_splitter module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter"><code class="docutils literal notranslate"><span class="pre">LPGSplitter</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_machine_vertices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.create_machine_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.create_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_slices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.get_in_coming_slices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_in_coming_vertices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.get_in_coming_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_slices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.get_out_going_slices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_out_going_vertices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.get_out_going_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.get_source_specific_in_coming_vertices"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.get_source_specific_in_coming_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.machine_vertices_for_recording"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.machine_vertices_for_recording()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.reset_called"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.reset_called()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.targeted_lpgs"><code class="docutils literal notranslate"><span class="pre">LPGSplitter.targeted_lpgs</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utility_models">Module contents</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex"><code class="docutils literal notranslate"><span class="pre">ChipPowerMonitorMachineVertex</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name"><code class="docutils literal notranslate"><span class="pre">ChipPowerMonitorMachineVertex.binary_file_name()</span></code></a></li>

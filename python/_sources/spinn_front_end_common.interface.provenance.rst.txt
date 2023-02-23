@@ -1,6 +1,17 @@
 spinn\_front\_end\_common.interface.provenance package
 ======================================================
 
+Submodules
+----------
+
+spinn\_front\_end\_common.interface.provenance.router\_prov\_mapper module
+--------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.provenance.router_prov_mapper
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

@@ -17,10 +17,26 @@ Subpackages
 Submodules
 ----------
 
+spinn\_front\_end\_common.utilities.base\_database module
+---------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.base_database
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 spinn\_front\_end\_common.utilities.constants module
 ----------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.emergency\_recovery module
+--------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.emergency_recovery
    :members:
    :undoc-members:
    :show-inheritance:
@@ -41,6 +57,22 @@ spinn\_front\_end\_common.utilities.helpful\_functions module
    :undoc-members:
    :show-inheritance:
 
+spinn\_front\_end\_common.utilities.iobuf\_extractor module
+-----------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.iobuf_extractor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.math\_constants module
+----------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.math_constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 spinn\_front\_end\_common.utilities.sqlite\_db module
 -----------------------------------------------------
 
@@ -53,6 +85,14 @@ spinn\_front\_end\_common.utilities.system\_control\_logic module
 -----------------------------------------------------------------
 
 .. automodule:: spinn_front_end_common.utilities.system_control_logic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.utilities.utility\_calls module
+---------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.utilities.utility_calls
    :members:
    :undoc-members:
    :show-inheritance:

@@ -47,6 +47,104 @@
             
   <section id="spinn-front-end-common-interface-interface-functions-package">
 <h1>spinn_front_end_common.interface.interface_functions package<a class="headerlink" href="#spinn-front-end-common-interface-interface-functions-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression">
+<span id="spinn-front-end-common-interface-interface-functions-host-no-bitfield-router-compression-module"></span><h2>spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression module<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.</span></span><span class="sig-name descname"><span class="pre">Compression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_register</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_no_bitfield_router_compression.html#Compression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Compression algorithm implementation that uses a on-chip router        compressor in order to parallelise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>binary_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – What binary to run</p></li>
+<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – The machine model</p></li>
+<li><p><strong>progress_text</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Text to use in progress bar</p></li>
+<li><p><strong>result_register</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of the user register to check for the result code</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression.compress">
+<span class="sig-name descname"><span class="pre">compress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_no_bitfield_router_compression.html#Compression.compress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression.compress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the on-machine compression algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> – If compression fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.ordered_covering_compression">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.</span></span><span class="sig-name descname"><span class="pre">ordered_covering_compression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_no_bitfield_router_compression.html#ordered_covering_compression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.ordered_covering_compression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load routing tables and compress then using the unordered Algorithm.</p>
+<p>To the best of our knowledge this is the same algorithm as
+<code class="xref py py-func docutils literal notranslate"><span class="pre">mundy_on_chip_router_compression()</span></code>, except this one is still
+buildable and can be maintained.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> – If compression fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.pair_compression">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.</span></span><span class="sig-name descname"><span class="pre">pair_compression</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_no_bitfield_router_compression.html#pair_compression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.pair_compression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load routing tables and compress then using the Pair Algorithm.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">pacman/operations/router_compressors/pair_compressor.py</span></code> which is
+the exact same algorithm implemented in Python.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><strong>SpinnFrontEndException</strong></a> – If compression fails</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor">
+<span id="spinn-front-end-common-interface-interface-functions-machine-bit-field-router-compressor-module"></span><h2>spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor module<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.SIZE_OF_SDRAM_ADDRESS_IN_BYTES">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">148</span></em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.SIZE_OF_SDRAM_ADDRESS_IN_BYTES" title="Permalink to this definition">¶</a></dt>
+<dd><p>sdram allocation for addresses</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">machine_bit_field_ordered_covering_compressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compress_as_much_as_possible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/machine_bit_field_router_compressor.html#machine_bit_field_ordered_covering_compressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>compression with bit field and ordered covering</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to compress as much as possible</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>where the compressors ran</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">machine_bit_field_pair_router_compressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compress_as_much_as_possible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/machine_bit_field_router_compressor.html#machine_bit_field_pair_router_compressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor" title="Permalink to this definition">¶</a></dt>
+<dd><p>compression with bit field and ordered covering</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to compress as much as possible</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>where the compressors ran</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-spinn_front_end_common.interface.interface_functions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.interface_functions" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
@@ -173,7 +271,7 @@
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">database_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.database_interface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>tags</strong> (<em>Tags</em>) – </p>
+<dd class="field-odd"><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Database interface, where the database is located</p>
@@ -578,6 +676,22 @@ board-locn-to-timeout-key map</p>
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.interface_functions package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression">spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression"><code class="docutils literal notranslate"><span class="pre">Compression</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression.compress"><code class="docutils literal notranslate"><span class="pre">Compression.compress()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.ordered_covering_compression"><code class="docutils literal notranslate"><span class="pre">ordered_covering_compression()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.pair_compression"><code class="docutils literal notranslate"><span class="pre">pair_compression()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.SIZE_OF_SDRAM_ADDRESS_IN_BYTES"><code class="docutils literal notranslate"><span class="pre">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor"><code class="docutils literal notranslate"><span class="pre">machine_bit_field_ordered_covering_compressor()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor"><code class="docutils literal notranslate"><span class="pre">machine_bit_field_pair_router_compressor()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.interface_functions">Module contents</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed"><code class="docutils literal notranslate"><span class="pre">FindApplicationChipsUsed</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed.__call__"><code class="docutils literal notranslate"><span class="pre">FindApplicationChipsUsed.__call__()</span></code></a></li>

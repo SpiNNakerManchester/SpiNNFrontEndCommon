@@ -1,0 +1,145 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spinn_front_end_common.interface.buffer_management.recording_utilities &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/sphinxdoc.css" />
+    <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.recording_utilities</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for spinn_front_end_common.interface.buffer_management.recording_utilities</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (c) 2016 The University of Manchester</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+
+<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">,</span> <span class="n">BYTES_PER_WORD</span><span class="p">)</span>
+
+<span class="c1"># Size of data in the header for each recording region</span>
+<span class="c1"># 1 word for space, 1 word for size+missing, 1 word for pointer</span>
+<span class="n">_PER_REGION_HEADER_SIZE</span> <span class="o">=</span> <span class="n">BYTES_PER_WORD</span> <span class="o">*</span> <span class="mi">3</span>
+
+
+<div class="viewcode-block" id="get_recording_header_size"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_size">[docs]</a><span class="k">def</span> <span class="nf">get_recording_header_size</span><span class="p">(</span><span class="n">n_recording_regions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the size of the data to be written for the recording header.</span>
+
+<span class="sd">    This is the data that sets up how recording will be done, and indicates the</span>
+<span class="sd">    sizes of the regions to be stored.</span>
+
+<span class="sd">    :param int n_recording_regions: The number of regions that can be recorded</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># See recording.h/recording_initialise for data included in the header</span>
+    <span class="k">return</span> <span class="n">BYTES_PER_WORD</span> <span class="o">+</span> <span class="p">(</span><span class="n">n_recording_regions</span> <span class="o">*</span> <span class="n">_PER_REGION_HEADER_SIZE</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_recording_data_constant_size"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_data_constant_size">[docs]</a><span class="k">def</span> <span class="nf">get_recording_data_constant_size</span><span class="p">(</span><span class="n">n_recording_regions</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the size of the headers that are stored in the SDRAM spaces</span>
+<span class="sd">        allocated during recording_initialise, and so do not need to be</span>
+<span class="sd">        reserved with DSG (but need to be accounted for in SDRAM calculations)</span>
+
+<span class="sd">    :param int n_recording_regions: The number of regions that can be recorded</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">n_recording_regions</span> <span class="o">*</span> <span class="n">SARK_PER_MALLOC_SDRAM_USAGE</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_recording_header_array"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_array">[docs]</a><span class="k">def</span> <span class="nf">get_recording_header_array</span><span class="p">(</span><span class="n">recorded_region_sizes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get data to be written for the recording header</span>
+
+<span class="sd">    :param list(int) recorded_region_sizes:</span>
+<span class="sd">        A list of sizes of each region to be recorded.</span>
+<span class="sd">        A size of 0 is acceptable.</span>
+<span class="sd">    :rtype: list(int)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># See recording.h/recording_initialise for data included in the header</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="c1"># The parameters</span>
+    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recorded_region_sizes</span><span class="p">))</span>
+
+    <span class="c1"># Add (space, size, pointer) for each region</span>
+    <span class="k">for</span> <span class="n">space</span> <span class="ow">in</span> <span class="n">recorded_region_sizes</span><span class="p">:</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">space</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">data</span></div>
+</pre></div>
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.interface.buffer_management.recording_utilities</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2014-2021.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+    </div>
+  </body>
+</html>

@@ -1,6 +1,25 @@
 spinn\_front\_end\_common.interface.interface\_functions package
 ================================================================
 
+Submodules
+----------
+
+spinn\_front\_end\_common.interface.interface\_functions.host\_no\_bitfield\_router\_compression module
+-------------------------------------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+spinn\_front\_end\_common.interface.interface\_functions.machine\_bit\_field\_router\_compressor module
+-------------------------------------------------------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

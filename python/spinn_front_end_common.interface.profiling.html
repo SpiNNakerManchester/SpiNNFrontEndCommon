@@ -47,13 +47,90 @@
             
   <section id="spinn-front-end-common-interface-profiling-package">
 <h1>spinn_front_end_common.interface.profiling package<a class="headerlink" href="#spinn-front-end-common-interface-profiling-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-spinn_front_end_common.interface.profiling.profile_utils">
+<span id="spinn-front-end-common-interface-profiling-profile-utils-module"></span><h2>spinn_front_end_common.interface.profiling.profile_utils module<a class="headerlink" href="#module-spinn_front_end_common.interface.profiling.profile_utils" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.profile_utils.get_profile_region_size">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.profile_utils.</span></span><span class="sig-name descname"><span class="pre">get_profile_region_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_utils.html#get_profile_region_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.profile_utils.get_profile_region_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the size of the region of the profile data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_samples</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of different samples to record</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the size in bytes used by the profile region</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.profile_utils.get_profiling_data">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.profile_utils.</span></span><span class="sig-name descname"><span class="pre">get_profiling_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">profile_region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_utils.html#get_profiling_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.profile_utils.get_profiling_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility function to get profile data from a profile region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>profile_region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – DSG region to get profiling data out of SDRAM</p></li>
+<li><p><strong>tag_labels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – labels for the profiling data</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – placement</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData" title="spinn_front_end_common.interface.profiling.ProfileData">ProfileData</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.profile_utils.reserve_profile_region">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.profile_utils.</span></span><span class="sig-name descname"><span class="pre">reserve_profile_region</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_utils.html#reserve_profile_region"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.profile_utils.reserve_profile_region" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reserves the profile region for recording the profile data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – the DSG specification writer</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – region ID for the profile data</p></li>
+<li><p><strong>n_samples</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of elements being sampled</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.profile_utils.write_profile_region_data">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.profile_utils.</span></span><span class="sig-name descname"><span class="pre">write_profile_region_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/profile_utils.html#write_profile_region_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.profile_utils.write_profile_region_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the profile region data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – the DSG specification writer</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – region ID for the profile data</p></li>
+<li><p><strong>n_samples</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of elements being sampled</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-spinn_front_end_common.interface.profiling">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.interface.profiling" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.AbstractHasProfileData">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.</span></span><span class="sig-name descname"><span class="pre">AbstractHasProfileData</span></span><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Indicates a <code class="xref py py-class docutils literal notranslate"><span class="pre">MachineVertex</span></code>         that can record a profile.</p>
+<p>Indicates a <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MachineVertex</span></code></a>         that can record a profile.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_profile_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/abstract_has_profile_data.html#AbstractHasProfileData.get_profile_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data" title="Permalink to this definition">¶</a></dt>
@@ -187,6 +264,14 @@
     <h3><a href="index.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.interface.profiling package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.interface.profiling.profile_utils">spinn_front_end_common.interface.profiling.profile_utils module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.profile_utils.get_profile_region_size"><code class="docutils literal notranslate"><span class="pre">get_profile_region_size()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.profile_utils.get_profiling_data"><code class="docutils literal notranslate"><span class="pre">get_profiling_data()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.profile_utils.reserve_profile_region"><code class="docutils literal notranslate"><span class="pre">reserve_profile_region()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.profile_utils.write_profile_region_data"><code class="docutils literal notranslate"><span class="pre">write_profile_region_data()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.interface.profiling">Module contents</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData"><code class="docutils literal notranslate"><span class="pre">AbstractHasProfileData</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data"><code class="docutils literal notranslate"><span class="pre">AbstractHasProfileData.get_profile_data()</span></code></a></li>

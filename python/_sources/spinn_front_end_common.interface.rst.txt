@@ -34,6 +34,14 @@ spinn\_front\_end\_common.interface.config\_handler module
    :undoc-members:
    :show-inheritance:
 
+spinn\_front\_end\_common.interface.config\_setup module
+--------------------------------------------------------
+
+.. automodule:: spinn_front_end_common.interface.config_setup
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 spinn\_front\_end\_common.interface.java\_caller module
 -------------------------------------------------------
 

@@ -50,8 +50,231 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
-<section id="module-spinn_front_end_common.utilities.report_functions.energy_report">
-<span id="spinn-front-end-common-utilities-report-functions-energy-report-module"></span><h2>spinn_front_end_common.utilities.report_functions.energy_report module<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions.energy_report" title="Permalink to this heading">¶</a></h2>
+<section id="module-spinn_front_end_common.utilities.report_functions.reports">
+<span id="spinn-front-end-common-utilities-report-functions-reports-module"></span><h2>spinn_front_end_common.utilities.report_functions.reports module<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions.reports" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.generate_comparison_router_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">generate_comparison_router_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compressed_routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#generate_comparison_router_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.generate_comparison_router_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a report on comparison of the compressed and uncompressed         routing tables</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>compressed_routing_tables</strong> (<em>MulticastRoutingTables</em>) – the compressed routing tables</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.generate_routing_table">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">generate_routing_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_level_folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#generate_routing_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.generate_routing_table" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>routing_table</strong> (<em>AbstractMulticastRoutingTable</em>) – </p></li>
+<li><p><strong>top_level_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.partitioner_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">partitioner_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#partitioner_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.partitioner_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate report on the placement of vertices onto cores.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_core">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">placement_report_with_application_graph_by_core</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#placement_report_with_application_graph_by_core"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_core" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate report on the placement of vertices onto cores by core.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_vertex">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">placement_report_with_application_graph_by_vertex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#placement_report_with_application_graph_by_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_vertex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate report on the placement of vertices onto cores by vertex.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.placer_reports_with_application_graph">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">placer_reports_with_application_graph</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#placer_reports_with_application_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.placer_reports_with_application_graph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports that can be produced from placement given a application        graph’s existence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.router_compressed_summary_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">router_compressed_summary_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#router_compressed_summary_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.router_compressed_summary_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a text file of routing summaries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>routing_tables</strong> (<em>MulticastRoutingTables</em>) – The in-operation COMPRESSED routing tables.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary" title="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary">RouterSummary</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.router_report_from_compressed_router_tables">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">router_report_from_compressed_router_tables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#router_report_from_compressed_router_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_compressed_router_tables" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>routing_tables</strong> (<em>MulticastRoutingTables</em>) – the compressed routing tables</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.router_report_from_paths">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">router_report_from_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#router_report_from_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a text file of routing paths</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.router_report_from_router_tables">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">router_report_from_router_tables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#router_report_from_router_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_router_tables" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.router_summary_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">router_summary_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#router_summary_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.router_summary_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a text file of routing summaries</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary" title="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary">RouterSummary</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.routing_info_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">routing_info_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_allocations</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#routing_info_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.routing_info_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a report which says which keys is being allocated to each        vertex</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.sdram_usage_report_per_chip">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">sdram_usage_report_per_chip</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#sdram_usage_report_per_chip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.sdram_usage_report_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports the SDRAM used per chip</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.reports.tag_allocator_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.reports.</span></span><span class="sig-name descname"><span class="pre">tag_allocator_report</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/reports.html#tag_allocator_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.reports.tag_allocator_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reports the tags that are being used by the tool chain for this        simulation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-spinn_front_end_common.utilities.report_functions.router_summary">
+<span id="spinn-front-end-common-utilities-report-functions-router-summary-module"></span><h2>spinn_front_end_common.utilities.report_functions.router_summary module<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions.router_summary" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.router_summary.</span></span><span class="sig-name descname"><span class="pre">RouterSummary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_entries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_per_chip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_defaultable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_link</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unqiue_routes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/router_summary.html#RouterSummary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_defaultable">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_defaultable</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_defaultable" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_link">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_link</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_link" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_per_chip">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">max_per_chip</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_per_chip" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.total_entries">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_entries</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.total_entries" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.unqiue_routes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unqiue_routes</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.unqiue_routes" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-spinn_front_end_common.utilities.report_functions.routing_compression_report">
+<span id="spinn-front-end-common-utilities-report-functions-routing-compression-report-module"></span><h2>spinn_front_end_common.utilities.report_functions.routing_compression_report module<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions.routing_compression_report" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="spinn_front_end_common.utilities.report_functions.routing_compression_report.generate_routing_compression_checker_report">
+<span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.report_functions.routing_compression_report.</span></span><span class="sig-name descname"><span class="pre">generate_routing_compression_checker_report</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">routing_tables</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compressed_routing_tables</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/report_functions/routing_compression_report.html#generate_routing_compression_checker_report"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.report_functions.routing_compression_report.generate_routing_compression_checker_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a full report of how the compressed covers all routes in the        and uncompressed routing table</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the folder to store the resulting report</p></li>
+<li><p><strong>routing_tables</strong> (<em>MulticastRoutingTables</em>) – the original routing tables</p></li>
+<li><p><strong>compressed_routing_tables</strong> (<em>MulticastRoutingTables</em>) – the compressed routing tables</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-spinn_front_end_common.utilities.report_functions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-spinn_front_end_common.utilities.report_functions" title="Permalink to this heading">¶</a></h2>
@@ -339,7 +562,38 @@ os.mkdir(folder_name)</p>
     <ul>
 <li><a class="reference internal" href="#">spinn_front_end_common.utilities.report_functions package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions.energy_report">spinn_front_end_common.utilities.report_functions.energy_report module</a></li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions.reports">spinn_front_end_common.utilities.report_functions.reports module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.generate_comparison_router_report"><code class="docutils literal notranslate"><span class="pre">generate_comparison_router_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.generate_routing_table"><code class="docutils literal notranslate"><span class="pre">generate_routing_table()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.partitioner_report"><code class="docutils literal notranslate"><span class="pre">partitioner_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_core"><code class="docutils literal notranslate"><span class="pre">placement_report_with_application_graph_by_core()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_vertex"><code class="docutils literal notranslate"><span class="pre">placement_report_with_application_graph_by_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.placer_reports_with_application_graph"><code class="docutils literal notranslate"><span class="pre">placer_reports_with_application_graph()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.router_compressed_summary_report"><code class="docutils literal notranslate"><span class="pre">router_compressed_summary_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_compressed_router_tables"><code class="docutils literal notranslate"><span class="pre">router_report_from_compressed_router_tables()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_paths"><code class="docutils literal notranslate"><span class="pre">router_report_from_paths()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.router_report_from_router_tables"><code class="docutils literal notranslate"><span class="pre">router_report_from_router_tables()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.router_summary_report"><code class="docutils literal notranslate"><span class="pre">router_summary_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.routing_info_report"><code class="docutils literal notranslate"><span class="pre">routing_info_report()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.sdram_usage_report_per_chip"><code class="docutils literal notranslate"><span class="pre">sdram_usage_report_per_chip()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.reports.tag_allocator_report"><code class="docutils literal notranslate"><span class="pre">tag_allocator_report()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions.router_summary">spinn_front_end_common.utilities.report_functions.router_summary module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary"><code class="docutils literal notranslate"><span class="pre">RouterSummary</span></code></a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_defaultable"><code class="docutils literal notranslate"><span class="pre">RouterSummary.max_defaultable</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_link"><code class="docutils literal notranslate"><span class="pre">RouterSummary.max_link</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.max_per_chip"><code class="docutils literal notranslate"><span class="pre">RouterSummary.max_per_chip</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.total_entries"><code class="docutils literal notranslate"><span class="pre">RouterSummary.total_entries</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.router_summary.RouterSummary.unqiue_routes"><code class="docutils literal notranslate"><span class="pre">RouterSummary.unqiue_routes</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions.routing_compression_report">spinn_front_end_common.utilities.report_functions.routing_compression_report module</a><ul>
+<li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.routing_compression_report.generate_routing_compression_checker_report"><code class="docutils literal notranslate"><span class="pre">generate_routing_compression_checker_report()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#module-spinn_front_end_common.utilities.report_functions">Module contents</a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary</span></code></a><ul>
 <li><a class="reference internal" href="#spinn_front_end_common.utilities.report_functions.BitFieldSummary.average_per_chip_merged"><code class="docutils literal notranslate"><span class="pre">BitFieldSummary.average_per_chip_merged</span></code></a></li>
