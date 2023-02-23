@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import defaultdict
 import json
@@ -28,7 +27,9 @@ from spinn_front_end_common.utilities.report_functions import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
-
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -44,8 +45,6 @@ class JavaCaller(object):
 
     __slots__ = [
         "_chipxy_by_ethernet",
-        # The folder holding sqlite databases etc.
-        "_report_folder",
         # The call to get java to work. Including the path if required.
         "_java_call",
         # The location of the java jar file
@@ -72,7 +71,6 @@ class JavaCaller(object):
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording = None
-        self._report_folder = FecDataView.get_run_dir_path()
         self._java_call = get_config_str("Java", "java_call")
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
@@ -174,15 +172,6 @@ class JavaCaller(object):
         if self._machine_json_path is None:
             self._machine_json_path = write_json_machine(progress_bar=False)
         return self._machine_json_path
-
-    def set_report_folder(self, report_folder):
-        """ Passes the database file in.
-
-        :param str report_folder:
-            Path to directory with SQLite databases and into which java will
-            write.
-        """
-        self._report_folder = report_folder
 
     def set_placements(self, used_placements):
         """ Passes in the placements leaving this class to decide pass it to
@@ -356,13 +345,16 @@ class JavaCaller(object):
         if self._gatherer_iptags is None:
             result = self._run_java(
                 'download', self._placement_json, self._machine_json(),
-                self._report_folder)
+                BufferDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'gather', self._placement_json, self._machine_json(),
-                self._report_folder)
+                BufferDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(self._report_folder, "jspin.log")
+            log_file = os.path.join(
+                FecDataView.get_run_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
@@ -374,9 +366,12 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse', self._machine_json(), self._report_folder)
+            'dse', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(self._report_folder, "jspin.log")
+            log_file = os.path.join(
+                FecDataView.get_run_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
@@ -389,9 +384,12 @@ class JavaCaller(object):
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse_sys', self._machine_json(), self._report_folder)
+            'dse_sys', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(self._report_folder, "jspin.log")
+            log_file = os.path.join(
+                FecDataView.get_run_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
@@ -411,12 +409,16 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                self._report_folder, self._report_folder)
+                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
-                'dse_app', self._machine_json(), self._report_folder)
+                'dse_app', self._machine_json(),
+                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         if result != 0:
-            log_file = os.path.join(self._report_folder, "jspin.log")
+            log_file = os.path.join(
+                FecDataView.get_run_dir_path(), "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")

@@ -1,36 +1,26 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-from datetime import datetime
 import logging
-import os
-import re
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import (
-    MICRO_TO_MILLISECOND_CONVERSION, PROVENANCE_DB)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
-_RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
-
-class ProvenanceWriter(SQLiteDB):
+class ProvenanceWriter(BaseDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     .. note::
@@ -42,11 +32,9 @@ class ProvenanceWriter(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-        "_database_file"
-    ]
+    __slots__ = []
 
-    def __init__(self, database_file=None, memory=False):
+    def __init__(self, database_file=None):
         """
         :param database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -59,26 +47,7 @@ class ProvenanceWriter(SQLiteDB):
             Otherwise a None file will mean the default should be used
 
         """
-        if database_file is None and not memory:
-            database_file = os.path.join(
-                FecDataView.get_provenance_dir_path(), PROVENANCE_DB)
-        self._database_file = database_file
-        SQLiteDB.__init__(self, database_file, ddl_file=_DDL_FILE)
-
-    def insert_version(self, description, the_value):
-        """
-        Inserts data into the version_provenance table
-
-        :param str description: The package for which the version applies
-        :param str the_value: The version to be recorded
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO version_provenance(
-                    description, the_value)
-                VALUES(?, ?)
-                """, [description, the_value])
+        super().__init__(database_file)
 
     def insert_power(self, description, the_value):
         """
@@ -94,90 +63,6 @@ class ProvenanceWriter(SQLiteDB):
                     description, the_value)
                 VALUES(?, ?)
                 """, [description, the_value])
-
-    def insert_category(self, category, machine_on):
-        """
-        Inserts category into the category_timer_provenance  returning id
-
-        :param TimerCategory category: Name of Category starting
-        :param bool machine_on: If the machine was done during all
-            or some of the time
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO category_timer_provenance(
-                    category, machine_on, n_run, n_loop)
-                VALUES(?, ?, ?, ?)
-                """,
-                [category.category_name, machine_on,
-                 FecDataView.get_run_number(),
-                 FecDataView.get_run_step()])
-            return cur.lastrowid
-
-    def insert_category_timing(self, category_id, timedelta):
-        """
-        Inserts run time into the category
-
-        :param int category_id: id of the Category finished
-        :param ~datetime.timedelta timedelta: Time to be recorded
-       """
-        time_taken = (
-                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
-                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                UPDATE category_timer_provenance
-                SET
-                    time_taken = ?
-                WHERE category_id = ?
-                """, (time_taken, category_id))
-
-    def insert_timing(
-            self, category, algorithm, work, timedelta, skip_reason):
-        """
-        Inserts algorithms run times into the timer_provenance table
-
-        :param int category: Category Id of the Algorithm
-        :param str algorithm: Algorithm name
-        :param TimerWork work: Type of work being done
-        :param ~datetime.timedelta timedelta: Time to be recorded
-        :param skip_reason: The reason the algorthm was skipped or None if
-            it was not skipped
-        :tpye skip_reason: str or None
-        """
-        time_taken = (
-                (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
-                (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO timer_provenance(
-                    category_id, algorithm, work, time_taken, skip_reason)
-                VALUES(?, ?, ?, ?, ?)
-                """,
-                [category, algorithm, work.work_name, time_taken, skip_reason])
-
-    def insert_other(self, category, description, the_value):
-        """
-        Insert unforeseen provenance into the other_provenace_table
-
-        This allows to add provenance that does not readily fit into any of
-        the other categerogies
-
-        :param str category: grouping from this provenance
-        :param str description: Specific provenance being saved
-        :param ste the_value: Data
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO other_provenance(
-                    category, description, the_value)
-                VALUES(?, ?, ?)
-                """, [category, description, the_value])
 
     def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
@@ -247,32 +132,13 @@ class ProvenanceWriter(SQLiteDB):
         :param int the_value: data
         """
         with self.transaction() as cur:
+            core_id = self._get_core_id(cur, x, y, p)
             cur.execute(
                 """
                 INSERT INTO core_provenance(
-                    x, y, p, description, the_value)
-                VALUES(?, ?, ?, ?, ?)
-                """, [x, y, p, description, the_value])
-
-    def add_core_name(self, x, y, p, core_name):
-        """
-        Adds a vertex or similar name for the core to the core_mapping table
-
-        A second call to the same core is silently ignored even if the name
-        if different.
-
-        :param int x: X coordinate of the chip
-        :param int y: Y coordinate of the chip
-        :param int p: id of the core
-        :param str core_name: Name to assign
-        """
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT OR IGNORE INTO core_mapping(
-                    x, y, p, core_name)
-                VALUES(?, ?, ?, ?)
-                """, [x, y, p, core_name])
+                    core_id, description, the_value)
+                VALUES(?, ?, ?)
+                """, [core_id, description, the_value])
 
     def insert_report(self, message):
         """
@@ -359,24 +225,6 @@ class ProvenanceWriter(SQLiteDB):
                 """,
                 [pre_population, post_population, the_type, description,
                  the_value])
-
-    def store_log(self, level, message, timestamp=None):
-        """
-        Stores log messages into the database
-
-        :param int level:
-        :param str message:
-        """
-        if timestamp is None:
-            timestamp = datetime.now()
-        with self.transaction() as cur:
-            cur.execute(
-                """
-                INSERT INTO p_log_provenance(
-                    timestamp, level, message)
-                VALUES(?, ?, ?)
-                """,
-                [timestamp, level, message])
 
     def _test_log_locked(self, text):
         """

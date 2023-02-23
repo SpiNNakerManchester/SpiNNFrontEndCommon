@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 from threading import Thread
@@ -28,6 +27,7 @@ from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_calls import retarget_tag
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -328,12 +328,11 @@ class LiveEventConnection(DatabaseConnection):
             db_reader.get_live_output_details(
                 receive_label, self.__live_packet_gather_label)
         if host is None:
-            raise Exception(
-                "no live output tag found for {} in app graph".format(
-                    receive_label))
+            raise ConfigurationException(
+                f"no live output tag found for {receive_label} in app graph")
         if not strip_sdp:
-            raise Exception("Currently, only IP tags which strip the SDP "
-                            "headers are supported")
+            raise receive_label("Currently, only IP tags which strip the SDP "
+                                "headers are supported")
         return host, port, board_address, tag, chip_x, chip_y
 
     def __handle_possible_rerun_state(self):

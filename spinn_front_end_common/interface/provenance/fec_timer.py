@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2018 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import logging
 import os
 import sys
@@ -20,8 +19,7 @@ from datetime import timedelta
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance.provenance_writer import (
-    ProvenanceWriter)
+from .global_provenance import GlobalProvenance
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -108,7 +106,7 @@ class FecTimer(object):
     def skip(self, reason):
         message = f"{self._algorithm} skipped as {reason}"
         time_taken = self._stop_timer()
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
                              time_taken, reason)
         self._report(message)
@@ -156,8 +154,8 @@ class FecTimer(object):
 
     def error(self, reason):
         time_taken = self._stop_timer()
-        message = f"{self._algorithm} failed after {time_taken} as {reason}"
-        with ProvenanceWriter() as db:
+        message = f"{self._algorithm} failed after {timedelta} as {reason}"
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm,
                              self._work, time_taken, reason)
         self._report(message)
@@ -190,7 +188,7 @@ class FecTimer(object):
                           f"after {time_taken}"
                 skip = f"Exception {ex}"
 
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_timing(self._category_id, self._algorithm, self._work,
                              time_taken, skip)
         self._report(message)
@@ -205,7 +203,7 @@ class FecTimer(object):
         """
         time_now = _now()
         if cls._category_id:
-            with ProvenanceWriter() as db:
+            with GlobalProvenance() as db:
                 diff = _convert_to_timedelta(time_now - cls._category_time)
                 db.insert_category_timing(cls._category_id, diff)
         return time_now
@@ -218,7 +216,7 @@ class FecTimer(object):
         :param TimerCategory category: Category to switch to
         """
         time_now = cls.__stop_category()
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             cls._category_id = db.insert_category(category, cls._machine_on)
         cls._category = category
         cls._category_time = time_now

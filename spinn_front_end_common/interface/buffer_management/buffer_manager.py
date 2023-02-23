@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import ctypes
@@ -82,9 +81,6 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         "_sent_messages",
 
-        # storage area for received data from cores
-        "_db",
-
         # Support class to help call Java
         "_java_caller",
 
@@ -101,11 +97,9 @@ class BufferManager(object):
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages = dict()
 
-        # storage area for received data from cores
-        self._db = BufferDatabase()
-
         if FecDataView.has_java_caller():
-            self._db.write_session_credentials_to_db()
+            with BufferDatabase() as db:
+                db.write_session_credentials_to_db()
             self._java_caller = FecDataView.get_java_caller()
             if get_config_bool("Machine", "enable_advanced_monitor_support"):
                 self._java_caller.set_advanced_monitors()
@@ -166,7 +160,7 @@ class BufferManager(object):
         for index, (extra_mon_element, txrx_element) in enumerate(
                 zip(extra_mon_data, txrx_data)):
             if extra_mon_element != txrx_element:
-                raise Exception("WRONG (at index {})".format(index))
+                raise ValueError(f"WRONG (at index {index})")
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using memory writes.
@@ -188,8 +182,9 @@ class BufferManager(object):
             data files.
         """
         #
-        self._db.reset()
-        self._db.write_session_credentials_to_db()
+        with BufferDatabase() as db:
+
+            db.write_session_credentials_to_db()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -208,7 +203,8 @@ class BufferManager(object):
         :param int p: placement p coordinate
         :param int recording_region_id: the recording region ID
         """
-        self._db.clear_region(x, y, p, recording_region_id)
+        with BufferDatabase() as db:
+            db.clear_region(x, y, p, recording_region_id)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -365,14 +361,15 @@ class BufferManager(object):
         """
         :param ~pacman.model.placements.Placements recording_placements:
             Where to get the data from.
-       """
+        """
         # get data
         progress = ProgressBar(
             len(recording_placements),
             "Extracting buffers from the last run")
 
-        for placement in progress.over(recording_placements):
-            self._retreive_by_placement(placement)
+        with BufferDatabase() as db:
+            for placement in progress.over(recording_placements):
+                self._retreive_by_placement(db, placement)
 
     def get_data_by_placement(self, placement, recording_region_id):
         """ Get the data container for all the data retrieved\
@@ -392,12 +389,14 @@ class BufferManager(object):
                 "so no data read".format(placement.vertex))
 
         # data flush has been completed - return appropriate data
-        return self._db.get_region_data(
-            placement.x, placement.y, placement.p, recording_region_id)
+        with BufferDatabase() as db:
+            return db.get_region_data(
+                placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retreive_by_placement(self, placement):
+    def _retreive_by_placement(self, db, placement):
         """ Retrieve the data for a vertex; must be locked first.
 
+        :param db BufferDatabase: dtabase to store into
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region
@@ -413,7 +412,7 @@ class BufferManager(object):
             size, addr, missing = sizes_and_addresses[region]
             data = self._request_data(
                 placement.x, placement.y, addr, size)
-            self._db.store_data_in_region_buffer(
+            db.store_data_in_region_buffer(
                 placement.x, placement.y, placement.p, region, missing, data)
 
     def _get_region_information(self, addr, x, y):
