@@ -421,3 +421,5 @@ os.chdir("../..")  # WARNING! RELATIVE FILENAMES CHANGE MEANING HERE!
 apidoc.main([
     '-o', _output_dir, _package_base,
     *excluded_because_in_init(_package_base)])
+
+# See Note at bottom of global doc conf.py
