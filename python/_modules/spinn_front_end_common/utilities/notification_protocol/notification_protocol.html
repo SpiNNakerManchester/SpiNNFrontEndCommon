@@ -52,12 +52,13 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">wait</span>  <span class="c1"># @UnresolvedImport</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.abstract_context_manager</span> <span class="kn">import</span> <span class="n">AbstractContextManager</span>
-<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span>
+<span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.command_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">NotificationProtocolDatabaseLocation</span><span class="p">,</span> <span class="n">NotificationProtocolPauseStop</span><span class="p">,</span>
     <span class="n">NotificationProtocolStartResume</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinnman.exceptions</span> <span class="kn">import</span> <span class="n">SpinnmanTimeoutException</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data</span> <span class="kn">import</span> <span class="n">FecDataView</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">MAX_DATABASE_PATH_LENGTH</span><span class="p">)</span>
@@ -78,6 +79,7 @@
         <span class="s2">&quot;__database_message_connections&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__sent_visualisation_confirmation&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_for_read_confirmation&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__wait_for_read_timeout&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_futures&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__wait_pool&quot;</span><span class="p">]</span>
 
@@ -86,6 +88,8 @@
         <span class="c1"># has been read before starting the simulation</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span> <span class="o">=</span> <span class="n">get_config_bool</span><span class="p">(</span>
             <span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;wait_on_confirmation&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_timeout</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;Database&quot;</span><span class="p">,</span> <span class="s2">&quot;wait_on_confirmation_timeout&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_pool</span> <span class="o">=</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__sent_visualisation_confirmation</span> <span class="o">=</span> <span class="kc">False</span>
@@ -108,7 +112,12 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_confirmation</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;** Awaiting for a response from an external source &quot;</span>
                         <span class="s2">&quot;to state its ready for the simulation to start **&quot;</span><span class="p">)</span>
-            <span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="p">)</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span><span class="p">,</span>
+                           <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_timeout</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">results</span><span class="o">.</span><span class="n">not_done</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">SpinnmanTimeoutException</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;waiting for external sources: </span><span class="si">{</span><span class="n">results</span><span class="o">.</span><span class="n">not_done</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__wait_for_read_timeout</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__wait_futures</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="NotificationProtocol.send_start_resume_notification"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">[docs]</a>    <span class="k">def</span> <span class="nf">send_start_resume_notification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>

@@ -53,11 +53,12 @@
 <span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
-<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">Machine</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.config_holder</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">config_options</span><span class="p">,</span> <span class="n">load_config</span><span class="p">,</span> <span class="n">get_config_bool</span><span class="p">,</span> <span class="n">get_config_int</span><span class="p">,</span>
     <span class="n">get_config_str</span><span class="p">,</span> <span class="n">get_config_str_list</span><span class="p">,</span> <span class="n">set_config</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">spinn_machine</span> <span class="kn">import</span> <span class="n">Machine</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.interface.provenance</span> <span class="kn">import</span> <span class="n">LogStoreDB</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.data.fec_data_writer</span> <span class="kn">import</span> <span class="n">FecDataWriter</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
@@ -236,6 +237,9 @@
         <span class="n">_</span><span class="p">,</span> <span class="n">timestamp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">timestamp_dir_path</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">time_of_run_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">timestamp</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Traceback of setup call:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_stack</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__write_named_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
         <span class="n">app_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>

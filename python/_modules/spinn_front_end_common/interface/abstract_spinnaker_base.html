@@ -226,10 +226,10 @@
             <span class="s2">&quot;Will search these locations for binaries: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_executable_finder</span><span class="p">()</span><span class="o">.</span><span class="n">binary_paths</span><span class="p">)</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
+
         <span class="c1"># store for Live Packet Gatherers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lpg_vertices</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">_hard_reset</span><span class="p">()</span>
 
         <span class="c1"># holder for timing and running related values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_until_complete</span> <span class="o">=</span> <span class="kc">False</span>
@@ -261,9 +261,9 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_transceiver</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">())</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">hard_reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__close_allocation_controller</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">hard_reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="k">def</span> <span class="nf">_machine_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -422,6 +422,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__run</span><span class="p">(</span><span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">finish_run</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># if in debug mode, do not shut down machine</span>
+            <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">stop_e</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">stop_e</span><span class="si">}</span><span class="s2"> when attempting to stop&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">shut_down</span><span class="p">()</span>
             <span class="k">raise</span>
 
@@ -839,6 +845,10 @@
                     <span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_board_chip_report&quot;</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">board_chip_report</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="s2">&quot;machine_allocation.rpt&quot;</span><span class="p">)</span>
+                <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_allocation_controller</span><span class="p">()</span><span class="o">.</span><span class="n">make_report</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_execute_splitter_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2222,13 +2232,6 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">run_e</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_recover_from_error</span><span class="p">(</span><span class="n">run_e</span><span class="p">)</span>
-
-            <span class="c1"># if in debug mode, do not shut down machine</span>
-            <span class="k">if</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mode&quot;</span><span class="p">,</span> <span class="s2">&quot;mode&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="s2">&quot;Debug&quot;</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
-                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">stop_e</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error </span><span class="si">{</span><span class="n">stop_e</span><span class="si">}</span><span class="s2"> when attempting to stop&quot;</span><span class="p">)</span>
 
             <span class="c1"># reraise exception</span>
             <span class="k">raise</span> <span class="n">run_e</span>
