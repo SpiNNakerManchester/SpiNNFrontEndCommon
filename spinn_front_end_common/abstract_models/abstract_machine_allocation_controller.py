@@ -99,3 +99,9 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
         :rtype: bool
         """
         return False
+
+    def make_report(self, filename):
+        """
+        Asks the controller to make a report of details of allocations.
+        By default, this does nothing.
+        """

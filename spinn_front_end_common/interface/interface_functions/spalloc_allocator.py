@@ -15,7 +15,7 @@ from contextlib import ExitStack
 import logging
 import math
 from typing import Dict, Tuple
-from spinn_utilities.config_holder import get_config_str_list
+from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spalloc import Job
@@ -50,16 +50,18 @@ class SpallocJobController(MachineAllocationController):
         # the current job's old state
         "_state",
         "__client",
-        "__closer"
+        "__closer",
+        "__use_proxy"
     )
 
     def __init__(
             self, client: SpallocClient, job: SpallocJob,
-            task: AbstractContextManager):
+            task: AbstractContextManager, use_proxy: bool):
         """
         :param SpallocClient client:
         :param SpallocJob job:
         :param AbstractContextManager task:
+        :param bool use_proxy:
         """
         if job is None:
             raise TypeError("must have a real job")
@@ -67,6 +69,7 @@ class SpallocJobController(MachineAllocationController):
         self.__closer = task
         self._job = job
         self._state = job.get_state()
+        self.__use_proxy = use_proxy
         super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
@@ -88,7 +91,7 @@ class SpallocJobController(MachineAllocationController):
         :param int chip_y:
         :rtype: tuple(int,int,int)
         """
-        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+        return self._job.where_is_machine(x=chip_x, y=chip_y)
 
     @overrides(MachineAllocationController._wait)
     def _wait(self):
@@ -106,7 +109,7 @@ class SpallocJobController(MachineAllocationController):
     def _teardown(self):
         if not self._exited:
             self.__closer.close()
-            self._job.close()
+            self._job.destroy()
             self.__client.close()
         super()._teardown()
 
@@ -119,8 +122,11 @@ class SpallocJobController(MachineAllocationController):
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
         """
+        if not self.__use_proxy:
+            return super(SpallocJobController, self).create_transceiver()
         txrx = self._job.create_transceiver()
         txrx.ensure_board_is_ready()
+        return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
@@ -143,7 +149,12 @@ class SpallocJobController(MachineAllocationController):
     @property
     @overrides(AbstractMachineAllocationController.proxying)
     def proxying(self):
-        return True
+        return self.__use_proxy
+
+    @overrides(MachineAllocationController.make_report)
+    def make_report(self, filename):
+        with open(filename, "w", encoding="utf-8") as report:
+            report.write(f"Job: {self._job}")
 
 
 class _OldSpallocJobController(MachineAllocationController):
@@ -279,6 +290,7 @@ def _allocate_job_new(
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(spalloc_server, bearer_token=bearer_token)
         stack.enter_context(client)
         job = client.create_job(n_boards, spalloc_machine)
@@ -293,7 +305,8 @@ def _allocate_job_new(
             logger.debug(
                 "boards: {}",
                 str(connections).replace("{", "[").replace("}", "]"))
-        allocation_controller = SpallocJobController(client, job, task)
+        allocation_controller = SpallocJobController(
+            client, job, task, use_proxy)
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()
