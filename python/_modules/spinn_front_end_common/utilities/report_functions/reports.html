@@ -568,8 +568,9 @@
             <span class="n">r_info</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_routing_info_from_pre_vertex</span><span class="p">(</span>
                 <span class="n">m_vertex</span><span class="p">,</span> <span class="n">part_id</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">r_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    Machine Vertex: </span><span class="si">{}</span><span class="s2">, Routing Info: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">m_vertex</span><span class="p">,</span> <span class="n">r_info</span><span class="o">.</span><span class="n">key_and_mask</span><span class="p">))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    Machine Vertex: </span><span class="si">{}</span><span class="s2">, Slice: </span><span class="si">{}</span><span class="s2">, Routing Info: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">m_vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="p">,</span>
+                                <span class="n">r_info</span><span class="o">.</span><span class="n">key_and_mask</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="router_report_from_router_tables"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_report_from_router_tables">[docs]</a><span class="k">def</span> <span class="nf">router_report_from_router_tables</span><span class="p">():</span>

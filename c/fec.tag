@@ -6868,6 +6868,13 @@
       <arglist></arglist>
     </member>
     <member kind="variable" static="yes">
+      <type>static uint</type>
+      <name>reinject_link_proc_bits</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>af9bf0f56d5d9e0a944f19d2fa7d4cc6f</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
       <type>static bool</type>
       <name>reinject_mc</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
@@ -10241,6 +10248,13 @@
       <name>packet_types_reinjected</name>
       <anchorfile>extra__monitor__support_8c.html</anchorfile>
       <anchor>a7ac45356b203987a7d257c8ab9e25c7e</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable">
+      <type>uint</type>
+      <name>link_proc_bits</name>
+      <anchorfile>extra__monitor__support_8c.html</anchorfile>
+      <anchor>a97a6ddbb49130c1796825946296d600b</anchor>
       <arglist></arglist>
     </member>
   </compound>
