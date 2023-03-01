@@ -15,7 +15,7 @@
 import struct
 from .dpri_flags import DPRIFlags
 
-_PATTERN = struct.Struct("<IIIIIIIII")
+_PATTERN = struct.Struct("<IIIIIIIIII")
 
 
 def _decode_router_timeout_value(value):
@@ -70,7 +70,10 @@ class ReInjectionStatus(object):
         "_n_processor_dumps",
 
         # the flags that states which types of packets were being recorded
-        "_flags"
+        "_flags",
+
+        # Indicates the links or processors dropped from
+        "_link_proc_bits"
     )
 
     def __init__(self, data, offset):
@@ -81,8 +84,8 @@ class ReInjectionStatus(object):
         (self._wait1_timeout, self._wait2_timeout,
          self._n_dropped_packets, self._n_missed_dropped_packets,
          self._n_dropped_packet_overflows, self._n_reinjected_packets,
-         self._n_link_dumps, self._n_processor_dumps, self._flags) = \
-            _PATTERN.unpack_from(data, offset)
+         self._n_link_dumps, self._n_processor_dumps, self._flags,
+         self._link_proc_bits) = _PATTERN.unpack_from(data, offset)
 
     @property
     def router_wait1_timeout(self):
@@ -209,3 +212,13 @@ class ReInjectionStatus(object):
         :rtype: bool
         """
         return self._flag_set(DPRIFlags.FIXED_ROUTE)
+
+    @property
+    def links_dropped_from(self):
+        return [
+            link for link in range(6) if self._link_proc_bits & (1 << link)]
+
+    @property
+    def processors_dropped_from(self):
+        return [
+            p for p in range(18) if self._link_proc_bits & (1 << p + 6)]

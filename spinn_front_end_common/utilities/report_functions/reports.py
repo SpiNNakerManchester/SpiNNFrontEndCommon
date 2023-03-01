@@ -531,8 +531,9 @@ def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, part_id)
             if r_info is not None:
-                f.write("    Machine Vertex: {}, Routing Info: {}\n".format(
-                    m_vertex, r_info.key_and_mask))
+                f.write("    Machine Vertex: {}, Slice: {}, Routing Info: {}\n"
+                        .format(m_vertex, m_vertex.vertex_slice,
+                                r_info.key_and_mask))
 
 
 def router_report_from_router_tables():
