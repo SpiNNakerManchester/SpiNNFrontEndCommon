@@ -79,7 +79,7 @@ class ProfileData(object):
         # Convert count-down times to count up times from 1st sample
         sample_times_ms = numpy.multiply(
             numpy.subtract(sample_times[0], sample_times),
-            _MS_SCALE, dtype=numpy.float)
+            _MS_SCALE, dtype=float)
 
         # Slice tags and times into entry and exits
         entry_tags = sample_tags[sample_entry_indices]
