@@ -1,37 +1,32 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-import os
 import sqlite3
 import time
-from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.base_database import BaseDatabase
 
-_DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
-DB_FILE_NAME = "buffer.sqlite3"
 
 
 def _timestamp():
     return int(time.time() * _SECONDS_TO_MICRO_SECONDS_CONVERSION)
 
 
-class BufferDatabase(SQLiteDB, AbstractContextManager):
+class BufferDatabase(BaseDatabase):
     """ Specific implementation of the Database for SQLite 3.
 
     There should only ever be a single Database Object in use at any time.
@@ -48,57 +43,6 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
     """
 
     __slots__ = []
-
-    def __init__(self, database_file=None):
-        """
-        :param str database_file:
-            The name of a file that contains (or will contain) an SQLite
-            database holding the data.
-            If omitted the default location will be used.
-        """
-        if database_file is None:
-            database_file = self.default_database_file()
-
-        super().__init__(database_file, ddl_file=_DDL_FILE)
-
-    @classmethod
-    def default_database_file(cls):
-        return os.path.join(
-            FecDataView.get_run_dir_path(), DB_FILE_NAME)
-
-    def reset(self):
-        """
-        UGLY SHOULD NOT NEVER DELETE THE FILE!
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        database_file = self.default_database_file()
-        self.close()
-        if os.path.exists(database_file):
-            os.remove(database_file)
-        super().__init__(database_file, ddl_file=_DDL_FILE)
-
-    def clear(self):
-        """ Clears the data for all regions.
-
-        .. note::
-            This method will be removed when the database moves to
-            keeping data after reset.
-
-        :rtype: None
-        """
-        with self.transaction() as cursor:
-            cursor.execute(
-                """
-                UPDATE region SET
-                    content = CAST('' AS BLOB), content_len = 0,
-                    fetches = 0, append_time = NULL
-                """)
-            cursor.execute("DELETE FROM region_extra")
 
     def clear_region(self, x, y, p, region):
         """ Clears the data for a single region.
@@ -137,75 +81,51 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 """, locus)
             return True
 
-    def __read_contents(self, cursor, x, y, p, region):
+    def _read_contents(self, cursor, region_id):
         """
         :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :param int region:
+        :param int region_id:
         :rtype: memoryview
         """
         for row in cursor.execute(
                 """
-                SELECT region_id, content, have_extra
+                SELECT content
                 FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                    AND local_region_index = ? LIMIT 1
-                """, (x, y, p, region)):
-            r_id, data, extra = (
-                row["region_id"], row["content"], row["have_extra"])
+                WHERE region_id = ?
+                LIMIT 1
+                """, (region_id,)):
+            data = row["content"]
             break
         else:
-            raise LookupError("no record for region ({},{},{}:{})".format(
-                x, y, p, region))
-        if extra:
-            c_buffer = None
-            for row in cursor.execute(
-                    """
-                    SELECT r.content_len + (
-                        SELECT SUM(x.content_len)
-                        FROM region_extra AS x
-                        WHERE x.region_id = r.region_id) AS len
-                    FROM region AS r WHERE region_id = ? LIMIT 1
-                    """, (r_id, )):
+            raise LookupError(f"no record for region {region_id}")
+
+        c_buffer = None
+        for row in cursor.execute(
+                """
+                SELECT r.content_len + (
+                    SELECT SUM(x.content_len)
+                    FROM region_extra AS x
+                    WHERE x.region_id = r.region_id) AS len
+                FROM region AS r WHERE region_id = ? LIMIT 1
+                """, (region_id, )):
+            if row["len"] is not None:
                 c_buffer = bytearray(row["len"])
                 c_buffer[:len(data)] = data
+
+        if c_buffer is not None:
             idx = len(data)
             for row in cursor.execute(
                     """
                     SELECT content FROM region_extra
                     WHERE region_id = ? ORDER BY extra_id ASC
-                    """, (r_id, )):
+                    """, (region_id, )):
                 item = row["content"]
                 c_buffer[idx:idx + len(item)] = item
                 idx += len(item)
             data = c_buffer
         return memoryview(data)
 
-    @staticmethod
-    def __get_core_id(cursor, x, y, p):
-        """
-        :param ~sqlite3.Cursor cursor:
-        :param int x:
-        :param int y:
-        :param int p:
-        :rtype: int
-        """
-        for row in cursor.execute(
-                """
-                SELECT core_id FROM region_view
-                WHERE x = ? AND y = ? AND processor = ?
-                LIMIT 1
-                """, (x, y, p)):
-            return row["core_id"]
-        cursor.execute(
-            """
-            INSERT INTO core(x, y, processor) VALUES(?, ?, ?)
-            """, (x, y, p))
-        return cursor.lastrowid
-
-    def __get_region_id(self, cursor, x, y, p, region):
+    def _get_region_id(self, cursor, x, y, p, region):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
@@ -221,7 +141,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
                 LIMIT 1
                 """, (x, y, p, region)):
             return row["region_id"]
-        core_id = self.__get_core_id(cursor, x, y, p)
+        core_id = self._get_core_id(cursor, x, y, p)
         cursor.execute(
             """
             INSERT INTO region(
@@ -249,7 +169,7 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
         with self.transaction() as cursor:
-            region_id = self.__get_region_id(cursor, x, y, p, region)
+            region_id = self._get_region_id(cursor, x, y, p, region)
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
                     """
@@ -310,7 +230,8 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
         """
         try:
             with self.transaction() as cursor:
-                data = self.__read_contents(cursor, x, y, p, region)
+                region_id = self._get_region_id(cursor, x, y, p, region)
+                data = self._read_contents(cursor, region_id)
                 # TODO missing data
                 return data, False
         except LookupError:
@@ -330,3 +251,47 @@ class BufferDatabase(SQLiteDB, AbstractContextManager):
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
+
+    def _set_core_name(self, cursor, x, y, p, core_name):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int x:
+        :param int y:
+        :param int p:
+        :param str core_name:
+
+        """
+        try:
+            cursor.execute(
+                """
+                INSERT INTO core (x, y, processor, core_name)
+                VALUES (?, ?, ? ,?)
+                """, (x, y, p, core_name))
+        except sqlite3.IntegrityError:
+            cursor.execute(
+                """
+                UPDATE core SET core_name = ?
+                WHERE x = ? AND y = ? and processor = ?
+                """, (core_name, x, y, p))
+
+    def store_vertex_labels(self):
+        with self.transaction() as cursor:
+            for placement in FecDataView.iterate_placemements():
+                self._set_core_name(cursor, placement.x, placement.y,
+                                    placement.p, placement.vertex.label)
+            for chip in FecDataView.get_machine().chips:
+                for processor in chip.processors:
+                    if processor.is_monitor:
+                        self._set_core_name(
+                            cursor, chip.x, chip.y, processor.processor_id,
+                            f"SCAMP(OS)_{chip.x}:{chip.y}")
+
+    def get_core_name(self, x, y, p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT core_name
+                    FROM core
+                    WHERE x = ? AND y = ? and processor = ?
+                    """, (x, y, p)):
+                return str(row["core_name"], 'utf8')

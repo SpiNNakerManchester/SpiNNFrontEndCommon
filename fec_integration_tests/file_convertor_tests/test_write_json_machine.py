@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import filecmp
 import json
@@ -21,6 +20,7 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
+from spinnman.exceptions import SpinnmanIOException
 import spinnman.transceiver as transceiver
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup
@@ -110,7 +110,10 @@ class TestWriteJson(unittest.TestCase):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
-        trans.ensure_board_is_ready()
+        try:
+            trans.ensure_board_is_ready()
+        except (SpinnmanIOException):
+            self.skipTest("Skipping as getting Job failed")
 
         machine = trans.get_machine_details()
         FecDataWriter.mock().set_machine(machine)
@@ -148,7 +151,7 @@ class TestWriteJson(unittest.TestCase):
         try:
             (hostname, version, _, _, _, _, m_allocation_controller) = \
                 spalloc_allocator()
-        except (JobDestroyedError):
+        except (JobDestroyedError, ConnectionRefusedError):
             self.skipTest("Skipping as getting Job failed")
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)

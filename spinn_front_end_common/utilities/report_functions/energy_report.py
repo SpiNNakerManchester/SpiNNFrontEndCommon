@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import defaultdict
 import logging
@@ -20,7 +19,7 @@ from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceReader, TimerCategory)
+    FecTimer, GlobalProvenance, TimerCategory)
 from spinn_front_end_common.utility_models import ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.interface_functions.compute_energy_used\
@@ -309,8 +308,8 @@ class EnergyReport(object):
         """
 
         # find time in milliseconds
-        reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_category(TimerCategory.LOADING)
+        with GlobalProvenance() as db:
+            total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
         # handle active routers etc
         active_router_cost = (
@@ -336,9 +335,9 @@ class EnergyReport(object):
         """
 
         # find time
-        reader = ProvenanceReader()
-        total_time_ms = reader.get_timer_sum_by_algorithm(
-            FecTimer.APPLICATION_RUNNER)
+        with GlobalProvenance() as db:
+            total_time_ms = db.get_timer_sum_by_algorithm(
+                FecTimer.APPLICATION_RUNNER)
 
         # handle active routers etc
         energy_cost_of_active_router = (

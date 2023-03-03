@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 main interface for the SpiNNaker tools
 """
@@ -43,6 +42,7 @@ from data_specification import __version__ as data_spec_version
 from spalloc import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
+from pacman.exceptions import PacmanPlaceException
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs import AbstractVirtual
 from pacman.model.partitioner_splitters.splitter_reset import splitter_reset
@@ -70,6 +70,8 @@ from spinn_front_end_common.abstract_models import (
     AbstractCanReset)
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferDatabase
 from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.interface_functions import (
     application_finisher, application_runner,
@@ -100,7 +102,7 @@ from spinn_front_end_common.interface.interface_functions.\
     host_no_bitfield_router_compression import (
         ordered_covering_compression, pair_compression)
 from spinn_front_end_common.interface.provenance import (
-    FecTimer, ProvenanceWriter, TimerCategory, TimerWork)
+    FecTimer, GlobalProvenance, TimerCategory, TimerWork)
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -187,10 +189,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Will search these locations for binaries: {}",
             self._data_writer.get_executable_finder().binary_paths)
 
+        self._multicast_routes_loaded = False
+
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
-
-        self._hard_reset()
 
         # holder for timing and running related values
         self._run_until_complete = False
@@ -222,9 +224,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_transceiver():
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
-            self._data_writer.hard_reset()
-        self._multicast_routes_loaded = False
         self.__close_allocation_controller()
+        self._data_writer.hard_reset()
+        self._multicast_routes_loaded = False
 
     def _machine_clear(self):
         pass
@@ -262,7 +264,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             jupyter_url = (f"http://{jupyter_ip}:{jupyter_port}/services/"
                            "access-token-service/access-token")
             headers = {"Authorization": f"Token {jupyter_token}"}
-            response = requests.get(jupyter_url, headers=headers)
+            response = requests.get(jupyter_url, headers=headers, timeout=10)
             return response.json().get('access_token')
 
         # Try a simple environment variable, or None if that doesn't exist
@@ -383,6 +385,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
         except Exception:
+            # if in debug mode, do not shut down machine
+            if get_config_str("Mode", "mode") != "Debug":
+                try:
+                    self.stop()
+                except Exception as stop_e:
+                    logger.exception(f"Error {stop_e} when attempting to stop")
             self._data_writer.shut_down()
             raise
 
@@ -457,6 +465,9 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
             self._do_mapping(total_run_time)
+
+        if not self._data_writer.is_ran_last():
+            self._do_write_metadata()
 
         # Check if anything has per-timestep SDRAM usage
         is_per_timestep_sdram = self._is_per_timestep_sdram()
@@ -602,7 +613,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         for (x, y), sdram in usage_by_chip.items():
             size = self._data_writer.get_chip_at(x, y).sdram.size
             if sdram.fixed > size:
-                raise Exception(
+                raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
                     f" {sdram.fixed} of {size}")
             if sdram.per_timestep:
@@ -742,7 +753,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _create_version_provenance(self):
         """ Add the version information to the provenance data at the start.
         """
-        with ProvenanceWriter() as db:
+        with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", spinn_utils_version)
             db.insert_version("spinn_machine_version", spinn_machine_version)
             db.insert_version("spalloc_version", spalloc_version)
@@ -797,6 +808,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_board_chip_report"):
                 return
             board_chip_report()
+            if FecDataView.has_allocation_controller():
+                filename = os.path.join(
+                    FecDataView.get_run_dir_path(), "machine_allocation.rpt")
+                FecDataView.get_allocation_controller().make_report(filename)
 
     def _execute_splitter_reset(self):
         """
@@ -908,6 +923,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Only a single algorithm is supported for placer")
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
+
+    def _do_write_metadata(self):
+        """
+        Do the various functions to write metadata to the sqlite files
+        """
+        with FecTimer(
+                "Record vertex labels to database", TimerWork.REPORT):
+            with BufferDatabase() as db:
+                db.store_vertex_labels()
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -2172,13 +2196,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         except Exception as run_e:
             self._recover_from_error(run_e)
 
-            # if in debug mode, do not shut down machine
-            if get_config_str("Mode", "mode") != "Debug":
-                try:
-                    self.stop()
-                except Exception as stop_e:
-                    logger.exception(f"Error {stop_e} when attempting to stop")
-
             # reraise exception
             raise run_e
 
@@ -2304,11 +2321,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         logger.info("Resetting")
 
-        # rewind the buffers from the buffer manager, to start at the beginning
-        # of the simulation again and clear buffered out
-        if self._data_writer.has_buffer_manager():
-            self._data_writer.get_buffer_manager().reset()
-
         if self._data_writer.get_user_accessed_machine():
             logger.warning(
                 "A reset after a get machine call is always hard and "
@@ -2316,6 +2328,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._hard_reset()
         else:
             self._data_writer.soft_reset()
+
+        # rewind the buffers from the buffer manager, to start at the beginning
+        # of the simulation again and clear buffered out
+        if self._data_writer.has_buffer_manager():
+            self._data_writer.get_buffer_manager().reset()
 
         # Reset the graph off the machine, to set things to time 0
         self.__reset_graph_elements()

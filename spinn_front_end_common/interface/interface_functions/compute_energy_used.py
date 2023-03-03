@@ -1,23 +1,22 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import itertools
 from spinn_utilities.config_holder import (get_config_int, get_config_str)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
-    ProvenanceReader, TimerCategory, TimerWork)
+    GlobalProvenance, ProvenanceReader, TimerCategory, TimerWork)
 from spinn_front_end_common.utilities.utility_objs import PowerUsed
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
@@ -65,14 +64,14 @@ def compute_energy_used():
     :rtype: PowerUsed
     """
     machine = FecDataView.get_machine()
-    db = ProvenanceReader()
-    dsg_time = db.get_category_timer_sum(TimerCategory.DATA_GENERATION)
-    execute_time = db.get_category_timer_sum(TimerCategory.RUN_LOOP)
-    # NOTE: this extraction time is part of the execution time; it does not
-    #       refer to the time taken in e.g. pop.get_data() or projection.get()
-    extraction_time = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
-    load_time = db.get_category_timer_sum(TimerCategory.LOADING)
-    mapping_time = db.get_category_timer_sum(TimerCategory.MAPPING)
+    with GlobalProvenance() as db:
+        dsg_time = db.get_category_timer_sum(TimerCategory.DATA_GENERATION)
+        execute_time = db.get_category_timer_sum(TimerCategory.RUN_LOOP)
+        # NOTE: this extraction time is part of the execution time; it does not
+        # refer to the time taken in e.g. pop.get_data() or projection.get()
+        extraction_time = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
+        load_time = db.get_category_timer_sum(TimerCategory.LOADING)
+        mapping_time = db.get_category_timer_sum(TimerCategory.MAPPING)
     # TODO get_machine not include here
     power_used = PowerUsed()
 
@@ -180,13 +179,14 @@ def _router_packet_energy(power_used):
     :param PowerUsed power_used:
     """
     energy_cost = 0.0
-    for name, cost in _COST_PER_TYPE.items():
-        data = ProvenanceReader().get_router_by_chip(name)
-        for (x, y, value) in data:
-            this_cost = value * cost
-            energy_cost += this_cost
-            if this_cost:
-                power_used.add_router_active_energy(x, y, this_cost)
+    with ProvenanceReader() as db:
+        for name, cost in _COST_PER_TYPE.items():
+            data = db.get_router_by_chip(name)
+            for (x, y, value) in data:
+                this_cost = value * cost
+                energy_cost += this_cost
+                if this_cost:
+                    power_used.add_router_active_energy(x, y, this_cost)
 
     power_used.packet_joules = energy_cost
 
@@ -352,8 +352,8 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
     # pylint: disable=too-many-arguments
 
     # find time in milliseconds
-    reader = ProvenanceReader()
-    total_time_ms = reader.get_timer_sum_by_category(TimerCategory.LOADING)
+    with GlobalProvenance() as db:
+        total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
 
     # handle monitor core active cost
 
@@ -398,8 +398,8 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
     # find time
     # TODO is this what was desired
     total_time_ms = 0
-    buffer_time_ms = ProvenanceReader().get_timer_sum_by_work(
-        TimerWork.EXTRACT_DATA)
+    with GlobalProvenance() as db:
+        buffer_time_ms = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
 
     energy_cost = 0
     # NOTE: Buffer time could be None if nothing was set to record

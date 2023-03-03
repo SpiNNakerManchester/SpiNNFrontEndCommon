@@ -1,17 +1,16 @@
 # Copyright (c) 2021 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import unittest
@@ -247,6 +246,8 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
+        self.assertEqual("", writer.get_reset_str())
         writer.start_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
@@ -259,7 +260,10 @@ class TestSimulatorData(unittest.TestCase):
         writer.finish_run()
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_1", run_dir)
+        self.assertEqual(0, writer.get_reset_number())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
+        self.assertEqual("1", writer.get_reset_str())
         run_dir = FecDataView.get_run_dir_path()
         self.assertIn("run_3", run_dir)
         writer.start_run()
@@ -321,11 +325,14 @@ class TestSimulatorData(unittest.TestCase):
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
+        self.assertEqual(0, writer.get_reset_number())
         writer.soft_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path only changed on hard reset
         self.assertIn("run_1", FecDataView.get_run_dir_path())
         writer.hard_reset()
+        self.assertEqual(1, writer.get_reset_number())
         self.assertEqual(3, FecDataView.get_run_number())
         # run_dir_path changed by hard reset
         self.assertIn("run_3", FecDataView.get_run_dir_path())
@@ -601,7 +608,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual(
             [vertex1, vertex2], FecDataView.iterate_gathers())
         self.assertEqual(2, FecDataView.get_n_gathers())
@@ -651,7 +658,7 @@ class TestSimulatorData(unittest.TestCase):
             elif core == (8, 8):
                 self.assertEqual(vertex2, vertex)
             else:
-                raise Exception(f"Unexpected item {core} {vertex}")
+                raise ValueError(f"Unexpected item {core} {vertex}")
         self.assertCountEqual([vertex1, vertex2],
                               FecDataView.iterate_monitors())
         self.assertEqual(2, FecDataView.get_n_monitors())

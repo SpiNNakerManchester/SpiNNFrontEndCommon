@@ -1,27 +1,27 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, wait  # @UnresolvedImport
 from spinn_utilities.abstract_context_manager import AbstractContextManager
-from spinn_utilities.config_holder import get_config_bool
+from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import (
     NotificationProtocolDatabaseLocation, NotificationProtocolPauseStop,
     NotificationProtocolStartResume)
+from spinnman.exceptions import SpinnmanTimeoutException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MAX_DATABASE_PATH_LENGTH)
@@ -42,6 +42,7 @@ class NotificationProtocol(AbstractContextManager):
         "__database_message_connections",
         "__sent_visualisation_confirmation",
         "__wait_for_read_confirmation",
+        "__wait_for_read_timeout",
         "__wait_futures",
         "__wait_pool"]
 
@@ -50,6 +51,8 @@ class NotificationProtocol(AbstractContextManager):
         # has been read before starting the simulation
         self.__wait_for_read_confirmation = get_config_bool(
             "Database", "wait_on_confirmation")
+        self.__wait_for_read_timeout = get_config_int(
+            "Database", "wait_on_confirmation_timeout")
         self.__wait_pool = ThreadPoolExecutor(max_workers=1)
         self.__wait_futures = list()
         self.__sent_visualisation_confirmation = False
@@ -72,7 +75,12 @@ class NotificationProtocol(AbstractContextManager):
         if self.__wait_for_read_confirmation:
             logger.info("** Awaiting for a response from an external source "
                         "to state its ready for the simulation to start **")
-            wait(self.__wait_futures)
+            results = wait(self.__wait_futures,
+                           timeout=self.__wait_for_read_timeout)
+            if results.not_done:
+                raise SpinnmanTimeoutException(
+                    f"waiting for external sources: {results.not_done}",
+                    self.__wait_for_read_timeout)
         self.__wait_futures = list()
 
     def send_start_resume_notification(self):

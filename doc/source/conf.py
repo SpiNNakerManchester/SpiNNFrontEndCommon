@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # data_allocation documentation build configuration file, created by
 # sphinx-quickstart on Tue Jun 17 08:56:46 2014.
@@ -400,23 +399,18 @@ def setup(app):
     app.connect('autodoc-skip-member', skip_handler)
 
 
-def filtered_files(base, unfiltered_files_filename):
-    with open(unfiltered_files_filename) as f:
-        lines = [line.rstrip() for line in f]
-    # Skip comments and empty lines to get list of files we DON'T want to
-    # filter out; this is definitely complicated
-    unfiltered = set(
-        line for line in lines if not line.startswith("#") and line != "")
+def excluded_because_in_init(base):
     for root, _dirs, files in os.walk(base):
-        for filename in files:
-            if filename.endswith(".py") and not filename.startswith("_"):
-                full = root + "/" + filename
-                if full not in unfiltered:
-                    yield full
+        if "__init__.py" in files:
+            init = os.path.join(root,  "__init__.py")
+            with open(init) as f:
+                for line in f:
+                    if line.startswith("from ."):
+                        parts = line.split()
+                        yield os.path.join(root, parts[1][1:]+".py")
 
 
 _output_dir = os.path.abspath(".")
-_unfiltered_files = os.path.abspath("../unfiltered-files.txt")
 
 # Do the rst generation; remove files which aren't in git first!
 for fl in os.listdir("."):
@@ -426,4 +420,6 @@ for fl in os.listdir("."):
 os.chdir("../..")  # WARNING! RELATIVE FILENAMES CHANGE MEANING HERE!
 apidoc.main([
     '-o', _output_dir, _package_base,
-    *filtered_files(_package_base, _unfiltered_files)])
+    *excluded_because_in_init(_package_base)])
+
+# See Note at bottom of global doc conf.py
