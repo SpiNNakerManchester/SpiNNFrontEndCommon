@@ -97,24 +97,31 @@ Functions</h2></td></tr>
 <tr class="memitem:a1c915f60128891589ee02f38896399ea"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a1c915f60128891589ee02f38896399ea">merge</a> (const <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> *entry1, const <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a> *entry2)</td></tr>
 <tr class="memdesc:a1c915f60128891589ee02f38896399ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges a single pair of route entries.  <a href="pair__minimize_8h.html#a1c915f60128891589ee02f38896399ea">More...</a><br /></td></tr>
 <tr class="separator:a1c915f60128891589ee02f38896399ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb1357d03b732d89e3a1dec12c8ab0cd"><td class="memItemLeft" align="right" valign="top"><a id="aeb1357d03b732d89e3a1dec12c8ab0cd"></a>
+static int&#160;</td><td class="memItemRight" valign="bottom"><b>transfer_next</b> (int start_index, int n_items, uint32_t cache)</td></tr>
+<tr class="separator:aeb1357d03b732d89e3a1dec12c8ab0cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac406e918228b7b1eaa33e04216d36970"><td class="memItemLeft" align="right" valign="top"><a id="ac406e918228b7b1eaa33e04216d36970"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#ac406e918228b7b1eaa33e04216d36970">cancel_dmas</a> (void)</td></tr>
+<tr class="memdesc:ac406e918228b7b1eaa33e04216d36970"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cancel any outstanding DMA transfers. <br /></td></tr>
+<tr class="separator:ac406e918228b7b1eaa33e04216d36970"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a11ec55dc2c1cce5a726cc4c3e6e9f386">find_merge</a> (int left, int index)</td></tr>
 <tr class="memdesc:a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="mdescLeft">&#160;</td><td class="mdescRight">Finds if two routes can be merged.  <a href="pair__minimize_8h.html#a11ec55dc2c1cce5a726cc4c3e6e9f386">More...</a><br /></td></tr>
 <tr class="separator:a11ec55dc2c1cce5a726cc4c3e6e9f386"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab285dfe6ab184b3bd9ef74d1904f0ab"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#aab285dfe6ab184b3bd9ef74d1904f0ab">compress_by_route</a> (int left, int right)</td></tr>
 <tr class="memdesc:aab285dfe6ab184b3bd9ef74d1904f0ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Does the actual routing compression.  <a href="pair__minimize_8h.html#aab285dfe6ab184b3bd9ef74d1904f0ab">More...</a><br /></td></tr>
 <tr class="separator:aab285dfe6ab184b3bd9ef74d1904f0ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27b2b659e69347711efe2164c68c6dcb"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a27b2b659e69347711efe2164c68c6dcb">compare_routes</a> (uint32_t route_a, uint32_t route_b)</td></tr>
-<tr class="memdesc:a27b2b659e69347711efe2164c68c6dcb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare routes based on their index.  <a href="pair__minimize_8h.html#a27b2b659e69347711efe2164c68c6dcb">More...</a><br /></td></tr>
-<tr class="separator:a27b2b659e69347711efe2164c68c6dcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b2381e8a020792acd5a4b180ca2d1c2"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a4b2381e8a020792acd5a4b180ca2d1c2">sort_table</a> (uint32_t table_size)</td></tr>
-<tr class="memdesc:a4b2381e8a020792acd5a4b180ca2d1c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of insertion sort for routes based on route information.  <a href="pair__minimize_8h.html#a4b2381e8a020792acd5a4b180ca2d1c2">More...</a><br /></td></tr>
-<tr class="separator:a4b2381e8a020792acd5a4b180ca2d1c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1467c8283b98116cf5271e60cc3539f7"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a1467c8283b98116cf5271e60cc3539f7">sort_routes</a> (void)</td></tr>
 <tr class="memdesc:a1467c8283b98116cf5271e60cc3539f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of insertion sort for routes based on frequency.  <a href="pair__minimize_8h.html#a1467c8283b98116cf5271e60cc3539f7">More...</a><br /></td></tr>
 <tr class="separator:a1467c8283b98116cf5271e60cc3539f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa98cf61463f71e930f269e6dd6c5b5b3"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#aa98cf61463f71e930f269e6dd6c5b5b3">update_frequency</a> (int index)</td></tr>
 <tr class="memdesc:aa98cf61463f71e930f269e6dd6c5b5b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes route histogram.  <a href="pair__minimize_8h.html#aa98cf61463f71e930f269e6dd6c5b5b3">More...</a><br /></td></tr>
 <tr class="separator:aa98cf61463f71e930f269e6dd6c5b5b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6009b5dc2b9c72fca9b06c3193f7020"><td class="memItemLeft" align="right" valign="top"><a id="ab6009b5dc2b9c72fca9b06c3193f7020"></a>
+static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>find_route_index</b> (uint32_t route)</td></tr>
+<tr class="separator:ab6009b5dc2b9c72fca9b06c3193f7020"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9698233cc77255c56c94f659835c382"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#af9698233cc77255c56c94f659835c382">sort_table</a> (void)</td></tr>
+<tr class="memdesc:af9698233cc77255c56c94f659835c382"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of insertion sort for routes based on route information.  <a href="pair__minimize_8h.html#af9698233cc77255c56c94f659835c382">More...</a><br /></td></tr>
+<tr class="separator:af9698233cc77255c56c94f659835c382"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d58db58c6a9286c610630fb466c8ffe"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#a7d58db58c6a9286c610630fb466c8ffe">minimise_run</a> (int target_length, bool *<a class="el" href="bit__field__compressor_8c.html#a027c6543a6965ac8b64d261505a94f39">failed_by_malloc</a>, volatile bool *<a class="el" href="bit__field__compressor_8c.html#af76c33114138b0aef2147ccbb7482360">stop_compressing</a>)</td></tr>
 <tr class="memdesc:a7d58db58c6a9286c610630fb466c8ffe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Implementation of minimise()  <a href="pair__minimize_8h.html#a7d58db58c6a9286c610630fb466c8ffe">More...</a><br /></td></tr>
 <tr class="separator:a7d58db58c6a9286c610630fb466c8ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,6 +148,10 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#ae7e5727c2d116ef83d21c9ccc9fe4011">routes_count</a></td></tr>
 <tr class="memdesc:ae7e5727c2d116ef83d21c9ccc9fe4011"><td class="mdescLeft">&#160;</td><td class="mdescRight">Count of unique routes (as opposed to routes with just different key_masks). <br /></td></tr>
 <tr class="separator:ae7e5727c2d116ef83d21c9ccc9fe4011"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4310b982b43f3cccb2d17b583981333"><td class="memItemLeft" align="right" valign="top"><a id="ac4310b982b43f3cccb2d17b583981333"></a>
+static <a class="el" href="routing__table_8h.html#structentry__t">entry_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pair__minimize_8h.html#ac4310b982b43f3cccb2d17b583981333">route_cache</a> [2][<a class="el" href="pair__minimize_8h.html#a5f2b1443b48ccc49b602fb79722c81ab">MAX_NUM_ROUTES</a>]</td></tr>
+<tr class="memdesc:ac4310b982b43f3cccb2d17b583981333"><td class="mdescLeft">&#160;</td><td class="mdescRight">Space for caching routes while going through them. <br /></td></tr>
+<tr class="separator:ac4310b982b43f3cccb2d17b583981333"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>SpiNNaker routing table minimisation. </p>
@@ -194,7 +205,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A new merged route that will eventually replace the two inputs. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00057">57</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00060">60</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -242,7 +253,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>True if the entries were merged </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00082">82</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00109">109</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -289,91 +300,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00103">103</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
-
-</div>
-</div>
-<a id="a27b2b659e69347711efe2164c68c6dcb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a27b2b659e69347711efe2164c68c6dcb">&#9670;&nbsp;</a></span>compare_routes()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static int compare_routes </td>
-          <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>route_a</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>route_b</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Compare routes based on their index. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">route_a</td><td>The first route </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">route_b</td><td>The second route </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Ordering term (-1, 0, 1) </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00127">127</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
-
-</div>
-</div>
-<a id="a4b2381e8a020792acd5a4b180ca2d1c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4b2381e8a020792acd5a4b180ca2d1c2">&#9670;&nbsp;</a></span>sort_table()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">static void sort_table </td>
-          <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
-          <td class="paramname"><em>table_size</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implementation of insertion sort for routes based on route information. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">table_size</td><td>The size of the routing table </td></tr>
-  </table>
-  </dd>
-</dl>
-
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00149">149</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00165">165</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -404,7 +331,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 <p>Implementation of insertion sort for routes based on frequency. </p>
 <p>The routes must be non-overlapping pre-minimisation routes. </p>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00164">164</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00187">187</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -441,7 +368,35 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether the update succeeded </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00187">187</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00210">210</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+
+</div>
+</div>
+<a id="af9698233cc77255c56c94f659835c382"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9698233cc77255c56c94f659835c382">&#9670;&nbsp;</a></span>sort_table()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void sort_table </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Implementation of insertion sort for routes based on route information. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">table_size</td><td>The size of the routing table </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00249">249</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>
@@ -489,7 +444,7 @@ static uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el"
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Whether minimisation succeeded </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00215">215</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="pair__minimize_8h_source.html#l00335">335</a> of file <a class="el" href="pair__minimize_8h_source.html">pair_minimize.h</a>.</p>
 
 </div>
 </div>

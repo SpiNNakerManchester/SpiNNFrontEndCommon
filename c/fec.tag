@@ -2949,6 +2949,20 @@
       <anchor>a50ce07ac6afe0eb0f13faaa5ca2221ac</anchor>
       <arglist>(table_t *restrict original)</arglist>
     </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>routing_table_get_entries</name>
+      <anchorfile>routing__tables_8h.html</anchorfile>
+      <anchor>a3fbd652e889e3257343cca2c23484e36</anchor>
+      <arglist>(uint32_t start_entry, uint32_t n_entries, entry_t *output)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>routing_table_wait_for_last_transfer</name>
+      <anchorfile>routing__tables_8h.html</anchorfile>
+      <anchor>ae33971749c691f83d107b2b8a831fb97</anchor>
+      <arglist>(void)</arglist>
+    </member>
     <member kind="variable">
       <type>multi_table_t</type>
       <name>multi_table</name>
@@ -3304,6 +3318,20 @@
       <arglist>(uint32_t entry_id_to_find)</arglist>
     </member>
     <member kind="function">
+      <type>bool</type>
+      <name>routing_table_get_entries</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>a3fbd652e889e3257343cca2c23484e36</anchor>
+      <arglist>(uint32_t start_entry, uint32_t n_entries, entry_t *output)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>routing_table_wait_for_last_transfer</name>
+      <anchorfile>routing__table_8h.html</anchorfile>
+      <anchor>ae33971749c691f83d107b2b8a831fb97</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
       <type>int</type>
       <name>routing_table_get_n_entries</name>
       <anchorfile>routing__table_8h.html</anchorfile>
@@ -3405,6 +3433,13 @@
       <arglist>(const entry_t *entry1, const entry_t *entry2)</arglist>
     </member>
     <member kind="function" static="yes">
+      <type>static void</type>
+      <name>cancel_dmas</name>
+      <anchorfile>pair__minimize_8h.html</anchorfile>
+      <anchor>ac406e918228b7b1eaa33e04216d36970</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function" static="yes">
       <type>static bool</type>
       <name>find_merge</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
@@ -3419,20 +3454,6 @@
       <arglist>(int left, int right)</arglist>
     </member>
     <member kind="function" static="yes">
-      <type>static int</type>
-      <name>compare_routes</name>
-      <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a27b2b659e69347711efe2164c68c6dcb</anchor>
-      <arglist>(uint32_t route_a, uint32_t route_b)</arglist>
-    </member>
-    <member kind="function" static="yes">
-      <type>static void</type>
-      <name>sort_table</name>
-      <anchorfile>pair__minimize_8h.html</anchorfile>
-      <anchor>a4b2381e8a020792acd5a4b180ca2d1c2</anchor>
-      <arglist>(uint32_t table_size)</arglist>
-    </member>
-    <member kind="function" static="yes">
       <type>static void</type>
       <name>sort_routes</name>
       <anchorfile>pair__minimize_8h.html</anchorfile>
@@ -3445,6 +3466,13 @@
       <anchorfile>pair__minimize_8h.html</anchorfile>
       <anchor>aa98cf61463f71e930f269e6dd6c5b5b3</anchor>
       <arglist>(int index)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>sort_table</name>
+      <anchorfile>pair__minimize_8h.html</anchorfile>
+      <anchor>af9698233cc77255c56c94f659835c382</anchor>
+      <arglist>(void)</arglist>
     </member>
     <member kind="function">
       <type>bool</type>
@@ -3487,6 +3515,13 @@
       <anchorfile>pair__minimize_8h.html</anchorfile>
       <anchor>ae7e5727c2d116ef83d21c9ccc9fe4011</anchor>
       <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static entry_t</type>
+      <name>route_cache</name>
+      <anchorfile>pair__minimize_8h.html</anchorfile>
+      <anchor>ac4310b982b43f3cccb2d17b583981333</anchor>
+      <arglist>[2][MAX_NUM_ROUTES]</arglist>
     </member>
   </compound>
   <compound kind="file">
@@ -3832,6 +3867,20 @@
       <anchor>a72d10a02534aa3861e8c2006389f37dd</anchor>
       <arglist></arglist>
     </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>DMA_COMPLETE</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>a228417d7ba21d90bc5bff7e3c8c17967</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="define">
+      <type>#define</type>
+      <name>DMA_CHECK_MASK</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>a9b993ee8696ad254b4a7576bb8dea86b</anchor>
+      <arglist></arglist>
+    </member>
     <member kind="function">
       <type>int</type>
       <name>routing_table_get_n_entries</name>
@@ -3881,11 +3930,39 @@
       <anchor>a44e81459c3c028d1d4052f8835dfd430</anchor>
       <arglist>(header_t *header)</arglist>
     </member>
+    <member kind="function">
+      <type>bool</type>
+      <name>routing_table_get_entries</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>a3fbd652e889e3257343cca2c23484e36</anchor>
+      <arglist>(uint32_t start_entry, uint32_t n_entries, entry_t *output)</arglist>
+    </member>
+    <member kind="function" static="yes">
+      <type>static bool</type>
+      <name>dma_done</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>a06d7174c0a04a73e40d48121413c4961</anchor>
+      <arglist>(void)</arglist>
+    </member>
+    <member kind="function">
+      <type>void</type>
+      <name>routing_table_wait_for_last_transfer</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>ae33971749c691f83d107b2b8a831fb97</anchor>
+      <arglist>(void)</arglist>
+    </member>
     <member kind="variable">
       <type>table_t *</type>
       <name>table</name>
       <anchorfile>rt__single_8h.html</anchorfile>
       <anchor>a8aa4114869bdb42b8ce3a3e9cfbe6714</anchor>
+      <arglist></arglist>
+    </member>
+    <member kind="variable" static="yes">
+      <type>static const uint32_t</type>
+      <name>DMA_READ_FLAGS</name>
+      <anchorfile>rt__single_8h.html</anchorfile>
+      <anchor>a255b14ab71c780779eb7e0a66551f686</anchor>
       <arglist></arglist>
     </member>
   </compound>
