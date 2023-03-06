@@ -271,8 +271,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_link_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_link_dumps} packets were dumped from an "
-                    f"outgoing link of this chip's router. This often occurs "
+                    f"{status.n_link_dumps} packets were dumped from "
+                    f"outgoing links {status.links_dropped_from} of this "
+                    f"chip's router. This often occurs "
                     f"when external devices are used in the script but not "
                     f"connected to the communication fabric correctly. "
                     f"These packets may have been reinjected multiple times "
@@ -284,8 +285,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_processor_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_processor_dumps} packets were dumped from a "
-                    "core failing to take the packet. This often occurs when "
+                    f"{status.n_processor_dumps} packets were dumped from "
+                    f"cores {status.processors_dropped_from} failing to take "
+                    "the packet. This often occurs when "
                     "the executable has crashed or has not been given a "
                     "multicast packet callback. It can also result from the "
                     "core taking too long to process each packet. These "

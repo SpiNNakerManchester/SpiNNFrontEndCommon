@@ -189,10 +189,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             "Will search these locations for binaries: {}",
             self._data_writer.get_executable_finder().binary_paths)
 
+        self._multicast_routes_loaded = False
+
         # store for Live Packet Gatherers
         self._lpg_vertices = dict()
-
-        self._hard_reset()
 
         # holder for timing and running related values
         self._run_until_complete = False
@@ -224,9 +224,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_transceiver():
             self._data_writer.get_transceiver().stop_application(
                 self._data_writer.get_app_id())
-            self._data_writer.hard_reset()
-        self._multicast_routes_loaded = False
         self.__close_allocation_controller()
+        self._data_writer.hard_reset()
+        self._multicast_routes_loaded = False
 
     def _machine_clear(self):
         pass
@@ -385,6 +385,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
         except Exception:
+            # if in debug mode, do not shut down machine
+            if get_config_str("Mode", "mode") != "Debug":
+                try:
+                    self.stop()
+                except Exception as stop_e:
+                    logger.exception(f"Error {stop_e} when attempting to stop")
             self._data_writer.shut_down()
             raise
 
@@ -804,6 +810,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Reports", "write_board_chip_report"):
                 return
             board_chip_report()
+            if FecDataView.has_allocation_controller():
+                filename = os.path.join(
+                    FecDataView.get_run_dir_path(), "machine_allocation.rpt")
+                FecDataView.get_allocation_controller().make_report(filename)
 
     def _execute_splitter_reset(self):
         """
@@ -2190,13 +2200,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             sys.exit(1)
         except Exception as run_e:
             self._recover_from_error(run_e)
-
-            # if in debug mode, do not shut down machine
-            if get_config_str("Mode", "mode") != "Debug":
-                try:
-                    self.stop()
-                except Exception as stop_e:
-                    logger.exception(f"Error {stop_e} when attempting to stop")
 
             # reraise exception
             raise run_e
