@@ -56,8 +56,8 @@ enum eieio_bit_masks {
 // use uint16_t as a base type means that we know they'll all be in the same
 // memory slot (which they will fit into).
 //
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka10202.html
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0491e/Babjddhe.html
+// https://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka10202.html
+// https://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0491e/Babjddhe.html
 //
 // THIS IS NOT PORTABLE TO NON-SPINNAKER!
 
