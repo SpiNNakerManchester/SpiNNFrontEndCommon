@@ -9,12 +9,12 @@ var searchData=
   ['get_5fsample_607',['get_sample',['../chip__power__monitor_8c.html#a766cca800c4544225b024ca3f36932aa',1,'chip_power_monitor.c']]],
   ['get_5fsdram_5fbuffer_5fspace_5favailable_608',['get_sdram_buffer_space_available',['../reverse__iptag__multicast__source_8c.html#aed0dcb08f56f92d6f4496992c686395b',1,'reverse_iptag_multicast_source.c']]],
   ['get_5fthis_5fvcpu_5finfo_609',['get_this_vcpu_info',['../bit__field__sorter__and__searcher_8c.html#ab01f3414297cde2079c919d64846e836',1,'bit_field_sorter_and_searcher.c']]],
-  ['gidr_5fid_610',['gidr_id',['http://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#ab0220b89bc365b6e1ef669bb54e06833',1,'nn_desc_t']]],
+  ['gidr_5fid_610',['gidr_id',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-nn_8c.html#ab0220b89bc365b6e1ef669bb54e06833',1,'nn_desc_t']]],
   ['global_5fatom_611',['global_atom',['../filter__info_8h.html#a3ccbd95bd8b1b2fe2e02cdc92071fbcc',1,'filter_info.h']]],
   ['global_5fcontrol_612',['global_control',['../spinn__extra_8h.html#a51a63768e00c5f8fbf88c62dc3ebf7d7',1,'dma_t']]],
   ['gpio_613',['gpio',['../spinn__extra_8h.html#af830b22b6430044906c6c4dad7a98d4e',1,'sc_io_t']]],
   ['gpio8_614',['gpio8',['../spinn__extra_8h.html#a0f4b096aa3a09aa79dbae771e4b5fc5a',1,'vic_mask_t::interrupt_bits']]],
   ['gpio9_615',['gpio9',['../spinn__extra_8h.html#af759bf9fe3da7fb265a831e46c6e2f3b',1,'vic_mask_t::interrupt_bits']]],
   ['gpio_5fpull_5fup_5fdown_5fenable_616',['gpio_pull_up_down_enable',['../spinn__extra_8h.html#a6f13af89eeda684e0a5b039652aa97c8',1,'system_controller_t']]],
-  ['gw_5faddr_617',['gw_addr',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a54eb515cd59f33b53eb523d3197cf46c',1,'srom_data_t']]]
+  ['gw_5faddr_617',['gw_addr',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html#a54eb515cd59f33b53eb523d3197cf46c',1,'srom_data_t']]]
 ];

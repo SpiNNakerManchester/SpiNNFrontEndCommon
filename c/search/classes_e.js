@@ -28,6 +28,6 @@ var searchData=
   ['router_5ft_2112',['router_t',['../spinn__extra_8h.html#structrouter__t',1,'']]],
   ['router_5ftiming_5fcounter_5fctrl_5ft_2113',['router_timing_counter_ctrl_t',['../spinn__extra_8h.html#structrouter__timing__counter__ctrl__t',1,'']]],
   ['routes_2114',['routes',['../spinn__extra_8h.html#structrouter__multicast__route__t_1_1routes',1,'router_multicast_route_t::routes'],['../spinn__extra_8h.html#structrouter__p2p__table__entry__t_1_1routes',1,'router_p2p_table_entry_t::routes']]],
-  ['rtr_5fentry_5ft_2115',['rtr_entry_t',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
-  ['rx_5fdesc_5ft_2116',['rx_desc_t',['http://spinnakermanchester.github.io/spinnaker_tools/scamp-p2p_8c.html',1,'']]]
+  ['rtr_5fentry_5ft_2115',['rtr_entry_t',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
+  ['rx_5fdesc_5ft_2116',['rx_desc_t',['https://spinnakermanchester.github.io/spinnaker_tools/scamp-p2p_8c.html',1,'']]]
 ];

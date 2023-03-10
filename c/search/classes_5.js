@@ -14,8 +14,8 @@ var searchData=
   ['ethernet_5freceive_5fdescriptor_5ft_2041',['ethernet_receive_descriptor_t',['../spinn__extra_8h.html#structethernet__receive__descriptor__t',1,'']]],
   ['ethernet_5freceive_5fpointer_5ft_2042',['ethernet_receive_pointer_t',['../spinn__extra_8h.html#structethernet__receive__pointer__t',1,'']]],
   ['ethernet_5ftx_5flength_5ft_2043',['ethernet_tx_length_t',['../spinn__extra_8h.html#structethernet__tx__length__t',1,'']]],
-  ['event_5fdata_5ft_2044',['event_data_t',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
-  ['event_5ft_2045',['event_t',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
-  ['event_5fvec_5ft_2046',['event_vec_t',['http://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
+  ['event_5fdata_5ft_2044',['event_data_t',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
+  ['event_5ft_2045',['event_t',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
+  ['event_5fvec_5ft_2046',['event_vec_t',['https://spinnakermanchester.github.io/spinnaker_tools/sark_8h.html',1,'']]],
   ['extra_5fmonitor_5fprovenance_5ft_2047',['extra_monitor_provenance_t',['../extra__monitor__support_8c.html#structextra__monitor__provenance__t',1,'']]]
 ];
