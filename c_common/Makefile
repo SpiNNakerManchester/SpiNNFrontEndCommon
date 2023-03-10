@@ -17,8 +17,8 @@ BUILD_DIRS = models
 
 # Locations of tag files
 TAGFILES=sllt.tag common.tag
-SLLT_TAG=http://spinnakermanchester.github.io/spinnaker_tools/sllt.tag
-COMMON_TAG=http://spinnakermanchester.github.io/spinn_common/common.tag
+SLLT_TAG=https://spinnakermanchester.github.io/spinnaker_tools/sllt.tag
+COMMON_TAG=https://spinnakermanchester.github.io/spinn_common/common.tag
 
 DOXYGEN ?= doxygen
 WGET ?= wget
