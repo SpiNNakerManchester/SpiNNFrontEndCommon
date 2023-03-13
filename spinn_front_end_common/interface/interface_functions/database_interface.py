@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -82,6 +82,7 @@ def _write_to_db(writer, runtime):
             machine_vertices.update(
                 (m_vertex, part_id)
                 for vertex, part_id in live_vertices
-                for m_vertex in vertex.machine_vertices)
+                for m_vertex in vertex.splitter.get_out_going_vertices(
+                    part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()

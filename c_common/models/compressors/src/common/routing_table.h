@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -57,6 +57,18 @@ typedef struct table_t {
 //! \param[in] entry_id_to_find: Id of entry to find pointer to
 //! \return pointer to the entry's location
 entry_t* routing_table_get_entry(uint32_t entry_id_to_find);
+
+//! \brief Gets a pointer to several entries
+//! \param[in] start_entry: The first entry to get
+//! \param[in] n_entries: The number of entries to get
+//! \param[out] output: Where to put the entries read - must have enough space!
+//! \return: Whether the entries are available now, or should be waited for
+bool routing_table_get_entries(uint32_t start_entry, uint32_t n_entries,
+        entry_t *output);
+
+//! \brief Waits for the last transfer from routing_table_get_entries to complete
+//! \details Returns immediately if the last transfer is already done
+void routing_table_wait_for_last_transfer(void);
 
 //! \brief Get the number of entries in the routing table
 //! \return number of appended entries.
