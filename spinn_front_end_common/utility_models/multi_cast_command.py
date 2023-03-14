@@ -59,8 +59,9 @@ class MultiCastCommand(object):
 
     @property
     def time(self):
-        """ The time within the simulation at which to send the\
-            command, or None if this is not a timed command
+        """
+        The time within the simulation at which to send the
+        command, or `None` if this is not a timed command.
 
         :rtype: int or None
         """
@@ -109,10 +110,11 @@ class MultiCastCommand(object):
 
     @property
     def is_payload(self):
-        """ Whether this command has a payload. By default, this returns\
-            True if the payload passed in to the constructor is not None, but\
-            this can be overridden to indicate that a payload will be\
-            generated, despite None being passed to the constructor
+        """
+        Whether this command has a payload. By default, this returns
+        True if the payload passed in to the constructor is not `None`, but
+        this can be overridden to indicate that a payload will be
+        generated, despite `None` being passed to the constructor
 
         :rtype: bool
         """

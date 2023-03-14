@@ -50,10 +50,9 @@ _LOWER_16_BITS = 0xFFFF
 
 
 def tag_allocator_report():
-    """ Reports the tags that are being used by the tool chain for this\
-        simulation
-
-    :rtype: None
+    """
+    Reports the tags that are being used by the tool chain for this
+    simulation.
     """
     tag_infos = FecDataView.get_tags()
     file_name = os.path.join(FecDataView.get_run_dir_path(), _TAGS_FILENAME)
@@ -73,17 +72,16 @@ def tag_allocator_report():
 
 
 def placer_reports_with_application_graph():
-    """ Reports that can be produced from placement given a application\
-        graph's existence
-
-    :rtype: None
+    """
+    Reports that can be produced from placement given a application
+    graph's existence.
     """
     placement_report_with_application_graph_by_vertex()
     placement_report_with_application_graph_by_core()
 
 
 def router_summary_report():
-    """ Generates a text file of routing summaries
+    """ Generates a text file of routing summaries.
 
     :rtype: RouterSummary
     """
@@ -96,7 +94,7 @@ def router_summary_report():
 
 
 def router_compressed_summary_report(routing_tables):
-    """ Generates a text file of routing summaries
+    """ Generates a text file of routing summaries.
 
     :param MulticastRoutingTables routing_tables:
         The in-operation COMPRESSED routing tables.
@@ -171,9 +169,7 @@ def _do_router_summary_report(file_name, progress, routing_tables):
 
 
 def router_report_from_paths():
-    """ Generates a text file of routing paths
-
-    :rtype: None
+    """ Generates a text file of routing paths.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
@@ -223,7 +219,6 @@ def _write_one_router_partition_report(f, partition):
 
 def partitioner_report():
     """ Generate report on the placement of vertices onto cores.
-
     """
 
     # Cycle through all vertices, and for each cycle through its vertices.
@@ -273,7 +268,6 @@ def _write_one_vertex_partition(f, vertex):
 
 def placement_report_with_application_graph_by_vertex():
     """ Generate report on the placement of vertices onto cores by vertex.
-
     """
 
     # Cycle through all vertices, and for each cycle through its vertices.
@@ -337,7 +331,6 @@ def _write_one_vertex_application_placement(f, vertex):
 
 def placement_report_with_application_graph_by_core():
     """ Generate report on the placement of vertices onto cores by core.
-
     """
 
     # File 2: Placement by core.
@@ -411,9 +404,7 @@ def _write_one_chip_application_placement(f, chip):
 
 
 def sdram_usage_report_per_chip():
-    """ Reports the SDRAM used per chip
-
-    :rtype: None
+    """ Reports the SDRAM used per chip.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
     n_placements = FecDataView.get_n_placements()
@@ -489,9 +480,9 @@ def _sdram_usage_report_per_chip_with_timesteps(
 
 
 def routing_info_report(extra_allocations):
-    """ Generates a report which says which keys is being allocated to each\
-        vertex
-
+    """
+    Generates a report which says which keys is being allocated to each
+    vertex.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
     routing_infos = FecDataView.get_routing_infos()
@@ -538,9 +529,8 @@ def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
 
 def router_report_from_router_tables():
     """
-    :rtype: None
+    Report the uncompressed routing tables.
     """
-
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(), _ROUTING_TABLE_DIR)
     routing_tables = FecDataView.get_uncompressed().routing_tables
@@ -554,11 +544,11 @@ def router_report_from_router_tables():
 
 def router_report_from_compressed_router_tables(routing_tables):
     """
+    Report the compressed routing tables.
+
     :param MulticastRoutingTables routing_tables:
         the compressed routing tables
-    :rtype: None
     """
-
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(), _C_ROUTING_TABLE_DIR)
     if not os.path.exists(top_level_folder):
@@ -618,12 +608,12 @@ def _compression_ratio(uncompressed, compressed):
 
 
 def generate_comparison_router_report(compressed_routing_tables):
-    """ Make a report on comparison of the compressed and uncompressed \
-        routing tables
+    """
+    Make a report on comparison of the compressed and uncompressed
+    routing tables.
 
     :param MulticastRoutingTables compressed_routing_tables:
         the compressed routing tables
-    :rtype: None
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = os.path.join(

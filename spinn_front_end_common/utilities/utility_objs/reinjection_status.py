@@ -19,8 +19,9 @@ _PATTERN = struct.Struct("<IIIIIIIIII")
 
 
 def _decode_router_timeout_value(value):
-    """ Get the timeout value of a router in ticks, given an 8-bit floating\
-        point value stored in an int (!)
+    """
+    Get the timeout value of a router in ticks, given an 8-bit floating
+    point value stored in an int (!)
 
     :param int value: The value to convert
     :rtype: int
@@ -125,8 +126,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_dropped_packets(self):
-        """ The number of packets dropped by the router and received by\
-            the reinjection functionality (may not fit in the queue though)
+        """
+        The number of packets dropped by the router and received by
+        the reinjection functionality (may not fit in the queue though).
 
         :rtype: int
         """
@@ -134,9 +136,10 @@ class ReInjectionStatus(object):
 
     @property
     def n_missed_dropped_packets(self):
-        """ The number of times that when a dropped packet was read it was\
-            found that another one or more packets had also been dropped,\
-            but had been missed
+        """
+        The number of times that when a dropped packet was read it was
+        found that another one or more packets had also been dropped,
+        but had been missed.
 
         :rtype: int
         """
@@ -144,8 +147,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_dropped_packet_overflows(self):
-        """ Of the n_dropped_packets received, how many were lost due to not\
-            having enough space in the queue of packets to reinject
+        """
+        Of the n_dropped_packets received, how many were lost due to not
+        having enough space in the queue of packets to reinject.
 
         :rtype: int
         """
@@ -153,8 +157,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_processor_dumps(self):
-        """ The number of times that when a dropped packet was caused due to\
-            a processor failing to take the packet.
+        """
+        The number of times that when a dropped packet was caused due to
+        a processor failing to take the packet.
 
         :rtype: int
         """
@@ -162,8 +167,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_link_dumps(self):
-        """ The number of times that when a dropped packet was caused due to\
-            a link failing to take the packet.
+        """
+        The number of times that when a dropped packet was caused due to
+        a link failing to take the packet.
 
         :rtype: int
         """
@@ -171,8 +177,9 @@ class ReInjectionStatus(object):
 
     @property
     def n_reinjected_packets(self):
-        """ Of the n_dropped_packets received, how many packets were\
-            successfully re injected
+        """
+        Of the n_dropped_packets received, how many packets were
+        successfully re-injected.
 
         :rtype: int
         """
@@ -183,7 +190,7 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_multicast(self):
-        """ True if re-injection of multicast packets is enabled
+        """ True if re-injection of multicast packets is enabled.
 
         :rtype: bool
         """
@@ -191,7 +198,7 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_point_to_point(self):
-        """ True if re-injection of point-to-point packets is enabled
+        """ True if re-injection of point-to-point packets is enabled.
 
         :rtype: bool
         """
@@ -199,7 +206,7 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_nearest_neighbour(self):
-        """ True if re-injection of nearest neighbour packets is enabled
+        """ True if re-injection of nearest neighbour packets is enabled.
 
         :rtype: bool
         """
@@ -207,7 +214,7 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_fixed_route(self):
-        """ True if re-injection of fixed-route packets is enabled
+        """ True if re-injection of fixed-route packets is enabled.
 
         :rtype: bool
         """

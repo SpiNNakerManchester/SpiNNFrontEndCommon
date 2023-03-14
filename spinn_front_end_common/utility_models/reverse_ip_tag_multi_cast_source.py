@@ -27,8 +27,9 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, LegacyPartitionerAPI):
-    """ A model which will allow events to be injected into a SpiNNaker\
-        machine and converted into multicast packets.
+    """
+    A model which will allow events to be injected into a SpiNNaker
+    machine and converted into multicast packets.
     """
 
     def __init__(

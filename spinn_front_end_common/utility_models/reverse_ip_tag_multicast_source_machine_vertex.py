@@ -69,8 +69,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost):
-    """ A model which allows events to be injected into SpiNNaker and\
-        converted in to multicast packets.
+    """
+    A model which allows events to be injected into SpiNNaker and
+    converted in to multicast packets.
 
     :param str label: The label of this vertex
     :param vertex_slice:

@@ -32,8 +32,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def system_multicast_routing_generator():
-    """ Generates routing table entries used by the data in processes with the\
-        extra monitor cores.
+    """
+    Generates routing table entries used by the data in processes with the
+    extra monitor cores.
 
     :return: routing tables, destination-to-key map,
         board-locn-to-timeout-key map
@@ -46,8 +47,9 @@ def system_multicast_routing_generator():
 
 
 class _SystemMulticastRoutingGenerator(object):
-    """ Generates routing table entries used by the data in processes with the\
-        extra monitor cores.
+    """
+    Generates routing table entries used by the data in processes with the
+    extra monitor cores.
     """
     __slots__ = ["_key_to_destination_map", "_machine",
                  "_routing_tables", "_time_out_keys_by_board"]

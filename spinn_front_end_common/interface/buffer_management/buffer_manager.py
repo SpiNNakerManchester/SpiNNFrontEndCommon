@@ -29,8 +29,8 @@ from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (BuffersSentDeque)
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import (AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost, AbstractSendsBuffersFromHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.utility_models.streaming_context_manager import (
@@ -177,13 +177,11 @@ class BufferManager(object):
         progress.end()
 
     def reset(self):
-        """ Resets the buffered regions to start transmitting from the\
-            beginning of its expected regions and clears the buffered out\
-            data files.
         """
-        #
+        Resets the buffered regions to start transmitting from the beginning
+        of its expected regions and clears the buffered out data files.
+        """
         with BufferDatabase() as db:
-
             db.write_session_credentials_to_db()
 
         # rewind buffered in
@@ -372,8 +370,9 @@ class BufferManager(object):
                 self._retreive_by_placement(db, placement)
 
     def get_data_by_placement(self, placement, recording_region_id):
-        """ Get the data container for all the data retrieved\
-            during the simulation from a specific region area of a core.
+        """
+        Get the data container for all the data retrieved
+        during the simulation from a specific region area of a core.
 
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
@@ -416,7 +415,7 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p, region, missing, data)
 
     def _get_region_information(self, addr, x, y):
-        """ Get the recording information from all regions of a core
+        """ Get the recording information from all regions of a core.
 
         :param addr: The recording region base address
         :param x: The x-coordinate of the chip containing the data

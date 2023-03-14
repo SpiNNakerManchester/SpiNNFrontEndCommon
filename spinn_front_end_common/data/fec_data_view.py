@@ -876,8 +876,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_live_packet_recorder_params(cls):
         """
-        Mapping of live_packet_gatherer_params to a list of tuples\
-        (vertex and list of ids))
+        Mapping of live_packet_gatherer_params to a list of tuples
+        (vertex and list of ids)).
 
         :rtype: dict(live_packet_gatherer_params, (vertex, list(str))
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -892,11 +892,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def add_live_packet_gatherer_parameters(
             cls, live_packet_gatherer_params, vertex_to_record_from,
             partition_ids):
-        """ Adds parameters for a new LPG if needed, or adds to the tracker \
-            for parameters.
+        """
+        Adds parameters for a new LPG if needed, or adds to the tracker
+        for parameters.
 
-            Note If the Application Graph is used the vertex must be an
-            Application Vertex if not it must be a MachineVertex
+        .. note::
+
+            If the ApplicationGraph is used, the vertex must be an
+            ApplicationVertex. If not, it must be a MachineVertex.
 
         :param LivePacketGatherParameters live_packet_gatherer_params:
             params to look for a LPG
@@ -925,8 +928,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_database_file_path(cls):
         """
-        Will return the database_file_path if set or None if not set
-        or set to None
+        Will return the database_file_path if set or `None` if not set
+        or set to `None`
 
         :rtype: str or None
         """
@@ -935,7 +938,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_executable_targets(cls):
         """
-        binaries to be executed.
+        Binaries to be executed.
 
         :rtype: ExecutableTargets
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -947,7 +950,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_dsg_targets(cls):
-        """ data Spec targets database
+        """ Data Spec targets database.
 
         :rtype: DsSqlliteDatabase
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -960,7 +963,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def has_monitors(cls):
         """
-        Detect is ExtraMonitorSupportMachineVertex(s) have been created
+        Detect is ExtraMonitorSupportMachineVertex(s) have been created.
 
         :rtype: bool
         """
@@ -968,7 +971,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_monitor_by_xy(cls, x, y):
-        """ ExtraMonitorSupportMachineVertex for core x, y
+        """ ExtraMonitorSupportMachineVertex for core (x,y).
 
         :rtype: ExtraMonitorSupportMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -983,9 +986,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_monitor_items(cls):
         """
-        Iterates over the (X,y) and ExtraMonitorSupportMachineVertex
+        Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
 
-        get_n_monitors returns the number of items this iterable will provide
+        get_n_monitors returns the number of items this iterable will provide.
 
         :rtype: iterable(tuple(tuple(int,int),
             ExtraMonitorSupportMachineVertex))
@@ -999,7 +1002,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_monitors(cls):
         """
-        Number of ExtraMonitorSupportMachineVertexs
+        Number of ExtraMonitorSupportMachineVertexs.
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1012,7 +1015,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_monitors(cls):
         """
-        Iterates over the ExtraMonitorSupportMachineVertex(s)
+        Iterates over the ExtraMonitorSupportMachineVertex(s).
 
         :rtype: iterable(ExtraMonitorSupportMachineVertex)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1024,7 +1027,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_gatherer_by_xy(cls, x, y):
-        """ DataSpeedUpPacketGatherMachineVertex for core x, y
+        """ DataSpeedUpPacketGatherMachineVertex for core (x,y).
 
         :rtype: DataSpeedUpPacketGatherMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1039,7 +1042,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_gather_items(cls):
         """
-        Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex
+        Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.
 
         get_n_gathers returns the number of items this iterable will provide
 
@@ -1055,7 +1058,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_gathers(cls):
         """
-        Number of DataSpeedUpPacketGatherMachineVertex(s)
+        Number of DataSpeedUpPacketGatherMachineVertex(s).
 
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1068,7 +1071,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_gathers(cls):
         """
-        Iterates over the DataSpeedUpPacketGatherMachineVertex(s)
+        Iterates over the DataSpeedUpPacketGatherMachineVertex(s).
 
         :rtype: iterable(DataSpeedUpPacketGatherMachineVertex)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1081,7 +1084,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_database_socket_addresses(cls):
         """
-        Iterates over the registered database_socket_addresses
+        Iterates over the registered database_socket_addresses.
 
         :rtype: iterable(~spinn_utilities.socket_address.SocketAddress)
         """
@@ -1090,7 +1093,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_n_database_socket_addresses(cls):
         """
-        Number of registered database_socket_addresses
+        Number of registered database_socket_addresses.
 
         :rtype: int
         """
@@ -1099,7 +1102,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def add_database_socket_address(cls, database_socket_address):
         """
-        Adds a socket address to the list of known addresses
+        Adds a socket address to the list of known addresses.
 
         :param SocketAddress database_socket_address:
         :raises TypeError: if database_socket_address is not a SocketAddress
@@ -1111,7 +1114,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def add_database_socket_addresses(cls, database_socket_addresses):
         """
-        Adds all socket addresses to the list of known addresses
+        Adds all socket addresses to the list of known addresses.
 
         :param iterable(SocketAddress) database_socket_addresses:
         :raises TypeError:
@@ -1125,7 +1128,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_notification_protocol(cls):
         """
-        binaries to be executed.
+        The notification protocol handler.
 
         :rtype: NotificationProtocol
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -1149,7 +1152,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def iterate_live_output_vertices(cls):
         """
-        Get an iterator over the live output vertices and partition ids
+        Get an iterator over the live output vertices and partition IDs.
 
         :rtype: set((ApplicationVertex, str))
         """

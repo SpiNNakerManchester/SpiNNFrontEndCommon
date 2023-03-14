@@ -110,8 +110,9 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time):
-    """ Request a machine from the HBP remote access server that will fit\
-        a number of chips.
+    """
+    Request a machine from the HBP remote access server that will fit
+    a number of chips.
 
     :param int total_run_time: The total run time to request
     :return: machine name, machine version, BMP details (if any),

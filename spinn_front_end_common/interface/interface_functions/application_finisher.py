@@ -29,8 +29,9 @@ _ONE_WORD = struct.Struct("<I")
 
 
 def application_finisher():
-    """ Handles finishing the running of an application, collecting the\
-        status of the cores that the application was running on.
+    """
+    Handles finishing the running of an application, collecting the
+    status of the cores that the application was running on.
 
     :raises ExecutableFailedToStopException:
     """

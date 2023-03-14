@@ -43,11 +43,13 @@ _MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
 
 
 class LiveEventConnection(DatabaseConnection):
-    """ A connection for receiving and sending live events from and to\
-        SpiNNaker.
+    """
+    A connection for receiving and sending live events from and to SpiNNaker.
 
-    Note that this class is intended to be potentially usable from another
-    process than the one that the simulator is present in.
+    .. note::
+
+        This class is intended to be potentially usable from another
+        process than the one that the simulator is present in.
     """
     __slots__ = [
         "_atom_id_to_key",
@@ -142,7 +144,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
-        """ Add a callback to be called to initialise a vertex
+        """ Add a callback to be called to initialise a vertex.
 
         :param str label:
             The label of the vertex to be notified about. Must be one of the
@@ -158,7 +160,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def add_receive_callback(self, label, live_event_callback,
                              translate_key=True):
-        """ Add a callback for the reception of live events from a vertex
+        """ Add a callback for the reception of live events from a vertex.
 
         :param str label: The label of the vertex to be notified about.
             Must be one of the vertices listed in the constructor
@@ -178,7 +180,7 @@ class LiveEventConnection(DatabaseConnection):
             (live_event_callback, translate_key))
 
     def add_start_callback(self, label, start_callback):
-        """ Add a callback for the start of the simulation
+        """ Add a callback for the start of the simulation.
 
         :param start_callback: A function to be called when the start
             message has been received. This function should take the label of
@@ -195,7 +197,7 @@ class LiveEventConnection(DatabaseConnection):
         self.add_start_resume_callback(label, start_callback)
 
     def add_start_resume_callback(self, label, start_resume_callback):
-        """ Add a callback for the start and resume state of the simulation
+        """ Add a callback for the start and resume state of the simulation.
 
         :param str label: the label of the function to be sent
         :param start_resume_callback: A function to be called when the start
@@ -203,12 +205,11 @@ class LiveEventConnection(DatabaseConnection):
             the label of the referenced vertex, and an instance of this
             class, which can be used to send events.
         :type start_resume_callback: callable(str, LiveEventConnection) -> None
-        :rtype: None
         """
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
     def add_pause_stop_callback(self, label, pause_stop_callback):
-        """ Add a callback for the pause and stop state of the simulation
+        """ Add a callback for the pause and stop state of the simulation.
 
         :param str label: the label of the function to be sent
         :param pause_stop_callback: A function to be called when the pause
@@ -216,7 +217,6 @@ class LiveEventConnection(DatabaseConnection):
             label of the referenced  vertex, and an instance of this class,
             which can be used to send events.
         :type pause_stop_callback: callable(str, LiveEventConnection) -> None
-        :rtype: None
         """
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
@@ -431,7 +431,7 @@ class LiveEventConnection(DatabaseConnection):
             logger.warning("Received unexpected key {}".format(key))
 
     def send_event(self, label, atom_id, send_full_keys=False):
-        """ Send an event from a single atom
+        """ Send an event from a single atom.
 
         :param str label:
             The label of the vertex from which the event will originate
@@ -444,7 +444,7 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events(label, [atom_id], send_full_keys)
 
     def send_events(self, label, atom_ids, send_full_keys=False):
-        """ Send a number of events
+        """ Send a number of events.
 
         :param str label:
             The label of the vertex from which the events will originate
@@ -476,7 +476,7 @@ class LiveEventConnection(DatabaseConnection):
             self._send(message, x, y, p, ip_address)
 
     def send_event_with_payload(self, label, atom_id, payload):
-        """ Send an event with a payload from a single atom
+        """ Send an event with a payload from a single atom.
 
         :param str label:
             The label of the vertex from which the event will originate
@@ -486,7 +486,7 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events_with_payloads(label, [(atom_id, payload)])
 
     def send_events_with_payloads(self, label, atom_ids_and_payloads):
-        """ Send a number of events with payloads
+        """ Send a number of events with payloads.
 
         :param str label:
             The label of the vertex from which the events will originate
@@ -510,8 +510,9 @@ class LiveEventConnection(DatabaseConnection):
             self._send(message, x, y, p, ip_address)
 
     def send_eieio_message(self, message, label):
-        """ Send an EIEIO message (using one-way the live input) to the \
-            vertex with the given label.
+        """
+        Send an EIEIO message (using one-way the live input) to the
+        vertex with the given label.
 
         :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:
             The EIEIO message to send

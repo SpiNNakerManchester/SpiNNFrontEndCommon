@@ -19,8 +19,9 @@ from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 class SendsBuffersFromHostPreBufferedImpl(
         AbstractSendsBuffersFromHost, allow_derivation=True):
-    """ Implementation of :py:class:`AbstractReceiveBuffersToHost`\
-        which uses an existing set of buffers for the details.
+    """
+    Implementation of :py:class:`AbstractReceiveBuffersToHost`
+    that uses an existing set of buffers for the details.
     """
     # pylint: disable=unsubscriptable-object, no-member
 

@@ -25,8 +25,6 @@ _FILENAME = "network_specification.rpt"
 
 def network_specification():
     """ Generate report on the user's network specification.
-
-    :rtype: None
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
     try:

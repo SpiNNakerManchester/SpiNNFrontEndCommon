@@ -78,9 +78,9 @@ def _emergency_iobuf_extract(executable_targets=None):
 
 
 def emergency_recover_state_from_failure(vertex, placement):
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
+    """
+    Used to get at least *some* information out of a core when something
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param ~spinnman.transceiver.Transceiver txrx: The transceiver.
     :param AbstractHasAssociatedBinary vertex:
@@ -99,9 +99,9 @@ def emergency_recover_state_from_failure(vertex, placement):
 
 
 def emergency_recover_states_from_failure():
-    """ Used to get at least *some* information out of a core when something\
-        goes badly wrong. Not a replacement for what abstract spinnaker base\
-        does.
+    """
+    Used to get at least *some* information out of a core when something
+    goes badly wrong. Not a replacement for what abstract spinnaker base does.
 
     :param ~spinnman.model.ExecutableTargets executable_targets:
         The what/where mapping

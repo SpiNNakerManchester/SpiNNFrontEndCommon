@@ -141,10 +141,11 @@ def _parse_bmp_boards(bmp_boards):
 
 
 def _parse_bmp_connection(bmp_detail):
-    """ Parses one item of BMP connection data. Maximal format:\
-        `cabinet;frame;host,port/boards`
+    """
+    Parses one item of BMP connection data. Maximal format:
+    `cabinet;frame;host,port/boards`
 
-    All parts except host can be omitted. Boards can be a \
+    All parts except host can be omitted. Boards can be a
     hyphen-separated range or a comma-separated list.
 
     :param str bmp_detail:
@@ -160,8 +161,9 @@ def _parse_bmp_connection(bmp_detail):
 
 
 def _parse_bmp_details(bmp_string):
-    """ Take a BMP line (a colon-separated list) and split it into the\
-        BMP connection data.
+    """
+    Take a BMP line (a colon-separated list) and split it into the
+    BMP connection data.
 
     :param str bmp_string: the BMP string to be converted
     :return: the BMP connection data

@@ -30,5 +30,4 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
             The data specification to write to
         :param ~pacman.model.placements.Placement placement:
             The placement the vertex is located at
-        :rtype: None
         """

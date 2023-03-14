@@ -35,12 +35,13 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class JavaCaller(object):
-    """ Support class that holds all the stuff for running stuff in Java.
-        This includes the work of preparing data for transmitting to Java and\
-        back.
+    """
+    Support class that holds all the stuff for running stuff in Java.
+    This includes the work of preparing data for transmitting to Java and
+    back.
 
-        This separates the choices of how to call the Java batch vs streaming,\
-        jar locations, parameters, etc from the rest of the python code.
+    This separates the choices of how to call the Java batch vs streaming,
+    jar locations, parameters, etc from the rest of the python code.
     """
 
     __slots__ = [
@@ -124,7 +125,7 @@ class JavaCaller(object):
                     f"while java_jar_path as set. "
                     f"Please delete on of the two.")
         else:
-            if (java_jar_path is None):
+            if java_jar_path is None:
                 if not os.path.isdir(java_spinnaker_path):
                     raise ConfigurationException(
                         f"No Java code found at {java_spinnaker_path} "
@@ -141,7 +142,7 @@ class JavaCaller(object):
 
     def set_advanced_monitors(self):
         """
-        :rtype: None
+        Create information describing what's going on with the monitor cores.
         """
         tags = FecDataView.get_tags()
         self._monitor_cores = dict()
@@ -174,8 +175,9 @@ class JavaCaller(object):
         return self._machine_json_path
 
     def set_placements(self, used_placements):
-        """ Passes in the placements leaving this class to decide pass it to
-            Java.
+        """
+        Passes in the placements leaving this class to decide pass it to
+        Java.
 
         Currently the extra information extracted is recording region base
         address but this could change if recording region saved in the
@@ -319,8 +321,9 @@ class JavaCaller(object):
         return path
 
     def _run_java(self, *args):
-        """ Does the actual running of JavaSpiNNaker. Arguments are those that
-            will be processed by the `main` method on the Java side.
+        """
+        Does the actual running of JavaSpiNNaker. Arguments are those that
+        will be processed by the `main` method on the Java side.
 
         :rtype: int
         """
@@ -333,8 +336,9 @@ class JavaCaller(object):
         return subprocess.call(params)
 
     def get_all_data(self):
-        """ Gets all the data from the previously set placements
-            and put these in the previously set database.
+        """
+        Gets all the data from the previously set placements
+        and put these in the previously set database.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
@@ -377,8 +381,9 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_system_data_specification(self):
-        """ Writes all the data specs for system cores,
-            uploading the result to the machine.
+        """
+        Writes all the data specs for system cores,
+        uploading the result to the machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
@@ -395,8 +400,9 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_app_data_specification(self, use_monitors):
-        """ Writes all the data specs for application cores,
-            uploading the result to the machine.
+        """
+        Writes all the data specs for application cores,
+        uploading the result to the machine.
 
         .. note:
             May assume that system cores are already loaded and running if

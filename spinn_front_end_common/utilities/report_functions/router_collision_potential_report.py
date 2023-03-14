@@ -37,8 +37,7 @@ def _write_report(collision_counts, writer):
     for (x, y) in collision_counts:
         for link_id in collision_counts[(x, y)]:
             writer.write(
-                "router {}:{} link {} has potential {} collisions "
-                "\n".format(
+                "router {}:{} link {} has potential {} collisions\n".format(
                     x, y, link_id, collision_counts[(x, y)][link_id]))
 
 
@@ -51,9 +50,8 @@ def _generate_data():
     for (x, y) in router_tables_by_partition.get_routers():
         for partition in \
                 router_tables_by_partition.get_entries_for_router(x, y):
-            entry = \
-                router_tables_by_partition.get_entry_on_coords_for_edge(
-                    partition, x, y)
+            entry = router_tables_by_partition.get_entry_on_coords_for_edge(
+                partition, x, y)
             for link in entry.link_ids:
                 if collisions[(x, y)][link] == 0:
                     chip = FecDataView.get_chip_at(x, y)

@@ -29,9 +29,9 @@ REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
 def memory_map_on_host_chip_report():
-    """ Report on memory usage. Creates a report that states where in SDRAM \
-        each region is (read from machine)
-
+    """
+    Report on memory usage. Creates a report that states where in SDRAM
+    each region is (read from machine).
     """
     directory_name = os.path.join(
         FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)

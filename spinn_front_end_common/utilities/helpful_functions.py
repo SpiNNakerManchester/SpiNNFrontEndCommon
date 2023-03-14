@@ -29,8 +29,9 @@ _n_word_structs = []
 
 
 def locate_extra_monitor_mc_receiver(placement_x, placement_y):
-    """ Get the data speed up gatherer that can be used to talk to a\
-        particular chip. This will be on the same board.
+    """
+    Get the data speed up gatherer that can be used to talk to a
+    particular chip. This will be on the same board.
 
     :param int placement_x: The X coordinate of the reference chip
     :param int placement_y: The Y coordinate of the reference chip
@@ -84,7 +85,7 @@ def write_address_to_user1(x, y, p, address):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG
+    """ Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -118,7 +119,7 @@ def locate_memory_region_for_placement(placement, region):
 
 
 def convert_string_into_chip_and_core_subset(cores):
-    """ Translate a string list of cores into a core subset
+    """ Translate a string list of cores into a core subset.
 
     :param cores:
         string representing down cores formatted as x,y,p[:x,y,p]*
@@ -134,9 +135,11 @@ def convert_string_into_chip_and_core_subset(cores):
 
 
 def flood_fill_binary_to_spinnaker(binary):
-    """ Flood fills a binary to spinnaker on a given `app_id` \
-        given the executable targets and binary.
+    """
+    Flood fills a binary to SpiNNaker.
 
+    :param str binary:
+        The name of the file containing the APLX binary to load
     :return: the number of cores it was loaded onto
     :rtype: int
     """
@@ -149,7 +152,7 @@ def flood_fill_binary_to_spinnaker(binary):
 
 
 def generate_unique_folder_name(folder, filename, extension):
-    """ Generate a unique file name with a given extension in a given folder
+    """ Generate a unique file name with a given extension in a given folder.
 
     :param str folder: where to put this unique file
     :param str filename:
@@ -168,7 +171,7 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ Locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address.
 
     :param ~spinn_machine.Machine machine: the SpiNNaker machine
     :param str board_address: the board address to locate the chip of.
@@ -242,8 +245,9 @@ def convert_vertices_to_core_subset(vertices):
 
 
 def n_word_struct(n_words):
-    """ Manages a precompiled cache of structs for parsing blocks of words. \
-        Thus, this::
+    """
+    Manages a precompiled cache of structs for parsing blocks of words.
+    Thus, this::
 
         data = n_word_struct(n_words).unpack(data_blob)
 
@@ -271,8 +275,8 @@ def n_word_struct(n_words):
 
 
 def get_defaultable_source_id(entry):
-    """ Hack to support the source requirement for the router compressor\
-        on chip.
+    """
+    Hack to support the source requirement for the router compressor on chip.
 
     :param ~spinn_machine.MulticastRoutingEntry entry:
         the multicast router table entry.

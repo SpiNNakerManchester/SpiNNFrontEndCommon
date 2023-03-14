@@ -71,8 +71,9 @@ def ordered_covering_compression():
 
 
 class Compression(object):
-    """ Compression algorithm implementation that uses a on-chip router\
-        compressor in order to parallelise.
+    """
+    Compression algorithm implementation that uses a on-chip router
+    compressor in order to parallelise.
     """
 
     __slots__ = [
@@ -158,9 +159,9 @@ class Compression(object):
         transceiver.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(self, executable_targets):
-        """ Goes through the cores checking for cores that have failed to\
-            compress the routing tables to the level where they fit into the\
-            router
+        """
+        Goes through the cores checking for cores that have failed to compress
+        the routing tables to the level where they fit into the router.
 
         :param ExecutableTargets executable_targets:
         """
@@ -213,8 +214,9 @@ class Compression(object):
         return executable_targets
 
     def _build_data(self, table):
-        """ Convert the router table into the data needed by the router\
-            compressor C code.
+        """
+        Convert the router table into the data needed by the router
+        compressor C code.
 
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the pacman router table instance

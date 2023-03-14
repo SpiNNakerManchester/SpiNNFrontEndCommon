@@ -23,8 +23,9 @@ TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
 
 class LivePacketGatherParameters(object):
-    """ Parameter holder for LPGs so that they can be instantiated at a\
-        later date.
+    """
+    Parameter holder for LPGs so that they can be instantiated at a
+    later date.
     """
 
     __slots__ = [
@@ -160,8 +161,9 @@ class LivePacketGatherParameters(object):
         return self._translated_key_right_shift
 
     def get_iptag_resource(self):
-        """ Get a description of the IPtag that the LPG for these parameters \
-            will require.
+        """
+        Get a description of the IPtag that the LPG for these parameters
+        will require.
 
         :rtype: ~pacman.model.resources.IPtagResource
         """

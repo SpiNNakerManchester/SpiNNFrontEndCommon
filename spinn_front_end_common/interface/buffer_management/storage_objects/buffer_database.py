@@ -36,7 +36,6 @@ class BufferDatabase(BaseDatabase):
     If 2 database objects where opened with the database_file they hold the
     same data. Unless someone else deletes that file.
 
-
     .. note::
         *Not thread safe on the same database file!*
         Threads can access different DBs just fine.
@@ -151,8 +150,9 @@ class BufferDatabase(BaseDatabase):
         return cursor.lastrowid
 
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
-        """ Store some information in the corresponding buffer for a\
-            specific chip, core and recording region.
+        """
+        Store some information in the corresponding buffer for a
+        specific chip, core and recording region.
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip
@@ -219,8 +219,9 @@ class BufferDatabase(BaseDatabase):
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data
-        :return: a buffer containing all the data received during the\
-            simulation, and a flag indicating if any data was missing
+        :return:
+            A buffer containing all the data received during the
+            simulation, and a flag indicating if any data was missing.
 
             .. note::
                 Implementations should not assume that the total buffer is
@@ -238,7 +239,7 @@ class BufferDatabase(BaseDatabase):
             return memoryview(b''), True
 
     def write_session_credentials_to_db(self):
-        """ Write Spalloc session credentials to the database if in use
+        """ Write Spalloc session credentials to the database if in use.
         """
         # pylint: disable=protected-access
         if not FecDataView.has_allocation_controller():

@@ -34,8 +34,9 @@ from spinn_front_end_common.utilities.utility_objs import (
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification):
-    """ Machine vertex for injecting packets at particular times or in \
-        response to particular events into a SpiNNaker application.
+    """
+    Machine vertex for injecting packets at particular times or in
+    response to particular events into a SpiNNaker application.
     """
     # Regions for populations
     class DATA_REGIONS(IntEnum):
@@ -316,8 +317,9 @@ class CommandSenderMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     def get_edges_and_partitions(self, pre_vertex, vertex_type, edge_type):
-        """ Construct edges from this vertex to the vertices that this vertex\
-            knows how to target (and has keys allocated for).
+        """
+        Construct edges from this vertex to the vertices that this vertex
+        knows how to target (and has keys allocated for).
 
         .. note::
             Do not call this directly from outside either a
@@ -345,8 +347,9 @@ class CommandSenderMachineVertex(
         return edges, partition_ids
 
     def edges_and_partitions(self):
-        """ Construct machine edges from this vertex to the machine vertices\
-            that this vertex knows how to target (and has keys allocated for).
+        """
+        Construct machine edges from this vertex to the machine vertices
+        that this vertex knows how to target (and has keys allocated for).
 
         :return: edges, partition IDs
         :rtype:

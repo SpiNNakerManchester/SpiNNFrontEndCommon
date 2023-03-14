@@ -19,8 +19,8 @@ from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.provenance import \
-    (ProvenanceReader, ProvenanceWriter)
+from spinn_front_end_common.interface.provenance import (
+    ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
@@ -34,7 +34,8 @@ NOT_APPLICABLE = "N/A"
 
 def generate_provenance_item(x, y, bit_fields_merged):
     """
-    Generates a provenance item in the format BitFieldCompressorReport expects
+    Generates a provenance item in the format BitFieldCompressorReport expects.
+
     :param x:
     :param y:
     :param bit_fields_merged:
@@ -46,7 +47,7 @@ def generate_provenance_item(x, y, bit_fields_merged):
 
 def bitfield_compressor_report():
     """
-    Generates a report that shows the impact of the compression of \
+    Generates a report that shows the impact of the compression of
     bitfields into the routing table.
 
     :return: a summary, or `None` if the report file can't be written
@@ -166,7 +167,7 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
 
 
 def _write_report(writer):
-    """ writes the report
+    """ Writes the report.
 
     :param ~io.FileIO writer: the file writer
     :return: a summary
@@ -179,9 +180,8 @@ def _write_report(writer):
     (min_bit_field, top_bit_field, total_bit_fields_merged,
      average_per_chip_merged) = _merged_component(to_merge_per_chip, writer)
     writer.write(
-        "\n\nBefore merge there where {} bitfields on {} Chips "
-        "ranging from {} to {} bitfields per chip with an average of {}"
-        "".format(
+        "\n\nBefore merge there where {} bitfields on {} Chips ranging from "
+        "{} to {} bitfields per chip with an average of {}".format(
             total_to_merge, len(to_merge_per_chip), max_to_merge_per_chip,
             low_to_merge_per_chip, average_per_chip_to_merge))
     writer.write(
@@ -191,13 +191,10 @@ def _write_report(writer):
             average_per_chip_merged))
     if total_to_merge:
         if total_bit_fields_merged == NOT_APPLICABLE:
-            writer.write(
-                "\nNone of the {} bitfields merged".format(
-                    total_to_merge))
+            writer.write(f"\nNone of the {total_to_merge} bitfields merged")
         else:
-            writer.write(
-                "\nIn total {:.2%} of the bitfields merged".format(
-                    total_bit_fields_merged / total_to_merge))
+            writer.write("\nIn total {:.2%} of the bitfields merged".format(
+                total_bit_fields_merged / total_to_merge))
 
     return BitFieldSummary(
         lowest_per_chip=min_bit_field, max_per_chip=top_bit_field,

@@ -28,10 +28,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseConnection(UDPConnection):
-    """ A connection from the toolchain which will be notified when the \
-        database has been written, and can then respond when the database \
-        has been read, and further wait for notification that the simulation \
-        has started.
+    """
+    A connection from the toolchain which will be notified when the
+    database has been written, and can then respond when the database
+    has been read, and further wait for notification that the simulation
+    has started.
 
     .. note::
         The machine description database reader can only be used while the

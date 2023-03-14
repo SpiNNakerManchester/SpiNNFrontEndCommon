@@ -91,8 +91,9 @@ class ExtraMonitorSupportMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification,
         AbstractProvidesProvenanceDataFromMachine):
-    """ Machine vertex for talking to extra monitor cores. \
-        Supports reinjection control and the faster data transfer protocols.
+    """
+    Machine vertex for talking to extra monitor cores.
+    Supports reinjection control and the faster data transfer protocols.
 
     Usually deployed once per chip.
     """
@@ -159,11 +160,11 @@ class ExtraMonitorSupportMachineVertex(
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
     def update_transaction_id_from_machine(self):
-        """ looks up from the machine what the current transaction id is
+        """
+        Looks up from the machine what the current transaction id is
         and updates the extra monitor.
 
         :param txrx: SpiNNMan instance
-        :rtype: None
         """
         self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
@@ -217,7 +218,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_start_type():
-        """ The type of the binary implementing this vertex.
+        """
+        The type of the binary implementing this vertex.
 
         :rtype: ExecutableType
         """
@@ -229,7 +231,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_file_name():
-        """ The name of the binary implementing this vertex.
+        """
+        The name of the binary implementing this vertex.
 
         :rtype: str
         """
@@ -386,10 +389,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def set_router_wait1_timeout(
             self, timeout, extra_monitor_cores_to_set):
-        """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores. This sets the timeout for the time\
-            between when a packet arrives and when it starts to be emergency\
-            routed. (Actual emergency routing is disabled by default.)
+        """
+        Supports setting of the router time outs for a set of chips via their
+        extra monitor cores. This sets the timeout for the time between when a
+        packet arrives and when it starts to be emergency routed. (Actual
+        emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -413,10 +417,11 @@ class ExtraMonitorSupportMachineVertex(
 
     def set_router_wait2_timeout(
             self, timeout, extra_monitor_cores_to_set):
-        """ Supports setting of the router time outs for a set of chips via\
-            their extra monitor cores. This sets the timeout for the time\
-            between when a packet starts to be emergency routed and when it\
-            is dropped. (Actual emergency routing is disabled by default.)
+        """
+        Supports setting of the router time outs for a set of chips via their
+        extra monitor cores. This sets the timeout for the time between when a
+        packet starts to be emergency routed and when it is dropped. (Actual
+        emergency routing is disabled by default.)
 
         :param tuple(int,int) timeout:
             The mantissa and exponent of the timeout value, each between
@@ -439,7 +444,7 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def reset_reinjection_counters(self, extra_monitor_cores_to_set):
-        """ Resets the counters for reinjection
+        """ Resets the counters for reinjection.
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
@@ -460,7 +465,7 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def clear_reinjection_queue(self, extra_monitor_cores_to_set):
-        """ Clears the queues for reinjection
+        """ Clears the queues for reinjection.
 
         :param extra_monitor_cores_to_set:
             Which extra monitors need to clear their queues.
@@ -479,7 +484,7 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status(self):
-        """ Get the reinjection status from this extra monitor vertex
+        """ Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
@@ -495,7 +500,7 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status_for_vertices(self):
-        """ Get the reinjection status from a set of extra monitor cores
+        """ Get the reinjection status from a set of extra monitor cores.
 
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
@@ -547,8 +552,9 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def load_system_mc_routes(self):
-        """ Get the extra monitor cores to load up the system-based \
-            multicast routes (used by data in).
+        """
+        Get the extra monitor cores to load up the system-based
+        multicast routes (used by the Data In protocol).
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
@@ -564,9 +570,9 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def load_application_mc_routes(self):
-        """ Get the extra monitor cores to load up the application-based\
-            multicast routes (used by data in).
-
+        """
+        Get the extra monitor cores to load up the application-based
+        multicast routes (used by the Data In protocol).
         """
         core_subsets = self._convert_vertices_to_core_subset()
         process = LoadApplicationMCRoutesProcess(
@@ -580,8 +586,8 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def _convert_vertices_to_core_subset():
-        """ Convert vertices into the subset of cores where they've been\
-            placed.
+        """
+        Convert vertices into the subset of cores where they've been placed.
 
         :return: where the vertices have been placed
         :rtype: ~.CoreSubsets

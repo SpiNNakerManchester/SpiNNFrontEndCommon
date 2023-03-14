@@ -48,6 +48,5 @@ class MachineDataSpecableVertex(
         :param reverse_iptags: The reverse IP tags for the vertex, if any
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
-        :rtype: None
         """
         # pylint: disable=too-many-arguments

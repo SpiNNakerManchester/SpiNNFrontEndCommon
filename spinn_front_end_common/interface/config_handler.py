@@ -44,8 +44,9 @@ _REPORT_DISABLE_OPTS = frozenset([
 
 
 class ConfigHandler(object):
-    """ Superclass of AbstractSpinnakerBase that handles function only \
-        dependent of the config and the order its methods are called.
+    """
+    Superclass of AbstractSpinnakerBase that handles function only
+    dependent of the config and the order its methods are called.
     """
 
     __slots__ = [
@@ -78,7 +79,7 @@ class ConfigHandler(object):
             Machine.set_max_cores_per_chip(max_machine_core)
 
     def _debug_configs(self):
-        """ Adjust and checks config based on mode and reports_enabled
+        """ Adjust and checks config based on mode and reports_enabled.
 
         :raises ConfigurationException:
         """
@@ -211,15 +212,15 @@ class ConfigHandler(object):
             f.writelines("file_name")
 
     def write_finished_file(self):
-        """ Write a finished file that allows file removal to only remove
-            folders that are finished.
-            :rtype: None
+        """
+        Write a finished file that allows file removal to only remove
+        folders that are finished.
         """
         self.__write_named_file(FINISHED_FILENAME)
 
     def write_errored_file(self):
-        """ Writes a errored file that allows file removal to only remove \
-            folders that are errored if requested to do so
-        :rtype:
+        """
+        Writes a errored file that allows file removal to only remove
+        folders that are errored if requested to do so
         """
         self.__write_named_file(ERRORED_FILENAME)

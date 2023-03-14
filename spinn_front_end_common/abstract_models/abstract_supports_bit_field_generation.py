@@ -19,8 +19,9 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
-    """ Marks a vertex that can provide information about bitfields it wants \
-        generated on-chip.
+    """
+    Marks a vertex that can provide information about bitfields it wants
+    generated on-chip.
     """
     __slots__ = ()
 
@@ -35,7 +36,7 @@ class AbstractSupportsBitFieldGeneration(object, metaclass=AbstractBase):
 
     @abstractmethod
     def bit_field_builder_region(self, placement):
-        """ returns the SDRAM address for the bit field builder data
+        """ Returns the SDRAM address for the bit field builder data.
 
         :param ~pacman.model.placements.Placement placement:
         :return: the SDRAM address for the bitfield builder data

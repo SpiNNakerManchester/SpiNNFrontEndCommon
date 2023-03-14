@@ -30,7 +30,7 @@ FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
 def local_tdma_builder():
-    """ Builds a localised TDMA
+    """ Builds a localised TDMA.
 
     Builds a localised TDMA which allows a number of machine vertices
     of the same application vertex to fire at the same time. Ensures that
@@ -103,12 +103,11 @@ def local_tdma_builder():
         # get timings
 
         # check config params for better performance
-        (n_at_same_time, local_clocks) = __auto_config_times(
+        n_at_same_time, local_clocks = __auto_config_times(
             app_machine_quantity, clocks_between_cores,
             clocks_for_sending, app_vertex, clocks_waiting)
-        n_phases, n_slots, clocks_between_phases = \
-            __generate_times(
-                app_vertex, n_at_same_time, local_clocks)
+        n_phases, n_slots, clocks_between_phases = __generate_times(
+            app_vertex, n_at_same_time, local_clocks)
 
         # store in tracker
         app_vertex.set_other_timings(
@@ -183,8 +182,9 @@ def __auto_config_times(
 
 def __generate_initial_offset(
         app_vertex, app_verts, clocks_between_cores, clocks_waiting):
-    """ Calculates from the app vertex index the initial offset for the\
-        TDMA between all cores
+    """
+    Calculates from the app vertex index the initial offset for the
+    TDMA between all cores.
 
     :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
         the app vertex in question.
@@ -207,10 +207,10 @@ def __generate_initial_offset(
 
 def __generate_times(
         app_vertex, app_machine_quantity, clocks_between_cores):
-    """ Generates the number of phases needed for this app vertex, as well\
-        as the number of slots and the time between spikes for this app\
-        vertex, given the number of machine verts to fire at the same time\
-        from a given app vertex.
+    """
+    Generates the number of phases needed for this app vertex, as well as the
+    number of slots and the time between spikes for this app vertex, given the
+    number of machine verts to fire at the same time from a given app vertex.
 
     :param TDMAAwareApplicationVertex app_vertex: the app vertex
     :param int app_machine_quantity: the pop spike control level

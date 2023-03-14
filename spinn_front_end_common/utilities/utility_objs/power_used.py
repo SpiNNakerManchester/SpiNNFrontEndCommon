@@ -204,8 +204,9 @@ class PowerUsed(object):
 
     @property
     def chip_energy_joules(self):
-        """ Energy used by all SpiNNaker chips during active simulation\
-            running, in Joules.
+        """
+        Energy used by all SpiNNaker chips during active simulation
+        running, in Joules.
 
         :rtype: float
         """
@@ -229,8 +230,9 @@ class PowerUsed(object):
 
     @property
     def fpga_exec_energy_joules(self):
-        """ Energy used by all FPGAs during active simulation running, in\
-            Joules. This is *included* in the total FPGA energy.
+        """
+        Energy used by all FPGAs during active simulation running, in
+        Joules. This is *included* in the total FPGA energy.
 
         :rtype: float
         """
@@ -242,9 +244,9 @@ class PowerUsed(object):
 
     @property
     def baseline_joules(self):
-        """ Baseline/idle energy used, in Joules. This is used by things like\
-            the frames the SpiNNaker boards are held in, the cooling system,\
-            etc.
+        """
+        Baseline/idle energy used, in Joules. This is used by things like the
+        frames the SpiNNaker boards are held in, the cooling system, etc.
 
         :rtype: float
         """
@@ -268,8 +270,9 @@ class PowerUsed(object):
 
     @property
     def mapping_joules(self):
-        """ Energy used during the mapping phase, in Joules. Assumes that\
-            the SpiNNaker system has been shut down.
+        """
+        Energy used during the mapping phase, in Joules. Assumes that
+        the SpiNNaker system has been shut down.
 
         :rtype: float
         """
@@ -281,8 +284,9 @@ class PowerUsed(object):
 
     @property
     def data_gen_joules(self):
-        """ Energy used during the data generation phase, in Joules. Assumes\
-            that the SpiNNaker system has been shut down.
+        """
+        Energy used during the data generation phase, in Joules. Assumes
+        that the SpiNNaker system has been shut down.
 
         :rtype: float
         """
@@ -317,8 +321,8 @@ class PowerUsed(object):
         self.__saving_energy = float(value)
 
     def get_router_active_energy_joules(self, x, y):
-        """ Energy used (above idle baseline) by a particular router, in \
-            Joules.
+        """
+        Energy used (above idle baseline) by a particular router, in Joules.
 
         Unused routers always report 0.0 for this.
 
@@ -329,8 +333,9 @@ class PowerUsed(object):
         return self.__router_energy[x, y]
 
     def add_router_active_energy(self, x, y, joules):
-        """ Adds energy for a particular router. It can be called multiple\
-            times per router.
+        """
+        Adds energy for a particular router.
+        It can be called multiple times per router.
 
         Only intended to be used during construction of this object.
 
@@ -342,8 +347,9 @@ class PowerUsed(object):
 
     @property
     def active_routers(self):
-        """ Enumeration of the coordinates of the routers that can report\
-            active energy usage.
+        """
+        Enumeration of the coordinates of the routers that can report
+        active energy usage.
 
         :rtype: iterable(tuple(int, int))
         """
@@ -362,8 +368,9 @@ class PowerUsed(object):
         return self.__core_energy[x, y, p]
 
     def add_core_active_energy(self, x, y, p, joules):
-        """ Adds energy for a particular core. It can be called multiple\
-            times per core.
+        """
+        Adds energy for a particular core.
+        It can be called multiple times per core.
 
         Only intended to be used during construction of this object.
 
@@ -376,8 +383,9 @@ class PowerUsed(object):
 
     @property
     def active_cores(self):
-        """ Enumeration of the coordinates of the cores that can report active\
-            energy usage.
+        """
+        Enumeration of the coordinates of the cores that can report active
+        energy usage.
 
         :rtype: iterable(tuple(int, int, int))
         """

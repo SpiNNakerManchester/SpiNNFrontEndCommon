@@ -190,8 +190,9 @@ class SQLiteDB(AbstractContextManager):
         return self.__db
 
     def transaction(self, isolation_level=None):
-        """ Get a context manager that manages a transaction on the database.\
-        The value of the context manager is a :py:class:`~sqlite3.Cursor`.\
+        """
+        Get a context manager that manages a transaction on the database.
+        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
         This means you can do this::
 
             with db.transaction() as cursor:

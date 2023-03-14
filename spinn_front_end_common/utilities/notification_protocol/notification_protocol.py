@@ -31,8 +31,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class NotificationProtocol(AbstractContextManager):
-    """ The protocol which hand shakes with external devices about the\
-        database and starting execution.
+    """
+    The protocol which hand shakes with external devices about the
+    database and starting execution.
 
     The messages sent by this are received by instances of
     :py:class:`DatabaseConnection` (and its subclasses). They are not routed
@@ -67,10 +68,9 @@ class NotificationProtocol(AbstractContextManager):
             FecDataView.iterate_database_socket_addresses()]
 
     def wait_for_confirmation(self):
-        """ If asked to wait for confirmation, waits for all external systems\
-            to confirm that they are configured and have read the database
-
-        :rtype: None
+        """
+        If asked to wait for confirmation, waits for all external systems
+        to confirm that they are configured and have read the database.
         """
         if self.__wait_for_read_confirmation:
             logger.info("** Awaiting for a response from an external source "
@@ -84,11 +84,10 @@ class NotificationProtocol(AbstractContextManager):
         self.__wait_futures = list()
 
     def send_start_resume_notification(self):
-        """ Either waits till all sources have confirmed read the database\
-            and are configured, and/or just sends the start notification\
-            (when the system is executing)
-
-        :rtype: None
+        """
+        Either waits till all sources have confirmed read the database
+        and are configured, and/or just sends the start notification
+        (when the system is executing).
         """
         logger.info("** Sending start / resume message to external sources "
                     "to state the simulation has started or resumed. **")
@@ -105,10 +104,9 @@ class NotificationProtocol(AbstractContextManager):
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     def send_stop_pause_notification(self):
-        """ Sends the pause / stop notifications when the script has either\
-            finished or paused
-
-        :rtype: None
+        """
+        Sends the pause / stop notifications when the script has either
+        finished or paused.
         """
         logger.info("** Sending pause / stop message to external sources "
                     "to state the simulation has been paused or stopped. **")
@@ -124,8 +122,9 @@ class NotificationProtocol(AbstractContextManager):
 
     # noinspection PyPep8
     def send_read_notification(self):
-        """ Sends notifications to all devices which have expressed an\
-            interest in when the database has been written
+        """
+        Sends notifications to all devices which have expressed an
+        interest in when the database has been written
         """
         notification_task = self.__wait_pool.submit(
             self._send_read_notification)
@@ -133,9 +132,10 @@ class NotificationProtocol(AbstractContextManager):
             self.__wait_futures.append(notification_task)
 
     def _send_read_notification(self):
-        """ Sends notifications to a list of socket addresses that the\
-            database has been written. Message also includes the path to the\
-            database
+        """
+        Sends notifications to a list of socket addresses that the
+        database has been written. Message also includes the path to the
+        database
 
         :param str database_path: the path to the database
         """

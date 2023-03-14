@@ -176,11 +176,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesProvenanceDataFromMachine):
-    """ Machine vertex for handling fast data transfer between host and \
-        SpiNNaker. This machine vertex is only ever placed on chips with a \
-        working Ethernet connection; it collaborates with the \
-        :py:class:`ExtraMonitorSupportMachineVertex` to write data on other \
-        chips..
+    """
+    Machine vertex for handling fast data transfer between host and  SpiNNaker.
+    This machine vertex is only ever placed on chips with a working Ethernet
+    connection; it collaborates with the
+    :py:class:`ExtraMonitorSupportMachineVertex` to write data on other chips.
     """
     __slots__ = [
         # x coordinate
@@ -310,10 +310,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._last_status = None
 
     def __throttled_send(self, message):
-        """ slows down transmissions to allow spinnaker to keep up.
+        """
+        Slows down transmissions to allow SpiNNaker to keep up.
 
         :param ~.SDPMessage message: message to send
-        :rtype: None
         """
         # send first message
         self._connection.send_sdp_message(message)
@@ -334,9 +334,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             ip_address="localhost", traffic_identifier="DATA_SPEED_UP")]
 
     def update_transaction_id_from_machine(self):
-        """ Looks up from the machine what the current transaction ID is\
-            and updates the data speed up gatherer.
-
+        """
+        Looks up from the machine what the current transaction ID is
+        and updates the data speed up gatherer.
         """
         self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
@@ -407,8 +407,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Writes the DSG regions memory sizes. Static so that it can be used\
-            by the application vertex.
+        """
+        Writes the DSG regions memory sizes. Static so that it can be used
+        by the application vertex.
 
         :param ~.DataSpecificationGenerator spec: spec file
         """
@@ -432,8 +433,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     def locate_correct_write_data_function_for_chip_location(
             uses_advanced_monitors, x, y, transceiver,
             extra_monitor_cores_to_ethernet_connection_map):
-        """ Supports other components figuring out which gatherer and function\
-            to call for writing data onto SpiNNaker.
+        """
+        Supports other components figuring out which gatherer and function
+        to call for writing data onto SpiNNaker.
 
         :param bool uses_advanced_monitors:
             Whether the system is using advanced monitors
@@ -473,7 +475,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int address_written_to: where in SDRAM it was written to
         :param list(set(int)) missing_seq_nums:
             the set of missing sequence numbers per data transmission attempt
-        :rtype: None
         """
         if not os.path.isfile(self._in_report_path):
             with open(self._in_report_path, "w", encoding="utf-8") as writer:
@@ -595,7 +596,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
             data_to_write):
-        """ sends data using the extra monitor cores
+        """ Sends data using the extra monitor cores.
 
         :param int destination_chip_x: chip x
         :param int destination_chip_y: chip y
@@ -698,7 +699,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                         missing.clear()
 
     def _read_in_missing_seq_nums(self, data, position, seq_nums):
-        """ handles a missing seq num packet from spinnaker
+        """ Handles a missing sequence number packet from SpiNNaker.
 
         :param data: the data to translate into missing seq nums
         :type data: bytearray or bytes
@@ -731,8 +732,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _outgoing_retransmit_missing_seq_nums(
             self, data_to_write, missing):
-        """ Transmits back into SpiNNaker the missing data based off missing\
-            sequence numbers
+        """
+        Transmits back into SpiNNaker the missing data based off missing
+        sequence numbers.
 
         :param bytearray data_to_write: the data to write.
         :param set(int) missing: a set of missing sequence numbers
@@ -753,8 +755,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _calculate_position_from_seq_number(seq_num):
-        """ Calculates where in the raw data to start reading from, given a\
-            sequence number
+        """
+        Calculates where in the raw data to start reading from, given a
+        sequence number.
 
         :param int seq_num: the sequence number to determine position from
         :return: the position in the byte data
@@ -764,8 +767,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _calculate_data_in_data_from_seq_number(
             self, data_to_write, seq_num, command_id, position):
-        """ Determine the data needed to be sent to the SpiNNaker machine\
-            given a sequence number
+        """
+        Determine the data needed to be sent to the SpiNNaker machine
+        given a sequence number.
 
         :param bytearray data_to_write:
             the data to write to the SpiNNaker machine
@@ -868,9 +872,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         log.debug("sent end flag")
 
     def set_cores_for_data_streaming(self):
-        """ Helper method for setting the router timeouts to a state usable\
-            for data streaming.
-
+        """
+        Helper method for setting the router timeouts to a state usable
+        for data streaming.
         """
         lead_monitor = FecDataView.get_monitor_by_xy(0, 0)
         # Store the last reinjection status for resetting
@@ -891,15 +895,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def load_application_routing_tables():
-        """ Set all chips to have application table loaded in the router
-
+        """ Set all chips to have application table loaded in the router.
         """
         FecDataView.get_monitor_by_xy(0, 0).load_application_mc_routes()
 
     @staticmethod
     def load_system_routing_tables():
-        """ Set all chips to have the system table loaded in the router
-
+        """ Set all chips to have the system table loaded in the router.
         """
         FecDataView.get_monitor_by_xy(0, 0).load_system_mc_routes()
 
@@ -953,9 +955,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise
 
     def unset_cores_for_data_streaming(self):
-        """ Helper method for restoring the router timeouts to normal after\
-            being in a state usable for data streaming.
-
+        """
+        Helper method for restoring the router timeouts to normal after
+        being in a state usable for data streaming.
         """
         # Set the routers to temporary values
         self.set_router_wait1_timeout(self._TEMP_TIMEOUT)
@@ -988,8 +990,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
                 if error_cores:
-                    log.error("Cores in an unexpected state: {}".format(
-                        error_cores))
+                    log.error("Cores in an unexpected state: {}", error_cores)
             except Exception:  # pylint: disable=broad-except
                 log.exception("Couldn't get core state")
 
@@ -1100,8 +1101,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 else:
                     log.info(
                         "ignoring packet as transaction id should be {}"
-                        " but is {}".format(
-                            transaction_id, response_transaction_id))
+                        " but is {}", transaction_id, response_transaction_id)
             except SpinnmanTimeoutException as e:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
@@ -1119,8 +1119,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _determine_which_routers_were_used(placement):
-        """ Traverse the fixed route paths from a given location to its\
-            destination. Used for determining which routers were used.
+        """
+        Traverse the fixed route paths from a given location to its
+        destination. Used for determining which routers were used.
 
         :param ~.Placement placement: the source to start from
         :return: list of chip locations
@@ -1144,7 +1145,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return routers
 
     def _write_routers_used_into_report(self, routers_been_in_use, placement):
-        """ Write the used routers into a report
+        """ Write the used routers into a report.
 
         :param str report_path: the path to the report file
         :param list(tuple(int,int)) routers_been_in_use:
@@ -1156,7 +1157,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 
     def _calculate_missing_seq_nums(self, seq_nums):
-        """ Determine which sequence numbers we've missed
+        """ Determine which sequence numbers we've missed.
 
         :param set(int) seq_nums: the set already acquired
         :return: list of missing sequence numbers
@@ -1167,9 +1168,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums,
             transaction_id):
-        """ Determine if there are any missing sequence numbers, and if so\
-            retransmits the missing sequence numbers back to the core for\
-            retransmission.
+        """
+        Determine if there are any missing sequence numbers, and if so
+        retransmits the missing sequence numbers back to the core for
+        retransmission.
 
         :param set(int) seq_nums: the sequence numbers already received
         :param ~.Transceiver transceiver: spinnman instance
@@ -1342,7 +1344,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _write_into_view(
             self, view_start_position, view_end_position,
             data, data_start_position, data_end_position):
-        """ Puts data into the view
+        """ Puts data into the view.
 
         :param int view_start_position: where in view to start
         :param int view_end_position: where in view to end
@@ -1375,7 +1377,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):
-        """ Deduce the max sequence number expected to be received
+        """ Deduce the max sequence number expected to be received.
 
         :return: the biggest sequence num expected
         :rtype: int
@@ -1430,8 +1432,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
-        """ Debug helper for printing missing sequence number packet\
-            transmission.
+        """
+        Debug helper for printing missing sequence number packet transmission.
 
         :param int packet_count: which packet is being fired
         :param int n_packets: how many packets to fire.

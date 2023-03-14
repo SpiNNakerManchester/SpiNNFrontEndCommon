@@ -45,7 +45,7 @@ _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 def host_based_bit_field_router_compressor():
     """
-    Entry point when using the PACMANAlgorithmExecutor
+    Entry point when using the PACMANAlgorithmExecutor.
 
     :return: compressed routing table entries
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
@@ -119,8 +119,9 @@ def generate_key_to_atom_map():
 def start_compression_selection_process(
         router_table, report_folder_path,
         most_costly_cores, compressed_pacman_router_tables, key_atom_map):
-    """ Entrance method for doing on host compression. Can be used as a \
-        public method for other compressors.
+    """
+    Entrance method for doing on host compression. Can be used as a
+    public method for other compressors.
 
     :param router_table: the routing table in question to compress
     :type router_table:
@@ -185,9 +186,10 @@ class _BitFieldData(object):
 
 
 class _HostBasedBitFieldRouterCompressor(object):
-    """ Host-based fancy router compressor using the bitfield filters of the \
-        cores. Compresses bitfields and router table entries together as \
-        much as feasible.
+    """
+    Host-based fancy router compressor using the bitfield filters of the
+    cores. Compresses bitfields and router table entries together as
+    much as feasible.
     """
 
     __slots__ = [
@@ -276,8 +278,9 @@ class _HostBasedBitFieldRouterCompressor(object):
     def _run(
             self, router_table, report_folder_path, most_costly_cores,
             compressed_pacman_router_tables, key_atom_map):
-        """ Entrance method for doing on host compression. Can be used as a \
-            public method for other compressors.
+        """
+        Entrance method for doing on host compression. Can be used as a
+        public method for other compressors.
 
         :param router_table: the routing table in question to compress
         :type router_table:
@@ -335,8 +338,9 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _convert_bitfields_into_router_table(
             self, router_table, mid_point, key_to_n_atoms_map):
-        """ Converts the bitfield into router table entries for compression, \
-            based off the entry located in the original router table.
+        """
+        Converts the bitfield into router table entries for compression,
+        based off the entry located in the original router table.
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             the original routing table
@@ -380,7 +384,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         return new_table
 
     def _bit_for_neuron_id(self, bit_field, neuron_id):
-        """ locate the bit for the neuron in the bitfield
+        """ Locate the bit for the neuron in the bitfield.
 
         :param list(int) bit_field:
             the block of words which represent the bitfield
@@ -395,7 +399,7 @@ class _HostBasedBitFieldRouterCompressor(object):
     def _read_in_bit_fields(
             self, chip_x, chip_y, bit_field_chip_base_addresses,
             most_costly_cores):
-        """ reads in the bitfields from the cores
+        """ Read in the bitfields from the cores.
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
@@ -465,9 +469,9 @@ class _HostBasedBitFieldRouterCompressor(object):
             self, bit_fields_by_coverage, most_costly_cores, chip_x, chip_y,
             processor_coverage_by_bitfield):
         """
-        Orders the bit fields by redundancy setting the sorted index
+        Order the bit fields by redundancy setting the sorted index.
 
-        Also counts the bitfields setting _n_bitfields
+        Also counts the bitfields setting _n_bitfields.
 
         :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:
         :param dict(dict(int)) most_costly_cores:
@@ -530,7 +534,8 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _start_binary_search(
             self, router_table, key_atom_map):
-        """ start binary search of the merging of bitfield to router table
+        """
+        Start binary search of the merging of bitfield to router table.
 
         :param ~.UnCompressedMulticastRoutingTable router_table:
             uncompressed router table
@@ -553,7 +558,7 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _binary_search_check(
             self, mid_point, routing_table, key_to_n_atoms_map):
-        """ check function for fix max success
+        """ Check function for fix max success.
 
         :param int mid_point: the point if the list to stop at
         :param ~.UnCompressedMulticastRoutingTable routing_table:
@@ -602,8 +607,9 @@ class _HostBasedBitFieldRouterCompressor(object):
         return compressed_entries
 
     def _remove_merged_bitfields_from_cores(self, chip_x, chip_y):
-        """ Goes to SDRAM and removes said merged entries from the cores' \
-            bitfield region
+        """
+        Goes to SDRAM and removes said merged entries from the cores'
+        bitfield region.
 
         :param int chip_x: the chip x coord from which this happened
         :param int chip_y: the chip y coord from which this happened
@@ -617,7 +623,7 @@ class _HostBasedBitFieldRouterCompressor(object):
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
     def _create_table_report(self, router_table, report_out):
-        """ creates the report entry
+        """ Create the report entry.
 
         :param ~.AbsractMulticastRoutingTable router_table:
             the uncompressed router table to process

@@ -20,8 +20,9 @@ from pacman.model.graphs.machine import MachineVertex
 @require_subclass(MachineVertex)
 class AbstractProvidesProvenanceDataFromMachine(
         object, metaclass=AbstractBase):
-    """ Indicates that an object provides provenance data retrieved from the\
-        machine.
+    """
+    Indicates that an object provides provenance data retrieved from the
+    machine.
     """
 
     __slots__ = ()

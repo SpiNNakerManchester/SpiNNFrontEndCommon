@@ -33,9 +33,10 @@ def _extract_int(x):
 
 
 class DatabaseWriter(SQLiteDB):
-    """ The interface for the database system for main front ends.\
-        Any special tables needed from a front end should be done\
-        by sub classes of this interface.
+    """
+    The interface for the database system for main front ends.
+    Any special tables needed from a front end should be done
+    by subclasses of this interface.
     """
 
     __slots__ = [
@@ -67,7 +68,7 @@ class DatabaseWriter(SQLiteDB):
 
     @staticmethod
     def auto_detect_database():
-        """ Auto detects if there is a need to activate the database system
+        """ Auto detects if there is a need to activate the database system.
 
         :return: whether the database is needed for the application
         :rtype: bool
@@ -102,8 +103,7 @@ class DatabaseWriter(SQLiteDB):
             raise
 
     def add_machine_objects(self):
-        """ Store the machine object into the database
-
+        """ Store the machine object into the database.
         """
         machine = FecDataView.get_machine()
         with self.transaction() as cur:
@@ -128,7 +128,6 @@ class DatabaseWriter(SQLiteDB):
 
     def add_application_vertices(self):
         """ Stores the main application graph description (vertices, edges).
-
         """
         with self.transaction() as cur:
             # add vertices
@@ -157,7 +156,7 @@ class DatabaseWriter(SQLiteDB):
         return m_vertex_id
 
     def add_system_params(self, runtime):
-        """ Write system params into the database
+        """ Write system params into the database.
 
         :param int runtime: the amount of time the application is to run for
         """
@@ -192,7 +191,7 @@ class DatabaseWriter(SQLiteDB):
                     job._write_session_credentials_to_db(cur)
 
     def add_placements(self):
-        """ Adds the placements objects into the database
+        """ Adds the placements objects into the database.
         """
         with self.transaction() as cur:
             # Make sure machine vertices are represented
@@ -211,8 +210,7 @@ class DatabaseWriter(SQLiteDB):
                     for placement in FecDataView.iterate_placemements()))
 
     def add_tags(self):
-        """ Adds the tags into the database
-
+        """ Adds the tags into the database.
         """
         tags = FecDataView.get_tags()
         with self.transaction() as cur:
@@ -260,7 +258,7 @@ class DatabaseWriter(SQLiteDB):
                 )
 
     def add_lpg_mapping(self):
-        """ Add mapping from machine vertex to LPG machine vertex
+        """ Add mapping from machine vertex to LPG machine vertex.
 
         :return: A list of (source vertex, partition id)
         :rtype: list(MachineVertex, str)

@@ -40,8 +40,9 @@ class _DummyProgress(object):
 
 
 class IOBufExtractor(object):
-    """ Extract the logging output buffers from the machine, and separates\
-        lines based on their prefix.
+    """
+    Extract the logging output buffers from the machine, and separates
+    lines based on their prefix.
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
@@ -87,7 +88,7 @@ class IOBufExtractor(object):
             pass
 
     def extract_iobuf(self):
-        """ Perform the extraction of IOBUF
+        """ Perform the extraction of IOBUF.
 
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))

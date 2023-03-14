@@ -71,8 +71,9 @@ class BuffersSentDeque(object):
 
     @property
     def is_full(self):
-        """ Determine if the number of messages sent is at the limit for the\
-            sequencing system.
+        """
+        Determine if the number of messages sent is at the limit for the
+        sequencing system.
 
         :rtype: bool
         """
@@ -93,8 +94,9 @@ class BuffersSentDeque(object):
             self.add_message_to_send(EventStopRequest())
 
     def add_message_to_send(self, message):
-        """ Add a message to send.  The message is converted to a sequenced\
-            message.
+        """
+        Add a message to send.  The message is converted to a sequenced
+        message.
 
         :param message: The message to be added
         :type message:
@@ -125,12 +127,13 @@ class BuffersSentDeque(object):
         return self._buffers_sent
 
     def update_last_received_sequence_number(self, last_received_sequence_no):
-        """ Updates the last received sequence number.  If the sequence number\
-            is within the valid window, packets before the sequence number\
-            within the window are removed, and the last received sequence\
-            number is updated, thus moving the window for the next call.  If\
-            the sequence number is not within the valid window, it is assumed\
-            to be invalid and so is ignored.
+        """
+        Updates the last received sequence number.  If the sequence number is
+        within the valid window, packets before the sequence number within the
+        window are removed, and the last received sequence number is updated,
+        thus moving the window for the next call.  If the sequence number is
+        not within the valid window, it is assumed to be invalid and so is
+        ignored.
 
         :param int last_received_sequence_no: The new sequence number
         :return: True if update went ahead, False if it was ignored
@@ -168,8 +171,9 @@ class BuffersSentDeque(object):
         return False
 
     def _remove_messages(self):
-        """ Remove messages that are no longer relevant, based on the last\
-            sequence number received.
+        """
+        Remove messages that are no longer relevant, based on the last
+        sequence number received.
         """
         min_sequence = (self._last_received_sequence_number -
                         self._n_sequences_per_transmission)

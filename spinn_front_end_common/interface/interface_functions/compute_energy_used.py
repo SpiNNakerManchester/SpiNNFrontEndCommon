@@ -58,8 +58,9 @@ N_MONITORS_ACTIVE_DURING_COMMS = 2
 
 
 def compute_energy_used():
-    """ This algorithm does the actual work of computing energy used by a\
-        simulation (or other application) running on SpiNNaker.
+    """
+    This algorithm does the actual work of computing energy used by a
+    simulation (or other application) running on SpiNNaker.
 
     :rtype: PowerUsed
     """
@@ -192,7 +193,7 @@ def _router_packet_energy(power_used):
 
 
 def _calculate_chips_active_energy(placement, runtime_total_ms, power_used):
-    """ Figure out the chip active cost during simulation
+    """ Figure out the chip active cost during simulation.
 
     :param ~.Placement placement: placement
     :param float runtime_total_ms:
@@ -278,8 +279,8 @@ def _calculate_fpga_energy(
 
 
 def __board_n_operational_fpgas(ethernet_chip):
-    """ Figures out how many FPGAs were switched on for a particular \
-        SpiNN-5 board.
+    """
+    Figures out how many FPGAs were switched on for a particular SpiNN-5 board.
 
     :param ~.Chip ethernet_chip: the ethernet chip to look from
     :return: number of FPGAs on, on this board
@@ -323,7 +324,7 @@ def __board_n_operational_fpgas(ethernet_chip):
 
 
 def __deduce_fpga(chips_1, chips_2, links_1, links_2):
-    """ Figure out if each FPGA was on or not
+    """ Figure out if each FPGA was on or not.
 
     :param iterable(~.Chip) chips_1: chips on an edge of the board
     :param iterable(~.Chip) chips_2: chips on an edge of the board
@@ -385,7 +386,7 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
 
 
 def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
-    """ Data extraction cost
+    """ Data extraction cost.
 
     :param ~.Machine machine: machine description
     :param int n_monitors:
@@ -441,7 +442,7 @@ def _calculate_idle_cost(time, machine):
 
 
 def _calculate_power_down_energy(time, machine, n_frames):
-    """ Calculate power down costs
+    """ Calculate power down costs.
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:
@@ -463,8 +464,9 @@ def _calculate_power_down_energy(time, machine, n_frames):
 
 
 def _calculate_n_frames(machine):
-    """ Figures out how many frames are being used in this setup.\
-        A key of cabinet,frame will be used to identify unique frame.
+    """
+    Figures out how many frames are being used in this setup.
+    A key of cabinet,frame will be used to identify unique frame.
 
     :param ~.Machine machine: the machine object
     :return: number of frames

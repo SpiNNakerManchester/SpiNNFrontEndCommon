@@ -40,7 +40,6 @@ def reserve_profile_region(spec, region, n_samples):
         the DSG specification writer
     :param int region: region ID for the profile data
     :param int n_samples: number of elements being sampled
-    :rtype: None
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
@@ -54,7 +53,6 @@ def write_profile_region_data(spec, region, n_samples):
         the DSG specification writer
     :param int region: region ID for the profile data
     :param int n_samples: number of elements being sampled
-    :rtype: None
     """
     spec.switch_write_focus(region)
     spec.write_value(n_samples)

@@ -46,9 +46,10 @@ def get_n_bytes(n_keys):
 
 
 class BufferedSendingRegion(object):
-    """ A set of keys to be sent at given timestamps for a given region of\
-        data.  Note that keys must be added in timestamp order or else an\
-        exception will be raised.
+    """
+    A set of keys to be sent at given timestamps for a given region of
+    data.  Note that keys must be added in timestamp order or else an
+    exception will be raised.
     """
 
     __slots__ = [
@@ -115,9 +116,10 @@ class BufferedSendingRegion(object):
 
     @property
     def is_next_timestamp(self):
-        """ Determines if the region is empty.
-            True if the region is empty, false otherwise.
+        """
+        Determines if the region is empty.
 
+        :return: True if the region is empty, false otherwise.
         :rtype: bool
         """
         return self._current_timestamp_pos < len(self._timestamps)
@@ -170,7 +172,6 @@ class BufferedSendingRegion(object):
     def clear(self):
         """ Clears the buffer.
         """
-
         self._buffer = dict()
         self._timestamps = list()
         self._current_timestamp_pos = 0

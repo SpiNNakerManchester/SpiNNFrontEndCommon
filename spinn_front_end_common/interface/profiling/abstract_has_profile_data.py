@@ -19,14 +19,16 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractHasProfileData(object, metaclass=AbstractBase):
-    """ Indicates a :py:class:`~pacman.model.graphs.machine.MachineVertex` \
-        that can record a profile.
+    """
+    Indicates a
+    :py:class:`~pacman.model.graphs.machine.MachineVertex`
+    that can record a profile.
     """
     __slots__ = ()
 
     @abstractmethod
     def get_profile_data(self, placement):
-        """ Get the profile data recorded during simulation
+        """ Get the profile data recorded during simulation.
 
         :param ~pacman.model.placements.Placement placement:
         :rtype: ~spinn_front_end_common.interface.profiling.ProfileData

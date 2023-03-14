@@ -55,7 +55,7 @@ def _mkdir(directory):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG
+    """ Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -105,8 +105,9 @@ def get_data_spec_and_file_writer_filename(
 
 
 def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
-    """ Check if text reports are needed, and if so initialise the report\
-        writer to send down to DSG.
+    """
+    Check if text reports are needed, and if so initialise the report
+    writer to send down to DSG.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip

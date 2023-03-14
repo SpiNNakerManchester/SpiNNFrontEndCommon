@@ -161,8 +161,9 @@ class FecTimer(object):
         self._report(message)
 
     def _stop_timer(self):
-        """ Describes how long has elapsed since the instance that the\
-            :py:meth:`start_timing` method was last called.
+        """
+        Describes how long has elapsed since the instance that the
+        :py:meth:`start_timing` method was last called.
 
         :rtype: datetime.timedelta
         """

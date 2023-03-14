@@ -235,8 +235,9 @@ def spalloc_allocator(
         bearer_token: str = None) -> Tuple[
             str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
             MachineAllocationController]:
-    """ Request a machine from a SPALLOC server that will fit the given\
-        number of chips.
+    """
+    Request a machine from a SPALLOC server that will fit the given
+    number of chips.
 
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
