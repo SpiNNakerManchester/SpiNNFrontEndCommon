@@ -14,6 +14,7 @@
 
 import logging
 from threading import Thread
+from time import sleep
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
@@ -22,7 +23,6 @@ from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.constants import SCP_SCAMP_PORT
-from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
@@ -67,7 +67,7 @@ class LiveEventConnection(DatabaseConnection):
         "__simulator",
         "__spalloc_job",
         "__receiver_details",
-        "__running"]
+        "__is_running"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT):
@@ -122,7 +122,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_listener = None
         self.__receiver_connection = None
         self.__error_keys = set()
-        self.__running = False
+        self.__is_running = False
 
     def add_send_label(self, label):
         if self.__send_labels is None:
@@ -353,12 +353,12 @@ class LiveEventConnection(DatabaseConnection):
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
-        self.__running = True
+        self.__is_running = True
         thread = Thread(target=self.__send_tag_messages, daemon=True)
         thread.start()
 
     def __do_stop_pause(self):
-        self.__running = False
+        self.__is_running = False
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
@@ -367,7 +367,7 @@ class LiveEventConnection(DatabaseConnection):
         if self.__receiver_connection is None:
             return
         indirect = hasattr(self.__receiver_connection, "update_tag")
-        while self.__running:
+        while self.__is_running:
             for (x, y, tag, board_address) in self.__receiver_details:
                 if indirect:
                     self.__receiver_connection.update_tag(x, y, tag)
@@ -376,6 +376,7 @@ class LiveEventConnection(DatabaseConnection):
                     retarget_tag(
                         self.__receiver_connection, x, y, tag,
                         ip_address=board_address)
+            sleep(10.0)
 
     def __do_receive_packet(self, packet):
         # pylint: disable=broad-except
@@ -563,6 +564,6 @@ class LiveEventConnection(DatabaseConnection):
             (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
-        self.__running = False
+        self.__is_running = False
         self.__handle_possible_rerun_state()
         super().close()
