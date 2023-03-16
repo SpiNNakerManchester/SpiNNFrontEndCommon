@@ -65,7 +65,9 @@ class LiveEventConnection(DatabaseConnection):
         "__sender_connection",
         "__start_resume_callbacks",
         "__simulator",
-        "__spalloc_job"]
+        "__spalloc_job",
+        "__receiver_details",
+        "__running"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT):
@@ -105,6 +107,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__start_resume_callbacks = dict()
         self.__pause_stop_callbacks = dict()
         self.__init_callbacks = dict()
+        self.__receiver_details = list()
         if receive_labels is not None:
             for label in receive_labels:
                 self.__live_event_callbacks.append(list())
@@ -119,6 +122,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_listener = None
         self.__receiver_connection = None
         self.__error_keys = set()
+        self.__running = False
 
     def add_send_label(self, label):
         if self.__send_labels is None:
@@ -273,7 +277,6 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection = job.open_listener_connection()
             else:
                 self.__receiver_connection = EIEIOConnection()
-        indirect = hasattr(self.__receiver_connection, "update_tag")
         receivers = set()
         for label_id, label in enumerate(self.__receive_labels):
             _, port, board_address, tag, x, y = self.__get_live_output_details(
@@ -282,15 +285,7 @@ class LiveEventConnection(DatabaseConnection):
             # Update the tag if not already done
             if (board_address, port, tag) not in receivers:
                 receivers.add((board_address, port, tag))
-                if indirect:
-                    self.__receiver_connection.update_tag(x, y, tag)
-                    # No port trigger necessary; proxied already
-                else:
-                    retarget_tag(
-                        self.__receiver_connection, x, y, tag,
-                        ip_address=board_address)
-                    send_port_trigger_message(
-                        self.__receiver_connection, board_address)
+                self.__receiver_details.append((x, y, tag, board_address))
 
             logger.info(
                 "Listening for traffic from {} on board {} on {}:{}",
@@ -358,11 +353,29 @@ class LiveEventConnection(DatabaseConnection):
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
+        self.__running = True
+        thread = Thread(target=self.__send_tag_messages, daemon=True)
+        thread.start()
 
     def __do_stop_pause(self):
+        self.__running = False
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
+
+    def __send_tag_messages(self):
+        if self.__receiver_connection is None:
+            return
+        indirect = hasattr(self.__receiver_connection, "update_tag")
+        while self.__running:
+            for (x, y, tag, board_address) in self.__receiver_details:
+                if indirect:
+                    self.__receiver_connection.update_tag(x, y, tag)
+                    # No port trigger necessary; proxied already
+                else:
+                    retarget_tag(
+                        self.__receiver_connection, x, y, tag,
+                        ip_address=board_address)
 
     def __do_receive_packet(self, packet):
         # pylint: disable=broad-except
@@ -550,5 +563,6 @@ class LiveEventConnection(DatabaseConnection):
             (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
+        self.__running = False
         self.__handle_possible_rerun_state()
         super().close()
