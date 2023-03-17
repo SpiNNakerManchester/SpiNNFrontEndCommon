@@ -207,7 +207,8 @@
 <span class="sd">        :return: the name of the file containing the JSON</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="n">write_json_machine</span><span class="p">(</span><span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span> <span class="o">=</span> <span class="n">write_json_machine</span><span class="p">(</span>
+                <span class="n">progress_bar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_machine_json_path</span>
 
 <div class="viewcode-block" id="JavaCaller.set_placements"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.set_placements">[docs]</a>    <span class="k">def</span> <span class="nf">set_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">):</span>
