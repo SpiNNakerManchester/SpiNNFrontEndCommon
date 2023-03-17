@@ -88,7 +88,8 @@ class IOBufExtractor(object):
             pass
 
     def extract_iobuf(self):
-        """ Perform the extraction of IOBUF.
+        """
+        Perform the extraction of IOBUF.
 
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))

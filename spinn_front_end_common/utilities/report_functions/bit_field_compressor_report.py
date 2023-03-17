@@ -39,7 +39,6 @@ def generate_provenance_item(x, y, bit_fields_merged):
     :param x:
     :param y:
     :param bit_fields_merged:
-    :return:
     """
     with ProvenanceWriter() as db:
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
@@ -63,7 +62,8 @@ def bitfield_compressor_report():
 
 
 def _merged_component(to_merge_per_chip, writer):
-    """ Report how many bitfields were merged into the router.
+    """
+    Report how many bitfields were merged into the router.
 
     :param dict([int, int], int: to_merge_per_chip: number of bitfields
         that could be merged per chip
@@ -92,9 +92,8 @@ def _merged_component(to_merge_per_chip, writer):
             to_merge_chips.discard((x, y))
             found = True
             writer.write(
-                "Chip {}:{} has {} bitfields out of {} merged into it."
-                " Which is {:.2%}\n".format(
-                    x, y, merged, to_merge, merged / to_merge))
+                f"Chip {x}:{y} has {merged} bitfields out of {to_merge} "
+                f"merged into it. Which is {merged / to_merge:.2%}\n")
             total_bit_fields_merged += int(merged)
             if merged > top_bit_field:
                 top_bit_field = merged
@@ -114,9 +113,8 @@ def _merged_component(to_merge_per_chip, writer):
 
     if len(to_merge_chips) > 0:
         writer.write(
-            "The Chips {} had bitfields. \n"
-            "But no record was found of any attepmt to merge them \n"
-            "".format(to_merge_chips))
+            f"The Chips {to_merge_chips} had bitfields.\n"
+            "But no record was found of any attempt to merge them.\n")
 
     return (min_bit_field, top_bit_field, total_bit_fields_merged,
             average_per_chip_merged)
@@ -167,7 +165,8 @@ def _before_merge_component(total_to_merge, to_merge_per_chip):
 
 
 def _write_report(writer):
-    """ Writes the report.
+    """
+    Writes the report.
 
     :param ~io.FileIO writer: the file writer
     :return: a summary

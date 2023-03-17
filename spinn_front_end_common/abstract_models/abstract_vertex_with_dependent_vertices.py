@@ -29,7 +29,8 @@ class AbstractVertexWithEdgeToDependentVertices(
 
     @abstractmethod
     def dependent_vertices(self):
-        """ Return the vertices which this vertex depends upon.
+        """
+        Return the vertices which this vertex depends upon.
 
         :rtype: iterable(~pacman.model.graphs.application.ApplicationVertex)
         """

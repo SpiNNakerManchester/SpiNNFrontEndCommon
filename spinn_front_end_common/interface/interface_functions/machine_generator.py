@@ -46,7 +46,8 @@ POWER_CYCLE_FAILURE_WARNING = (
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, reset_machine_on_start_up):
-    """ Makes a transceiver and a machine object.
+    """
+    Makes a transceiver and a machine object.
 
     :param str bmp_details: the details of the BMP connections
     :param int board_version:
@@ -55,7 +56,7 @@ def machine_generator(
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
     :param scamp_connection_data:
-        Job.connection dict,a String SC&MP connection data or None
+        Job.connection dict, a String SC&MP connection data or `None`
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:

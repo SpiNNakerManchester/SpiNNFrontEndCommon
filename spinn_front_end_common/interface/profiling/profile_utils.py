@@ -23,7 +23,8 @@ _BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = BYTES_PER_WORD
 
 
 def get_profile_region_size(n_samples):
-    """ Get the size of the region of the profile data.
+    """
+    Get the size of the region of the profile data.
 
     :param int n_samples: number of different samples to record
     :return: the size in bytes used by the profile region
@@ -34,7 +35,8 @@ def get_profile_region_size(n_samples):
 
 
 def reserve_profile_region(spec, region, n_samples):
-    """ Reserves the profile region for recording the profile data.
+    """
+    Reserves the profile region for recording the profile data.
 
     :param ~data_specification.DataSpecificationGenerator spec:
         the DSG specification writer
@@ -47,7 +49,8 @@ def reserve_profile_region(spec, region, n_samples):
 
 
 def write_profile_region_data(spec, region, n_samples):
-    """ Writes the profile region data.
+    """
+    Writes the profile region data.
 
     :param ~data_specification.DataSpecificationGenerator spec:
         the DSG specification writer
@@ -59,7 +62,8 @@ def write_profile_region_data(spec, region, n_samples):
 
 
 def get_profiling_data(profile_region, tag_labels, placement):
-    """ Utility function to get profile data from a profile region.
+    """
+    Utility function to get profile data from a profile region.
 
     :param int profile_region: DSG region to get profiling data out of SDRAM
     :param list(str) tag_labels: labels for the profiling data

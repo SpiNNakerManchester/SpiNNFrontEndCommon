@@ -24,7 +24,8 @@ _FILENAME = "network_specification.rpt"
 
 
 def network_specification():
-    """ Generate report on the user's network specification.
+    """
+    Generate report on the user's network specification.
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
     try:
@@ -48,8 +49,7 @@ def _write_report(f, vertex):
             vertex.label, vertex.n_atoms, vertex.__class__.__name__,
             vertex.get_max_atoms_per_core()))
     else:
-        f.write("Vertex {}, model: {}\n".format(
-            vertex.label, vertex.__class__.__name__))
+        f.write(f"Vertex {vertex.label}, model: {vertex.__class__.__name__}\n")
 
     if vertex.get_fixed_location():
         f.write(f"    Fixed at:{vertex.get_fixed_location()}\n")
@@ -58,8 +58,7 @@ def _write_report(f, vertex):
     for partition in \
             FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
-        f.write("    Partition {}:\n".format(
-            partition.identifier))
+        f.write(f"    Partition {partition.identifier}:\n")
         for edge in partition.edges:
             f.write("        Edge: {}, From {} to {}, model: {}\n".format(
                 edge.label, edge.pre_vertex.label,

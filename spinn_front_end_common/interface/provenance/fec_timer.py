@@ -30,7 +30,8 @@ if sys.version_info >= (3, 7):
     _NANO_TO_MICRO = 1000.0
 
     def _convert_to_timedelta(time_diff):
-        """ Have to convert to a timedelta for rest of code to read.
+        """
+        Have to convert to a timedelta for rest of code to read.
 
         As perf_counter_ns is nano seconds, and time delta lowest is micro,
         need to convert.
@@ -42,7 +43,8 @@ else:
     _now = time.perf_counter  # pylint: disable=no-member
 
     def _convert_to_timedelta(time_diff):
-        """ Have to convert to a timedelta for rest of code to read.
+        """
+        Have to convert to a timedelta for rest of code to read.
 
         As perf_counter is fractional seconds, put into correct time delta.
         """
@@ -229,7 +231,7 @@ class FecTimer(object):
 
         :param TimerCategory category: category to switch to
         :param machine_on: What to change machine on too.
-            Or None to leave as is
+            Or `None` to leave as is
         :type machine_on: None or bool
         """
         cls._previous.append(cls._category)

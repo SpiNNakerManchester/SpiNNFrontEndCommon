@@ -37,7 +37,8 @@ class CommandSender(
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
             timed_commands, vertex_to_send_to):
-        """ Add commands to be sent down a given edge.
+        """
+        Add commands to be sent down a given edge.
 
         :param iterable(MultiCastCommand) start_resume_commands:
             The commands to send when the simulation starts or resumes from

@@ -81,7 +81,8 @@ class DatabaseConnection(UDPConnection):
         thread.start()
 
     def add_database_callback(self, database_callback_function):
-        """ Add a database callback to be called when the database is ready.
+        """
+        Add a database callback to be called when the database is ready.
 
         :param callable(DatabaseReader,None) database_callback_function:
             A function to be called when the database message has been

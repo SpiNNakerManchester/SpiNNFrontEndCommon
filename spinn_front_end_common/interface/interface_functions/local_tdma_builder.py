@@ -30,7 +30,8 @@ FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
 def local_tdma_builder():
-    """ Builds a localised TDMA.
+    """
+    Builds a localised TDMA.
 
     Builds a localised TDMA which allows a number of machine vertices
     of the same application vertex to fire at the same time. Ensures that
@@ -125,8 +126,8 @@ def local_tdma_builder():
             FecDataView.get_time_scale_factor() * max_fraction_of_sending)
     if max_fraction_of_sending > 1:
         logger.warning(
-            "A time scale factor of {} may be needed to run correctly"
-            .format(time_scale_factor_needed))
+            "A time scale factor of {} may be needed to run correctly",
+            time_scale_factor_needed)
 
     # get initial offset for each app vertex.
     for app_vertex in FecDataView.get_vertices_by_type(
@@ -162,8 +163,9 @@ def __auto_config_times(
         clocks_per_phase = (
             int(math.ceil(overall_clocks_available / n_phases)))
         clocks_between_cores = clocks_per_phase / n_slots
-        logger.debug("adjusted clocks between cores is {}".format(
-            clocks_between_cores))
+        logger.debug(
+            "adjusted clocks between cores is {}",
+            clocks_between_cores)
 
     # Adjust cores at same time to fit time between cores.
     if core_set and not app_set:
@@ -174,8 +176,8 @@ def __auto_config_times(
         app_machine_quantity = int(math.ceil(n_cores / max_slots))
         logger.debug(
             "Adjusted the number of cores of a app vertex that "
-            "can fire at the same time to {}".format(
-                app_machine_quantity))
+            "can fire at the same time to {}",
+            app_machine_quantity)
 
     return app_machine_quantity, clocks_between_cores
 
@@ -234,7 +236,8 @@ def __generate_times(
 
 def __get_fraction_of_sending(
         n_phases, clocks_between_phases, clocks_for_sending):
-    """ Get the fraction of the send
+    """
+    Get the fraction of the send.
 
     :param int n_phases:
         the max number of phases this TDMA needs for a given app vertex
@@ -242,9 +245,8 @@ def __get_fraction_of_sending(
     :param float fraction_of_sending:
         fraction of time step for sending packets
     :param str label: the app vertex we're considering at this point
-    :return:
+    :rtype: float
     """
-
     # figure how much time this TDMA needs
     total_clocks_needed = n_phases * clocks_between_phases
     return total_clocks_needed / clocks_for_sending
@@ -253,29 +255,29 @@ def __get_fraction_of_sending(
 def __check_at_most_one(name_1, value_1, name_2, value_2):
     if value_1 is not None and value_2 is not None:
         raise ConfigurationException(
-            "Both {} and {} have been specified; please choose just one"
-            .format(name_1, name_2))
+            f"Both {name_1} and {name_2} have been specified; "
+            "please choose just one")
 
 
 def __check_only_one(name_1, value_1, name_2, value_2):
-    """ Checks that exactly one of the values is not None
+    """
+    Checks that exactly one of the values is not `None`.
     """
     __check_at_most_one(name_1, value_1, name_2, value_2)
     if value_1 is None and value_2 is None:
         raise ConfigurationException(
-            "Exactly one of {} and {} must be specified".format(
-                name_1, name_2))
+            f"Exactly one of {name_1} and {name_2} must be specified")
 
 
 def __config_values(clocks_per_cycle):
-    """ Read the config for the right parameters and combinations.
+    """
+    Read the config for the right parameters and combinations.
 
     :param int clocks_per_cycle: The number of clock cycles per time step
     :return: (app_machine_quantity, clocks_between_cores,
             clocks_for_sending, clocks_waiting, initial_clocks)
     :rtype: tuple(int, int, int, int. int)
     """
-
     # set the number of cores expected to fire at any given time
     app_machine_quantity = get_config_int(
         "Simulation", "app_machine_quantity")

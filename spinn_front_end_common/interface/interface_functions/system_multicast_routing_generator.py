@@ -87,7 +87,8 @@ class _SystemMulticastRoutingGenerator(object):
                 self._time_out_keys_by_board)
 
     def _generate_routing_tree(self, ethernet_chip):
-        """ Generates a map for each chip to over which link it gets its data.
+        """
+        Generates a map for each chip to over which link it gets its data.
 
         :param ~spinn_machine.Chip ethernet_chip:
         :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)
@@ -137,20 +138,20 @@ class _SystemMulticastRoutingGenerator(object):
         found.add((eth_x, eth_y))
         logger.warning("In _logging_retry")
         for x, y in to_reach:
-            logger.warning("Still need to reach {}:{}".format(x, y))
+            logger.warning("Still need to reach {}:{}", x, y)
         while len(to_reach) > 0:
             just_reached = found
             found = set()
             for x, y in just_reached:
-                logger.warning("Trying from {}:{}".format(x, y))
+                logger.warning("Trying from {}:{}", x, y)
                 # Check links starting with the most direct from 0,0
                 for link_id in [1, 0, 2, 5, 3, 4]:
                     # Get protential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
                     if destination in to_reach:
-                        logger.warning("Could reach {} over {}".format(
-                            destination, link_id))
+                        logger.warning(
+                            "Could reach {} over {}", destination, link_id)
                         # check it actually exits
                         if self._machine.is_link_at(x, y, link_id):
                             # Add to tree and record chip reachable
@@ -159,15 +160,16 @@ class _SystemMulticastRoutingGenerator(object):
                             found.add(destination)
                         else:
                             logger.error("Link down")
-            logger.warning("Found {}".format(len(found)))
+            logger.warning("Found {}", len(found))
             if len(found) == 0:
                 raise PacmanRoutingException(
-                    "Unable to do data in routing on {}.".format(
-                        ethernet_chip.ip_address))
+                    "Unable to do data in routing on "
+                    f"{ethernet_chip.ip_address}.")
         return tree
 
     def _add_routing_entry(self, x, y, key, processor_id=None, link_ids=None):
-        """ Adds a routing entry on this chip, creating the table if needed.
+        """
+        Adds a routing entry on this chip, creating the table if needed.
 
         :param int x: chip.x
         :param int y: chip.y
@@ -192,7 +194,8 @@ class _SystemMulticastRoutingGenerator(object):
         table.add_multicast_routing_entry(entry)
 
     def _add_routing_entries(self, ethernet_chip, tree):
-        """ Adds the routing entires based on the tree.
+        """
+        Adds the routing entires based on the tree.
 
         For every chip with this ethernet:
             - A key is generated (and saved) for this chip.

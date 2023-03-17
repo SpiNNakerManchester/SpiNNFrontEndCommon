@@ -16,7 +16,8 @@ from .lpg_splitter import LPGSplitter
 
 
 class LivePacketGather(ApplicationVertex):
-    """ A vertex that gathers and forwards multicast packets to the host
+    """
+    A vertex that gathers and forwards multicast packets to the host.
     """
     __slots__ = ["__params"]
 

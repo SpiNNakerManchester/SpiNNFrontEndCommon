@@ -36,7 +36,8 @@ class _SCPOKMessage(SDPMessage):
 
 
 class MockMachine(Thread):
-    """ A Machine that can be used for testing protocol
+    """
+    A Machine that can be used for testing protocol.
     """
 
     def __init__(self, responses=None):

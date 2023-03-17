@@ -69,7 +69,8 @@ class LivePacketGatherMachineVertex(
         self._incoming_sources = list()
 
     def add_incoming_source(self, m_vertex, partition_id):
-        """ Add a machine vertex source incoming into this gatherer.
+        """
+        Add a machine vertex source incoming into this gatherer.
 
         :param MachineVertex m_vertex: The source machine vertex
         :param str partition_id: The incoming partition id
@@ -161,7 +162,8 @@ class LivePacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve SDRAM space for memory areas.
+        """
+        Reserve SDRAM space for memory areas.
 
         :param ~.DataSpecificationGenerator spec:
         """
@@ -178,7 +180,8 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
-        """ Write the configuration region to the spec.
+        """
+        Write the configuration region to the spec.
 
         :param ~.DataSpecificationGenerator spec:
         :param iterable(~.IPTag) iptags:
@@ -233,7 +236,8 @@ class LivePacketGatherMachineVertex(
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
-        """ Write basic info to the system region.
+        """
+        Write basic info to the system region.
 
         :param ~.DataSpecificationGenerator spec:
         """
@@ -244,7 +248,8 @@ class LivePacketGatherMachineVertex(
 
     @classmethod
     def get_sdram_usage(cls):
-        """ Get the SDRAM used by this vertex.
+        """
+        Get the SDRAM used by this vertex.
 
         :rtype: int
         """

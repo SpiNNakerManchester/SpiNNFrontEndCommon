@@ -35,7 +35,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def pair_compression():
-    """ Load routing tables and compress then using the Pair Algorithm.
+    """
+    Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
     the exact same algorithm implemented in Python.
@@ -52,7 +53,8 @@ def pair_compression():
 
 
 def ordered_covering_compression():
-    """ Load routing tables and compress then using the unordered Algorithm.
+    """
+    Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
     :py:func:`mundy_on_chip_router_compression`, except this one is still
@@ -107,7 +109,8 @@ class Compression(object):
         self.__result_register = result_register
 
     def compress(self):
-        """ Apply the on-machine compression algorithm.
+        """
+        Apply the on-machine compression algorithm.
 
         :raises SpinnFrontEndException: If compression fails
         """
@@ -140,7 +143,7 @@ class Compression(object):
             [self._binary_path], progress_bar)
         if self.__failures:
             raise SpinnFrontEndException(
-                "The router compressor failed on {}".format(self.__failures))
+                f"The router compressor failed on {self.__failures}")
 
     def _load_routing_table(self, table):
         """
@@ -186,7 +189,8 @@ class Compression(object):
         return len(self.__failures) == 0
 
     def _load_executables(self):
-        """ Plans the loading of the router compressor onto the chips.
+        """
+        Plans the loading of the router compressor onto the chips.
 
         :return:
             the executable targets that represent all cores/chips which have

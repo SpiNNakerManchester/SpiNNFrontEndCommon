@@ -34,7 +34,8 @@ def _decode_router_timeout_value(value):
 
 
 class ReInjectionStatus(object):
-    """ Represents a status information report from dropped packet reinjection.
+    """
+    Represents a status information report from dropped packet reinjection.
     """
 
     __slots__ = (
@@ -90,7 +91,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait1_timeout(self):
-        """ The WAIT1 timeout value of the router, in cycles.
+        """
+        The WAIT1 timeout value of the router, in cycles.
 
         :rtype: int
         """
@@ -98,7 +100,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait1_timeout_parameters(self):
-        """ The WAIT1 timeout value of the router as mantissa and exponent.
+        """
+        The WAIT1 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
@@ -108,7 +111,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait2_timeout(self):
-        """ The WAIT2 timeout value of the router, in cycles.
+        """
+        The WAIT2 timeout value of the router, in cycles.
 
         :rtype: int
         """
@@ -116,7 +120,8 @@ class ReInjectionStatus(object):
 
     @property
     def router_wait2_timeout_parameters(self):
-        """ The WAIT2 timeout value of the router as mantissa and exponent.
+        """
+        The WAIT2 timeout value of the router as mantissa and exponent.
 
         :rtype: tuple(int,int)
         """
@@ -190,7 +195,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_multicast(self):
-        """ True if re-injection of multicast packets is enabled.
+        """
+        True if re-injection of multicast packets is enabled.
 
         :rtype: bool
         """
@@ -198,7 +204,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_point_to_point(self):
-        """ True if re-injection of point-to-point packets is enabled.
+        """
+        True if re-injection of point-to-point packets is enabled.
 
         :rtype: bool
         """
@@ -206,7 +213,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_nearest_neighbour(self):
-        """ True if re-injection of nearest neighbour packets is enabled.
+        """
+        True if re-injection of nearest neighbour packets is enabled.
 
         :rtype: bool
         """
@@ -214,7 +222,8 @@ class ReInjectionStatus(object):
 
     @property
     def is_reinjecting_fixed_route(self):
-        """ True if re-injection of fixed-route packets is enabled.
+        """
+        True if re-injection of fixed-route packets is enabled.
 
         :rtype: bool
         """

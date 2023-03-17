@@ -16,7 +16,8 @@ from collections import defaultdict
 
 
 class PowerUsed(object):
-    """ Describes the power used by a simulation.
+    """
+    Describes the power used by a simulation.
     """
 
     __slots__ = [
@@ -65,7 +66,8 @@ class PowerUsed(object):
 
     @property
     def num_chips(self):
-        """ The total number of chips used.
+        """
+        The total number of chips used.
 
         :rtype: int
         """
@@ -77,7 +79,8 @@ class PowerUsed(object):
 
     @property
     def num_cores(self):
-        """ The total number of cores used, including for SCAMP.
+        """
+        The total number of cores used, including for SCAMP.
 
         :rtype: int
         """
@@ -89,7 +92,8 @@ class PowerUsed(object):
 
     @property
     def num_fpgas(self):
-        """ The total number of FPGAs used.
+        """
+        The total number of FPGAs used.
 
         :rtype: int
         """
@@ -101,7 +105,8 @@ class PowerUsed(object):
 
     @property
     def num_frames(self):
-        """ The total number of frames used.
+        """
+        The total number of frames used.
 
         :rtype: int
         """
@@ -113,7 +118,8 @@ class PowerUsed(object):
 
     @property
     def total_time_secs(self):
-        """ Time taken in total, in seconds.
+        """
+        Time taken in total, in seconds.
 
         :rtype: float
         """
@@ -123,7 +129,8 @@ class PowerUsed(object):
 
     @property
     def booted_time_secs(self):
-        """ Time taken when the machine is booted, in seconds.
+        """
+        Time taken when the machine is booted, in seconds.
 
         :rtype: float
         """
@@ -132,7 +139,8 @@ class PowerUsed(object):
 
     @property
     def exec_time_secs(self):
-        """ Time taken by active simulation running, in seconds.
+        """
+        Time taken by active simulation running, in seconds.
 
         :rtype: float
         """
@@ -144,7 +152,8 @@ class PowerUsed(object):
 
     @property
     def mapping_time_secs(self):
-        """ Time taken by the mapping phase, in seconds.
+        """
+        Time taken by the mapping phase, in seconds.
 
         :rtype: float
         """
@@ -156,7 +165,8 @@ class PowerUsed(object):
 
     @property
     def data_gen_time_secs(self):
-        """ Time taken by data generation phase, in seconds.
+        """
+        Time taken by data generation phase, in seconds.
 
         :rtype: float
         """
@@ -168,7 +178,8 @@ class PowerUsed(object):
 
     @property
     def loading_time_secs(self):
-        """ Time taken by data loading, in seconds.
+        """
+        Time taken by data loading, in seconds.
 
         :rtype: float
         """
@@ -180,7 +191,8 @@ class PowerUsed(object):
 
     @property
     def saving_time_secs(self):
-        """ Time taken by data extraction, in seconds.
+        """
+        Time taken by data extraction, in seconds.
 
         :rtype: float
         """
@@ -192,7 +204,8 @@ class PowerUsed(object):
 
     @property
     def total_energy_joules(self):
-        """ Total of all energy costs, in Joules.
+        """
+        Total of all energy costs, in Joules.
 
         :rtype: float
         """
@@ -218,7 +231,8 @@ class PowerUsed(object):
 
     @property
     def fpga_total_energy_joules(self):
-        """ Energy used by all FPGAs in total, in Joules.
+        """
+        Energy used by all FPGAs in total, in Joules.
 
         :rtype: float
         """
@@ -258,7 +272,8 @@ class PowerUsed(object):
 
     @property
     def packet_joules(self):
-        """ Energy used by packet transmission, in Joules.
+        """
+        Energy used by packet transmission, in Joules.
 
         :rtype: float
         """
@@ -298,7 +313,8 @@ class PowerUsed(object):
 
     @property
     def loading_joules(self):
-        """ Energy used during data loading, in Joules.
+        """
+        Energy used during data loading, in Joules.
 
         :rtype: float
         """
@@ -310,7 +326,8 @@ class PowerUsed(object):
 
     @property
     def saving_joules(self):
-        """ Energy used during data extraction, in Joules.
+        """
+        Energy used during data extraction, in Joules.
 
         :rtype: float
         """
@@ -356,7 +373,8 @@ class PowerUsed(object):
         return self.__router_energy.keys()
 
     def get_core_active_energy_joules(self, x, y, p):
-        """ Energy used (above idle baseline) by a particular core, in Joules.
+        """
+        Energy used (above idle baseline) by a particular core, in Joules.
 
         Unused cores always report 0.0 for this.
 

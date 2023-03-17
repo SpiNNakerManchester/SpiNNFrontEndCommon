@@ -191,14 +191,16 @@ class NotificationProtocol(AbstractContextManager):
 
     @property
     def sent_visualisation_confirmation(self):
-        """ Whether the external application has actually been notified yet.
+        """
+        Whether the external application has actually been notified yet.
 
         :rtype: bool
         """
         return self.__sent_visualisation_confirmation
 
     def close(self):
-        """ Closes the thread pool and the connections.
+        """
+        Closes the thread pool and the connections.
         """
         if self.__wait_pool:
             self.__wait_pool.shutdown()

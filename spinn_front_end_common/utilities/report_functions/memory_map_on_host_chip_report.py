@@ -67,8 +67,7 @@ def _describe_mem_map(f, txrx, x, y, p):
     for i in range(MAX_MEM_REGIONS):
         region_address, = _ONE_WORD.unpack_from(
             memmap_data, i * BYTES_PER_WORD)
-        f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
-            i, region_address))
+        f.write(f"Region {i:d}:\n\t start address: 0x{region_address:x}\n\n")
 
 
 def _get_region_table_addr(txrx, x, y, p):

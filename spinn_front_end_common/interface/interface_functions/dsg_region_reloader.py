@@ -32,7 +32,8 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 def reload_dsg_regions():
-    """ Reloads DSG regions where needed
+    """
+    Reloads DSG regions where needed.
     """
     # build file paths for reloaded stuff
     data_dir = get_reload_data_dir()
@@ -48,7 +49,8 @@ def reload_dsg_regions():
 
 
 def get_reload_data_dir():
-    """ Get a path in which reloaded data files can be written
+    """
+    Get a path in which reloaded data files can be written.
 
     :rtype: str
     """
@@ -61,7 +63,8 @@ def get_reload_data_dir():
 
 
 def regenerate_data_spec(placement, data_dir):
-    """ Regenerate a data specification for a placement
+    """
+    Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
     :param str data_dir: A place to use to write data to
@@ -140,7 +143,8 @@ def regenerate_data_spec(placement, data_dir):
 
 
 def _get_ptr_table(txrx, placement, regions_base_address, start_region):
-    """ Read the pointer table
+    """
+    Read the pointer table.
 
     :param Transceiver txrx: The transceiver to read with
     :param Placement placement: Where to read the pointer table from

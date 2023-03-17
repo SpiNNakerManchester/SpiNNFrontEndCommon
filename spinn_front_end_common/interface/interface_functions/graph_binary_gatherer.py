@@ -37,7 +37,8 @@ def graph_binary_gatherer():
 
 
 class _GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed.
+    """
+    Extracts binaries to be executed.
     """
 
     __slots__ = ["_exe_targets"]
@@ -67,11 +68,10 @@ class _GraphBinaryGatherer(object):
         vertex = placement.vertex
         if not isinstance(vertex, AbstractHasAssociatedBinary):
             if not isinstance(vertex, AbstractVirtual):
-                msg = (
+                logger.error(
                     "Vertex {} does not implement either "
                     "AbstractHasAssociatedBinary or AbstractVirtual. So it is "
-                    "unclear if it should or should not have a binary")
-                logger.error(msg.format(vertex), vertex)
+                    "unclear if it should or should not have a binary", vertex)
             return
 
         # Get name of binary from vertex

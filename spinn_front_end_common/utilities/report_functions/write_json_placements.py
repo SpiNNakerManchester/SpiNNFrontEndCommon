@@ -27,7 +27,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def write_json_placements():
-    """ Runs the code to write the placements in JSON.
+    """
+    Runs the code to write the placements in JSON.
     """
     # Steps are tojson, validate and writefile
     progress = ProgressBar(3, "Converting to JSON Placements")

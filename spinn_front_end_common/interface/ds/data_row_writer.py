@@ -53,7 +53,8 @@ class DataRowWriter(io.RawIOBase):
         raise OSError
 
     def close(self):
-        """ Closes the writer if not already closed.
+        """
+        Closes the writer if not already closed.
         """
         if not self.closed:
             self._targets.write_data_spec(

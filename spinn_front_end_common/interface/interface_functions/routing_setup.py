@@ -26,7 +26,6 @@ def routing_setup():
     Initialises the routers.
 
     .. note::
-
         This does not load any routes into them.
 
     :param ~spinnman.transceiver.Transceiver transceiver:

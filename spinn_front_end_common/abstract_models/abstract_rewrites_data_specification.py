@@ -40,14 +40,16 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reload_required(self):
-        """ Return true if any data region needs to be reloaded.
+        """
+        Return true if any data region needs to be reloaded.
 
         :rtype: bool
         """
 
     @abstractmethod
     def set_reload_required(self, new_value):
-        """ Indicate that the regions have been reloaded.
+        """
+        Indicate that the regions have been reloaded.
 
         :param new_value: the new value
         """

@@ -79,7 +79,8 @@ class ConfigHandler(object):
             Machine.set_max_cores_per_chip(max_machine_core)
 
     def _debug_configs(self):
-        """ Adjust and checks config based on mode and reports_enabled.
+        """
+        Adjust and checks config based on mode and reports_enabled.
 
         :raises ConfigurationException:
         """
@@ -125,7 +126,8 @@ class ConfigHandler(object):
             "Algorithms.html.")
 
     def _adjust_config(self, runtime,):
-        """ Adjust and checks config based on runtime
+        """
+        Adjust and checks config based on runtime
 
         :param runtime:
         :type runtime: int or bool

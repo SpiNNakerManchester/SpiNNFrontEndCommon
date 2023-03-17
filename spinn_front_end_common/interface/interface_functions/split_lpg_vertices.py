@@ -17,7 +17,8 @@ from spinn_front_end_common.utility_models import LivePacketGather
 
 
 def split_lpg_vertices(system_placements):
-    """ Split any LPG vertices found
+    """
+    Split any LPG vertices found.
 
     :param ApplictiongGraph app_graph: The application graph
     :param ~spinn_machine.Machine machine:

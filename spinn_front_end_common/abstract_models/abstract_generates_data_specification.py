@@ -24,7 +24,8 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
 
     @abstractmethod
     def generate_data_specification(self, spec, placement):
-        """ Generate a data specification.
+        """
+        Generate a data specification.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write to

@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Utility calls for interpreting bits of the DSG
+"""
+Utility calls for interpreting bits of the DSG
 """
 
 import io
@@ -36,7 +37,8 @@ _lock_condition = threading.Condition()
 
 
 def _mkdir(directory):
-    """ Make a directory if it doesn't exist.
+    """
+    Make a directory if it doesn't exist.
 
     .. note::
         This code is not intended to be secure against malicious third parties
@@ -55,7 +57,8 @@ def _mkdir(directory):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG.
+    """
+    Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -73,7 +76,8 @@ _RPT_DIR = "data_spec_text_files"
 def get_data_spec_and_file_writer_filename(
         processor_chip_x, processor_chip_y, processor_id,
         application_run_time_report_folder="TEMP"):
-    """ Encapsulates the creation of the DSG writer and the file paths.
+    """
+    Encapsulates the creation of the DSG writer and the file paths.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
@@ -112,7 +116,7 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
-    :return: the report_writer_object, or None if not reporting
+    :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
     # pylint: disable=too-many-arguments

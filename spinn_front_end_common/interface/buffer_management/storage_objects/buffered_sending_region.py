@@ -33,7 +33,8 @@ _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
 
 
 def get_n_bytes(n_keys):
-    """ Get the number of bytes used by a given number of keys.
+    """
+    Get the number of bytes used by a given number of keys.
 
     :param int n_keys: The number of keys
     """
@@ -69,7 +70,8 @@ class BufferedSendingRegion(object):
         self._current_timestamp_pos = 0
 
     def add_key(self, timestamp, key):
-        """ Add a key to be sent at a given time.
+        """
+        Add a key to be sent at a given time.
 
         :param int timestamp: The time at which the key is to be sent
         :param int key: The key to send
@@ -80,7 +82,8 @@ class BufferedSendingRegion(object):
         self._buffer[timestamp].append(key)
 
     def add_keys(self, timestamp, keys):
-        """ Add a set of keys to be sent at the given time.
+        """
+        Add a set of keys to be sent at the given time.
 
         :param int timestamp: The time at which the keys are to be sent
         :param iterable(int) keys: The keys to send
@@ -90,7 +93,8 @@ class BufferedSendingRegion(object):
 
     @property
     def n_timestamps(self):
-        """ The number of timestamps available.
+        """
+        The number of timestamps available.
 
         :rtype: int
         """
@@ -98,14 +102,16 @@ class BufferedSendingRegion(object):
 
     @property
     def timestamps(self):
-        """ The timestamps for which there are keys.
+        """
+        The timestamps for which there are keys.
 
         :rtype: iterable(int)
         """
         return self._timestamps
 
     def get_n_keys(self, timestamp):
-        """ Get the number of keys for a given timestamp.
+        """
+        Get the number of keys for a given timestamp.
 
         :param timestamp:
             the time stamp to check if there's still keys to transmit
@@ -126,7 +132,8 @@ class BufferedSendingRegion(object):
 
     @property
     def next_timestamp(self):
-        """ The next timestamp of the data to be sent, or None if no more data.
+        """
+        The next timestamp of the data to be sent, or `None` if no more data.
 
         :rtype: int or None
         """
@@ -135,7 +142,8 @@ class BufferedSendingRegion(object):
         return None
 
     def is_next_key(self, timestamp):
-        """ Determine if there is another key for the given timestamp.
+        """
+        Determine if there is another key for the given timestamp.
 
         :param bool timestamp:
             the time stamp to check if there's still keys to transmit
@@ -146,7 +154,8 @@ class BufferedSendingRegion(object):
 
     @property
     def next_key(self):
-        """ The next key to be sent.
+        """
+        The next key to be sent.
 
         :rtype: int
         """
@@ -160,17 +169,22 @@ class BufferedSendingRegion(object):
 
     @property
     def current_timestamp(self):
-        """ The current timestamp in the iterator.
+        """
+        The current timestamp in the iterator.
+
+        :rtype: int
         """
         return self._current_timestamp_pos
 
     def rewind(self):
-        """ Rewind the buffer to initial position.
+        """
+        Rewind the buffer to initial position.
         """
         self._current_timestamp_pos = 0
 
     def clear(self):
-        """ Clears the buffer.
+        """
+        Clears the buffer.
         """
         self._buffer = dict()
         self._timestamps = list()

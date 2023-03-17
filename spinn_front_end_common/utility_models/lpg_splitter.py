@@ -22,7 +22,8 @@ from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 
 
 class LPGSplitter(AbstractSplitterCommon):
-    """ Splitter for the LivePacketGather vertex
+    """
+    Splitter for the LivePacketGather vertex.
     """
 
     __slots__ = [
@@ -37,8 +38,12 @@ class LPGSplitter(AbstractSplitterCommon):
         self.__targeted_lpgs = set()
 
     def create_vertices(self, system_placements):
-        """ Special way of making LPG machine vertices, where one is placed
-            on each Ethernet chip.  Note that this adds to system placements.
+        """
+        Special way of making LPG machine vertices, where one is placed
+        on each Ethernet chip.
+
+        .. note::
+            This adds to system placements.
         """
         machine = FecDataView.get_machine()
         for eth in machine.ethernet_connected_chips:
@@ -94,8 +99,9 @@ class LPGSplitter(AbstractSplitterCommon):
 
     @property
     def targeted_lpgs(self):
-        """ Get which LPG machine vertex is targeted by which machine vertex
-            and partition
+        """
+        Get which LPG machine vertex is targeted by which machine vertex
+        and partition.
 
         :return:
              A set of (lpg machine vertex, source machine vertex, partition_id)

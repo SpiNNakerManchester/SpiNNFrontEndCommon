@@ -30,7 +30,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     @abstractproperty
     def start_resume_commands(self):
-        """ The commands needed when starting or resuming simulation.
+        """
+        The commands needed when starting or resuming simulation.
 
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
@@ -38,7 +39,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     @abstractproperty
     def pause_stop_commands(self):
-        """ The commands needed when pausing or stopping simulation.
+        """
+        The commands needed when pausing or stopping simulation.
 
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
@@ -46,7 +48,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     @abstractproperty
     def timed_commands(self):
-        """ The commands to be sent at given times in the simulation.
+        """
+        The commands to be sent at given times in the simulation.
 
         :rtype:
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)

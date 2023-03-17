@@ -25,7 +25,8 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
-    """ An SCP Request to get the status of the dropped packet reinjection.
+    """
+    An SCP Request to get the status of the dropped packet reinjection.
     """
 
     __slots__ = []
@@ -53,7 +54,8 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
 
 
 class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
-    """ An SCP response to a request for the dropped packet reinjection status
+    """
+    An SCP response to a request for the dropped packet reinjection status
     """
 
     def __init__(self, command_code):

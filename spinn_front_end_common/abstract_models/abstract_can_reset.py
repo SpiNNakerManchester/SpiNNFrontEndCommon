@@ -17,7 +17,8 @@ from spinn_utilities.abstract_base import (
 
 
 class AbstractCanReset(object, metaclass=AbstractBase):
-    """ Indicates an object that can be reset to time 0.
+    """
+    Indicates an object that can be reset to time 0.
 
     This is used when AbstractSpinnakerBase.reset is called.
     All Vertices and all edges in the original graph
@@ -27,5 +28,6 @@ class AbstractCanReset(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reset_to_first_timestep(self):
-        """ Reset the object to first time step.
+        """
+        Reset the object to first time step.
         """

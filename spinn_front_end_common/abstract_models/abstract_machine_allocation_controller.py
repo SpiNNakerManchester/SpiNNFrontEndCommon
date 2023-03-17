@@ -17,14 +17,16 @@ from spinnman.constants import SCP_SCAMP_PORT
 
 
 class AbstractMachineAllocationController(object, metaclass=AbstractBase):
-    """ An object that controls the allocation of a machine
+    """
+    An object that controls the allocation of a machine
     """
 
     __slots__ = ()
 
     @abstractmethod
     def extend_allocation(self, new_total_run_time):
-        """ Extend the allocation of the machine from the original run time.
+        """
+        Extend the allocation of the machine from the original run time.
 
         :param float new_total_run_time:
             The total run time that is now required starting from when the
@@ -33,7 +35,8 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
 
     @abstractmethod
     def close(self):
-        """ Indicate that the use of the machine is complete.
+        """
+        Indicate that the use of the machine is complete.
         """
 
     @abstractmethod

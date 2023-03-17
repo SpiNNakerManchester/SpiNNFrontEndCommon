@@ -55,7 +55,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__clocks_per_cycle = None
 
     def set_initial_offset(self, new_value):
-        """ Sets the initial offset.
+        """
+        Sets the initial offset.
 
         :param int new_value: the new initial offset, in clock ticks
         """
@@ -73,7 +74,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return self.n_atoms
 
     def generate_tdma_data_specification_data(self, vertex_index):
-        """ Generates the TDMA configuration data needed for the data spec.
+        """
+        Generates the TDMA configuration data needed for the data spec.
 
         :param int vertex_index: the machine vertex index in the pop
         :return: array of data to write.
@@ -90,7 +92,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     @property
     def tdma_sdram_size_in_bytes(self):
-        """ The number of bytes needed by the TDMA data.
+        """
+        The number of bytes needed by the TDMA data.
 
         :rtype: int
         """
@@ -99,7 +102,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     def set_other_timings(
             self, clocks_between_cores, n_slots, clocks_between_spikes,
             n_phases, clocks_per_cycle):
-        """ Sets the other timings needed for the TDMA.
+        """
+        Sets the other timings needed for the TDMA.
 
         :param int clocks_between_cores: clock cycles between cores
         :param int n_slots: the number of slots
@@ -125,7 +129,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     def get_tdma_provenance_item(
             self,  x, y, p, desc_label, tdma_slots_missed):
-        """ Get the provenance item used for the TDMA provenance.
+        """
+        Get the provenance item used for the TDMA provenance.
 
         :param int x: x coordinate of the chip where this core
         :param int y: y coordinate of the core where this core

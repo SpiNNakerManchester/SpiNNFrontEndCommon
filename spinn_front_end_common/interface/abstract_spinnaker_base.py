@@ -138,7 +138,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class AbstractSpinnakerBase(ConfigHandler):
-    """ Main interface into the tools logic flow.
+    """
+    Main interface into the tools logic flow.
     """
     # pylint: disable=broad-except
 
@@ -219,7 +220,6 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _hard_reset(self):
         """
         This clears all data that if no longer valid after a hard reset
-
         """
         if self._data_writer.has_transceiver():
             self._data_writer.get_transceiver().stop_application(
@@ -236,11 +236,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_java_caller(JavaCaller())
 
     def __signal_handler(self, _signal, _frame):
-        """ Handles closing down of script via keyboard interrupt
+        """
+        Handles closing down of script via keyboard interrupt
 
         :param _signal: the signal received (ignored)
         :param _frame: frame executed in (ignored)
-        :return: None
         """
         # If we are to raise the keyboard interrupt, do so
         if self._raise_keyboard_interrupt:
@@ -271,7 +271,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         return os.getenv("OIDC_BEARER_TOKEN")
 
     def exception_handler(self, exctype, value, traceback_obj):
-        """ Handler of exceptions
+        """
+        Handler of exceptions.
 
         :param type exctype: the type of exception received
         :param Exception value: the value of the exception
@@ -299,10 +300,11 @@ class AbstractSpinnakerBase(ConfigHandler):
         return False
 
     def run_until_complete(self, n_steps=None):
-        """ Run a simulation until it completes
+        """
+        Run a simulation until it completes.
 
         :param int n_steps:
-            If not None, this specifies that the simulation should be
+            If not `None`, this specifies that the simulation should be
             requested to run for the given number of steps.  The host will
             still wait until the simulation itself says it has completed
         """
@@ -312,7 +314,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
     def run(self, run_time, sync_time=0):
-        """ Run a simulation for a fixed amount of time
+        """
+        Run a simulation for a fixed amount of time.
 
         :param int run_time: the run duration in milliseconds.
         :param float sync_time:
@@ -327,7 +330,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.end_category(TimerCategory.RUN_OTHER)
 
     def __timesteps(self, time_in_ms):
-        """ Get a number of timesteps for a given time in milliseconds.
+        """
+        Get a number of timesteps for a given time in milliseconds.
 
         :return: The number of timesteps
         :rtype: int
@@ -348,12 +352,12 @@ class AbstractSpinnakerBase(ConfigHandler):
     def _calc_run_time(self, run_time):
         """
         Calculates n_machine_time_steps and total_run_time based on run_time
-        and machine_time_step
+        and machine_time_step.
 
         This method rounds the run up to the next timestep as discussed in
         https://github.com/SpiNNakerManchester/sPyNNaker/issues/149
 
-        If run_time is None (run forever) both values will be None
+        If run_time is `None` (run forever) both values will be `None`
 
         :param run_time: time user requested to run for in milliseconds
         :type run_time: float or None
@@ -395,7 +399,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             raise
 
     def __run(self, run_time, sync_time):
-        """ The main internal run function.
+        """
+        The main internal run function.
 
         :param int run_time: the run duration in milliseconds.
         :param int sync_time:
@@ -533,8 +538,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 while self._data_writer.is_no_stop_requested():
                     self._state_condition.wait()
         else:
-            logger.info("Running forever in steps of {}ms".format(
-                self._data_writer.get_max_run_time_steps()))
+            logger.info("Running forever in steps of {}ms",
+                        self._data_writer.get_max_run_time_steps())
             while self._data_writer.is_no_stop_requested():
                 logger.info(f"Run {self._data_writer.next_run_step()}")
                 self._do_run(
@@ -680,8 +685,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         May set the "machine" value if not already set
 
-        :param str category: Algorithm category for provenance
-        :allocator_data: None or
+        :param allocator_data: `None` or
             (machine name, machine version, BMP details (if any),
             reset on startup flag, auto-detect BMP, SCAMP connection details,
             boot port, allocation controller)
@@ -721,7 +725,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_machine(machine)
 
     def _get_known_machine(self, total_run_time=0.0):
-        """ The python machine description object.
+        """
+        The python machine description object.
 
         :param float total_run_time: The total run time to request
         :rtype: ~spinn_machine.Machine
@@ -734,7 +739,8 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._execute_machine_generator(allocator_data)
 
     def _get_machine(self):
-        """ The factory method to get a machine.
+        """
+        The factory method to get a machine.
 
         :rtype: ~spinn_machine.Machine
         """
@@ -753,7 +759,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         FecTimer.end_category(TimerCategory.GET_MACHINE)
 
     def _create_version_provenance(self):
-        """ Add the version information to the provenance data at the start.
+        """
+        Add the version information to the provenance data at the start.
         """
         with GlobalProvenance() as db:
             db.insert_version("spinn_utilities_version", spinn_utils_version)
@@ -1092,8 +1099,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         .. note::
             Calling of this method is based on the cfg info_allocator value
-
-        :return:
         """
         with FecTimer("Global allocate", TimerWork.OTHER):
             self._data_writer.set_routing_infos(
@@ -1107,8 +1112,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         .. note::
             Calling of this method is based on the cfg info_allocator value
-
-        :return:
         """
         with FecTimer("Zoned routing info allocator", TimerWork.OTHER):
             self._data_writer.set_routing_infos(
@@ -1242,7 +1245,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             router_collision_potential_report()
 
     def _report_drift(self, start):
-        """ Write, time and log the inter-board timer drift.
+        """
+        Write, time and log the inter-board timer drift.
 
         :param bool start: Is this the start or the end
         """
@@ -1289,7 +1293,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             sdram_outgoing_partition_allocator()
 
     def _execute_control_sync(self, do_sync):
-        """ Control synchronization on board.
+        """
+        Control synchronization on board.
 
         :param bool do_sync: Whether to enable synchronization
         """
@@ -1606,7 +1611,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param str name: Name of a compressor
         :raise ConfigurationException: if the name is not expected
-        :return: CompressedRoutingTables (likely to be None),
+        :return: CompressedRoutingTables (likely to be `None)`,
             RouterCompressorProvenanceItems (may be an empty list)
         :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
         """
@@ -1639,7 +1644,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param str name: Name of a compressor
         :raise ConfigurationException: if the name is not expected
-        :return: CompressedRoutingTables (likely to be None),
+        :return: CompressedRoutingTables (likely to be `None`),
             RouterCompressorProvenanceItems (may be an empty list)
         :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
         """
@@ -2058,7 +2063,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int n_sync_steps:
             The number of timesteps between synchronisations
         :param int run_time: the run duration in milliseconds.
-        :return:
         """
         with FecTimer(FecTimer.APPLICATION_RUNNER, TimerWork.RUNNING) as timer:
             if timer.skip_if_virtual_board():
@@ -2278,7 +2282,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             logger.error(error)
 
     def reset(self):
-        """ Code that puts the simulation back at time zero.
+        """
+        Puts the simulation back at time zero.
         """
         FecTimer.start_category(TimerCategory.RESETTING)
         if not self._data_writer.is_ran_last():
@@ -2420,7 +2425,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         return cores
 
     def stop_run(self):
-        """ Request that the current infinite run stop.
+        """
+        Request that the current infinite run stop.
 
         .. note::
             This will need to be called from another thread as the infinite
@@ -2440,7 +2446,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._state_condition.notify_all()
 
     def continue_simulation(self):
-        """ Continue a simulation that has been started in stepped mode.
+        """
+        Continue a simulation that has been started in stepped mode.
         """
         sync_signal = self._data_writer.get_next_sync_signal()
         transceiver = self._data_writer.get_transceiver()

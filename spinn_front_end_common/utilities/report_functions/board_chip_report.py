@@ -21,7 +21,8 @@ AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
 
 def board_chip_report():
-    """ Creates a report that states where in SDRAM each region is.
+    """
+    Creates a report that states where in SDRAM each region is.
     """
     machine = FecDataView.get_machine()
     # create file path

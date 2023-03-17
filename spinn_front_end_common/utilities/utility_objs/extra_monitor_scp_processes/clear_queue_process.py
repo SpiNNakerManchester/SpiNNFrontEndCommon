@@ -19,7 +19,8 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class ClearQueueProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to clear the reinjection queue.
+    """
+    How to send messages to clear the reinjection queue.
     """
 
     def reset_counters(self, core_subsets):

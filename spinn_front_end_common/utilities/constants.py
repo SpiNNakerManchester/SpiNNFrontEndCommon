@@ -86,7 +86,9 @@ class SDP_RUNNING_MESSAGE_CODES(Enum):
 
 
 class SDP_PORTS(Enum):
-    """SDP port handling output buffering data streaming"""
+    """
+    SDP port handling output buffering data streaming.
+    """
 
     # command port for the buffered in functionality
     INPUT_BUFFERING_SDP_PORT = 1
@@ -104,7 +106,9 @@ class SDP_PORTS(Enum):
 
 # output buffering operations
 class BUFFERING_OPERATIONS(Enum):
-    """A listing of what SpiNNaker specific EIEIO commands there are."""
+    """
+    A listing of what SpiNNaker specific EIEIO commands there are.
+    """
 
     # Database handshake with external program
     BUFFER_READ = 0

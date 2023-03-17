@@ -81,7 +81,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         The associated application vertex
     :type app_vertex: ReverseIpTagMultiCastSource or None
     :param int n_keys: The number of keys to be sent via this mulitcast source
-        (can't be None if vertex_slice is also None)
+        (can't be `None` if vertex_slice is also `None`)
     :param str board_address:
         The IP address of the board on which to place this vertex if receiving
         data, either buffered or live (by default, any board is chosen)
@@ -114,11 +114,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         to be sent
     :param bool reserve_reverse_ip_tag:
         True if the source should set up a tag through which it can receive
-        packets; if port is set to None this can be used to enable the
+        packets; if port is set to `None` this can be used to enable the
         reception of packets on a randomly assigned port, which can be read
         from the database
     :param str injection_partition:
-        If not None, will enable injection and specify the partition to send
+        If not `None`, will enable injection and specify the partition to send
         injected keys with
     """
 
@@ -274,7 +274,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @classmethod
     def _send_buffer_sdram_per_timestep(cls, send_buffer_times, n_keys):
-        """ Determine the amount of SDRAM required per timestep.
+        """
+        Determine the amount of SDRAM required per timestep.
 
         :param send_buffer_times:
         :type send_buffer_times:
@@ -414,7 +415,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @staticmethod
     def _n_regions_to_allocate(send_buffering, recording):
-        """ Get the number of regions that will be allocated
+        """
+        Get the number of regions that will be allocated
 
         :param bool send_buffering:
         :param bool recording:
@@ -428,7 +430,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @property
     def send_buffer_times(self):
-        """ When events will be sent.
+        """
+        When events will be sent.
 
         :rtype:
             ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
@@ -456,9 +459,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return end_step is None or (first_step <= step < end_step)
 
     def _fill_send_buffer(self):
-        """ Fill the send buffer with keys to send.
-
-       """
+        """
+        Fill the send buffer with keys to send.
+        """
         first_machine_time_step = FecDataView.get_first_machine_time_step()
         run_until_timesteps = FecDataView.get_current_run_timesteps()
         if (self._first_machine_time_step == first_machine_time_step and
@@ -482,8 +485,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 self._fill_send_buffer_1d(key_to_send)
 
     def _fill_send_buffer_2d(self, key_base):
-        """ Add the keys with different times for each atom.
-            Can be overridden to override keys.
+        """
+        Add the keys with different times for each atom.
+        Can be overridden to override keys.
 
         :param int key_base: The base key to use
         """
@@ -498,9 +502,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                     self._send_buffer.add_key(tick, keys[atom])
 
     def _fill_send_buffer_1d(self, key_base):
-        """ Add the keys from the given vertex slice within the given time
-            range into the given send buffer, with the same times for each
-            atom.  Can be overridden to override keys.
+        """
+        Add the keys from the given vertex slice within the given time
+        range into the given send buffer, with the same times for each
+        atom.  Can be overridden to override keys.
 
         :param int key_base: The base key to use
         """
@@ -537,7 +542,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return mask
 
     def enable_recording(self, new_state=True):
-        """ Enable recording of the keys sent.
+        """
+        Enable recording of the keys sent.
 
         :param bool new_state:
         """
@@ -698,7 +704,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def get_virtual_key(self):
         """
-        Updates and returns the virtual key. None is give a zero value
+        Updates and returns the virtual key. `None` is give a zero value
 
         :rtype: int or None
         """

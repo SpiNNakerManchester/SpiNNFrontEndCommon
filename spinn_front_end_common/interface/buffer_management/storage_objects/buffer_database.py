@@ -27,7 +27,8 @@ def _timestamp():
 
 
 class BufferDatabase(BaseDatabase):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     There should only ever be a single Database Object in use at any time.
     In the case of application_graph_changed the first should closed and
@@ -44,7 +45,8 @@ class BufferDatabase(BaseDatabase):
     __slots__ = []
 
     def clear_region(self, x, y, p, region):
-        """ Clears the data for a single region.
+        """
+        Clears the data for a single region.
 
         .. note::
             This method *loses information!*
@@ -213,7 +215,8 @@ class BufferDatabase(BaseDatabase):
         return False
 
     def get_region_data(self, x, y, p, region):
-        """ Get the data stored for a given region of a given core
+        """
+        Get the data stored for a given region of a given core.
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip
@@ -239,7 +242,8 @@ class BufferDatabase(BaseDatabase):
             return memoryview(b''), True
 
     def write_session_credentials_to_db(self):
-        """ Write Spalloc session credentials to the database if in use.
+        """
+        Write Spalloc session credentials to the database if in use.
         """
         # pylint: disable=protected-access
         if not FecDataView.has_allocation_controller():

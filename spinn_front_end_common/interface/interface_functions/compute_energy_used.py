@@ -193,7 +193,8 @@ def _router_packet_energy(power_used):
 
 
 def _calculate_chips_active_energy(placement, runtime_total_ms, power_used):
-    """ Figure out the chip active cost during simulation.
+    """
+    Figure out the chip active cost during simulation.
 
     :param ~.Placement placement: placement
     :param float runtime_total_ms:
@@ -324,7 +325,8 @@ def __board_n_operational_fpgas(ethernet_chip):
 
 
 def __deduce_fpga(chips_1, chips_2, links_1, links_2):
-    """ Figure out if each FPGA was on or not.
+    """
+    Figure out if each FPGA was on or not.
 
     :param iterable(~.Chip) chips_1: chips on an edge of the board
     :param iterable(~.Chip) chips_2: chips on an edge of the board
@@ -386,7 +388,8 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
 
 
 def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
-    """ Data extraction cost.
+    """
+    Data extraction cost.
 
     :param ~.Machine machine: machine description
     :param int n_monitors:
@@ -429,7 +432,8 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
 
 
 def _calculate_idle_cost(time, machine):
-    """ Calculate energy used by being idle.
+    """
+    Calculate energy used by being idle.
 
     :param float time: time machine was idle, in milliseconds
     :param ~.Machine machine: machine description
@@ -442,7 +446,8 @@ def _calculate_idle_cost(time, machine):
 
 
 def _calculate_power_down_energy(time, machine, n_frames):
-    """ Calculate power down costs.
+    """
+    Calculate power down costs.
 
     :param float time: time powered down, in milliseconds
     :param ~.Machine machine:

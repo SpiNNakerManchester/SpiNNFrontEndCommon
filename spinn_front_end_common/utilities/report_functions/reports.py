@@ -81,7 +81,8 @@ def placer_reports_with_application_graph():
 
 
 def router_summary_report():
-    """ Generates a text file of routing summaries.
+    """
+    Generates a text file of routing summaries.
 
     :rtype: RouterSummary
     """
@@ -94,7 +95,8 @@ def router_summary_report():
 
 
 def router_compressed_summary_report(routing_tables):
-    """ Generates a text file of routing summaries.
+    """
+    Generates a text file of routing summaries.
 
     :param MulticastRoutingTables routing_tables:
         The in-operation COMPRESSED routing tables.
@@ -143,9 +145,9 @@ def _do_router_summary_report(file_name, progress, routing_tables):
                         spinnaker_routes.add(convert(entry))
                     f.write("Chip {}:{} has {} entries of which {} are "
                             "defaultable and {} link only with {} unique "
-                            "spinnaker routes\n"
-                            "".format(x, y, entries, defaultable, link_only,
-                                      len(spinnaker_routes)))
+                            "spinnaker routes\n".format(
+                                x, y, entries, defaultable, link_only,
+                                len(spinnaker_routes)))
                     total_entries += entries
                     max_entries = max(max_entries, entries)
                     max_none_defaultable = max(
@@ -169,7 +171,8 @@ def _do_router_summary_report(file_name, progress, routing_tables):
 
 
 def router_report_from_paths():
-    """ Generates a text file of routing paths.
+    """
+    Generates a text file of routing paths.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _ROUTING_FILENAME)
     time_date_string = time.strftime("%c")
@@ -207,20 +210,19 @@ def _write_one_router_partition_report(f, partition):
             source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
-            path = _search_route(
-                source_placement, r_info.key_and_mask)
+            path = _search_route(source_placement, r_info.key_and_mask)
             f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
                 edge.label, edge.pre_vertex.label, edge.post_vertex.label))
-            f.write("{}\n".format(path))
+            f.write(f"{path}\n")
 
             # End one entry:
             f.write("\n")
 
 
 def partitioner_report():
-    """ Generate report on the placement of vertices onto cores.
     """
-
+    Generate report on the placement of vertices onto cores.
+    """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
@@ -239,8 +241,9 @@ def partitioner_report():
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_partition(f, vertex)
     except IOError:
-        logger.exception("Generate_placement_reports: Can't open file {} for"
-                         " writing.", file_name)
+        logger.exception(
+            "Generate_placement_reports: Can't open file {} for writing.",
+            file_name)
 
 
 def _write_one_vertex_partition(f, vertex):
@@ -251,10 +254,10 @@ def _write_one_vertex_partition(f, vertex):
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
     num_atoms = vertex.n_atoms
-    f.write("**** Vertex: '{}'\n".format(vertex_name))
-    f.write("Model: {}\n".format(vertex_model))
-    f.write("Pop size: {}\n".format(num_atoms))
-    f.write("Machine Vertices: \n")
+    f.write(f"**** Vertex: '{vertex_name}'\n")
+    f.write(f"Model: {vertex_model}\n")
+    f.write(f"Pop size: {num_atoms}\n")
+    f.write("Machine Vertices:\n")
 
     # Sort by slice and then by label
     machine_vertices = sorted(vertex.machine_vertices,
@@ -267,9 +270,9 @@ def _write_one_vertex_partition(f, vertex):
 
 
 def placement_report_with_application_graph_by_vertex():
-    """ Generate report on the placement of vertices onto cores by vertex.
     """
-
+    Generate report on the placement of vertices onto cores by vertex.
+    """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
     file_name = os.path.join(
@@ -288,8 +291,9 @@ def placement_report_with_application_graph_by_vertex():
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_application_placement(f, vertex)
     except IOError:
-        logger.exception("Generate_placement_reports: Can't open file {} for"
-                         " writing.", file_name)
+        logger.exception(
+            "Generate_placement_reports: Can't open file {} for writing.",
+            file_name)
 
 
 def _write_one_vertex_application_placement(f, vertex):
@@ -300,9 +304,9 @@ def _write_one_vertex_application_placement(f, vertex):
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
     num_atoms = vertex.n_atoms
-    f.write("**** Vertex: '{}'\n".format(vertex_name))
-    f.write("Model: {}\n".format(vertex_model))
-    f.write("Pop size: {}\n".format(num_atoms))
+    f.write(f"**** Vertex: '{vertex_name}'\n")
+    f.write(f"Model: {vertex_model}\n")
+    f.write(f"Pop size: {num_atoms}\n")
     f.write("Machine Vertices: \n")
 
     # Sort by slice and then by label
@@ -324,15 +328,14 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write("  Slice {} on core ({}, {}, {}) \n"
-                    .format(sv.vertex_slice, x, y, p))
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
     f.write("\n")
 
 
 def placement_report_with_application_graph_by_core():
-    """ Generate report on the placement of vertices onto cores by core.
     """
-
+    Generate report on the placement of vertices onto cores by core.
+    """
     # File 2: Placement by core.
     # Cycle through all chips and by all cores within each chip.
     # For each core, display what is held on it.
@@ -353,8 +356,9 @@ def placement_report_with_application_graph_by_core():
             for chip in progress.over(machine.chips):
                 _write_one_chip_application_placement(f, chip)
     except IOError:
-        logger.exception("Generate_placement_reports: Can't open file {} for "
-                         "writing.", file_name)
+        logger.exception(
+            "Generate_placement_reports: Can't open file {} for writing.",
+            file_name)
 
 
 def _write_one_chip_application_placement(f, chip):
@@ -367,9 +371,8 @@ def _write_one_chip_application_placement(f, chip):
     total_sdram = None
     for placement in FecDataView.iterate_placements_on_core(chip.x, chip.y):
         if not written_header:
-            f.write("**** Chip: ({}, {})\n".format(chip.x, chip.y))
-            f.write("Application cores: {}\n".format(
-                len(list(chip.processors))))
+            f.write(f"**** Chip: ({chip.x}, {chip.y})\n")
+            f.write(f"Application cores: {len(list(chip.processors))}\n")
             written_header = True
         pro_id = placement.p
         vertex = placement.vertex
@@ -380,8 +383,8 @@ def _write_one_chip_application_placement(f, chip):
             vertex_atoms = app_vertex.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}\n"
-                    .format(vertex.vertex_slice))
+            f.write("              Slice on this core: {}\n".format(
+                vertex.vertex_slice))
             f.write("              Model: {}\n".format(vertex_model))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
@@ -404,7 +407,8 @@ def _write_one_chip_application_placement(f, chip):
 
 
 def sdram_usage_report_per_chip():
-    """ Reports the SDRAM used per chip.
+    """
+    Reports the SDRAM used per chip.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _SDRAM_FILENAME)
     n_placements = FecDataView.get_n_placements()
@@ -441,7 +445,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
     :param bool end_progress:
     :param bool details: If True will get costs printed by regions
     """
-    f.write("Based on {} timesteps\n\n".format(timesteps))
+    f.write(f"Based on {timesteps} timesteps\n\n")
     used_sdram_by_chip = dict()
     placements = sorted(
         FecDataView.iterate_placemements(), key=lambda x: x.vertex.label)
@@ -452,7 +456,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
         if details:
             vertex_sdram.report(
                 timesteps=timesteps,
-                preamble="core ({},{},{})".format(x, y, p), target=f)
+                preamble=f"core ({x},{y},{p})", target=f)
         else:
             f.write(
                 "SDRAM reqs for core ({},{},{}) is {} KB ({} bytes) for {}\n"
@@ -515,7 +519,7 @@ def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
     # Might be None if the partition has no outgoing vertices e.g. a Poisson
     # source replaced by SDRAM comms
     if rinfo is not None:
-        f.write("Vertex: {}\n".format(pre_vertex))
+        f.write(f"Vertex: {pre_vertex}\n")
         f.write("    Partition: {}, Routing Info: {}\n".format(
             part_id, rinfo.key_and_mask))
         for m_vertex in pre_vertex.splitter.get_out_going_vertices(part_id):
@@ -589,14 +593,15 @@ def generate_routing_table(routing_table, top_level_folder):
                 if entry.defaultable:
                     n_defaultable += 1
                 f.write(entry_str)
-            f.write("{} Defaultable entries\n".format(n_defaultable))
+            f.write(f"{n_defaultable} Defaultable entries\n")
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
                          " {} for writing.", file_path)
 
 
 def _compression_ratio(uncompressed, compressed):
-    """ Get the compression ratio, as a percentage.
+    """
+    Get the compression ratio, as a percentage.
 
     :param int uncompressed:
     :param int compressed:
@@ -705,18 +710,18 @@ def _search_route(source_placement, key_and_mask):
 # Locates the destinations of a route
 def _recursive_trace_to_destinations(
         chip_x, chip_y, key_and_mask, pre_space):
-    """ Recursively search though routing tables till no more entries are\
-        registered with this key
+    """
+    Recursively search though routing tables till no more entries are
+    registered with this key
 
     :param int chip_x:
     :param int chip_y
     :param BaseKeyAndMask key_and_mask:
     :rtype: str
     """
-
     chip = FecDataView.get_chip_at(chip_x, chip_y)
 
-    text = "-> Chip {}:{}".format(chip_x, chip_y)
+    text = f"-> Chip {chip_x}:{chip_y}"
     routing_tables = FecDataView.get_uncompressed()
     table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
     entry = _locate_routing_entry(table, key_and_mask.key)
@@ -724,9 +729,9 @@ def _recursive_trace_to_destinations(
     first = True
     for link_id in entry.link_ids:
         if not first:
-            text += "\n{}".format(pre_space)
+            text += f"\n{pre_space}"
         link = chip.router.get_link(link_id)
-        text += "-> {}".format(link)
+        text += f"-> {link}"
         text += _recursive_trace_to_destinations(
             link.destination_x, link.destination_y, key_and_mask,
             new_pre_space)
@@ -736,7 +741,8 @@ def _recursive_trace_to_destinations(
 
 
 def _locate_routing_entry(current_router, key):
-    """ Locate the entry from the router based off the edge
+    """
+    Locate the entry from the router based off the edge
 
     :param ~spinn_machine.MulticastRoutingTable current_router:
         the current router being used in the trace

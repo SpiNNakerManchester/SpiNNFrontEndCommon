@@ -101,7 +101,7 @@ class ReverseIpTagMultiCastSource(
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
         :param str injection_partition:
-            If not None, will enable injection and specify the partition to
+            If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
         :type splitter: None or AbstractSplitterCommon
@@ -159,7 +159,8 @@ class ReverseIpTagMultiCastSource(
 
     @property
     def send_buffer_times(self):
-        """ When messages will be sent.
+        """
+        When messages will be sent.
 
         :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None

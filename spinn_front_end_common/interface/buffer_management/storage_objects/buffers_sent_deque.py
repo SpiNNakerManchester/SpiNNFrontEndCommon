@@ -27,7 +27,8 @@ _N_SEQUENCES = 256
 
 
 class BuffersSentDeque(object):
-    """ A tracker of buffers sent / to send for a region
+    """
+    A tracker of buffers sent / to send for a region
     """
 
     __slots__ = [
@@ -80,14 +81,16 @@ class BuffersSentDeque(object):
         return len(self._buffers_sent) >= self._n_sequences_per_transmission
 
     def is_empty(self):
-        """ Determine if there are no messages.
+        """
+        Determine if there are no messages.
 
         :rtype: int
         """
         return len(self._buffers_sent) == 0
 
     def send_stop_message(self):
-        """ Send a message to indicate the end of all the messages.
+        """
+        Send a message to indicate the end of all the messages.
         """
         if not self._sent_stop_message:
             self._sent_stop_message = True
@@ -119,7 +122,8 @@ class BuffersSentDeque(object):
 
     @property
     def messages(self):
-        """ The messages that have been added to the set.
+        """
+        The messages that have been added to the set.
 
         :rtype:
             iterable(~spinnman.messages.eieio.command_messages.HostSendSequencedData)

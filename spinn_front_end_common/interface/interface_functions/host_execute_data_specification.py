@@ -36,7 +36,8 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 def system_cores():
-    """ Get the subset of cores that are to be used for system operations.
+    """
+    Get the subset of cores that are to be used for system operations.
 
     :rtype: ~spinn_machine.CoreSubsets
     """
@@ -90,7 +91,8 @@ class _ExecutionContext(object):
 
     def execute(
             self, core, reader, writer_func, base_address, size_allocated):
-        """ Execute the data spec for a core.
+        """
+        Execute the data spec for a core.
 
         :param tuple(int,int,int) core:
         :param ~.AbstractDataReader reader:
@@ -165,8 +167,8 @@ class _ExecutionContext(object):
             for ref_region, ref in core_to_fill.regions:
                 if ref not in self.__references_to_use:
                     raise ValueError(
-                        "Reference {} requested from {} but not found"
-                        .format(ref, core_to_fill))
+                        f"Reference {ref} requested from {core_to_fill} "
+                        "but not found")
                 pointer_table[ref_region]["pointer"] = self.__get_reference(
                     ref, core_to_fill.x, core_to_fill.y, core_to_fill.p,
                     ref_region)
@@ -177,7 +179,8 @@ class _ExecutionContext(object):
                 to_write)
 
     def __handle_new_references(self, x, y, p, executor, pointer_table):
-        """ Get references that can be used later.
+        """
+        Get references that can be used later.
 
         :param int x: The x-coordinate of the spec being executed
         :param int y: The y-coordinate of the spec being executed
@@ -192,16 +195,16 @@ class _ExecutionContext(object):
             if ref in self.__references_to_use:
                 ref_to_use = self.__references_to_use[ref]
                 raise ValueError(
-                    "Reference {} used previously as {} so cannot be used by"
-                    " {}, {}, {}, {}".format(
-                        ref, ref_to_use, x, y, p, ref_region))
+                    f"Reference {ref} used previously as {ref_to_use} so "
+                    f"cannot be used by {x}, {y}, {p}, {ref_region}")
             ptr = pointer_table[ref_region]["pointer"]
             self.__references_to_use[ref] = _RegionToRef(
                 x, y, p, ref_region, ptr)
 
     def __handle_references_to_fill(
             self, x, y, p, executor, pointer_table, header, base_address):
-        """ Resolve references.
+        """
+        Resolve references.
 
         :param int x: The x-coordinate of the spec being executed
         :param int y: The y-coordinate of the spec being executed
@@ -244,28 +247,31 @@ class _ExecutionContext(object):
         ref_to_use = self.__references_to_use[ref]
         if ref_to_use.x != x or ref_to_use.y != y:
             raise ValueError(
-                "Reference {} to {} cannot be used by {}, {}, {}, {}"
-                " because they are on different chips".format(
-                    ref, ref_to_use, x, y, p, ref_region))
+                f"Reference {ref} to {ref_to_use} cannot be used by "
+                f"{x}, {y}, {p}, {ref_region} because they are on "
+                "different chips")
         return ref_to_use.pointer
 
 
 def execute_system_data_specs():
-    """ Execute the data specs for all system targets.
+    """
+    Execute the data specs for all system targets.
     """
     specifier = _HostExecuteDataSpecification()
     return specifier.execute_system_data_specs()
 
 
 def execute_application_data_specs():
-    """ Execute the data specs for all non-system targets.
+    """
+    Execute the data specs for all non-system targets.
     """
     specifier = _HostExecuteDataSpecification()
     specifier.execute_application_data_specs()
 
 
 class _HostExecuteDataSpecification(object):
-    """ Executes the host based data specification.
+    """
+    Executes the host based data specification.
     """
 
     __slots__ = [
@@ -278,7 +284,8 @@ class _HostExecuteDataSpecification(object):
         self._app_id = FecDataView.get_app_id()
 
     def execute_application_data_specs(self):
-        """ Execute the data specs for all non-system targets.
+        """
+        Execute the data specs for all non-system targets.
         """
 
         uses_advanced_monitors = get_config_bool(
@@ -367,7 +374,8 @@ class _HostExecuteDataSpecification(object):
         progress.end()
 
     def execute_system_data_specs(self):
-        """ Execute the data specs for all system targets.
+        """
+        Execute the data specs for all system targets.
         """
         # pylint: disable=too-many-arguments
         FecDataView.get_dsg_targets().mark_system_cores(system_cores())
@@ -377,7 +385,8 @@ class _HostExecuteDataSpecification(object):
             self.__python_sys()
 
     def __java_sys(self):
-        """ Does the Data Specification Execution and loading using Java.
+        """
+        Does the Data Specification Execution and loading using Java.
         """
         # create a progress bar for end users
         progress = ProgressBar(
@@ -387,7 +396,8 @@ class _HostExecuteDataSpecification(object):
         progress.end()
 
     def __python_sys(self):
-        """ Does the Data Specification Execution and loading using Python.
+        """
+        Does the Data Specification Execution and loading using Python.
         """
 
         # create a progress bar for end users

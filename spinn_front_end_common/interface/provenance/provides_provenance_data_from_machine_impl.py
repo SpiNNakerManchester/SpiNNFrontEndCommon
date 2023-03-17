@@ -77,7 +77,8 @@ class ProvidesProvenanceDataFromMachineImpl(
 
     @abstractproperty
     def _provenance_region_id(self):
-        """ The index of the provenance region.
+        """
+        The index of the provenance region.
 
         :rtype: int
         """
@@ -286,7 +287,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         get_provenance_data_from_machine,
         extend_doc=False)
     def get_provenance_data_from_machine(self, placement):
-        """ Retrieve the provenance data.
+        """
+        Retrieve the provenance data.
 
         :param ~pacman.model.placements.Placement placement:
             Which vertex are we retrieving from, and where was it

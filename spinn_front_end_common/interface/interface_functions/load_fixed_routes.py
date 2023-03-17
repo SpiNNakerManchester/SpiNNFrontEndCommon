@@ -17,7 +17,8 @@ from spinn_front_end_common.data import FecDataView
 
 
 def load_fixed_routes():
-    """ Load a set of fixed routes onto a SpiNNaker machine.
+    """
+    Load a set of fixed routes onto a SpiNNaker machine.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
     """

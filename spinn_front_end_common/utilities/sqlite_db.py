@@ -134,7 +134,8 @@ class SQLiteDB(AbstractContextManager):
         self.close()
 
     def close(self):
-        """ Finalises and closes the database.
+        """
+        Finalises and closes the database.
         """
         try:
             if self.__db is not None:
@@ -168,7 +169,8 @@ class SQLiteDB(AbstractContextManager):
 
     @property
     def connection(self):
-        """ The underlying SQLite database connection.
+        """
+        The underlying SQLite database connection.
 
         .. warning::
             If you're using this a lot, consider contacting the SpiNNaker

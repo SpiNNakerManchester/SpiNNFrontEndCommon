@@ -444,7 +444,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def reset_reinjection_counters(self, extra_monitor_cores_to_set):
-        """ Resets the counters for reinjection.
+        """
+        Resets the counters for reinjection.
 
         :param ~spinnman.transceiver.Transceiver transceiver:
             the spinnMan interface
@@ -465,7 +466,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def clear_reinjection_queue(self, extra_monitor_cores_to_set):
-        """ Clears the queues for reinjection.
+        """
+        Clears the queues for reinjection.
 
         :param extra_monitor_cores_to_set:
             Which extra monitors need to clear their queues.
@@ -484,7 +486,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status(self):
-        """ Get the reinjection status from this extra monitor vertex.
+        """
+        Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
@@ -500,7 +503,8 @@ class ExtraMonitorSupportMachineVertex(
             raise
 
     def get_reinjection_status_for_vertices(self):
-        """ Get the reinjection status from a set of extra monitor cores.
+        """
+        Get the reinjection status from a set of extra monitor cores.
 
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
@@ -515,16 +519,16 @@ class ExtraMonitorSupportMachineVertex(
             fixed_route=None):
         """
         :param point_to_point:
-            If point to point should be set, or None if left as before
+            If point to point should be set, or `None` if left as before
         :type point_to_point: bool or None
         :param multicast:
-            If multicast should be set, or None if left as before
+            If multicast should be set, or `None` if left as before
         :type multicast: bool or None
         :param nearest_neighbour:
-            If nearest neighbour should be set, or None if left as before
+            If nearest neighbour should be set, or `None` if left as before
         :type nearest_neighbour: bool or None
         :param fixed_route:
-            If fixed route should be set, or None if left as before.
+            If fixed route should be set, or `None` if left as before.
         :type fixed_route: bool or None
         """
         # pylint: disable=too-many-arguments

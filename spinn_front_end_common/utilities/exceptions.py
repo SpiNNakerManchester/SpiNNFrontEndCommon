@@ -14,17 +14,20 @@
 
 
 class SpinnFrontEndException(Exception):
-    """ Raised when the front end detects an error.
+    """
+    Raised when the front end detects an error.
     """
 
 
 class RallocException(SpinnFrontEndException):
-    """ Raised when there are not enough routing table entries.
+    """
+    Raised when there are not enough routing table entries.
     """
 
 
 class ConfigurationException(SpinnFrontEndException):
-    """ Raised when the front end determines a input parameter is invalid.
+    """
+    Raised when the front end determines a input parameter is invalid.
     """
 
 
@@ -43,7 +46,8 @@ class ExecutableFailedToStopException(SpinnFrontEndException):
 
 
 class ExecutableNotFoundException(SpinnFrontEndException):
-    """ Raised when a specified executable could not be found.
+    """
+    Raised when a specified executable could not be found.
     """
 
 
@@ -55,15 +59,18 @@ class BufferableRegionTooSmall(SpinnFrontEndException):
 
 
 class BufferedRegionNotPresent(SpinnFrontEndException):
-    """ Raised when trying to issue buffered packets for a region not managed.
+    """
+    Raised when trying to issue buffered packets for a region not managed.
     """
 
 
 class CantFindSDRAMToUseException(SpinnFrontEndException):
-    """ Raised when malloc and sdram stealing cannot occur.
+    """
+    Raised when malloc and sdram stealing cannot occur.
     """
 
 
 class DsDatabaseException(SpinnFrontEndException):
-    """ Raise when a query in the DataSpec database failed.
+    """
+    Raise when a query in the DataSpec database failed.
     """

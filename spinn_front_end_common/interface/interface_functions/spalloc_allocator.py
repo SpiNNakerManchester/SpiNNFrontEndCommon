@@ -117,10 +117,10 @@ class SpallocJobController(MachineAllocationController):
     def create_transceiver(self):
         """
         .. note::
-
             This allocation controller proxies the transceiver's connections
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
+
         """
         if not self.__use_proxy:
             return super(SpallocJobController, self).create_transceiver()
@@ -132,9 +132,9 @@ class SpallocJobController(MachineAllocationController):
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
         """
         .. note::
-
             This allocation controller proxies connections via Spalloc. This
             allows it to work even outside the UNIMAN firewall.
+
         """
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 

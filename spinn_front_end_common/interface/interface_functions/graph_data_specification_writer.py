@@ -45,7 +45,8 @@ def graph_data_specification_writer(placement_order=None):
 
 
 class _GraphDataSpecificationWriter(object):
-    """ Executes the data specification generation step.
+    """
+    Executes the data specification generation step.
     """
 
     __slots__ = (
@@ -170,6 +171,5 @@ class _GraphDataSpecificationWriter(object):
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
-            "Too much SDRAM has been used on {}, {}.  Vertices and"
-            " their usage on that chip is as follows:\n{}".format(
-                pl.x, pl.y, memory_usage))
+            f"Too much SDRAM has been used on {pl.x}, {pl.y}.  Vertices and"
+            f" their usage on that chip is as follows:\n{memory_usage}")

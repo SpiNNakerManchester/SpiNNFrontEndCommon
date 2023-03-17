@@ -28,14 +28,16 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
 
     @abstractproperty
     def is_in_injection_mode(self):
-        """ Whether this vertex is actually in injection mode.
+        """
+        Whether this vertex is actually in injection mode.
 
         :rtype: bool
         """
 
     @abstractproperty
     def injection_partition_id(self):
-        """ The partition that packets are being injected with.
+        """
+        The partition that packets are being injected with.
 
         :rtype: str
         """

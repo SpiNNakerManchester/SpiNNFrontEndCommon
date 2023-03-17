@@ -16,7 +16,8 @@ from spinnman.spalloc import SpallocClient
 
 
 class DatabaseReader(SQLiteDB):
-    """ A reader for the database.
+    """
+    A reader for the database.
     """
     __slots__ = ("__job", "__looked_for_job")
 
@@ -53,7 +54,8 @@ class DatabaseReader(SQLiteDB):
         return self.__job
 
     def get_key_to_atom_id_mapping(self, label):
-        """ Get a mapping of event key to atom ID for a given vertex.
+        """
+        Get a mapping of event key to atom ID for a given vertex.
 
         :param str label: The label of the vertex
         :return: dictionary of atom IDs indexed by event key
@@ -69,7 +71,8 @@ class DatabaseReader(SQLiteDB):
                     """, (label, ))}
 
     def get_atom_id_to_key_mapping(self, label):
-        """ Get a mapping of atom ID to event key for a given vertex.
+        """
+        Get a mapping of atom ID to event key for a given vertex.
 
         :param str label: The label of the vertex
         :return: dictionary of event keys indexed by atom ID
@@ -105,7 +108,8 @@ class DatabaseReader(SQLiteDB):
             "chip_x", "chip_y")
 
     def get_configuration_parameter_value(self, parameter_name):
-        """ Get the value of a configuration parameter.
+        """
+        Get the value of a configuration parameter.
 
         :param str parameter_name: The name of the parameter
         :return: The value of the parameter
@@ -123,7 +127,8 @@ class DatabaseReader(SQLiteDB):
         return int(row["x"]), int(row["y"]), int(row["p"])
 
     def get_placements(self, label):
-        """ Get the placements of an application vertex with a given label.
+        """
+        Get the placements of an application vertex with a given label.
 
         :param str label: The label of the vertex
         :return: A list of x, y, p coordinates of the vertices
@@ -138,7 +143,8 @@ class DatabaseReader(SQLiteDB):
                     """, (label, ))]
 
     def get_ip_address(self, x, y):
-        """ Get an IP address to contact a chip.
+        """
+        Get an IP address to contact a chip.
 
         :param int x: The x-coordinate of the chip
         :param int y: The y-coordinate of the chip

@@ -99,7 +99,8 @@ def generate_report_path():
 
 
 def generate_key_to_atom_map():
-    """ THIS IS NEEDED due to the link from key to edge being lost.
+    """
+    *THIS IS NEEDED* due to the link from key to edge being lost.
 
     :return: key to atom map based of key to n atoms
     :rtype: dict(int,int)
@@ -384,7 +385,8 @@ class _HostBasedBitFieldRouterCompressor(object):
         return new_table
 
     def _bit_for_neuron_id(self, bit_field, neuron_id):
-        """ Locate the bit for the neuron in the bitfield.
+        """
+        Locate the bit for the neuron in the bitfield.
 
         :param list(int) bit_field:
             the block of words which represent the bitfield
@@ -399,7 +401,8 @@ class _HostBasedBitFieldRouterCompressor(object):
     def _read_in_bit_fields(
             self, chip_x, chip_y, bit_field_chip_base_addresses,
             most_costly_cores):
-        """ Read in the bitfields from the cores.
+        """
+        Read in the bitfields from the cores.
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
@@ -558,7 +561,8 @@ class _HostBasedBitFieldRouterCompressor(object):
 
     def _binary_search_check(
             self, mid_point, routing_table, key_to_n_atoms_map):
-        """ Check function for fix max success.
+        """
+        Check function for fix max success.
 
         :param int mid_point: the point if the list to stop at
         :param ~.UnCompressedMulticastRoutingTable routing_table:
@@ -587,7 +591,8 @@ class _HostBasedBitFieldRouterCompressor(object):
             return False
 
     def _run_algorithm(self, router_table):
-        """ Attempts to covert the mega router tables into 1 router table.
+        """
+        Attempts to covert the mega router tables into 1 router table.
 
         :param list(~.AbsractMulticastRoutingTable) router_table:
             the set of router tables that together need to
@@ -623,7 +628,8 @@ class _HostBasedBitFieldRouterCompressor(object):
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
     def _create_table_report(self, router_table, report_out):
-        """ Create the report entry.
+        """
+        Create the report entry.
 
         :param ~.AbsractMulticastRoutingTable router_table:
             the uncompressed router table to process

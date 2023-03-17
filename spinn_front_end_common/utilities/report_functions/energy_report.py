@@ -47,7 +47,8 @@ class EnergyReport(object):
     _SUMMARY_FILENAME = "summary_energy_report.rpt"
 
     def write_energy_report(self, power_used):
-        """ Writes the report.
+        """
+        Writes the report.
 
         :param ~spinn_machine.Machine machine: the machine
         :param PowerUsed power_used:
@@ -70,7 +71,8 @@ class EnergyReport(object):
 
     @classmethod
     def _write_summary_report(cls, f, power_used):
-        """ Write summary file.
+        """
+        Write summary file.
 
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
@@ -140,12 +142,13 @@ class EnergyReport(object):
         :rtype: str
         """
         if time < 1:
-            return "(over {} milliseconds)".format(time * 1000)
+            return f"(over {time * 1000} milliseconds)"
         else:
-            return "(over {} seconds)".format(time)
+            return f"(over {time} seconds)"
 
     def _write_detailed_report(self, power_used, f):
-        """ Write detailed report and calculate costs.
+        """
+        Write detailed report and calculate costs.
 
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
@@ -158,8 +161,7 @@ class EnergyReport(object):
         self._write_warning(f)
 
         # figure out packet cost
-        f.write("The packet cost is {} Joules\n".format(
-            power_used.packet_joules))
+        f.write(f"The packet cost is {power_used.packet_joules} Joules\n")
 
         # figure FPGA cost over all booted and during runtime cost
         self._write_fpga_cost(power_used, f)
@@ -181,11 +183,11 @@ class EnergyReport(object):
                 xy, active_chips[xy], runtime_total_ms, power_used, f)
 
     def _write_warning(self, f):
-        """ Writes the warning about this being only an estimate.
+        """
+        Writes the warning about this being only an estimate.
 
         :param ~io.TextIOBase f: the writer
         """
-
         f.write(
             "This report is based off energy estimates for individual "
             "components of the SpiNNaker machine. It is not meant to be "
@@ -201,15 +203,15 @@ class EnergyReport(object):
             "The energy used by the machine for firing a packet is {} "
             "Joules.\n"
             "The energy used by each active FPGA per millisecond is {} "
-            "Joules.\n\n\n"
-            .format(
+            "Joules.\n\n\n".format(
                 MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD,
                 MILLIWATTS_PER_IDLE_CHIP,
                 JOULES_PER_SPIKE,
                 MILLIWATTS_PER_FPGA))
 
     def _write_fpga_cost(self, power_used, f):
-        """ FPGA cost calculation.
+        """
+        FPGA cost model calculation.
 
         :param PowerUsed power_used: the runtime
         :param ~io.TextIOBase f: the file writer
@@ -264,7 +266,8 @@ class EnergyReport(object):
     @staticmethod
     def _write_chips_active_cost(
             xy, labels, runtime_total_ms, power_used, f):
-        """ Figure out the chip active cost during simulation.
+        """
+        Figure out the chip active cost during simulation.
 
         :param (int, int) xy: the x,y of the chip to consider
         :param dict(int, str) labels: vertex labels for the acte cores
@@ -282,30 +285,27 @@ class EnergyReport(object):
                 label = f" (running {labels[core]})"
             else:
                 label = ""
-            energy = power_used.get_core_active_energy_joules(
-                x, y, core)
+            energy = power_used.get_core_active_energy_joules(x, y, core)
             f.write(
                 "processor {}:{}:{}{} used {} Joules of energy by "
                 "being active during the execution of the simulation\n".format(
                     x, y, core, label, energy))
 
         # TAKE INTO ACCOUNT IDLE COST
-        idle_cost = (
-            runtime_total_ms * MILLIWATTS_PER_IDLE_CHIP)
+        idle_cost = runtime_total_ms * MILLIWATTS_PER_IDLE_CHIP
 
         f.write(
-            "The chip at {},{} used {} Joules of energy for by being idle "
-            "during the execution of the simulation\n".format(
-                x, y, idle_cost))
+            f"The chip at {x},{y} used {idle_cost} Joules of energy for by "
+            "being idle during the execution of the simulation\n")
 
     @staticmethod
     def _write_load_time_cost(power_used, f):
-        """ Energy usage from the loading phase.
+        """
+        Energy usage from the loading phase.
 
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-
         # find time in milliseconds
         with GlobalProvenance() as db:
             total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
@@ -327,12 +327,12 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_data_extraction_time_cost(power_used, f):
-        """ Data extraction cost.
+        """
+        Data extraction cost.
 
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         """
-
         # find time
         with GlobalProvenance() as db:
             total_time_ms = db.get_timer_sum_by_algorithm(

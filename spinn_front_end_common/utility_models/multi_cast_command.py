@@ -16,7 +16,8 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MultiCastCommand(object):
-    """ A command to be sent to a vertex.
+    """
+    A command to be sent to a vertex.
     """
 
     def __init__(
@@ -69,7 +70,8 @@ class MultiCastCommand(object):
 
     @property
     def is_timed(self):
-        """ Whether this command is a timed command.
+        """
+        Whether this command is a timed command.
 
         :rtype: bool
         """
@@ -98,7 +100,8 @@ class MultiCastCommand(object):
 
     @property
     def payload(self):
-        """ The payload of the command, or None if there is no payload.
+        """
+        The payload of the command, or `None` if there is no payload.
 
         :rtype: int or None
         """

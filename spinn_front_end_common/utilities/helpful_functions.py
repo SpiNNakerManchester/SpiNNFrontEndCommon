@@ -43,7 +43,8 @@ def locate_extra_monitor_mc_receiver(placement_x, placement_y):
 
 
 def read_data(x, y, address, length, data_format):
-    """ Reads and converts a single data item from memory.
+    """
+    Reads and converts a single data item from memory.
 
     :param int x: chip x
     :param int y: chip y
@@ -51,15 +52,17 @@ def read_data(x, y, address, length, data_format):
     :param int length: length to read
     :param str data_format:
         the format to read memory (see :py:func:`struct.pack`)
+    :return: whatever is produced by unpacking the data
+    :rtype: tuple
     """
     # pylint: disable=too-many-arguments
-
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
 def write_address_to_user0(x, y, p, address):
-    """ Writes the given address into the user_0 register of the given core.
+    """
+    Writes the given address into the user_0 register of the given core.
 
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
@@ -72,7 +75,8 @@ def write_address_to_user0(x, y, p, address):
 
 
 def write_address_to_user1(x, y, p, address):
-    """ Writes the given address into the user_1 register of the given core.
+    """
+    Writes the given address into the user_1 register of the given core.
 
     :param int x: Chip coordinate.
     :param int y: Chip coordinate.
@@ -85,7 +89,8 @@ def write_address_to_user1(x, y, p, address):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG.
+    """
+    Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -96,7 +101,8 @@ def get_region_base_address_offset(app_data_base_address, region):
 
 
 def locate_memory_region_for_placement(placement, region):
-    """ Get the address of a region for a placement.
+    """
+    Get the address of a region for a placement.
 
     :param int region: the region to locate the base address of
     :param ~pacman.model.placements.Placement placement:
@@ -119,7 +125,8 @@ def locate_memory_region_for_placement(placement, region):
 
 
 def convert_string_into_chip_and_core_subset(cores):
-    """ Translate a string list of cores into a core subset.
+    """
+    Translate a string list of cores into a core subset.
 
     :param cores:
         string representing down cores formatted as x,y,p[:x,y,p]*
@@ -152,7 +159,8 @@ def flood_fill_binary_to_spinnaker(binary):
 
 
 def generate_unique_folder_name(folder, filename, extension):
-    """ Generate a unique file name with a given extension in a given folder.
+    """
+    Generate a unique file name with a given extension in a given folder.
 
     :param str folder: where to put this unique file
     :param str filename:
@@ -161,17 +169,17 @@ def generate_unique_folder_name(folder, filename, extension):
     :return: file path with a unique addition
     :rtype: str
     """
-    new_file_path = os.path.join(folder, "{}{}".format(filename, extension))
+    new_file_path = os.path.join(folder, f"{filename}{extension}")
     count = 2
     while os.path.exists(new_file_path):
-        new_file_path = os.path.join(
-            folder, "{}_{}{}".format(filename, count, extension))
+        new_file_path = os.path.join(folder, f"{filename}_{count}{extension}")
         count += 1
     return new_file_path
 
 
 def get_ethernet_chip(machine, board_address):
-    """ Locate the chip with the given board IP address.
+    """
+    Locate the chip with the given board IP address.
 
     :param ~spinn_machine.Machine machine: the SpiNNaker machine
     :param str board_address: the board address to locate the chip of.
@@ -184,12 +192,13 @@ def get_ethernet_chip(machine, board_address):
         if chip.ip_address == board_address:
             return chip
     raise ConfigurationException(
-        "cannot find the Ethernet connected chip with the board address {}"
-        .format(board_address))
+        "cannot find the Ethernet connected chip with the "
+        f"board address {board_address}")
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ Get the start and end states for these executable types.
+    """
+    Get the start and end states for these executable types.
 
     :param dict(ExecutableType,any) executable_types:
         the execute types to locate start and end states from
@@ -225,12 +234,13 @@ def determine_flow_states(executable_types, no_sync_changes):
     # if no states, go boom.
     if not expected_start_states:
         raise ConfigurationException(
-            "Unknown executable start types {}".format(executable_types))
+            f"Unknown executable start types {executable_types}")
     return expected_start_states, expected_end_states
 
 
 def convert_vertices_to_core_subset(vertices):
-    """ Converts vertices into core subsets.
+    """
+    Converts vertices into core subsets.
 
     :param iterable(~pacman.model.graphs.machine.MachineVertex) vertices:
         the vertices to convert to core subsets
@@ -253,7 +263,7 @@ def n_word_struct(n_words):
 
     Is much like doing this::
 
-        data = struct.unpack("<{}I".format(n_words), data_blob)
+        data = struct.unpack(f"<{n_words}I", data_blob)
 
     except quite a bit more efficient because things are shared including the
     cost of parsing the format.
@@ -269,7 +279,7 @@ def n_word_struct(n_words):
     s = _n_word_structs[n_words]
     if s is not None:
         return s
-    new_struct = struct.Struct("<{}I".format(n_words))
+    new_struct = struct.Struct(f"<{n_words}I")
     _n_word_structs[n_words] = new_struct
     return new_struct
 

@@ -91,7 +91,8 @@ class CommandSenderMachineVertex(
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
             timed_commands, vertex_to_send_to):
-        """ Add commands to be sent down a given edge
+        """
+        Add commands to be sent down a given edge.
 
         :param iterable(MultiCastCommand) start_resume_commands:
             The commands to send when the simulation starts or resumes from
@@ -123,14 +124,14 @@ class CommandSenderMachineVertex(
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
             if key not in self._keys_to_partition_id:
-                partition_id = "COMMANDS{}".format(
-                    self._edge_partition_id_counter)
+                partition_id = f"COMMANDS{self._edge_partition_id_counter}"
                 self._keys_to_partition_id[key] = partition_id
                 self._partition_id_keys[partition_id] = key
                 self._edge_partition_id_counter += 1
 
     def get_fixed_key_and_mask(self, partition_id):
-        """ Get the key and mask for the given partition
+        """
+        Get the key and mask for the given partition.
 
         :param str partition_id: The partition to get the key for
         :rtype: BaseKeyAndMask
@@ -254,7 +255,8 @@ class CommandSenderMachineVertex(
     def _reserve_memory_regions(
             self, spec, time_command_size, start_command_size,
             end_command_size):
-        """ Reserve SDRAM space for memory areas:
+        """
+        Reserve SDRAM space for memory areas:
 
         1. Area for general system information
         2. Area for timed commands

@@ -29,8 +29,10 @@ class AbstractProvidesProvenanceDataFromMachine(
 
     @abstractmethod
     def get_provenance_data_from_machine(self, placement):
-        """ Get an iterable of provenance data items.
+        """
+        Get an iterable of provenance data items.
 
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
+        :rtype: iterable
         """

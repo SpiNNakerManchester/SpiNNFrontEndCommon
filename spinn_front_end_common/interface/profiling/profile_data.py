@@ -30,7 +30,8 @@ _DURATION = 1
 
 
 class ProfileData(object):
-    """ A container for profile data.
+    """
+    A container for profile data.
     """
 
     START_TIME = _START_TIME
@@ -56,7 +57,8 @@ class ProfileData(object):
         self._max_time = None
 
     def add_data(self, data):
-        """ Add profiling data read from the profile section.
+        """
+        Add profiling data read from the profile section.
 
         :param bytearray data:
             Data read from the profile section on the machine
@@ -138,7 +140,8 @@ class ProfileData(object):
 
     @property
     def tags(self):
-        """ The tags recorded as labels.
+        """
+        The tags recorded as labels.
 
         :rtype: list(str)
         """
@@ -155,7 +158,8 @@ class ProfileData(object):
         return numpy.average(self._tags[tag][_DURATION])
 
     def get_n_calls(self, tag):
-        """ Get the number of times the given tag was recorded.
+        """
+        Get the number of times the given tag was recorded.
 
         :param str tag: The tag to get the number of calls of
         :rtype: int

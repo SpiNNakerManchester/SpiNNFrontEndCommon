@@ -21,7 +21,8 @@ from spinn_front_end_common.data import FecDataView
 
 class MachineDataSpecableVertex(
         AbstractGeneratesDataSpecification, allow_derivation=True):
-    """ Support for a vertex that simplifies generating a data specification.
+    """
+    Support for a vertex that simplifies generating a data specification.
     """
     __slots__ = ()
 

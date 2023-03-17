@@ -67,7 +67,8 @@ class JavaCaller(object):
     ]
 
     def __init__(self):
-        """ Creates a java caller and checks the user/config parameters.
+        """
+        Creates a java caller and checks the user/config parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
@@ -76,9 +77,9 @@ class JavaCaller(object):
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
-                " {} -version failed. "
+                f" {self._java_call} -version failed. "
                 "Please set [Java] java_call to the absolute path "
-                "to start java. (in config file)".format(self._java_call))
+                "to start java. (in config file)")
 
         self._find_java_jar()
 
@@ -95,8 +96,8 @@ class JavaCaller(object):
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
-                        "Java Properties must start with -D found at {}".
-                        format(_property))
+                        "Java Properties must start with -D "
+                        f"found at {_property}")
 
     def _find_java_jar(self):
         java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
@@ -166,7 +167,8 @@ class JavaCaller(object):
             self._chipxy_by_ethernet[ethernet].append(chip_xy)
 
     def _machine_json(self):
-        """ Converts the machine in this class to JSON.
+        """
+        Converts the machine in this class to JSON.
 
         :return: the name of the file containing the JSON
         """
@@ -364,7 +366,8 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_data_specification(self):
-        """ Writes all the data specs, uploading the result to the machine.
+        """
+        Writes all the data specs, uploading the result to the machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.

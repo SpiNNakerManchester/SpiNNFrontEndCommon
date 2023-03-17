@@ -28,7 +28,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def drift_report():
-    """ A report on the clock drift as reported by each chip
+    """
+    A report on the clock drift as reported by each chip
     """
     ethernet_only = get_config_bool(
             "Reports", "drift_report_ethernet_only")

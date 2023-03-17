@@ -28,14 +28,16 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
 
     @abstractmethod
     def buffering_input(self):
-        """ Return True if the input of this vertex is to be buffered.
+        """
+        Return True if the input of this vertex is to be buffered.
 
         :rtype: bool
         """
 
     @abstractmethod
     def get_regions(self):
-        """ Get the set of regions for which there are keys to be sent.
+        """
+        Get the set of regions for which there are keys to be sent.
 
         :return: Iterable of region IDs
         :rtype: iterable(int)
@@ -54,7 +56,8 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
 
     @abstractmethod
     def is_next_timestamp(self, region):
-        """ Determine if there is another timestamp with data to be sent.
+        """
+        Determine if there is another timestamp with data to be sent.
 
         :param int region: The region to determine if there is more data for
         :return: Whether there is more data
@@ -87,10 +90,11 @@ class AbstractSendsBuffersFromHost(object, metaclass=AbstractBase):
 
     @abstractmethod
     def get_next_key(self, region):
-        """ Get the next key in the given region.
+        """
+        Get the next key in the given region.
 
         :param int region: The region to get the next key from
-        :return: The next key, or None if there are no more keys
+        :return: The next key, or `None` if there are no more keys
         :rtype: int
         """
 

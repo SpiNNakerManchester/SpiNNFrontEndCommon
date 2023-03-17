@@ -64,7 +64,8 @@ SECOND_TO_MICRO_SECOND = 1000000
 
 
 class _MachineBitFieldRouterCompressor(object):
-    """ On-machine bitfield-aware routing table compression.
+    """
+    On-machine bitfield-aware routing table compression.
     """
 
     __slots__ = ["_compressor_aplx", "_compressor_type"]
@@ -121,7 +122,8 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_type = compressor_type
 
     def run(self, compress_as_much_as_possible=False):
-        """ Entrance for routing table compression with bit field.
+        """
+        Entrance for routing table compression with bit field.
 
         :param routing_tables: routing tables
         :param bool write_compressor_iobuf: flag saying if read IOBUF
@@ -145,7 +147,7 @@ class _MachineBitFieldRouterCompressor(object):
             "Mapping",
             "router_table_compression_with_bit_field_retry_count")
         if retry_count is not None:
-            text += " capped at {} retries".format(retry_count)
+            text += f" capped at {retry_count} retries"
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
                 FecDataView.get_n_vertices() +
@@ -243,7 +245,8 @@ class _MachineBitFieldRouterCompressor(object):
         return compressor_executable_targets
 
     def _generate_core_subsets(self, routing_tables, progress_bar):
-        """ Generates the core subsets for the binaries.
+        """
+        Generates the core subsets for the binaries.
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
         :param ~.ProgressBar progress_bar: progress bar
@@ -344,7 +347,8 @@ class _MachineBitFieldRouterCompressor(object):
             matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, retry_count):
-        """ load all data onto the chip.
+        """
+        load all data onto the chip.
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in sdram
@@ -366,7 +370,7 @@ class _MachineBitFieldRouterCompressor(object):
             the path to the sorter binary
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
         :return:
             the list of tuples saying which chips this will need to use
@@ -454,7 +458,8 @@ class _MachineBitFieldRouterCompressor(object):
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores):
-        """ loads the addresses of stealable sdram.
+        """
+        loads the addresses of stealable SDRAM.
 
         :param list(tuple(int,int)) matrix_addresses_and_size:
             SDRAM usable and sizes
@@ -495,7 +500,8 @@ class _MachineBitFieldRouterCompressor(object):
             chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
-        """ Generate the data for the chip matrix data.
+        """
+        Generate the data for the chip matrix data.
 
         :param list(tuple(int,int)) list_of_sizes_and_address:
             SDRAM addresses and sizes
@@ -512,7 +518,8 @@ class _MachineBitFieldRouterCompressor(object):
             routing_table_compressor_app_id, cores, matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, comms_sdram, retry_count):
-        """ loads the bitfield addresses space.
+        """
+        loads the bitfield addresses space.
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses to load
@@ -528,7 +535,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param int comms_sdram: Address for comms block
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
         """
         # generate address_data
@@ -570,7 +577,8 @@ class _MachineBitFieldRouterCompressor(object):
             self, table, app_id, transceiver,
             routing_table_compressor_app_id, progress_bar, cores,
             matrix_addresses_and_size):
-        """ loads the routing table data.
+        """
+        loads the routing table data.
 
         :param AbsractMulticastRoutingTable table: the routing table to load
         :param int app_id: application app id
@@ -613,7 +621,8 @@ class _MachineBitFieldRouterCompressor(object):
         progress_bar.update()
 
     def _build_routing_table_data(self, app_id, routing_table):
-        """ Builds routing data as needed for the compressor cores.
+        """
+        Builds routing data as needed for the compressor cores.
 
         :param int app_id: appid of the application to load entries with
         :param ~.AbsractMulticastRoutingTable routing_table:
@@ -640,7 +649,8 @@ class _MachineBitFieldRouterCompressor(object):
 
     @staticmethod
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
-        """ Steals memory from synaptic matrix as needed.
+        """
+        Steals memory from synaptic matrix as needed.
 
         :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:
             matrix addresses and sizes; updated by this method
@@ -660,7 +670,8 @@ class _MachineBitFieldRouterCompressor(object):
     def _add_to_addresses(
             self, vertex, placement, region_addresses,
             sdram_block_addresses_and_sizes):
-        """ Adds data about the API-based vertex.
+        """
+        Adds data about the API-based vertex.
 
         :param AbstractSupportsBitFieldRoutingCompression vertex:
             vertex which utilises the API
@@ -688,7 +699,8 @@ class _MachineBitFieldRouterCompressor(object):
             key=lambda data: data[0])
 
     def _generate_addresses(self, progress_bar):
-        """ Generates the bitfield SDRAM addresses.
+        """
+        Generates the bitfield SDRAM addresses.
 
         :param ~.ProgressBar progress_bar: the progress bar
         :return: region_addresses and the executable targets to load the
@@ -733,7 +745,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param int comms_sdram: Address for comms block
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
         :return: the byte array
         :rtype: bytes

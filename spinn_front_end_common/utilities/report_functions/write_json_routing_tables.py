@@ -23,7 +23,8 @@ ROUTING_TABLES_FILENAME = "routing_tables.json"
 
 
 def write_json_routing_tables(router_tables):
-    """ Runs the code to write the machine in Java readable JSON.
+    """
+    Runs the code to write the machine in Java readable JSON.
 
     :param MulticastRoutingTables router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
