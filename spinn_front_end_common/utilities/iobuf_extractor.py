@@ -59,8 +59,9 @@ class IOBufExtractor(object):
         :param str filename_template:
         :param bool suppress_progress:
         :param executable_targets:
-            Which Binaries and core to extract from. Noe to extract from all.
-        :tpye executable_targets:  ~spinnman.model.ExecutableTargets or None
+            Which Binaries and core to extract from.
+            `None` to extract from all.
+        :type executable_targets: ~spinnman.model.ExecutableTargets or None
         :param str from_cores:
         :param str binary_types:
         """

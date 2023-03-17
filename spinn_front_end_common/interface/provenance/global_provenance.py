@@ -147,7 +147,7 @@ class GlobalProvenance(SQLiteDB):
         :param ~datetime.timedelta timedelta: Time to be recorded
         :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :tpye skip_reason: str or None
+        :type skip_reason: str or None
         """
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +

@@ -171,7 +171,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     See UtilsDataView for a more detailed description.
 
-    This class is designed to only be used directly within none PyNN
+    This class is designed to only be used directly within non-PyNN
     repositories as all methods are available to subclasses
     """
 
@@ -522,7 +522,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         If and only if currently in an auto pause and resume loop this will
         report the number of the step. Starting at 1
 
-        In most cases this will return None, including when running without
+        In most cases this will return `None`, including when running without
         steps.
 
         :rtype: None or int
