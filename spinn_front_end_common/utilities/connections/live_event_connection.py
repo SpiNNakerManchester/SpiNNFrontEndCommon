@@ -13,22 +13,26 @@
 # limitations under the License.
 
 import logging
-from threading import Thread
+import struct
+from threading import Thread, Condition
 from time import sleep
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
 from spinnman.connections import ConnectionListener
-from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.connections.udp_packet_connections import (
+    EIEIOConnection, UDPConnection)
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.utilities.utility_functions import reprogram_tag_to_listener
+from spinnman.messages.eieio import (
+    read_eieio_command_message, read_eieio_data_message)
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_calls import retarget_tag
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -40,6 +44,24 @@ _MAX_HALF_KEYS_PER_PACKET = 127
 
 # The maximum number of 32-bit keys with payloads that will fit in a packet
 _MAX_FULL_KEYS_PAYLOADS_PER_PACKET = 31
+
+# Decoding of a single short value
+_ONE_SHORT = struct.Struct("<H")
+
+# The size of a RAW SCP OK response (includes 2 bytes of padding)
+_SCP_OK_SIZE = 18
+
+# The byte of the RAW SCP packet that contains the flags
+_SCP_FLAGS_BYTE = 2
+
+# The byte of the RAW SCP packet that contains the destination cpu
+_SCP_DEST_CPU_BYTE = 4
+
+# The expected flags from a RAW SCP packet in response
+_SCP_RESPONSE_FLAGS = 7
+
+# The expected destination cpu from a RAW SCP packet in repsonse
+_SCP_RESPONSE_DEST = 0xFF
 
 
 class LiveEventConnection(DatabaseConnection):
@@ -67,7 +89,10 @@ class LiveEventConnection(DatabaseConnection):
         "__simulator",
         "__spalloc_job",
         "__receiver_details",
-        "__is_running"]
+        "__is_running",
+        "__expect_scp_response",
+        "__expect_scp_response_lock",
+        "__scp_response_received"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT):
@@ -123,6 +148,9 @@ class LiveEventConnection(DatabaseConnection):
         self.__receiver_connection = None
         self.__error_keys = set()
         self.__is_running = False
+        self.__expect_scp_response = False
+        self.__expect_scp_response_lock = Condition()
+        self.__scp_response_received = None
 
     def add_send_label(self, label):
         if self.__send_labels is None:
@@ -276,7 +304,7 @@ class LiveEventConnection(DatabaseConnection):
             if job:
                 self.__receiver_connection = job.open_listener_connection()
             else:
-                self.__receiver_connection = EIEIOConnection()
+                self.__receiver_connection = UDPConnection()
         receivers = set()
         for label_id, label in enumerate(self.__receive_labels):
             _, port, board_address, tag, x, y = self.__get_live_output_details(
@@ -354,7 +382,7 @@ class LiveEventConnection(DatabaseConnection):
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
         self.__is_running = True
-        thread = Thread(target=self.__send_tag_messages, daemon=True)
+        thread = Thread(target=self.__send_tag_messages)
         thread.start()
 
     def __do_stop_pause(self):
@@ -369,23 +397,52 @@ class LiveEventConnection(DatabaseConnection):
         indirect = hasattr(self.__receiver_connection, "update_tag")
         while self.__is_running:
             for (x, y, tag, board_address) in self.__receiver_details:
-                if indirect:
-                    self.__receiver_connection.update_tag(x, y, tag)
-                    # No port trigger necessary; proxied already
-                else:
-                    retarget_tag(
-                        self.__receiver_connection, x, y, tag,
-                        ip_address=board_address)
+                with self.__expect_scp_response_lock:
+                    self.__scp_response_received = None
+                    self.__expect_scp_response = True
+                    if indirect:
+                        self.__receiver_connection.update_tag(
+                            x, y, tag, do_receive=False)
+                        # No port trigger necessary; proxied already
+                    else:
+                        reprogram_tag_to_listener(
+                            self.__receiver_connection, x, y, board_address,
+                            tag, read_response=False)
+                    while (self.__scp_response_received is None and
+                           self.__is_running):
+                        self.__expect_scp_response_lock.wait(timeout=1.0)
             sleep(10.0)
 
-    def __do_receive_packet(self, packet):
-        # pylint: disable=broad-except
+    def __handle_scp_packet(self, data):
+        with self.__expect_scp_response_lock:
+            # SCP unexpected
+            if not self.__expect_scp_response:
+                return False
+
+            if (len(data) == _SCP_OK_SIZE and
+                    data[_SCP_FLAGS_BYTE] == _SCP_RESPONSE_FLAGS and
+                    data[_SCP_DEST_CPU_BYTE] == _SCP_RESPONSE_DEST):
+                self.__scp_response_received = data
+                self.__expect_scp_response = False
+                return True
+            return False
+
+    def __do_receive_packet(self, data):
+        if self.__handle_scp_packet(data):
+            return
+
         logger.debug("Received packet")
         try:
+            header = _ONE_SHORT.unpack_from(data)[0]
+            if header & 0xC000 == 0x4000:
+                return read_eieio_command_message(data, 0)
+            packet = read_eieio_data_message(data, 0)
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
             else:
                 self.__handle_no_time_packet(packet)
+
+        # pylint: disable=broad-except
         except Exception:
             logger.warning("problem handling received packet", exc_info=True)
 
