@@ -22,7 +22,7 @@ from spinn_front_end_common.data import FecDataView
 MACHINE_FILENAME = "machine.json"
 
 
-def write_json_machine(json_folder=None, progress_bar=True):
+def write_json_machine(json_folder=None, progress_bar=True, validate=True):
     """ Runs the code to write the machine in Java readable JSON.
 
     .. warning::
@@ -30,6 +30,7 @@ def write_json_machine(json_folder=None, progress_bar=True):
 
     :param str json_folder: the folder to which the JSON are being written
     :param bool progress_bar: Flag if Progress Bar should be shown
+    :param bool validate: Flag to disable the validation.
     :return: the name of the generated file
     :rtype: str
     """
@@ -48,8 +49,9 @@ def write_json_machine(json_folder=None, progress_bar=True):
         if progress:
             progress.update()
 
-        # validate the schema
-        file_format_schemas.validate(json_obj, MACHINE_FILENAME)
+        if validate:
+            # validate the schema
+            file_format_schemas.validate(json_obj, MACHINE_FILENAME)
 
         # update and complete progress bar
         if progress:
