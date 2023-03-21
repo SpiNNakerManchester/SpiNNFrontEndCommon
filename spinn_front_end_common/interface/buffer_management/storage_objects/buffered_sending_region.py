@@ -49,8 +49,11 @@ def get_n_bytes(n_keys):
 class BufferedSendingRegion(object):
     """
     A set of keys to be sent at given timestamps for a given region of
-    data.  Note that keys must be added in timestamp order or else an
-    exception will be raised.
+    data.
+
+    .. note::
+        Keys must be added in timestamp order or else an
+        exception will be raised.
     """
 
     __slots__ = [

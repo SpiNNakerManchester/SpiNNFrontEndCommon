@@ -136,7 +136,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yields the keys.
 
-        .. note:
+        .. note::
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p)
@@ -154,7 +154,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yields the keys and values for the DS data.
 
-        .. note:
+        .. note::
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p) and saved ds pairs
@@ -173,7 +173,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yields the keys and values for the DS data for system cores.
 
-        .. note:
+        .. note::
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p), saved ds and region_size triples
@@ -192,7 +192,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yields the keys and values for the DS data for application cores.
 
-        .. note:
+        .. note::
             Do not use the database for anything else while iterating.
 
         :return: Yields the (x, y, p) and saved ds pairs
@@ -435,7 +435,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yields the keys and values for the Info data.
 
-        .. note:
+        .. note::
             A DB transaction may be held while this iterator is processing.
             Reentrant use of this class is not supported.
 

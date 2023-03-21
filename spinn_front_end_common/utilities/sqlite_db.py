@@ -201,8 +201,11 @@ class SQLiteDB(AbstractContextManager):
                 cursor.execute(...)
 
         :param Isolation isolation_level:
-            The transaction isolation level; note that this sets it for the
-            connection! Can usually be *not* specified.
+            The transaction isolation level.
+
+            .. note::
+                This sets it for the connection!
+                Can usually be *not* specified.
         :rtype: ~typing.ContextManager(~sqlite3.Cursor)
         """
         if not self.__db:

@@ -407,7 +407,7 @@ class JavaCaller(object):
         Writes all the data specs for application cores,
         uploading the result to the machine.
 
-        .. note:
+        .. note::
             May assume that system cores are already loaded and running if
             `use_monitors` is set to `True`.
 
