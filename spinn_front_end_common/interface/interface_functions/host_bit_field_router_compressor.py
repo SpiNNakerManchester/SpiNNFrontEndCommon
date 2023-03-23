@@ -174,8 +174,7 @@ class _BitFieldData(object):
         self.sort_index = None
 
     def __str__(self):
-        return "{} {} {}".format(
-            self.processor_id, self.master_pop_key, self.bit_field)
+        return f"{self.processor_id} {self.master_pop_key} {self.bit_field}"
 
     def bit_field_as_bit_array(self):
         """

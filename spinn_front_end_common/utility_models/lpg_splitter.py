@@ -100,7 +100,7 @@ class LPGSplitter(AbstractSplitterCommon):
     @property
     def targeted_lpgs(self):
         """
-        Get which LPG machine vertex is targeted by which machine vertex
+        Which LPG machine vertex is targeted by which machine vertex
         and partition.
 
         :return:

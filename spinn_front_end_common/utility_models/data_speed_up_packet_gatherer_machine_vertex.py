@@ -1438,10 +1438,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param bytearray data: the packet data
         """
-        reread_data = struct.unpack("<{}B".format(len(data)), data)
+        reread_data = struct.unpack(f"<{len(data)}B", data)
         output = ""
         position2 = position
-        log.debug("size of data is {}".format((len(data) / 4) - 3))
+        log.debug("size of data is {}", (len(data) / 4) - 3)
         for index, reread_data_element in enumerate(reread_data):
             if index >= 12:
                 output += f"{position2}:{reread_data_element},"

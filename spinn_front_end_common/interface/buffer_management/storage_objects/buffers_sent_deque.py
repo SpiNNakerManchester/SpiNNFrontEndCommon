@@ -73,7 +73,7 @@ class BuffersSentDeque(object):
     @property
     def is_full(self):
         """
-        Determine if the number of messages sent is at the limit for the
+        Whether the number of messages sent is at the limit for the
         sequencing system.
 
         :rtype: bool

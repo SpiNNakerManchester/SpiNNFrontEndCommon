@@ -126,7 +126,7 @@ class BufferedSendingRegion(object):
     @property
     def is_next_timestamp(self):
         """
-        Determines if the region is empty.
+        Whether the region is empty.
 
         :return: True if the region is empty, false otherwise.
         :rtype: bool
