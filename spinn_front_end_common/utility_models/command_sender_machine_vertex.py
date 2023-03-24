@@ -67,12 +67,6 @@ class CommandSenderMachineVertex(
     # all commands will use this mask
     _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
 
-    _NOT_GOT_KEY_ERROR_MESSAGE = (
-        "The command sender {} has requested key {} for outgoing "
-        "partition {}, but the keys allocated to it ({}) do not match. this "
-        "will cause errors in the external devices support and therefore "
-        "needs fixing")
-
     def __init__(self, label, app_vertex=None):
         """
         :param str label: The label of this vertex
@@ -175,10 +169,12 @@ class CommandSenderMachineVertex(
                 self.app_vertex, self._keys_to_partition_id[mc_key])
             if allocated_mc_key != mc_key:
                 raise ConfigurationException(
-                    self._NOT_GOT_KEY_ERROR_MESSAGE.format(
-                        self._label, mc_key,
-                        self._keys_to_partition_id[mc_key],
-                        allocated_mc_key))
+                    f"The command sender {self._label} has requested key "
+                    f"{mc_key} for outgoing partition "
+                    f"{self._keys_to_partition_id[mc_key]}, but the keys "
+                    f"allocated to it ({allocated_mc_key}) do not match. This "
+                    "will cause errors in the external devices support and "
+                    "therefore needs fixing")
 
         timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \

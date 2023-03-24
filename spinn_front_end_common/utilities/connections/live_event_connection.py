@@ -354,8 +354,8 @@ class LiveEventConnection(DatabaseConnection):
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
             target=callback, args=(label, self),
-            name="{} callback thread for live_event_connection {}:{}".format(
-                kind, self._local_port, self._local_ip_address))
+            name=(f"{kind} callback thread for live_event_connection "
+                  f"{self._local_port}:{self._local_ip_address}"))
         thread.start()
 
     def __do_start_resume(self):

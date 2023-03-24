@@ -124,8 +124,8 @@ class MultiCastCommand(object):
         return self._payload is not None
 
     def __repr__(self):
-        return \
-            "MultiCastCommand(time={}, key={}, payload={},"\
-            " time_between_repeat={}, repeats={})".format(
-                self._time, self._key, self._payload,
-                self._delay_between_repeats, self._repeat)
+        return (
+            f"MultiCastCommand(time={self._time}, key={self._key}, "
+            f"payload={self._payload}, "
+            f"time_between_repeat={self._delay_between_repeats}, "
+            f"repeats={self._repeat})")

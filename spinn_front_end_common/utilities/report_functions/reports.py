@@ -67,8 +67,8 @@ def tag_allocator_report():
             for reverse_ip_tag in progress.over(tag_infos.reverse_ip_tags):
                 f.write(str(reverse_ip_tag) + "\n")
     except IOError:
-        logger.error("Generate_tag_report: Can't open file {} for "
-                     "writing.", file_name)
+        logger.error(
+            "Generate tag report: Can't open file {} for writing.", file_name)
 
 
 def placer_reports_with_application_graph():
@@ -143,11 +143,11 @@ def _do_router_summary_report(file_name, progress, routing_tables):
                         if not entry.processor_ids:
                             link_only += 1
                         spinnaker_routes.add(convert(entry))
-                    f.write("Chip {}:{} has {} entries of which {} are "
-                            "defaultable and {} link only with {} unique "
-                            "spinnaker routes\n".format(
-                                x, y, entries, defaultable, link_only,
-                                len(spinnaker_routes)))
+                    f.write(
+                        f"Chip {x}:{y} has {entries} entries of which "
+                        f"{defaultable} are defaultable and {link_only} link "
+                        f"only with {len(spinnaker_routes)} unique spinnaker "
+                        "routes\n")
                     total_entries += entries
                     max_entries = max(max_entries, entries)
                     max_none_defaultable = max(
@@ -156,18 +156,19 @@ def _do_router_summary_report(file_name, progress, routing_tables):
                     max_spinnaker_routes = max(
                         max_spinnaker_routes, len(spinnaker_routes))
 
-            f.write("\n Total entries {}, max per chip {} max none "
-                    "defaultable {} max link only {} "
-                    "max unique spinnaker routes {}\n\n".format(
-                        total_entries, max_entries, max_none_defaultable,
-                        max_link_only, max_spinnaker_routes))
+            f.write(
+                f"\nTotal entries {total_entries}, max per chip {max_entries} "
+                f"max non-defaultable {max_none_defaultable} "
+                f"max link only {max_link_only} "
+                f"max unique spinnaker routes {max_spinnaker_routes}\n\n")
             return RouterSummary(
                 total_entries, max_entries, max_none_defaultable,
                 max_link_only, max_spinnaker_routes)
 
     except IOError:
-        logger.exception("Generate_routing summary reports: "
-                         "Can't open file {} for writing.", file_name)
+        logger.exception(
+            "Generate routing summary report: Can't open file {} for writing.",
+            file_name)
 
 
 def router_report_from_paths():
@@ -190,8 +191,9 @@ def router_report_from_paths():
             for partition in progress.over(partitions):
                 _write_one_router_partition_report(f, partition)
     except IOError:
-        logger.exception("Generate_routing_reports: Can't open file {} for "
-                         "writing.", file_name)
+        logger.exception(
+            "Generate routing reports: Can't open file {} for writing.",
+            file_name)
 
 
 def _write_one_router_partition_report(f, partition):
@@ -211,9 +213,10 @@ def _write_one_router_partition_report(f, partition):
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(source_placement, r_info.key_and_mask)
-            f.write("    Edge '{}', from vertex: '{}' to vertex: '{}'".format(
-                edge.label, edge.pre_vertex.label, edge.post_vertex.label))
-            f.write(f"{path}\n")
+            f.write(
+                f"    Edge '{edge.label}', "
+                f"from vertex: '{edge.pre_vertex.label}' "
+                f"to vertex: '{edge.post_vertex.label}'{path}\n")
 
             # End one entry:
             f.write("\n")
@@ -221,7 +224,7 @@ def _write_one_router_partition_report(f, partition):
 
 def partitioner_report():
     """
-    Generate report on the placement of vertices onto cores.
+    Generate report on the partitioning of vertices.
     """
     # Cycle through all vertices, and for each cycle through its vertices.
     # For each vertex, describe its core mapping.
@@ -242,7 +245,7 @@ def partitioner_report():
                 _write_one_vertex_partition(f, vertex)
     except IOError:
         logger.exception(
-            "Generate_placement_reports: Can't open file {} for writing.",
+            "Generate partitioning reports: Can't open file {} for writing.",
             file_name)
 
 
@@ -292,7 +295,7 @@ def placement_report_with_application_graph_by_vertex():
                 _write_one_vertex_application_placement(f, vertex)
     except IOError:
         logger.exception(
-            "Generate_placement_reports: Can't open file {} for writing.",
+            "Generate placement reports: Can't open file {} for writing.",
             file_name)
 
 

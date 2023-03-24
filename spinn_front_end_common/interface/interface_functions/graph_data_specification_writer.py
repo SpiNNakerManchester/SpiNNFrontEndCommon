@@ -164,8 +164,7 @@ class _GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, region_size,
-                sum(region_size),
+                vert, region_size, sum(region_size),
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))

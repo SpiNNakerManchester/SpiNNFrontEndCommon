@@ -265,8 +265,9 @@ class IOBufExtractor(object):
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
-                        "failed to retrieve iobufs from {},{},{}; {}".format(
-                            core_subset.x, core_subset.y, p, str(e))))
+                        "failed to retrieve iobufs from "
+                        f"{core_subset.x},{core_subset.y},{core_subset.p}; "
+                        f"{str(e)}"))
         return io_buffers
 
     @staticmethod
@@ -279,6 +280,6 @@ class IOBufExtractor(object):
         """
         match = regex.match(line)
         if match:
-            entries.append("{}, {}, {}: {} ({})".format(
-                iobuf.x, iobuf.y, iobuf.p, match.group(ENTRY_TEXT),
-                match.group(ENTRY_FILE)))
+            entries.append(f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "
+                           f"{match.group(ENTRY_TEXT)} "
+                           f"({match.group(ENTRY_FILE)})")

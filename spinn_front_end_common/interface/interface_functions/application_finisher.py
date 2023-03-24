@@ -62,10 +62,9 @@ def application_finisher():
 
         if processors_rte > 0 or processors_watchdogged > 0:
             raise ExecutableFailedToStopException(
-                "{} of {} processors went into an error state when"
-                " shutting down".format(
-                    processors_rte + processors_watchdogged,
-                    total_processors))
+                f"{processors_rte + processors_watchdogged} of "
+                f"{total_processors} processors went into an error state "
+                "when shutting down")
 
         successful_cores_finished = txrx.get_cores_in_state(
             all_core_subsets, CPUState.FINISHED)

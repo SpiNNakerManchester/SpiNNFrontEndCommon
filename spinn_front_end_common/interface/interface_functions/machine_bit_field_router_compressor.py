@@ -105,8 +105,6 @@ class _MachineBitFieldRouterCompressor(object):
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
         "bit_field_sorter_and_searcher.aplx"
 
-    _PROGRESS_BAR_TEXT = \
-        "on chip {} compressor with bitfields"
     _HOST_BAR_TEXT = \
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
@@ -142,7 +140,7 @@ class _MachineBitFieldRouterCompressor(object):
         # new app id for this simulation
         routing_table_compressor_app_id = view.get_new_id()
 
-        text = self._PROGRESS_BAR_TEXT.format(self._compressor_type)
+        text = f"on chip {self._compressor_type} compressor with bitfields"
         retry_count = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_retry_count")

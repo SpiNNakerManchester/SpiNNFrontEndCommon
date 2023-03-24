@@ -330,9 +330,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Working with a list of lists so check length
             if len(send_buffer_times) != self._n_keys:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_keys))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_keys}")
 
         self._send_buffer = BufferedSendingRegion()
         self._send_buffer_times = send_buffer_times

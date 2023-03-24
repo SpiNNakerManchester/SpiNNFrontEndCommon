@@ -142,7 +142,6 @@ def start_compression_selection_process(
 
 
 class _BitFieldData(object):
-
     __slots__ = [
         # bit_field data
         "bit_field",
@@ -656,36 +655,34 @@ class _HostBasedBitFieldRouterCompressor(object):
                 float(n_bit_fields_merged))
 
         report_out.write(
-            "\nTable {}:{} has integrated {} out of {} available chip level "
-            "bitfields into the routing table. There by producing a "
-            "compression of {}%.\n\n".format(
-                router_table.x, router_table.y, n_bit_fields_merged,
-                n_possible_bit_fields, percentage_done))
+            f"\nTable {router_table.x}:{router_table.y} has integrated "
+            f"{n_bit_fields_merged} out of {n_possible_bit_fields} available "
+            "chip level bitfields into the routing table, thereby producing a "
+            f"compression of {percentage_done}%.\n\n")
 
         report_out.write(
-            "The uncompressed routing table had {} entries, the compressed "
-            "one with {} integrated bitfields has {} entries. \n\n".format(
-                router_table.number_of_entries,
-                n_bit_fields_merged,
-                # Note: _best_routing_table is a list(), router_table is not
-                len(self._best_routing_entries)))
+            "The uncompressed routing table had "
+            f"{router_table.number_of_entries} entries, the compressed "
+            f"one with {n_bit_fields_merged} integrated bitfields has "
+            f"{len(self._best_routing_entries)} entries.\n\n")
 
         report_out.write(
-            "The integration of {} bitfields removes up to {} MC packets "
-            "that otherwise would be being processed by the cores on the "
-            "chip, just to be dropped as they do not target anything.\n\n"
-            "".format(n_bit_fields_merged, n_packets_filtered))
+            f"The integration of {n_bit_fields_merged} bitfields removes up "
+            f"to {n_packets_filtered} MC packets that otherwise would be "
+            "being processed by the cores on the chip, just to be dropped as "
+            "they do not target anything.\n\n")
 
         report_out.write("The compression attempts are as follows:\n\n")
         for mid_point, result in self._compression_attempts.items():
-            report_out.write("Midpoint {}: {}\n".format(mid_point, result))
+            report_out.write(f"Midpoint {mid_point}: {result}\n")
 
         report_out.write("\nThe bit_fields merged are as follows:\n\n")
 
         for core in merged_by_core:
             for bf_data in merged_by_core[core]:
-                report_out.write("bitfield on core {} for key {} \n".format(
-                    core, bf_data.master_pop_key))
+                report_out.write(
+                    f"bitfield on core {core} for "
+                    f"key {bf_data.master_pop_key}\n")
 
         report_out.write("\n\n\n")
         report_out.write("The final routing table entries are as follows:\n\n")
@@ -696,17 +693,15 @@ class _HostBasedBitFieldRouterCompressor(object):
         report_out.write(
             "{:-<5s} {:-<10s} {:-<10s} {:-<10s} {:-<7s} {:-<14s}\n".format(
                 "", "", "", "", "", ""))
-        line_format = "{: >5d} {}\n"
 
         entry_count = 0
         n_defaultable = 0
         # Note: _best_routing_table is a list(), router_table is not
         for entry in self._best_routing_entries:
             index = entry_count & self._LOWER_16_BITS
-            entry_str = line_format.format(index, format_route(
-                entry.to_MulticastRoutingEntry()))
+            entry_str = format_route(entry.to_MulticastRoutingEntry())
             entry_count += 1
             if entry.defaultable:
                 n_defaultable += 1
-            report_out.write(entry_str)
-        report_out.write("{} Defaultable entries\n".format(n_defaultable))
+            report_out.write(f"{index:>5d} {entry_str}\n")
+        report_out.write(f"{n_defaultable} Defaultable entries\n")

@@ -179,15 +179,14 @@ def _write_report(writer):
     (min_bit_field, top_bit_field, total_bit_fields_merged,
      average_per_chip_merged) = _merged_component(to_merge_per_chip, writer)
     writer.write(
-        "\n\nBefore merge there where {} bitfields on {} Chips ranging from "
-        "{} to {} bitfields per chip with an average of {}".format(
-            total_to_merge, len(to_merge_per_chip), max_to_merge_per_chip,
-            low_to_merge_per_chip, average_per_chip_to_merge))
+        f"\n\nBefore merge there where {total_to_merge} bitfields on "
+        f"{len(to_merge_per_chip)} Chips ranging from {max_to_merge_per_chip} "
+        f"to {low_to_merge_per_chip} bitfields per chip with an average "
+        f"of {average_per_chip_to_merge}")
     writer.write(
-        "\nSuccessfully merged {} bitfields ranging from {} to {} "
-        "bitfields per chip with an average of {}".format(
-            total_bit_fields_merged, top_bit_field, min_bit_field,
-            average_per_chip_merged))
+        f"\nSuccessfully merged {total_bit_fields_merged} bitfields ranging "
+        f"from {top_bit_field} to {min_bit_field} bitfields per chip with an "
+        f"average of {average_per_chip_merged}")
     if total_to_merge:
         if total_bit_fields_merged == NOT_APPLICABLE:
             writer.write(f"\nNone of the {total_to_merge} bitfields merged")

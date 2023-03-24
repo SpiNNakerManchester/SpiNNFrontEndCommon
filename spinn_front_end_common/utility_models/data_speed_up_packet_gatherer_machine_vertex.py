@@ -52,8 +52,6 @@ log = FormatAdapter(logging.getLogger(__name__))
 DEST_X_SHIFT = 16
 
 TIMEOUT_RETRY_LIMIT = 100
-TIMEOUT_MESSAGE = "Failed to hear from the machine during {} attempts. "\
-    "Please try removing firewalls."
 _MINOR_LOSS_THRESHOLD = 10
 
 # cap for stopping wrap arounds
@@ -504,9 +502,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         with open(self._in_report_path, "a", encoding="utf-8") as writer:
             writer.write(
-                "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
-                    x, y, address_written_to, data_size, time_took_ms,
-                    mbs, missing_seq_nums))
+                f"{x}\t\t {y}\t\t {address_written_to}\t\t {data_size}\t\t"
+                f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
 
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
@@ -696,8 +693,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                             emergency_recover_state_from_failure(
                                 self, self._placement)
                             raise SpinnFrontEndException(
-                                TIMEOUT_MESSAGE.format(
-                                    time_out_count)) from e
+                                "Failed to hear from the machine during "
+                                f"{time_out_count} attempts. "
+                                "Please try removing firewalls.") from e
 
                         # If we never received a packet, we will never have
                         # created the buffer, so send everything again
@@ -1174,8 +1172,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param ~.Placement placement: the first placement used
         """
         with open(self._out_report_path, "a", encoding="utf-8") as writer:
-            writer.write("[{}:{}:{}] = {}\n".format(
-                placement.x, placement.y, placement.p, routers_been_in_use))
+            writer.write(
+                f"[{placement.x}:{placement.y}:{placement.p}] "
+                f"= {routers_been_in_use}\n")
 
     def _calculate_missing_seq_nums(self, seq_nums):
         """

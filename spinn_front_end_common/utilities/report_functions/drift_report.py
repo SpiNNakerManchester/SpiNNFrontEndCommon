@@ -75,9 +75,9 @@ def drift_report():
                     elif last_drift != drift:
                         logger.warning(
                             "On board {}, chip {}, {} is not in sync"
-                            " ({} vs {})".format(
-                                eth_chip.ip_address, chip.x, chip.y,
-                                drift, last_drift))
+                            " ({} vs {})",
+                            eth_chip.ip_address, chip.x, chip.y,
+                            drift, last_drift)
                     progress.update()
         writer.write("\n")
 

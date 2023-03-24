@@ -62,5 +62,6 @@ def generate_routing_compression_checker_report(
                     f.write(f"\t{format_route(o_route)}\n")
                     compare_route(o_route, compressed_dict, f=f)
     except IOError:
-        logger.exception("Generate_router_comparison_reports: Can't open file"
-                         " {} for writing.", file_name)
+        logger.exception(
+            "Generate router comparison reports: "
+            "Can't open file {} for writing.", file_name)

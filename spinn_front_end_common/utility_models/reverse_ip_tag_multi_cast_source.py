@@ -140,9 +140,8 @@ class ReverseIpTagMultiCastSource(
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_atoms))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_atoms}")
             return numpy.array(send_buffer_times, dtype="object")
         return numpy.array(send_buffer_times)
 
