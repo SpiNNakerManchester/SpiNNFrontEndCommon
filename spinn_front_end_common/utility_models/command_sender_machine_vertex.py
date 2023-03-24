@@ -177,10 +177,10 @@ class CommandSenderMachineVertex(
                     "therefore needs fixing")
 
         timed_commands_size = self.get_timed_commands_bytes()
-        start_resume_commands_size = \
-            self.get_n_command_bytes(self._commands_at_start_resume)
-        pause_stop_commands_size = \
-            self.get_n_command_bytes(self._commands_at_pause_stop)
+        start_resume_commands_size = self.get_n_command_bytes(
+            self._commands_at_start_resume)
+        pause_stop_commands_size = self.get_n_command_bytes(
+            self._commands_at_pause_stop)
 
         # reverse memory regions
         self._reserve_memory_regions(

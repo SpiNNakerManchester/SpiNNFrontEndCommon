@@ -665,8 +665,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
                         if cmd != DATA_IN_COMMANDS.RECEIVE_MISSING_SEQ_DATA\
                                 .value:
-                            raise ValueError(
-                                f"Unknown command {cmd} received")
+                            raise ValueError(f"Unknown command {cmd} received")
 
                         # The currently received packet has missing sequence
                         # numbers. Accumulate and dispatch transactionId when

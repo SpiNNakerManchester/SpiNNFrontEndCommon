@@ -587,7 +587,6 @@ class _MachineBitFieldRouterCompressor(object):
             the cores that the compressor going to run on
         :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen
         """
-
         routing_table_data = self._build_routing_table_data(app_id, table)
 
         # go to spinnman and ask for a memory region of that size per chip.

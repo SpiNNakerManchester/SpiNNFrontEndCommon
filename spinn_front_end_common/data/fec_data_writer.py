@@ -166,8 +166,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         if increment is None:
             if self.__fec_data._current_run_timesteps != 0:
-                raise NotImplementedError(
-                    "Run forever after another run")
+                raise NotImplementedError("Run forever after another run")
             self.__fec_data._current_run_timesteps = None
         else:
             if not isinstance(increment, int):
@@ -176,8 +175,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 raise ConfigurationException(
                     f"increment {increment} must not be negative")
             if self.__fec_data._current_run_timesteps is None:
-                raise NotImplementedError(
-                    "Run after run forever")
+                raise NotImplementedError("Run after run forever")
             self.__fec_data._first_machine_time_step = \
                 self.__fec_data._current_run_timesteps
             self.__fec_data._current_run_timesteps += increment
@@ -248,7 +246,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if simulation_time_step_us <= 0:
             raise ConfigurationException(
                 f'invalid simulation_time_step {simulation_time_step_us}'
-                f': must greater than zero')
+                ': must greater than zero')
 
         self.__fec_data._simulation_time_step_us = simulation_time_step_us
         self.__fec_data._simulation_time_step_ms = (
@@ -280,8 +278,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         if time_scale_factor is None:
             # Note while this reads from the cfg the cfg default is None
-            time_scale_factor = get_config_int(
-                "Machine", "time_scale_factor")
+            time_scale_factor = get_config_int("Machine", "time_scale_factor")
 
         if time_scale_factor is None:
             if default_time_scale_factor is not None:
@@ -302,7 +299,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         if time_scale_factor <= 0:
             raise ConfigurationException(
                 f'invalid time_scale_factor {time_scale_factor}'
-                f': must greater than zero')
+                ': must greater than zero')
 
         self.__fec_data._time_scale_factor = time_scale_factor
 
@@ -312,7 +309,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         rounded = round(raw)
         if abs(rounded - raw) > 0.0001:
             raise ConfigurationException(
-                f"The multiplication of simulation time step in microseconds: "
+                "The multiplication of simulation time step in microseconds: "
                 f"{self.get_simulation_time_step_us()} and times scale factor"
                 f": {self.get_time_scale_factor()} produced a non integer "
                 f"hardware time step of {raw}")
@@ -370,18 +367,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 raise TypeError("n_chips_required must be an int (or None)")
             if n_chips_required <= 0:
                 raise ConfigurationException(
-                    f"n_chips_required must be positive and not "
+                    "n_chips_required must be positive and not "
                     f"{n_chips_required}")
         else:
             if n_chips_required is not None:
                 raise ConfigurationException(
-                    f"Illegal call with both both param provided as "
+                    "Illegal call with both both param provided as "
                     f"{n_boards_required}, {n_chips_required}")
             if not isinstance(n_boards_required, int):
                 raise TypeError("n_boards_required must be an int (or None)")
             if n_boards_required <= 0:
                 raise ConfigurationException(
-                    f"n_boards_required must be positive and not "
+                    "n_boards_required must be positive and not "
                     f"{n_boards_required}")
         if self.__fec_data._n_boards_required is not None or \
                 self.__fec_data._n_chips_required is not None:
@@ -400,7 +397,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             raise TypeError("n_chips_in_graph must be an int (or None)")
         if n_chips_in_graph <= 0:
             raise ConfigurationException(
-                f"n_chips_in_graph must be positive and not "
+                "n_chips_in_graph must be positive and not "
                 f"{n_chips_in_graph}")
         self.__fec_data._n_chips_in_graph = n_chips_in_graph
 
@@ -427,7 +424,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param JavaCaller java_caller:
         """
         if not isinstance(java_caller, JavaCaller):
-            raise TypeError("java_calle must be a JavaCaller")
+            raise TypeError("java_caller must be a JavaCaller")
         self.__fec_data._java_caller = java_caller
 
     def reset_sync_signal(self):
@@ -438,7 +435,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_executable_types(self, executable_types):
         """
-
+        :param executable_types:
         :type executable_types:  dict(
             ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
@@ -539,6 +536,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
                 break  # assume if first is ok all are
+        except TypeError:
+            raise
         except Exception as ex:  # pylint: disable=broad-except
             raise self.__monitor_map_error() from ex
         self.__fec_data._monitor_map = monitor_map

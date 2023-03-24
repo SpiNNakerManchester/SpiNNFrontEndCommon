@@ -644,33 +644,33 @@ def generate_comparison_router_report(compressed_routing_tables):
                 total_uncompressed += n_entries_uncompressed
                 n_entries_compressed = compressed_table.number_of_entries
                 total_compressed += n_entries_compressed
+                ratio = _compression_ratio(
+                    n_entries_uncompressed, n_entries_compressed)
                 f.write(
-                    "Uncompressed table at {}:{} has {} entries "
-                    "whereas compressed table has {} entries. "
-                    "This is a decrease of {}%\n".format(
-                        x, y, n_entries_uncompressed, n_entries_compressed,
-                        _compression_ratio(
-                            n_entries_uncompressed, n_entries_compressed)))
+                    f"Uncompressed table at {x}:{y} has "
+                    f"{n_entries_uncompressed} entries whereas compressed "
+                    f"table has {n_entries_compressed} entries. This is a "
+                    f"decrease of {ratio}%\n")
                 if max_compressed < n_entries_compressed:
                     max_compressed = n_entries_compressed
                     uncompressed_for_max = n_entries_uncompressed
             if total_uncompressed > 0:
+                ratio = _compression_ratio(
+                    total_uncompressed, total_compressed)
                 f.write(
-                    "\nTotal has {} entries whereas compressed tables "
-                    "have {} entries. This is an average decrease of {}%\n"
-                    "".format(
-                        total_uncompressed, total_compressed,
-                        _compression_ratio(
-                            total_uncompressed, total_compressed)))
+                    f"\nTotal has {total_uncompressed} entries whereas "
+                    f"compressed tables have {total_compressed} entries. "
+                    f"This is an average decrease of {ratio}%\n")
+                ratio = _compression_ratio(
+                    uncompressed_for_max, max_compressed)
                 f.write(
-                    "Worst case has {} entries whereas compressed tables "
-                    "have {} entries. This is a decrease of {}%\n".format(
-                        uncompressed_for_max, max_compressed,
-                        _compression_ratio(
-                            uncompressed_for_max, max_compressed)))
+                    f"Worst case has {uncompressed_for_max} entries whereas "
+                    f"compressed tables have {max_compressed} entries. This "
+                    f"is a decrease of {ratio}%\n")
     except IOError:
-        logger.exception("Generate_router_comparison_reports: Can't open file"
-                         " {} for writing.", file_name)
+        logger.exception(
+            "Generate router comparison reports: "
+            "Can't open file {} for writing.", file_name)
 
 
 def _search_route(source_placement, key_and_mask):

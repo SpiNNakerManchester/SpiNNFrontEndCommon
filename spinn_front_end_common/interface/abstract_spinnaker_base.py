@@ -2314,8 +2314,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def __repr__(self):
         if self._data_writer.has_ipaddress():
-            return f"general front end instance for machine " \
-                   f"{self._data_writer.get_ipaddress()}"
+            return (f"general front end instance for machine "
+                    f"{self._data_writer.get_ipaddress()}")
         else:
             return "general front end instance no machine set"
 

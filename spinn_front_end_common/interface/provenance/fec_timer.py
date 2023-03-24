@@ -187,8 +187,8 @@ class FecTimer(object):
                            f"{exc_type.__name__} after {time_taken}")
                 skip = exc_type.__name__
             except Exception as ex:  # pylint: disable=broad-except
-                message = f"{self._algorithm} exited with an exception" \
-                          f"after {time_taken}"
+                message = (f"{self._algorithm} exited with an exception"
+                           f"after {time_taken}")
                 skip = f"Exception {ex}"
 
         with GlobalProvenance() as db:

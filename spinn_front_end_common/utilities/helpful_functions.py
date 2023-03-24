@@ -117,11 +117,10 @@ def locate_memory_region_for_placement(placement, region):
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset = \
-        get_region_base_address_offset(regions_base_address, region)
+    element_addr = get_region_base_address_offset(regions_base_address, region)
 
     # Get the actual address of the region
-    return transceiver.read_word(placement.x, placement.y, region_offset)
+    return transceiver.read_word(placement.x, placement.y, element_addr)
 
 
 def convert_string_into_chip_and_core_subset(cores):
