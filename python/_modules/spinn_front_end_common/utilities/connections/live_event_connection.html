@@ -50,22 +50,26 @@
 <span class="c1"># limitations under the License.</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span><span class="p">,</span> <span class="n">Condition</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
 <span class="kn">from</span> <span class="nn">spinn_utilities.log</span> <span class="kn">import</span> <span class="n">FormatAdapter</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio.data_messages</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">EIEIODataMessage</span><span class="p">,</span> <span class="n">KeyPayloadDataElement</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="n">EIEIOType</span><span class="p">,</span> <span class="n">AbstractEIEIOMessage</span>
 <span class="kn">from</span> <span class="nn">spinnman.connections</span> <span class="kn">import</span> <span class="n">ConnectionListener</span>
-<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="n">EIEIOConnection</span>
+<span class="kn">from</span> <span class="nn">spinnman.connections.udp_packet_connections</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EIEIOConnection</span><span class="p">,</span> <span class="n">UDPConnection</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_flag</span> <span class="kn">import</span> <span class="n">SDPFlag</span>
 <span class="kn">from</span> <span class="nn">spinnman.constants</span> <span class="kn">import</span> <span class="n">SCP_SCAMP_PORT</span>
-<span class="kn">from</span> <span class="nn">spinnman.utilities.utility_functions</span> <span class="kn">import</span> <span class="n">send_port_trigger_message</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_message</span> <span class="kn">import</span> <span class="n">SDPMessage</span>
 <span class="kn">from</span> <span class="nn">spinnman.messages.sdp.sdp_header</span> <span class="kn">import</span> <span class="n">SDPHeader</span>
+<span class="kn">from</span> <span class="nn">spinnman.utilities.utility_functions</span> <span class="kn">import</span> <span class="n">reprogram_tag_to_listener</span>
+<span class="kn">from</span> <span class="nn">spinnman.messages.eieio</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">read_eieio_command_message</span><span class="p">,</span> <span class="n">read_eieio_data_message</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.constants</span> <span class="kn">import</span> <span class="n">NOTIFY_PORT</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.database</span> <span class="kn">import</span> <span class="n">DatabaseConnection</span>
 <span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ConfigurationException</span>
-<span class="kn">from</span> <span class="nn">spinn_front_end_common.utilities.utility_calls</span> <span class="kn">import</span> <span class="n">retarget_tag</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
@@ -77,6 +81,24 @@
 
 <span class="c1"># The maximum number of 32-bit keys with payloads that will fit in a packet</span>
 <span class="n">_MAX_FULL_KEYS_PAYLOADS_PER_PACKET</span> <span class="o">=</span> <span class="mi">31</span>
+
+<span class="c1"># Decoding of a single short value</span>
+<span class="n">_ONE_SHORT</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span><span class="s2">&quot;&lt;H&quot;</span><span class="p">)</span>
+
+<span class="c1"># The size of a RAW SCP OK response (includes 2 bytes of padding)</span>
+<span class="n">_SCP_OK_SIZE</span> <span class="o">=</span> <span class="mi">18</span>
+
+<span class="c1"># The byte of the RAW SCP packet that contains the flags</span>
+<span class="n">_SCP_FLAGS_BYTE</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># The byte of the RAW SCP packet that contains the destination cpu</span>
+<span class="n">_SCP_DEST_CPU_BYTE</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1"># The expected flags from a RAW SCP packet in response</span>
+<span class="n">_SCP_RESPONSE_FLAGS</span> <span class="o">=</span> <span class="mi">7</span>
+
+<span class="c1"># The expected destination cpu from a RAW SCP packet in repsonse</span>
+<span class="n">_SCP_RESPONSE_DEST</span> <span class="o">=</span> <span class="mh">0xFF</span>
 
 
 <span class="k">class</span> <span class="nc">LiveEventConnection</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">):</span>
@@ -102,7 +124,12 @@
         <span class="s2">&quot;__sender_connection&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__start_resume_callbacks&quot;</span><span class="p">,</span>
         <span class="s2">&quot;__simulator&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;__spalloc_job&quot;</span><span class="p">]</span>
+        <span class="s2">&quot;__spalloc_job&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__receiver_details&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__is_running&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__expect_scp_response&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__expect_scp_response_lock&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;__scp_response_received&quot;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live_packet_gather_label</span><span class="p">,</span> <span class="n">receive_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">send_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_host</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_port</span><span class="o">=</span><span class="n">NOTIFY_PORT</span><span class="p">):</span>
@@ -142,6 +169,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop_callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__init_callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_details</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">receive_labels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">receive_labels</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__live_event_callbacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">())</span>
@@ -156,6 +184,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_listener</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__error_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span> <span class="o">=</span> <span class="n">Condition</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="LiveEventConnection.add_send_label"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_send_label">[docs]</a>    <span class="k">def</span> <span class="nf">add_send_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -309,8 +341,7 @@
             <span class="k">if</span> <span class="n">job</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">job</span><span class="o">.</span><span class="n">open_listener_connection</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">EIEIOConnection</span><span class="p">()</span>
-        <span class="n">indirect</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="s2">&quot;update_tag&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="o">=</span> <span class="n">UDPConnection</span><span class="p">()</span>
         <span class="n">receivers</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">label_id</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receive_labels</span><span class="p">):</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_live_output_details</span><span class="p">(</span>
@@ -319,15 +350,7 @@
             <span class="c1"># Update the tag if not already done</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">board_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">receivers</span><span class="p">:</span>
                 <span class="n">receivers</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">board_address</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">tag</span><span class="p">))</span>
-                <span class="k">if</span> <span class="n">indirect</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
-                    <span class="c1"># No port trigger necessary; proxied already</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">retarget_tag</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span>
-                        <span class="n">ip_address</span><span class="o">=</span><span class="n">board_address</span><span class="p">)</span>
-                    <span class="n">send_port_trigger_message</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_details</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">board_address</span><span class="p">))</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Listening for traffic from </span><span class="si">{}</span><span class="s2"> on board </span><span class="si">{}</span><span class="s2"> on </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -395,20 +418,68 @@
         <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;start_resume&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__send_tag_messages</span><span class="p">)</span>
+        <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__do_stop_pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;pause_stop&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__do_receive_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
-        <span class="c1"># pylint: disable=broad-except</span>
+    <span class="k">def</span> <span class="nf">__send_tag_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">indirect</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="s2">&quot;update_tag&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">:</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_details</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">indirect</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span>
+                            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">do_receive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                        <span class="c1"># No port trigger necessary; proxied already</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">reprogram_tag_to_listener</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span>
+                            <span class="n">tag</span><span class="p">,</span> <span class="n">read_response</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">while</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__handle_scp_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="p">:</span>
+            <span class="c1"># SCP unexpected</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="n">_SCP_OK_SIZE</span> <span class="ow">and</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">_SCP_FLAGS_BYTE</span><span class="p">]</span> <span class="o">==</span> <span class="n">_SCP_RESPONSE_FLAGS</span> <span class="ow">and</span>
+                    <span class="n">data</span><span class="p">[</span><span class="n">_SCP_DEST_CPU_BYTE</span><span class="p">]</span> <span class="o">==</span> <span class="n">_SCP_RESPONSE_DEST</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="o">=</span> <span class="n">data</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__do_receive_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__handle_scp_packet</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+            <span class="k">return</span>
+
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Received packet&quot;</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">_ONE_SHORT</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">header</span> <span class="o">&amp;</span> <span class="mh">0xC000</span> <span class="o">==</span> <span class="mh">0x4000</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">read_eieio_command_message</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">packet</span> <span class="o">=</span> <span class="n">read_eieio_data_message</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">eieio_header</span><span class="o">.</span><span class="n">is_time</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__handle_time_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__handle_no_time_packet</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+
+        <span class="c1"># pylint: disable=broad-except</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;problem handling received packet&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -587,6 +658,7 @@
             <span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="n">SCP_SCAMP_PORT</span><span class="p">))</span>
 
 <div class="viewcode-block" id="LiveEventConnection.close"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__handle_possible_rerun_state</span><span class="p">()</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 </pre></div>
