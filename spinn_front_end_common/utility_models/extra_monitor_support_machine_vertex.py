@@ -125,9 +125,6 @@ class ExtraMonitorSupportMachineVertex(
             self, reinject_point_to_point=False,
             reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """
-        :param bool reinject_multicast:
-            if we reinject multicast packets; defaults to value of
-            `enable_reinjection` setting in configuration file
         :param bool reinject_point_to_point:
             if we reinject point-to-point packets
         :param bool reinject_nearest_neighbour:
