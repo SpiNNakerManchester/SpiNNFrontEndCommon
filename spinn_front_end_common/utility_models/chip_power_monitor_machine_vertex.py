@@ -53,6 +53,10 @@ class ChipPowerMonitorMachineVertex(
     """
     Machine vertex for C code representing functionality to record
     idle times in a machine graph.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
     __slots__ = [
         "_sampling_frequency"]
@@ -66,17 +70,13 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(
-            self, label, sampling_frequency, app_vertex=None,
-            vertex_slice=None):
+    def __init__(self, label, sampling_frequency):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
-        :param ChipPowerMonitor app_vertex: associated application vertex
-        :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
         super().__init__(
-            label=label, app_vertex=app_vertex, vertex_slice=vertex_slice)
+            label=label, app_vertex=None, vertex_slice=None)
         self._sampling_frequency = sampling_frequency
 
     @property

@@ -96,6 +96,10 @@ class ExtraMonitorSupportMachineVertex(
     Supports reinjection control and the faster data transfer protocols.
 
     Usually deployed once per chip.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
 
     __slots__ = (

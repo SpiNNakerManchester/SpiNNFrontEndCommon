@@ -186,6 +186,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     This machine vertex is only ever placed on chips with a working Ethernet
     connection; it collaborates with the
     :py:class:`ExtraMonitorSupportMachineVertex` to write data on other chips.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
     __slots__ = [
         # x coordinate
@@ -269,20 +273,15 @@ class DataSpeedUpPacketGatherMachineVertex(
     # Initial port for the reverse IP tag (to be replaced later)
     _TAG_INITIAL_PORT = 10000
 
-    def __init__(self, x, y, ip_address, app_vertex=None):
+    def __init__(self, x, y, ip_address):
         """
         :param int x: Where this gatherer is.
         :param int y: Where this gatherer is.
         :param str ip_address:
             How to talk directly to the chip where the gatherer is.
-        :param app_vertex:
-            The application vertex that caused this machine vertex to be
-            created. If `None`, there is no such application vertex.
-        :type app_vertex:
-            ~pacman.model.graphs.application.ApplicationVertex or None
         """
         super().__init__(
-            label=f"SYSTEM:PacketGatherer({x},{y})", app_vertex=app_vertex)
+            label=f"SYSTEM:PacketGatherer({x},{y})", app_vertex=None)
 
         # data holders for the output, and sequence numbers
         self._view = None

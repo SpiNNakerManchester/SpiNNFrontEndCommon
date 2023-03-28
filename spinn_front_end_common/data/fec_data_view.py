@@ -169,7 +169,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     """
     Adds the extra Methods to the View for spinn_front_end_commom level.
 
-    See UtilsDataView for a more detailed description.
+    See :py:class:`~spinn_utilities.data.UtilsDataView` for a more detailed
+    description.
 
     This class is designed to only be used directly within non-PyNN
     repositories as all methods are available to subclasses
@@ -199,7 +200,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The end of this or the previous do__run loop time in ms.
 
-        Semantic sugar for current_run_timesteps * simulation_time_step_ms
+        Syntactic sugar for `current_run_timesteps * simulation_time_step_ms`
 
         Will be zero if not yet run and not yet in the do_run_loop
 
@@ -230,7 +231,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Returns the allocation controller if known.
 
         :rtype: AbstractMachineAllocationController
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the buffer manager unavailable
         """
         if cls.__fec_data._allocation_controller is None:
@@ -257,7 +258,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         :rtype:
             ~spinn_front_end_common.interface.buffer_management.BufferManager
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the buffer manager unavailable
         """
         if cls.__fec_data._buffer_manager is None:
@@ -289,7 +290,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Guaranteed to be positive int if available
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the max run time is currently unavailable
         """
         if cls.__fec_data._max_run_time_steps is None:
@@ -329,7 +330,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Previously known as "machine_time_step"
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_us is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -341,10 +342,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The simulation timestep, in seconds.
 
-        Semantic sugar for simulation_time_step() / 1,000,000.
+        Syntactic sugar for `simulation_time_step() / 1,000,000`.
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -356,10 +357,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The simulation time step, in milliseconds.
 
-        Semantic sugar for simulation_time_step_us / 1000.
+        Syntactic sugar for `simulation_time_step_us / 1000`.
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_us is None:
@@ -371,10 +372,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The number of simulation time steps in a millisecond.
 
-        Semantic sugar for 1000 / simulation_time_step_us
+        Syntactic sugar for `1000 / simulation_time_step_us`
 
         :rtype: float
-        :raises SpiNNUtilsExceptionn:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_per_ms is None:
@@ -386,10 +387,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The number of simulation time steps in a seconds.
 
-        Semantic sugar for 1,000,000 / simulation_time_step_us
+        Syntactic sugar for `1,000,000 / simulation_time_step_us`
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._simulation_time_step_per_s is None:
@@ -401,10 +402,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The hardware timestep, in milliseconds.
 
-        Semantic sugar for simulation_time_step_ms * time_scale_factor
+        Syntactic sugar for `simulation_time_step_ms * time_scale_factor`
 
         :rtype: float
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_ms is None:
@@ -416,10 +417,10 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         The hardware timestep, in microseconds.
 
-        Semantic sugar for simulation_time_step_us * time_scale_factor
+        Syntactic sugar for `simulation_time_step_us * time_scale_factor`
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the hardware_time_step is currently unavailable
         """
         if cls.__fec_data._hardware_time_step_us is None:
@@ -462,7 +463,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         Reset numbers start at zero
 
-        :return:
+        :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the run_number is currently unavailable
         """
@@ -505,7 +506,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         Run numbers start at 1
 
-        :return:
         :rtype: int
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the run_number is currently unavailable
@@ -541,7 +541,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Reports if a user has sets the number of boards requested during setup.
 
         :rtype: bool
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If n_boards_required is not set or set to `None`
         """
         return cls.__fec_data._n_boards_required is not None
@@ -575,7 +575,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Guaranteed to be positive if set
 
         :rtype: int
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If data for n_chips_needed is not available
         """
         if cls.__fec_data._n_chips_required:
@@ -608,7 +608,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             shared by all path methods
 
         :rtype: str
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls.__fec_data._timestamp_dir_path:
@@ -625,7 +625,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Retrieve the data_in_multicast_key_to_chip_map if known.
 
         :rtype: dict
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the data_in_multicast_key_to_chip_map is currently unavailable
         """
         if cls.__fec_data._data_in_multicast_key_to_chip_map is None:
@@ -651,7 +651,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Retrieve the system_multicast_router_timeout_keys if known.
 
         :rtype: dict
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the system_multicast_router_timeout_keys is currently
             unavailable
         """
@@ -704,7 +704,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Reports if there is a Java called that can be used.
 
-        Equivalent to get_config_bool("Java", "use_java") as the writer will
+        Equivalent to `get_config_bool("Java", "use_java")` as the writer will
         have created the caller during setup
 
         The behaviour when Mocked is currently to always return False.
@@ -741,7 +741,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             shared by all path methods.
 
         :rtype: str
-        :raises SpiNNUtilsException:
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
         if cls._is_mocked():
@@ -1169,6 +1169,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Get an iterator over the live output vertices and partition IDs.
 
-        :rtype: set((ApplicationVertex, str))
+        :rtype: iterable(tuple(ApplicationVertex, str))
         """
         return iter(cls.__fec_data._live_output_vertices)

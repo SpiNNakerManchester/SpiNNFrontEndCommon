@@ -50,11 +50,12 @@ REPORTS_DIRNAME = "reports"
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
-    See UtilsDataWriter.
+    See :py:class:`~spinn_utilities.data.utils_data_writer.UtilsDataWriter`.
 
-    This class is designed to only be used directly by AbstractSpinnakerBase
-    and within the Non-PyNN repositories unittests as all methods are
-    available to subclasses
+    This class is designed to only be used directly by
+    :py:class:`AbstractSpinnakerBase`
+    and within the Non-PyNN repositories unit tests as all methods are
+    available to subclasses.
     """
     __fec_data = _FecDataModel()
     __slots__ = []
@@ -327,8 +328,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         Sets the system_multicast_routing_data.
 
         These are data_in_multicast_routing_tables,
-                 data_in_multicast_key_to_chip_map,
-                 system_multicast_router_timeout_keys
+        data_in_multicast_key_to_chip_map,
+        system_multicast_router_timeout_keys
 
         :param tuple(dict, MulticastRoutingTables, dict) data: new value
         """
@@ -436,7 +437,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     def set_executable_types(self, executable_types):
         """
         :param executable_types:
-        :type executable_types:  dict(
+        :type executable_types: dict(
             ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
         """
