@@ -151,7 +151,7 @@
         <span class="c1"># Wait to be told by the toolchain where the DB is located</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">toolchain_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive_with_address</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
-        <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="n">SpinnmanIOException</span><span class="p">,</span> <span class="n">SpinnmanTimeoutException</span><span class="p">):</span>
             <span class="k">return</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read_db</span><span class="p">(</span><span class="n">toolchain_address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 

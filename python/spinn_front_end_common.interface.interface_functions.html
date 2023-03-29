@@ -158,7 +158,7 @@ the exact same algorithm implemented in Python.</p>
 <dd><p>Finds how many application chips there were and the cost on             each chip</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – placements</p>
+<dd class="field-odd"><p><strong>placements</strong> (<em>Placements</em>) – placements</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>a tuple with 4 elements.</p>
@@ -271,7 +271,7 @@ the exact same algorithm implemented in Python.</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">database_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.database_interface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>tags</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.tags/#pacman.model.tags.Tags" title="(in PACMAN v6.0)"><em>Tags</em></a>) – </p>
+<dd class="field-odd"><p><strong>tags</strong> (<em>Tags</em>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Database interface, where the database is located</p>
@@ -321,7 +321,7 @@ the exact same algorithm implemented in Python.</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_data_specification_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_data_specification_writer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – the optional order in which placements should be examined</p>
+<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><em>Placement</em><em>)</em>) – the optional order in which placements should be examined</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataSpecificationTargets</p>
@@ -356,7 +356,7 @@ boot port, allocation controller</p>
 <a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController">MachineAllocationController</a>)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman/#pacman.exceptions.PacmanConfigurationException" title="(in PACMAN v6.0)"><strong>PacmanConfigurationException</strong></a> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
+<dd class="field-even"><p><strong>PacmanConfigurationException</strong> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
 </dd>
 </dl>
 </dd></dl>
@@ -370,7 +370,7 @@ boot port, allocation controller</p>
 <dd class="field-odd"><p>compressed routing table entries</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
+<dd class="field-even"><p><em>MulticastRoutingTables</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -543,7 +543,7 @@ May not be all placements so dont use View</p></li>
 <dd><p>Reads compressed routing tables from a SpiNNaker machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
+<dd class="field-odd"><p><em>MulticastRoutingTables</em></p>
 </dd>
 </dl>
 </dd></dl>
@@ -577,7 +577,7 @@ May not be all placements so dont use View</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p></li>
+<li><p><strong>router_tables</strong> (<em>MulticastRoutingTables</em>) – </p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 </ul>
 </dd>

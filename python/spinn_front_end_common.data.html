@@ -54,7 +54,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.data.fec_data_writer.</span></span><span class="sig-name descname"><span class="pre">FecDataWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.data/#pacman.data.pacman_data_writer.PacmanDataWriter" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PacmanDataWriter</span></code></a>, <a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.data/#spinnman.data.spinnman_data_writer.SpiNNManDataWriter" title="(in SpiNNMan v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpiNNManDataWriter</span></code></a>, <a class="reference internal" href="#spinn_front_end_common.data.FecDataView" title="spinn_front_end_common.data.FecDataView"><code class="xref py py-class docutils literal notranslate"><span class="pre">FecDataView</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PacmanDataWriter</span></code>, <a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.data/#spinnman.data.spinnman_data_writer.SpiNNManDataWriter" title="(in SpiNNMan v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpiNNManDataWriter</span></code></a>, <a class="reference internal" href="#spinn_front_end_common.data.FecDataView" title="spinn_front_end_common.data.FecDataView"><code class="xref py py-class docutils literal notranslate"><span class="pre">FecDataView</span></code></a></p>
 <p>See UtilsDataWriter</p>
 <p>This class is designed to only be used directly by AbstractSpinnakerBase
 and within the None PyNN repositories unittests as all methods are
@@ -72,7 +72,7 @@ available to subclasses</p>
 <p>Semantic sugar for get_graph().add_vertex</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – The vertex to add to the graph</p>
+<dd class="field-odd"><p><strong>vertex</strong> (<em>ApplicationVertex</em>) – The vertex to add to the graph</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -398,7 +398,7 @@ Application Vertex if not it must be a MachineVertex</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) – params to look for a LPG</p></li>
-<li><p><strong>vertex_to_record_from</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – the vertex that needs to send to a given LPG</p></li>
+<li><p><strong>vertex_to_record_from</strong> (<em>AbstractVertex</em>) – the vertex that needs to send to a given LPG</p></li>
 <li><p><strong>partition_ids</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – the IDs of the partitions to connect from the vertex</p></li>
 </ul>
 </dd>

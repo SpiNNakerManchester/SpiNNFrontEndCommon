@@ -78,7 +78,7 @@
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>profile_region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – DSG region to get profiling data out of SDRAM</p></li>
 <li><p><strong>tag_labels</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – labels for the profiling data</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – placement</p></li>
+<li><p><strong>placement</strong> (<em>Placement</em>) – placement</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -130,14 +130,14 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.AbstractHasProfileData">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.profiling.</span></span><span class="sig-name descname"><span class="pre">AbstractHasProfileData</span></span><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Indicates a <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MachineVertex</span></code></a>         that can record a profile.</p>
+<p>Indicates a <code class="xref py py-class docutils literal notranslate"><span class="pre">MachineVertex</span></code>         that can record a profile.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_profile_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/profiling/abstract_has_profile_data.html#AbstractHasProfileData.get_profile_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.profiling.AbstractHasProfileData.get_profile_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the profile data recorded during simulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – </p>
+<dd class="field-odd"><p><strong>placement</strong> (<em>Placement</em>) – </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.profiling.ProfileData" title="spinn_front_end_common.interface.profiling.ProfileData"><em>ProfileData</em></a></p>

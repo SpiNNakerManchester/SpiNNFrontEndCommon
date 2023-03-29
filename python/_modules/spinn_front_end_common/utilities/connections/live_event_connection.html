@@ -371,6 +371,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_listener</span><span class="o">.</span><span class="n">add_callback</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__do_receive_packet</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_listener</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__send_tag_messages_now</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__get_live_input_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_reader</span><span class="p">,</span> <span class="n">send_label</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -418,9 +419,10 @@
         <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">callbacks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;start_resume&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__send_tag_messages</span><span class="p">)</span>
-        <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__send_tag_messages_thread</span><span class="p">)</span>
+            <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__do_stop_pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span> <span class="o">=</span> <span class="kc">False</span>
@@ -428,30 +430,34 @@
             <span class="k">for</span> <span class="n">callback</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__launch_thread</span><span class="p">(</span><span class="s2">&quot;pause_stop&quot;</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">__send_tag_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__send_tag_messages_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
-        <span class="n">indirect</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="s2">&quot;update_tag&quot;</span><span class="p">)</span>
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">:</span>
-            <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_details</span><span class="p">:</span>
-                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="o">=</span> <span class="kc">None</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span> <span class="o">=</span> <span class="kc">True</span>
-                    <span class="k">if</span> <span class="n">indirect</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span>
-                            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">do_receive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                        <span class="c1"># No port trigger necessary; proxied already</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">reprogram_tag_to_listener</span><span class="p">(</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span>
-                            <span class="n">tag</span><span class="p">,</span> <span class="n">read_response</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                    <span class="k">while</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span>
-                           <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">):</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_running</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__send_tag_messages_now</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__send_tag_messages_now</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">indirect</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="s2">&quot;update_tag&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">board_address</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_details</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">if</span> <span class="n">indirect</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="o">.</span><span class="n">update_tag</span><span class="p">(</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">do_receive</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="c1"># No port trigger necessary; proxied already</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">reprogram_tag_to_listener</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">__receiver_connection</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">board_address</span><span class="p">,</span>
+                        <span class="n">tag</span><span class="p">,</span> <span class="n">read_response</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__scp_response_received</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__handle_scp_packet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response_lock</span><span class="p">:</span>
+
             <span class="c1"># SCP unexpected</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__expect_scp_response</span><span class="p">:</span>
                 <span class="k">return</span> <span class="kc">False</span>
