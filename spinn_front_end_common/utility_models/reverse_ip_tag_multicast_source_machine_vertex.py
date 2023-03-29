@@ -664,8 +664,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={"routing_info"})
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
-            ):
+            self, spec, placement):  # @UnusedVariable
         self.update_virtual_key()
 
         # Reserve regions

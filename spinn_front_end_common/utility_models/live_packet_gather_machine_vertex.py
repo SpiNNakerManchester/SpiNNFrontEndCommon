@@ -144,11 +144,7 @@ class LivePacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
-            ):
-        """
-        :param ~pacman.model.tags.Tags tags:
-        """
+            self, spec, placement):  # @UnusedVariable
         # pylint: disable=arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 

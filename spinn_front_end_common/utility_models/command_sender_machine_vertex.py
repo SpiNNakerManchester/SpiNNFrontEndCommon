@@ -159,10 +159,6 @@ class CommandSenderMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        """
-        :param ~pacman.model.routing_info.RoutingInfo routing_infos:
-            the routing infos
-        """
         routing_infos = FecDataView.get_routing_infos()
         for mc_key in self._keys_to_partition_id.keys():
             allocated_mc_key = routing_infos.get_first_key_from_pre_vertex(

@@ -137,12 +137,6 @@ class ChipPowerMonitorMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             ):
-        """
-        Supports the application vertex calling this directly.
-
-        :param ~data_specification.DataSpecificationGenerator spec: data spec
-        :param int data_n_time_steps: timesteps to reserve data for
-        """
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:

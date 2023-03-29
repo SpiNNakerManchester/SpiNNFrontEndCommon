@@ -26,8 +26,7 @@ class MachineDataSpecableVertex(
     """
     __slots__ = ()
 
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification)
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         # pylint: disable=too-many-arguments, arguments-differ
         tags = FecDataView.get_tags()

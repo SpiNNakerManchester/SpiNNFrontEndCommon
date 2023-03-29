@@ -23,7 +23,7 @@ from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 
 class LPGSplitter(AbstractSplitterCommon):
     """
-    Splitter for the LivePacketGather vertex.
+    Splitter for the :py:class:`LivePacketGather` vertex.
     """
 
     __slots__ = [
