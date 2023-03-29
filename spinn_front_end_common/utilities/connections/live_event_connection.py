@@ -334,6 +334,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__receiver_connection)
             self.__receiver_listener.add_callback(self.__do_receive_packet)
             self.__receiver_listener.start()
+            self.__send_tag_messages_now()
 
     def __get_live_input_details(self, db_reader, send_label):
         """
@@ -381,9 +382,10 @@ class LiveEventConnection(DatabaseConnection):
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
-        self.__is_running = True
-        thread = Thread(target=self.__send_tag_messages)
-        thread.start()
+        if not self.__is_running:
+            self.__is_running = True
+            thread = Thread(target=self.__send_tag_messages_thread)
+            thread.start()
 
     def __do_stop_pause(self):
         self.__is_running = False
@@ -391,30 +393,34 @@ class LiveEventConnection(DatabaseConnection):
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
-    def __send_tag_messages(self):
+    def __send_tag_messages_thread(self):
         if self.__receiver_connection is None:
             return
-        indirect = hasattr(self.__receiver_connection, "update_tag")
         while self.__is_running:
-            for (x, y, tag, board_address) in self.__receiver_details:
-                with self.__expect_scp_response_lock:
-                    self.__scp_response_received = None
-                    self.__expect_scp_response = True
-                    if indirect:
-                        self.__receiver_connection.update_tag(
-                            x, y, tag, do_receive=False)
-                        # No port trigger necessary; proxied already
-                    else:
-                        reprogram_tag_to_listener(
-                            self.__receiver_connection, x, y, board_address,
-                            tag, read_response=False)
-                    while (self.__scp_response_received is None and
-                           self.__is_running):
-                        self.__expect_scp_response_lock.wait(timeout=1.0)
             sleep(10.0)
+            if self.__is_running:
+                self.__send_tag_messages_now()
+
+    def __send_tag_messages_now(self):
+        indirect = hasattr(self.__receiver_connection, "update_tag")
+        for (x, y, tag, board_address) in self.__receiver_details:
+            with self.__expect_scp_response_lock:
+                self.__scp_response_received = None
+                self.__expect_scp_response = True
+                if indirect:
+                    self.__receiver_connection.update_tag(
+                        x, y, tag, do_receive=False)
+                    # No port trigger necessary; proxied already
+                else:
+                    reprogram_tag_to_listener(
+                        self.__receiver_connection, x, y, board_address,
+                        tag, read_response=False)
+                while self.__scp_response_received is None:
+                    self.__expect_scp_response_lock.wait(timeout=1.0)
 
     def __handle_scp_packet(self, data):
         with self.__expect_scp_response_lock:
+
             # SCP unexpected
             if not self.__expect_scp_response:
                 return False
