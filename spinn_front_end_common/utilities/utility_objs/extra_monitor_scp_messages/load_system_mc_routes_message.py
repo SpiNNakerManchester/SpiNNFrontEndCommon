@@ -22,7 +22,8 @@ from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
 class LoadSystemMCRoutesMessage(AbstractSCPRequest):
-    """ An SCP Request to write the system multicast routes into the router.
+    """
+    An SCP Request to write the system multicast routes into the router.
     """
 
     __slots__ = []

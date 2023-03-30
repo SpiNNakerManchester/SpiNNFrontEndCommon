@@ -21,9 +21,10 @@ from spinn_utilities.overrides import overrides
 
 class CommandSender(
         AbstractOneAppOneMachineVertex):
-    """ A utility for sending commands to a vertex (possibly an external\
-        device) at fixed times in the simulation or in response to \
-        simulation events (e.g., starting and stopping).
+    """
+    A utility for sending commands to a vertex (possibly an external device)
+    at fixed times in the simulation or in response to simulation events
+    (e.g., starting and stopping).
     """
 
     def __init__(self, label):
@@ -36,7 +37,8 @@ class CommandSender(
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
             timed_commands, vertex_to_send_to):
-        """ Add commands to be sent down a given edge
+        """
+        Add commands to be sent down a given edge.
 
         :param iterable(MultiCastCommand) start_resume_commands:
             The commands to send when the simulation starts or resumes from
@@ -54,8 +56,9 @@ class CommandSender(
             vertex_to_send_to)
 
     def edges_and_partitions(self):
-        """ Construct application edges from this vertex to the app vertices\
-            that this vertex knows how to target (and has keys allocated for).
+        """
+        Construct application edges from this vertex to the app vertices
+        that this vertex knows how to target (and has keys allocated for).
 
         :return: edges, partition IDs
         :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),

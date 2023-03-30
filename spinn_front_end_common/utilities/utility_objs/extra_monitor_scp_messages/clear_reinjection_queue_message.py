@@ -22,7 +22,8 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class ClearReinjectionQueueMessage(AbstractSCPRequest):
-    """ An SCP Request to set the dropped packet reinjected packet types.
+    """
+    An SCP Request to set the dropped packet reinjected packet types.
     """
 
     __slots__ = []

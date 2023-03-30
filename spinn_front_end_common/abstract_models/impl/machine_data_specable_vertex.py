@@ -21,12 +21,12 @@ from spinn_front_end_common.data import FecDataView
 
 class MachineDataSpecableVertex(
         AbstractGeneratesDataSpecification, allow_derivation=True):
-    """ Support for a vertex that simplifies generating a data specification.
+    """
+    Support for a vertex that simplifies generating a data specification.
     """
     __slots__ = ()
 
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification)
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         # pylint: disable=too-many-arguments, arguments-differ
         tags = FecDataView.get_tags()
@@ -48,6 +48,5 @@ class MachineDataSpecableVertex(
         :param reverse_iptags: The reverse IP tags for the vertex, if any
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
-        :rtype: None
         """
         # pylint: disable=too-many-arguments

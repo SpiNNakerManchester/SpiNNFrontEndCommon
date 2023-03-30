@@ -22,8 +22,9 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class ResetCountersMessage(AbstractSCPRequest):
-    """ An SCP Request to reset the statistics counters of the dropped packet\
-        reinjection.
+    """
+    An SCP Request to reset the statistics counters of the dropped packet
+    reinjection.
     """
 
     __slots__ = []

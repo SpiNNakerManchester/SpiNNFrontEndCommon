@@ -30,7 +30,8 @@ def _timestamp():
 
 
 class BaseDatabase(SQLiteDB, AbstractContextManager):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     There should only ever be a single Database Object in use at any time.
     In the case of application_graph_changed the first should closed and
@@ -38,7 +39,6 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
 
     If 2 database objects where opened with the database_file they hold the
     same data. Unless someone else deletes that file.
-
 
     .. note::
         *Not thread safe on the same database file!*

@@ -40,8 +40,9 @@ class _DummyProgress(object):
 
 
 class IOBufExtractor(object):
-    """ Extract the logging output buffers from the machine, and separates\
-        lines based on their prefix.
+    """
+    Extract the logging output buffers from the machine, and separates
+    lines based on their prefix.
     """
 
     __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
@@ -58,8 +59,9 @@ class IOBufExtractor(object):
         :param str filename_template:
         :param bool suppress_progress:
         :param executable_targets:
-            Which Binaries and core to extract from. Noe to extract from all.
-        :tpye executable_targets:  ~spinnman.model.ExecutableTargets or None
+            Which Binaries and core to extract from.
+            `None` to extract from all.
+        :type executable_targets: ~spinnman.model.ExecutableTargets or None
         :param str from_cores:
         :param str binary_types:
         """
@@ -87,7 +89,8 @@ class IOBufExtractor(object):
             pass
 
     def extract_iobuf(self):
-        """ Perform the extraction of IOBUF
+        """
+        Perform the extraction of IOBUF.
 
         :return: error_entries, warn_entries
         :rtype: tuple(list(str),list(str))
@@ -262,8 +265,9 @@ class IOBufExtractor(object):
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
-                        "failed to retrieve iobufs from {},{},{}; {}".format(
-                            core_subset.x, core_subset.y, p, str(e))))
+                        "failed to retrieve iobufs from "
+                        f"{core_subset.x},{core_subset.y},{core_subset.p}; "
+                        f"{str(e)}"))
         return io_buffers
 
     @staticmethod
@@ -276,6 +280,6 @@ class IOBufExtractor(object):
         """
         match = regex.match(line)
         if match:
-            entries.append("{}, {}, {}: {} ({})".format(
-                iobuf.x, iobuf.y, iobuf.p, match.group(ENTRY_TEXT),
-                match.group(ENTRY_FILE)))
+            entries.append(f"{iobuf.x}, {iobuf.y}, {iobuf.p}: "
+                           f"{match.group(ENTRY_TEXT)} "
+                           f"({match.group(ENTRY_FILE)})")

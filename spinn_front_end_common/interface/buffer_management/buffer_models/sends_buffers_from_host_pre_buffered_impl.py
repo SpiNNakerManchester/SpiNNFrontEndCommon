@@ -19,8 +19,9 @@ from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 class SendsBuffersFromHostPreBufferedImpl(
         AbstractSendsBuffersFromHost, allow_derivation=True):
-    """ Implementation of :py:class:`AbstractReceiveBuffersToHost`\
-        which uses an existing set of buffers for the details.
+    """
+    Implementation of :py:class:`AbstractReceiveBuffersToHost`
+    that uses an existing set of buffers for the details.
     """
     # pylint: disable=unsubscriptable-object, no-member
 
@@ -29,6 +30,8 @@ class SendsBuffersFromHostPreBufferedImpl(
     @abstractproperty
     def send_buffers(self):
         """
+        The buffer for each region that has keys to send.
+
         :rtype: dict(int,
             ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)
         """
