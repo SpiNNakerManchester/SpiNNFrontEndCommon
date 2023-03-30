@@ -18,8 +18,8 @@ from typing import Dict, Tuple
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spalloc import Job
-from spalloc.states import JobState
+from spalloc_client import Job
+from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine

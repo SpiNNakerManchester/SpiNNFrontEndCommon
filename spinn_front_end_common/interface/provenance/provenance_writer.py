@@ -188,7 +188,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_board_provenance(self, connections):
         """
-        Write the conection treived from spalloc job
+        Write the conection treived from spalloc_client job
 
         :param connections: {(x, y): hostname, ...} or None
         :type connections: dict((int, int): str) or None
