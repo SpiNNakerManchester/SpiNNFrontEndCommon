@@ -116,7 +116,7 @@ class DatabaseConnection(UDPConnection):
         # Wait to be told by the toolchain where the DB is located
         try:
             data, toolchain_address = self.receive_with_address(timeout)
-        except SpinnmanTimeoutException:
+        except (SpinnmanIOException, SpinnmanTimeoutException):
             return
         self.__read_db(toolchain_address, data)
 
