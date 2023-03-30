@@ -54,11 +54,11 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
     KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
-    def __init__(
-            self, lpg_params, app_vertex=None, label=None):
+    def __init__(self, lpg_params, app_vertex=None, label=None):
         """
-        :param LivePacketGatherParameters lpg_params:
-        :param str label:
+        :param LivePacketGatherParameters lpg_params: The parameters object
+        :param LivePacketGather app_vertex: The application vertex
+        :param str label: An optional label
         """
         # inheritance
         super().__init__(

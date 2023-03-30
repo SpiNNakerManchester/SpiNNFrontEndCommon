@@ -22,6 +22,10 @@ class LivePacketGather(ApplicationVertex):
     __slots__ = ["__params"]
 
     def __init__(self, params, label=None):
+        """
+        :param LivePacketGatherParameters params: The parameters object
+        :param str label: An optional label
+        """
         super(LivePacketGather, self).__init__(label)
         self.__params = params
         self.splitter = LPGSplitter()

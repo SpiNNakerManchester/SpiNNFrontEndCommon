@@ -666,7 +666,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Detects if the IP address of the board with chip 0,0 is known.
 
-        :return:
+        :rtype: bool
         """
         return cls.__fec_data._ipaddress is not None
 
@@ -841,7 +841,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Returns an unused number for labelling an unlabelled edge.
 
-        :rtype int:
+        :rtype: int
         """
         cls.__fec_data._none_labelled_edge_count += 1
         return cls.__fec_data._none_labelled_edge_count
@@ -851,7 +851,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Returns alternately Signal.SYNC0 and Signal.SYNC1.
 
-        :rtype: ~spinnman.messages.scp.enums.signal.Signal
+        :rtype: ~spinnman.messages.scp.enums.Signal
         """
         if cls.__fec_data._next_sync_signal == Signal.SYNC0:
             cls.__fec_data._next_sync_signal = Signal.SYNC1
@@ -882,7 +882,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         If True the live_packet_recorder_params not be empty
 
-        :rtype bool
+        :rtype: bool
         """
         return cls.__fec_data._live_packet_recorder_params is not None
 

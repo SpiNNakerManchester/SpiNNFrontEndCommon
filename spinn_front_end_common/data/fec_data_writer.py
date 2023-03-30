@@ -138,7 +138,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the allocation controller variable.
 
-        :param AbstractMachineAllocationController buffer_manager:
+        :param AbstractMachineAllocationController allocation_controller:
         """
         if allocation_controller and not isinstance(
                 allocation_controller, AbstractMachineAllocationController):
@@ -327,11 +327,14 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the system_multicast_routing_data.
 
-        These are data_in_multicast_routing_tables,
-        data_in_multicast_key_to_chip_map,
-        system_multicast_router_timeout_keys
+        These are: `data_in_multicast_routing_tables`,
+        `data_in_multicast_key_to_chip_map`,
+        `system_multicast_router_timeout_keys`
 
-        :param tuple(dict, MulticastRoutingTables, dict) data: new value
+        :param data: new value
+        :type data:
+            tuple(~pacman.model.routing_tables.MulticastRoutingTables,
+            dict, dict)
         """
         (data_in_multicast_routing_tables,
          data_in_multicast_key_to_chip_map,
@@ -392,7 +395,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the number of chips needed by the graph.
 
-        :param n_chips_in_graph:
+        :param int n_chips_in_graph:
         """
         if not isinstance(n_chips_in_graph, int):
             raise TypeError("n_chips_in_graph must be an int (or None)")

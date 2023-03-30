@@ -86,7 +86,7 @@ def get_data_spec_and_file_writer_filename(
         The folder to contain the resulting specification files; if 'TEMP'
         then a temporary directory is used.
     :return: the filename of the data writer and the data specification object
-    :rtype: tuple(str, DataSpecificationGenerator)
+    :rtype: tuple(str, ~data_specification.DataSpecificationGenerator)
     """
     # pylint: disable=too-many-arguments
     if application_run_time_report_folder == "TEMP":
@@ -168,8 +168,9 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
     """
     Make a tag deliver to the given connection.
 
-    :param ~.UDPConnection connection:
-        The connection to deliver to.
+    :param connection: The connection to deliver to.
+    :type connection:
+        ~spinnman.connections.udp_packet_connections.UDPConnection
     :param int x:
         The X coordinate of the ethernet chip we are sending the message to.
     :param int y:

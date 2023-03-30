@@ -79,6 +79,9 @@ DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
 class SDP_RUNNING_MESSAGE_CODES(Enum):
+    """
+    Codes for sending control messages to spin1_api.
+    """
     SDP_STOP_ID_CODE = 6
     SDP_NEW_RUNTIME_ID_CODE = 7
     SDP_UPDATE_PROVENCE_REGION_AND_EXIT = 8
@@ -90,17 +93,20 @@ class SDP_PORTS(Enum):
     SDP port handling output buffering data streaming.
     """
 
-    # command port for the buffered in functionality
+    #: Command port for the buffered in functionality.
     INPUT_BUFFERING_SDP_PORT = 1
-    # command port for the buffered out functionality
+    #: Command port for the buffered out functionality.
     OUTPUT_BUFFERING_SDP_PORT = 2
-    # command port for resetting runtime etc
+    #: Command port for resetting runtime, etc.
+    #: See :py:class:`SDP_RUNNING_MESSAGE_CODES`
     RUNNING_COMMAND_SDP_PORT = 3
-    # extra monitor core reinjection functionality
+    #: Extra monitor core reinjection control protocol.
+    #: See :py:class:`ReinjectorSCPCommands`
     EXTRA_MONITOR_CORE_REINJECTION = 4
-    # extra monitor core data transfer functionality
+    #: Extra monitor core outbound data transfer protocol
     EXTRA_MONITOR_CORE_DATA_SPEED_UP = 5
-    # extra monitor core data in speed up functionality
+    #: Extra monitor core inbound data transfer protocol
+    #: See :py:class:`SpeedupInSCPCommands`
     EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP = 6
 
 
@@ -110,9 +116,9 @@ class BUFFERING_OPERATIONS(Enum):
     A listing of what SpiNNaker specific EIEIO commands there are.
     """
 
-    # Database handshake with external program
+    #: Database handshake with external program
     BUFFER_READ = 0
-    # Host confirming data being read form SpiNNaker memory
+    #: Host confirming data being read form SpiNNaker memory
     BUFFER_WRITE = 1
 
 

@@ -234,6 +234,9 @@ class DatabaseWriter(SQLiteDB):
 
     def create_atom_to_event_id_mapping(self, machine_vertices):
         """
+        :param machine_vertices:
+        :type machine_vertices:
+            list(tuple(~pacman.model.graphs.machine.MachineVertex,int))
         """
         routing_infos = FecDataView.get_routing_infos()
         # This could happen if there are no LPGs

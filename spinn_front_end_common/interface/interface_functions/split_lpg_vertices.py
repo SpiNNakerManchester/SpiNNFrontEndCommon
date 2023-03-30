@@ -20,7 +20,7 @@ def split_lpg_vertices(system_placements):
     """
     Split any LPG vertices found.
 
-    :param ~pacman.model.graphs.application.ApplictionGraph app_graph:
+    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
         The application graph
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered

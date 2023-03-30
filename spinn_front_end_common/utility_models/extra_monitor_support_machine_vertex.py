@@ -164,8 +164,6 @@ class ExtraMonitorSupportMachineVertex(
         """
         Looks up from the machine what the current transaction id is
         and updates the extra monitor.
-
-        :param txrx: SpiNNMan instance
         """
         self._transaction_id = FecDataView.get_transceiver().read_user_1(
             self._placement.x, self._placement.y, self._placement.p)
