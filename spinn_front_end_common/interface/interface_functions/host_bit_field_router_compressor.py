@@ -341,12 +341,13 @@ class _HostBasedBitFieldRouterCompressor(object):
         Converts the bitfield into router table entries for compression,
         based off the entry located in the original router table.
 
-        :param ~.UnCompressedMulticastRoutingTable router_table:
-            the original routing table
+        :param router_table: the original routing table
+        :type router_table:
+            ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param int mid_point: cutoff for botfields to use
         :param dict(int,int) key_to_n_atoms_map:
         :return: routing tables.
-        :rtype: ~.AbsractMulticastRoutingTable
+        :rtype: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         """
         new_table = UnCompressedMulticastRoutingTable(
             router_table.x, router_table.y)
@@ -596,10 +597,9 @@ class _HostBasedBitFieldRouterCompressor(object):
             the set of router tables that together need to
             be merged into 1 router table
         :return: compressor router table
-        :rtype: list(RoutingTableEntry)
+        :rtype: list(~.RoutingTableEntry)
         :throws MinimisationFailedError: if it fails to
             compress to the correct length.
-
         """
         compressor = _PairCompressor(ordered=True)
         compressed_entries = compressor.compress_table(router_table)

@@ -468,7 +468,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the executable_targets
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         """
         if not isinstance(executable_targets, ExecutableTargets):
             raise TypeError("executable_targets must be a ExecutableTargets")
@@ -478,7 +478,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         Sets the Data Spec targets database.
 
-        :param ExecutableTargets dsg_targets:
+        :param ~spinnman.model.ExecutableTargets dsg_targets:
         """
         if not isinstance(dsg_targets, DsSqlliteDatabase):
             raise TypeError("dsg_targets must be a DsSqlliteDatabase")

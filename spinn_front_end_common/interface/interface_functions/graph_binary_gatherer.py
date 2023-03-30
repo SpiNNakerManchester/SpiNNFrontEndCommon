@@ -29,7 +29,7 @@ def graph_binary_gatherer():
     """
     Extracts binaries to be executed.
 
-    :rtype: ExecutableTargets
+    :rtype: ~spinnman.model.ExecutableTargets
     """
     gatherer = _GraphBinaryGatherer()
     # pylint: disable=protected-access
@@ -49,9 +49,8 @@ class _GraphBinaryGatherer(object):
     def _run(self):
         """
         :param ~pacman.model.placements.Placements placements:
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         progress = ProgressBar(
             FecDataView.get_n_placements(), "Finding binaries")
         for placement in progress.over(FecDataView.iterate_placemements()):
@@ -61,8 +60,8 @@ class _GraphBinaryGatherer(object):
 
     def __get_binary(self, placement):
         """
-        :param ~.Placement placement:
-        :param ~.AbstractVertex vertex:
+        :param ~pacman.model.placements.Placement placement:
+        :param ~pacman.model.graphs.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex

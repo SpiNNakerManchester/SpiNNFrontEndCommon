@@ -72,7 +72,8 @@ class LivePacketGatherMachineVertex(
         """
         Add a machine vertex source incoming into this gatherer.
 
-        :param MachineVertex m_vertex: The source machine vertex
+        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+            The source machine vertex
         :param str partition_id: The incoming partition id
         """
         self._incoming_sources.append((m_vertex, partition_id))

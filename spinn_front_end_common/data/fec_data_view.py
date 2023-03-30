@@ -637,7 +637,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Retreive the data_in_multicast_routing_tables if known
 
-        :rtype: MulticastRoutingTables
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         :raises SpiNNUtilsException:
             If the data_in_multicast_routing_tables is currently unavailable
         """
@@ -892,7 +892,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Mapping of live_packet_gatherer_params to a list of tuples
         (vertex and list of ids)).
 
-        :rtype: dict(live_packet_gatherer_params, (vertex, list(str))
+        :rtype: dict(LivePacketGatherParameters,
+            tuple(~pacman.model.graphs.AbstractVertex, list(str))
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the _live_packet_recorder_params is currently unavailable
         """
@@ -910,8 +911,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         for parameters.
 
         .. note::
-            If the ApplicationGraph is used, the vertex must be an
-            ApplicationVertex. If not, it must be a MachineVertex.
+            If the
+            :py:class:`~pacman.model.graphs.application.ApplicationGraph`
+            is used, the vertex must be an
+            :py:class:`~pacman.model.graphs.application.ApplicationVertex`.
+            If not, it must be a
+            :py:class:`~pacman.model.graphs.machine.MachineVertex`.
 
         :param LivePacketGatherParameters live_packet_gatherer_params:
             params to look for a LPG
@@ -952,7 +957,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Binaries to be executed.
 
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_targets is currently unavailable
         """
@@ -985,12 +990,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_monitor_by_xy(cls, x, y):
         """
-        The ExtraMonitorSupportMachineVertex for core (x,y).
+        The ExtraMonitorSupportMachineVertex for chip (x,y).
 
+        :param int x: X coordinate of chip
+        :param int y: Y coordinate of chip
         :rtype: ExtraMonitorSupportMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the monitors are currently unavailable
-        :raises KeyError: If core x,y does not have a monitor
+        :raises KeyError: If chip (x,y) does not have a monitor
         """
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
@@ -1042,12 +1049,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_gatherer_by_xy(cls, x, y):
         """
-        The DataSpeedUpPacketGatherMachineVertex for core (x,y).
+        The DataSpeedUpPacketGatherMachineVertex for chip (x,y).
 
+        :param int x: X coordinate of chip
+        :param int y: Y coordinate of chip
         :rtype: DataSpeedUpPacketGatherMachineVertex
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the gatherers are currently unavailable
-        :raises KeyError: If core x,y does not have a monitor
+        :raises KeyError: If chip (x,y) does not have a monitor
         """
         if cls.__fec_data._gatherer_map is None:
             raise cls._exception("gatherer_map")
@@ -1119,7 +1128,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Adds a socket address to the list of known addresses.
 
-        :param SocketAddress database_socket_address:
+        :param database_socket_address:
+        :type database_socket_address:
+            ~spinn_utilities.socket_address.SocketAddress
         :raises TypeError: if database_socket_address is not a SocketAddress
         """
         if not isinstance(database_socket_address, SocketAddress):
@@ -1131,9 +1142,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Adds all socket addresses to the list of known addresses.
 
-        :param iterable(SocketAddress) database_socket_addresses:
+        :param database_socket_addresses: The addresses to add
+        :type database_socket_addresses:
+            iterable(~spinn_utilities.socket_address.SocketAddress)
         :raises TypeError:
-           if database_socket_address is not a iterable(SocketAddress)
+           if database_socket_address is not a iterable of `SocketAddress`
         """
         if database_socket_addresses is None:
             return
@@ -1159,7 +1172,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Add a vertex that is to be output live, and so wants its atom IDs
         recorded in the database.
 
-        :param ApplicationVertex vertex: The vertex to add
+        :param ~pacman.model.graphs.application.ApplicationVertex vertex:
+            The vertex to add
         :param str partition_id: The partition to get the IDs of
         """
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
@@ -1169,6 +1183,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Get an iterator over the live output vertices and partition IDs.
 
-        :rtype: iterable(tuple(ApplicationVertex, str))
+        :rtype:
+            iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,
+            str))
         """
         return iter(cls.__fec_data._live_output_vertices)

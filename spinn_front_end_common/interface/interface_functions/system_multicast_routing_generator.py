@@ -38,7 +38,7 @@ def system_multicast_routing_generator():
 
     :return: routing tables, destination-to-key map,
         board-locn-to-timeout-key map
-    :rtype: tuple(MulticastRoutingTables,
+    :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
     generator = _SystemMulticastRoutingGenerator()
@@ -68,7 +68,7 @@ class _SystemMulticastRoutingGenerator(object):
         """
         :return: routing tables, destination-to-key map,
             board-locn-to-timeout-key map
-        :rtype: tuple(MulticastRoutingTables,
+        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
             dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
         # create progress bar

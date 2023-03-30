@@ -248,10 +248,10 @@ class _MachineBitFieldRouterCompressor(object):
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
         :param ~.ProgressBar progress_bar: progress bar
-        :param ExecutableTargets system_executable_targets:
+        :param ~spinnman.model.ExecutableTargets system_executable_targets:
             the executables targets to cores
         :return: (targets, sorter path, and compressor path)
-        :rtype: tuple(ExecutableTargets, str, str)
+        :rtype: tuple(~spinnman.model.ExecutableTargets, str, str)
         """
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
@@ -307,7 +307,7 @@ class _MachineBitFieldRouterCompressor(object):
         Goes through the cores checking for cores that have failed to
         generate the compressed routing tables with bitfield.
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             cores to load router compressor with bitfield on
         :param list(tuple(int,int)) host_chips:
             the chips which need to be ran on host.
@@ -358,7 +358,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param ~.ProgressBar progress_bar: progress bar
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param ExecutableTargets cores:
+        :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
         :param dict matrix_addresses_and_size:
             maps chips to regeneration sdram and size for exploitation
@@ -420,12 +420,12 @@ class _MachineBitFieldRouterCompressor(object):
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
-        :param ~.Transceiver transceiver: SpiNNMan instance
+        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param ExecutableTargets cores: the executable targets
+        :param ~spinnman.model.ExecutableTargets cores: the executable targets
         :param int comms_sdram: Address for comms block
         """
         compressor_cores = cores.get_cores_for_binary(
@@ -463,9 +463,11 @@ class _MachineBitFieldRouterCompressor(object):
             SDRAM usable and sizes
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~.Transceiver transceiver: the spinnman instance
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
         :param int routing_table_compressor_app_id: system app id.
-        :param ExecutableTargets cores: the cores that compressor will run on
+        :param ~spinnman.model.ExecutableTargets cores:
+            the cores that compressor will run on
         """
         address_data = self._generate_chip_matrix_data(
             matrix_addresses_and_size)
@@ -523,9 +525,11 @@ class _MachineBitFieldRouterCompressor(object):
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~.Transceiver transceiver: the spinnman instance
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
         :param int routing_table_compressor_app_id: system app id.
-        :param ExecutableTargets cores: the cores that compressor will run on
+        :param ~spinnman.model.ExecutableTargets cores:
+            the cores that compressor will run on
         :param str bit_field_compressor_executable_path:
             the path to the compressor binary path
         :param str bit_field_sorter_executable_path:
@@ -578,12 +582,15 @@ class _MachineBitFieldRouterCompressor(object):
         """
         loads the routing table data.
 
-        :param AbsractMulticastRoutingTable table: the routing table to load
+        :param table: the routing table to load
+        :type table:
+            ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :param int app_id: application app id
-        :param ~.Transceiver transceiver: spinnman instance
-        :param ~.ProgressBar progress_bar: progress bar
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
+            progress bar
         :param int routing_table_compressor_app_id: system app id
-        :param ExecutableTargets cores:
+        :param ~spinnman.model.ExecutableTargets cores:
             the cores that the compressor going to run on
         :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen
         """

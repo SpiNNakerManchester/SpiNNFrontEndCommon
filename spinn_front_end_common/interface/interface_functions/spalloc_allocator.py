@@ -58,9 +58,11 @@ class SpallocJobController(MachineAllocationController):
             self, client: SpallocClient, job: SpallocJob,
             task: AbstractContextManager, use_proxy: bool):
         """
-        :param SpallocClient client:
-        :param SpallocJob job:
-        :param AbstractContextManager task:
+        :param ~spinnman.spalloc.SpallocClient client:
+        :param ~spinnman.spalloc.SpallocJob job:
+        :param task:
+        :type task:
+            ~spinn_utilities.abstract_context_manager.AbstractContextManager
         :param bool use_proxy:
         """
         if job is None:

@@ -30,9 +30,11 @@ def generate_routing_compression_checker_report(
     and uncompressed routing table.
 
     :param str report_folder: the folder to store the resulting report
-    :param MulticastRoutingTables routing_tables: the original routing tables
-    :param MulticastRoutingTables compressed_routing_tables:
-        the compressed routing tables
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        the original routing tables
+    :param compressed_routing_tables: the compressed routing tables
+    :type compressed_routing_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),

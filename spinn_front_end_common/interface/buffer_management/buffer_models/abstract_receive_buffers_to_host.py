@@ -20,7 +20,8 @@ from pacman.model.graphs.machine import MachineVertex
 @require_subclass(MachineVertex)
 class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
     """
-    Indicates that this MachineVertex can receive buffers.
+    Indicates that this :py:class:`~pacman.model.graphs.machine.MachineVertex`
+    can receive buffers.
     """
 
     __slots__ = ()

@@ -592,7 +592,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         Open an SCP connection and make our tag target it.
 
         :return: The opened connection, ready for use.
-        :rtype: SCAMPConnection
+        :rtype: ~.SCAMPConnection
         """
         connection = open_scp_connection(self._x, self._y, self._ip_address)
         retarget_tag(connection, self._x, self._y, self._remote_tag)

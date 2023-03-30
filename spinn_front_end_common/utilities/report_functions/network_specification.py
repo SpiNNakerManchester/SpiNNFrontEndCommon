@@ -41,8 +41,7 @@ def network_specification():
 def _write_report(f, vertex):
     """
     :param ~io.FileIO f:
-    :param vertex:
-    :type vertex: ApplicationVertex
+    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
     """
     if isinstance(vertex, ApplicationVertex):
         f.write(

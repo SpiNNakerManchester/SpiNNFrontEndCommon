@@ -166,7 +166,7 @@ class Compression(object):
         Goes through the cores checking for cores that have failed to compress
         the routing tables to the level where they fit into the router.
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
@@ -195,13 +195,11 @@ class Compression(object):
         :return:
             the executable targets that represent all cores/chips which have
             active routing tables
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables:
-
             # get the first none monitor core
             chip = FecDataView.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
@@ -222,12 +220,11 @@ class Compression(object):
         Convert the router table into the data needed by the router
         compressor C code.
 
-        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the pacman router table instance
+        :param table: the pacman router table instance
+        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
         :rtype: bytearray
         """
-
         # write header data of the app ID to load the data, if to store
         # results in SDRAM and the router table entries
 

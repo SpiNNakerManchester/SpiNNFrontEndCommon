@@ -20,11 +20,12 @@ def split_lpg_vertices(system_placements):
     """
     Split any LPG vertices found.
 
-    :param ApplictiongGraph app_graph: The application graph
+    :param ~pacman.model.graphs.application.ApplictionGraph app_graph:
+        The application graph
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
-    :param Placements system_placements:
-        exiting placements to be added to
+    :param ~pacman.model.placements.Placements system_placements:
+        existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
         vertex.splitter.create_vertices(system_placements)

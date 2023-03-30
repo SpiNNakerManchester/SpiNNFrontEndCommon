@@ -146,11 +146,14 @@ def _get_ptr_table(txrx, placement, regions_base_address, start_region):
     """
     Read the pointer table.
 
-    :param Transceiver txrx: The transceiver to read with
-    :param Placement placement: Where to read the pointer table from
+    :param ~spinnman.transceiver.Transceiver txrx:
+        The transceiver to read with
+    :param ~pacman.model.placements.Placement placement:
+        Where to read the pointer table from
     :param int regions_base_address: The start of memory for the given core
     :param int start_region: The address of the first region address
-    :rtype: numpy.ndarray(DataSpecificationExecutor.TABLE_TYPE)
+    :rtype: ~numpy.ndarray(
+        ~data_specification.DataSpecificationExecutor.TABLE_TYPE)
     """
     # Read the pointer table from the machine
     table_size = get_region_base_address_offset(

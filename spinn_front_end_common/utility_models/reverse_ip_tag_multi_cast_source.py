@@ -104,7 +104,8 @@ class ReverseIpTagMultiCastSource(
             If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
-        :type splitter: None or AbstractSplitterCommon
+        :type splitter: None or
+            ~pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon
         """
         # pylint: disable=too-many-arguments
         super().__init__(label, max_atoms_per_core, splitter=splitter)

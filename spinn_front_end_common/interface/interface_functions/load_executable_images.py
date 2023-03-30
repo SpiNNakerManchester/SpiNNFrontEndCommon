@@ -84,7 +84,7 @@ def filter_targets(filt):
     """
     :param ~spinnman.model.ExecutableTargets executable_targets:
     :param callable(ExecutableType,bool) filt:
-    :rtype: tuple(list(str), ExecutableTargets)
+    :rtype: tuple(list(str), ~spinnman.model.ExecutableTargets)
     """
     binaries = []
     cores = ExecutableTargets()

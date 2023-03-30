@@ -269,7 +269,7 @@ class DatabaseWriter(SQLiteDB):
         Add mapping from machine vertex to LPG machine vertex.
 
         :return: A list of (source vertex, partition id)
-        :rtype: list(MachineVertex, str)
+        :rtype: list(~pacman.model.graphs.machine.MachineVertex, str)
         """
         targets = [(m_vertex, part_id, lpg_m_vertex)
                    for vertex in FecDataView.iterate_vertices()

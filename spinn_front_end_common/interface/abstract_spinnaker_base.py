@@ -1412,8 +1412,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables
-        :rtype: MulticastRoutingTables
+        :return: Compressed routing tables
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer(
                 "Host based bitfield router compressor",
@@ -1466,8 +1466,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTables
-        :rtype: MulticastRoutingTables
+        :return: Compressed routing tables
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Ordered covering compressor", TimerWork.OTHER) as timer:
             self._multicast_routes_loaded = False
@@ -1507,8 +1507,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             Calling of this method is based on the cfg compressor or
             virtual_compressor value
 
-        :return: CompressedRoutingTable
-        :rtype: MulticastRoutingTables
+        :return: Compressed routing table
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Pair compressor", TimerWork.OTHER) as timer:
             precompressed = self._data_writer.get_precompressed()
@@ -1549,7 +1549,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             virtual_compressor value
 
         :return: compressed routing tables
-        :rtype: MulticastRoutingTables
+        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         """
         with FecTimer("Pair unordered compressor", TimerWork.OTHER) as timer:
             self._multicast_routes_loaded = False
@@ -1610,10 +1610,11 @@ class AbstractSpinnakerBase(ConfigHandler):
              can or must run early.
 
         :param str name: Name of a compressor
-        :raise ConfigurationException: if the name is not expected
         :return: CompressedRoutingTables (likely to be `None)`,
             RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
+        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables or
+            None, list(ProvenanceDataItem))
+        :raise ConfigurationException: if the name is not expected
         """
         if name == "MachineBitFieldOrderedCoveringCompressor":
             return \
@@ -1643,10 +1644,11 @@ class AbstractSpinnakerBase(ConfigHandler):
             can not run at the normal place
 
         :param str name: Name of a compressor
-        :raise ConfigurationException: if the name is not expected
         :return: CompressedRoutingTables (likely to be `None`),
             RouterCompressorProvenanceItems (may be an empty list)
-        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))
+        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables
+            or None, list(ProvenanceDataItem))
+        :raise ConfigurationException: if the name is not expected
         """
         if self._multicast_routes_loaded or compressed:
             # Already compressed
@@ -1669,7 +1671,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the RoutingTableLoader if required.
 
         :param compressed:
-        :type compressed: MulticastRoutingTables or None
+        :type compressed: ~.MulticastRoutingTables or None
         """
         if not compressed:
             return
@@ -1805,7 +1807,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the compressor reports if requested.
 
         :param compressed:
-        :type compressed: MulticastRoutingTables or None
+        :type compressed: ~.MulticastRoutingTables or None
         """
         with FecTimer("Compressor report", TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
@@ -2394,9 +2396,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             application_finisher()
 
     def _do_stop_workflow(self):
-        """
-        :rtype: ~.PACMANAlgorithmExecutor
-        """
         self._execute_application_finisher()
         self._do_extract_from_machine()
 
@@ -2432,7 +2431,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             This will need to be called from another thread as the infinite
             run call is blocking.
 
-        raises SpiNNUtilsException:
+        :raises SpiNNUtilsException:
             If the stop_run was not expected in the current state.
         """
         # Do not do start category here

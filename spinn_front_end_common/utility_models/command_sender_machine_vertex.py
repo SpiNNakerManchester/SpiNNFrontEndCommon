@@ -128,7 +128,7 @@ class CommandSenderMachineVertex(
         Get the key and mask for the given partition.
 
         :param str partition_id: The partition to get the key for
-        :rtype: BaseKeyAndMask
+        :rtype: ~pacman.model.routing_info.BaseKeyAndMask
         """
         return BaseKeyAndMask(
             self._partition_id_keys[partition_id], self._DEFAULT_COMMAND_MASK)
@@ -322,10 +322,12 @@ class CommandSenderMachineVertex(
 
         :param pre_vertex:
         :type pre_vertex: CommandSender or CommandSenderMachineVertex
-        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`
-        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`
+        :param type vertex_type:
+            subclass of :py:class:`~pacman.model.graphs.AbstractVertex`
+        :param type edge_type:
+            subclass of :py:class:`~pacman.model.graphs.AbstractEdge`
         :return: edges, partition IDs
-        :rtype: tuple(list(~.AbstractEdge), list(str))
+        :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))
         """
         edges = list()
         partition_ids = list()

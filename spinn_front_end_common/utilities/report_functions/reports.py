@@ -98,7 +98,7 @@ def router_compressed_summary_report(routing_tables):
     """
     Generates a text file of routing summaries.
 
-    :param MulticastRoutingTables routing_tables:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         The in-operation COMPRESSED routing tables.
     :rtype: RouterSummary
     """
@@ -113,7 +113,7 @@ def _do_router_summary_report(file_name, progress, routing_tables):
     """
     :param str file_name:
     :param ~spinn_utilities.progress_bar.Progress progress:
-    :param MulticastRoutingTables routing_tables:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         The compressed or uncompressed tables being reported
     :return: RouterSummary
     """
@@ -252,7 +252,7 @@ def partitioner_report():
 def _write_one_vertex_partition(f, vertex):
     """
     :param ~io.FileIO f:
-    :param ApplicationVertex vertex:
+    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
     """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
@@ -302,7 +302,7 @@ def placement_report_with_application_graph_by_vertex():
 def _write_one_vertex_application_placement(f, vertex):
     """
     :param ~io.FileIO f:
-    :param ApplicationVertex vertex:
+    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
     """
     vertex_name = vertex.label
     vertex_model = vertex.__class__.__name__
@@ -368,7 +368,7 @@ def _write_one_chip_application_placement(f, chip):
     """
     :param ~io.FileIO f:
     :param ~spinn_machine.Chip chip:
-    :param Placements placements:
+    :param ~pacman.model.placements.Placements placements:
     """
     written_header = False
     total_sdram = None
@@ -512,9 +512,9 @@ def routing_info_report(extra_allocations):
 def _write_vertex_virtual_keys(f, pre_vertex, part_id, routing_infos):
     """
     :param ~io.FileIO f:
-    :param ApplicationVertex pre_vertex:
+    :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:
     :param str part_id:
-    :param RoutingInfo routing_infos:
+    :param ~pacman.model.routing_info.RoutingInfo routing_infos:
     :param ~spinn_utilities.progress_bar.ProgressBar progress:
     """
     rinfo = routing_infos.get_routing_info_from_pre_vertex(
@@ -553,7 +553,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     """
     Report the compressed routing tables.
 
-    :param MulticastRoutingTables routing_tables:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
         the compressed routing tables
     """
     top_level_folder = os.path.join(
@@ -569,7 +569,9 @@ def router_report_from_compressed_router_tables(routing_tables):
 
 def generate_routing_table(routing_table, top_level_folder):
     """
-    :param AbstractMulticastRoutingTable routing_table:
+    :param routing_table: The routing table to describe
+    :type routing_table:
+        ~pacman.model.routing_tables.AbstractMulticastRoutingTable
     :param str top_level_folder:
     """
     file_name = "routing_table_{}_{}.rpt".format(
@@ -620,8 +622,9 @@ def generate_comparison_router_report(compressed_routing_tables):
     Make a report on comparison of the compressed and uncompressed
     routing tables.
 
-    :param MulticastRoutingTables compressed_routing_tables:
-        the compressed routing tables
+    :param compressed_routing_tables: the compressed routing tables
+    :type compressed_routing_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
     """
     routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = os.path.join(
@@ -675,9 +678,8 @@ def generate_comparison_router_report(compressed_routing_tables):
 
 def _search_route(source_placement, key_and_mask):
     """
-    :param Placement source_placement:
-    :param Placement dest_placement:
-    :param BaseKeyAndMask key_and_mask:
+    :param ~pacman.model.placements.Placement source_placement:
+    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
@@ -719,7 +721,7 @@ def _recursive_trace_to_destinations(
 
     :param int chip_x:
     :param int chip_y
-    :param BaseKeyAndMask key_and_mask:
+    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
     :rtype: str
     """
     chip = FecDataView.get_chip_at(chip_x, chip_y)
