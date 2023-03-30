@@ -19,17 +19,15 @@ from pacman.model.partitioner_splitters import (
     SplitterOneAppOneMachine, SplitterFixedLegacy)
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
-from spinn_front_end_common.utility_models import (
-    ReverseIpTagMultiCastSource)
+from spinn_front_end_common.utility_models import ReverseIpTagMultiCastSource
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def splitter_selector():
-    """ basic selector which puts the legacy splitter object on\
-        everything without a splitter object
-
-    :rtype: None
+    """
+    Basic selector which puts the legacy splitter object on
+    everything without a splitter object.
     """
     for app_vertex in PacmanDataView.iterate_vertices():
         if app_vertex.splitter is None:
@@ -37,14 +35,14 @@ def splitter_selector():
 
 
 def vertex_selector(app_vertex):
-    """ main point for selecting a splitter object for a given app vertex.
+    """
+    Main point for selecting a splitter object for a given app vertex.
 
-    Will assume the SplitterSliceLegacy if no heuristic is known for the
+    Will assume the SplitterFixedLegacy if no heuristic is known for the
     app vertex.
 
     :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
         app vertex to give a splitter object to
-    :rtype: None
     """
     if isinstance(app_vertex, AbstractOneAppOneMachineVertex):
         app_vertex.splitter = SplitterOneAppOneMachine()

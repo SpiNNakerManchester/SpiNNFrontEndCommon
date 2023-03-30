@@ -22,8 +22,8 @@ _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
 def memory_map_on_host_report():
-    """ Report on memory usage.
-
+    """
+    Report on memory usage.
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _FOLDER_NAME)
     try:

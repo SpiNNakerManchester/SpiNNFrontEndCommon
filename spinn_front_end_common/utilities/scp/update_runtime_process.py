@@ -58,7 +58,8 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
 
 
 class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
-    """ How to update the target running time of a set of cores.
+    """
+    How to update the target running time of a set of cores.
 
     .. note::
         The cores must be using the simulation interface.

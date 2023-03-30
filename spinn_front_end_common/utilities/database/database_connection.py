@@ -28,10 +28,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseConnection(UDPConnection):
-    """ A connection from the toolchain which will be notified when the \
-        database has been written, and can then respond when the database \
-        has been read, and further wait for notification that the simulation \
-        has started.
+    """
+    A connection from the toolchain which will be notified when the
+    database has been written, and can then respond when the database
+    has been read, and further wait for notification that the simulation
+    has started.
 
     .. note::
         The machine description database reader can only be used while the
@@ -80,7 +81,8 @@ class DatabaseConnection(UDPConnection):
         thread.start()
 
     def add_database_callback(self, database_callback_function):
-        """ Add a database callback to be called when the database is ready.
+        """
+        Add a database callback to be called when the database is ready.
 
         :param callable(DatabaseReader,None) database_callback_function:
             A function to be called when the database message has been

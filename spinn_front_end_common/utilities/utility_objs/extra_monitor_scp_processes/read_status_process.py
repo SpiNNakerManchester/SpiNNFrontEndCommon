@@ -25,7 +25,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to read the status of extra monitors.
+    """
+    How to send messages to read the status of extra monitors.
     """
     __slots__ = ()
 

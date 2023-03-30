@@ -57,8 +57,8 @@ def sdram_outgoing_partition_allocator():
             # if bust, throw exception
             if total_sdram == 0:
                 raise SpinnFrontEndException(
-                    "Cannot allocate sdram size of 0 for "
-                    "partition {}".format(sdram_partition))
+                    "Cannot allocate SDRAM size of 0 for "
+                    f"partition {sdram_partition}")
 
             # allocate
             if transceiver is not None:

@@ -16,7 +16,8 @@ from enum import Enum
 
 
 class ReinjectorSCPCommands(Enum):
-    """ SCP Command codes for reinjection
+    """
+    SCP Command codes for reinjection
     """
     SET_ROUTER_WAIT1_TIMEOUT = 0
     SET_ROUTER_WAIT2_TIMEOUT = 1

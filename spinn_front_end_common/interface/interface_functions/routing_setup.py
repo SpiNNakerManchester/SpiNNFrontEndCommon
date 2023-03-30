@@ -23,8 +23,10 @@ from spinn_front_end_common.data import FecDataView
 
 def routing_setup():
     """
-    Initialises the routers. Note that this does not load any routes into\
-    them.
+    Initialises the routers.
+
+    .. note::
+        This does not load any routes into them.
 
     :param ~spinnman.transceiver.Transceiver transceiver:
     """

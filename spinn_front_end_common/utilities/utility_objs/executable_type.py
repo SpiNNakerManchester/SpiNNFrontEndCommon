@@ -17,8 +17,9 @@ from spinnman.model.enums import CPUState
 
 
 class ExecutableType(Enum):
-    """ The different types of executable from the perspective of how they\
-        are started and controlled.
+    """
+    The different types of executable from the perspective of how they
+    are started and controlled.
     """
 
     #: Runs immediately without waiting for barrier and then exits.

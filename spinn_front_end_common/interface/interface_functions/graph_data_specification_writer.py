@@ -35,7 +35,7 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
-    :rtype: DataSpecificationTargets
+    :rtype: DsSqlliteDatabase
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -45,7 +45,8 @@ def graph_data_specification_writer(placement_order=None):
 
 
 class _GraphDataSpecificationWriter(object):
-    """ Executes the data specification generation step.
+    """
+    Executes the data specification generation step.
     """
 
     __slots__ = (
@@ -63,7 +64,7 @@ class _GraphDataSpecificationWriter(object):
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets
-        :rtype: DataSpecificationTargets
+        :rtype: DsSqlliteDatabase
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
@@ -113,7 +114,7 @@ class _GraphDataSpecificationWriter(object):
         """
         :param ~.Placement pl: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
-        :param DataSpecificationTargets targets:
+        :param DsSqlliteDatabase targets:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         :raises ConfigurationException: if things don't fit
@@ -163,13 +164,11 @@ class _GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, region_size,
-                sum(region_size),
+                vert, region_size, sum(region_size),
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
-            "Too much SDRAM has been used on {}, {}.  Vertices and"
-            " their usage on that chip is as follows:\n{}".format(
-                pl.x, pl.y, memory_usage))
+            f"Too much SDRAM has been used on {pl.x}, {pl.y}.  Vertices and"
+            f" their usage on that chip is as follows:\n{memory_usage}")

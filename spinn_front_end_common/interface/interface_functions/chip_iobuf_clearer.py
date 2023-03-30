@@ -18,9 +18,9 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 def chip_io_buf_clearer():
-    """ Clears the logging output buffer of an application running on a\
-        SpiNNaker machine.
-
+    """
+    Clears the logging output buffer of an application running on a
+    SpiNNaker machine.
     """
     executable_types = FecDataView.get_executable_types()
     if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
