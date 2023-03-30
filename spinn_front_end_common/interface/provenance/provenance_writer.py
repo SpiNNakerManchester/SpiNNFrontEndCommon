@@ -21,7 +21,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class ProvenanceWriter(BaseDatabase):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     .. note::
         *Not thread safe on the same database file.*
@@ -44,8 +45,7 @@ class ProvenanceWriter(BaseDatabase):
         :type database_file: str or None
         :param bool memory:
             Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
-
+            Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
 

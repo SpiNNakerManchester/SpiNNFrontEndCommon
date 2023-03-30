@@ -26,9 +26,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def database_interface(runtime):
     """
-    :param ~pacman.model.tags.Tags tags:
-    :return: Database interface, where the database is located
-    :rtype: tuple(DatabaseInterface, str)
+    :param int runtime:
+    :return: where the database is located
+    :rtype: str
     """
     # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
@@ -54,7 +54,6 @@ def _write_to_db(writer, runtime):
     :param DatabaseWriter writer:
     :param int runtime:
     """
-
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
         w.add_system_params(runtime)

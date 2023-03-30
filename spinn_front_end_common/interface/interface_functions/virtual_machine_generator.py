@@ -20,7 +20,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def virtual_machine_generator():
-    """ Generates a virtual machine with given dimensions and configuration.
+    """
+    Generates a virtual machine with given dimensions and configuration.
 
     :return: The virtual machine.
     :rtype: ~spinn_machine.Machine
@@ -78,7 +79,7 @@ def virtual_machine_generator():
     machine.add_fpga_links()
 
     logger.info(
-        "Created a virtual machine which has {}".format(
-            machine.cores_and_link_output_string()))
+        "Created a virtual machine which has {}",
+        machine.cores_and_link_output_string())
 
     return machine

@@ -23,7 +23,8 @@ MACHINE_FILENAME = "machine.json"
 
 
 def write_json_machine(json_folder=None, progress_bar=True, validate=True):
-    """ Runs the code to write the machine in Java readable JSON.
+    """
+    Runs the code to write the machine in Java readable JSON.
 
     .. warning::
          The file in this folder will be overwritten!
@@ -34,7 +35,6 @@ def write_json_machine(json_folder=None, progress_bar=True, validate=True):
     :return: the name of the generated file
     :rtype: str
     """
-
     if progress_bar:
         # Steps are tojson, validate and writefile
         progress = ProgressBar(3, "Converting to JSON machine")

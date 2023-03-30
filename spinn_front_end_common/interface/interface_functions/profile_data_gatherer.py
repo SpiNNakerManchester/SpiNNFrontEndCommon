@@ -24,9 +24,8 @@ _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
 def profile_data_gatherer():
-    """ Gets all the profiling data recorded by vertices and writes it to\
-        files.
-
+    """
+    Gets all the profiling data recorded by vertices and writes it to files.
     """
     progress = ProgressBar(
         FecDataView.get_n_placements(), "Getting profile data")

@@ -19,13 +19,13 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class FindApplicationChipsUsed(object):
-    """ Builds a set of stats on how many chips were used for application\
-        cores.
+    """
+    Builds a set of stats on how many chips were used for application cores.
     """
 
     def __call__(self, placements):
-        """ Finds how many application chips there were and the cost on \
-            each chip
+        """
+        Finds how many application chips there were and the cost on each chip
 
         :param ~pacman.model.placements.Placements placements: placements
         :return: a tuple with 4 elements.

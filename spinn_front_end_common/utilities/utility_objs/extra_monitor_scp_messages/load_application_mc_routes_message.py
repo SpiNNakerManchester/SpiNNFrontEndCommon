@@ -22,8 +22,8 @@ from .speedup_in_scp_commands import SpeedupInSCPCommands
 
 
 class LoadApplicationMCRoutesMessage(AbstractSCPRequest):
-    """ An SCP Request to write the application multicast routes into the\
-        router.
+    """
+    An SCP Request to write the application multicast routes into the router.
     """
 
     __slots__ = (

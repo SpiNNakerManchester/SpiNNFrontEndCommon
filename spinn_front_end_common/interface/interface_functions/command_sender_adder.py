@@ -22,13 +22,13 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 def add_command_senders(system_placements):
-    """ Add command senders
+    """
+    Add command senders
     """
     return CommandSenderAdder(system_placements).add_command_senders()
 
 
 class CommandSenderAdder(object):
-
     __slots__ = [
         "__command_sender_for_chip",
         "__general_command_sender",

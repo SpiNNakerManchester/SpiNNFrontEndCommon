@@ -37,7 +37,8 @@ def chip_provenance_updater(all_core_subsets):
 
 
 class _ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit.
+    """
+    Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
@@ -70,10 +71,10 @@ class _ChipProvenanceUpdater(object):
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
-                " idle cores {}".format(
-                    error_cores.values(), watchdog_cores.values(),
-                    idle_cores.values()))
+                "Some cores have crashed. "
+                f"RTE cores {error_cores.values()}, "
+                f"watch-dogged cores {watchdog_cores.values()}, "
+                f"idle cores {idle_cores.values()}")
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
