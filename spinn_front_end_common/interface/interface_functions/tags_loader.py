@@ -18,8 +18,8 @@ from spinn_front_end_common.data import FecDataView
 
 
 def tags_loader():
-    """ Loads tags onto the machine.
-
+    """
+    Loads tags onto the machine.
     """
     # clear all the tags from the Ethernet connection, as nothing should
     # be allowed to use it (no two apps should use the same Ethernet

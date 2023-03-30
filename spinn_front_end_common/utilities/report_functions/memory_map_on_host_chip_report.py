@@ -23,18 +23,16 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
-MEM_MAP_SUBDIR_NAME = "memory_map_reports"
-MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 REGION_HEADER_SIZE = 2 * BYTES_PER_WORD
 
 
 def memory_map_on_host_chip_report():
-    """ Report on memory usage. Creates a report that states where in SDRAM \
-        each region is (read from machine)
-
+    """
+    Report on memory usage. Creates a report that states where in SDRAM
+    each region is (read from machine).
     """
     directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), MEM_MAP_SUBDIR_NAME)
+        FecDataView.get_run_dir_path(), "memory_map_reports")
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 
@@ -44,13 +42,14 @@ def memory_map_on_host_chip_report():
         dsg_targets.ds_n_cores(), "Writing memory map reports")
     for (x, y, p) in progress.over(dsg_targets.keys()):
         file_name = os.path.join(
-            directory_name, MEM_MAP_FILENAME.format(x, y, p))
+            directory_name, f"memory_map_from_processor_{x}_{y}_{p}.txt")
         try:
             with open(file_name, "w", encoding="utf-8") as f:
                 _describe_mem_map(f, transceiver, x, y, p)
         except IOError:
-            logger.exception("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
+            logger.exception(
+                "Generate_placement_reports: Can't open file {} for writing.",
+                file_name)
 
 
 def _describe_mem_map(f, txrx, x, y, p):
@@ -67,8 +66,7 @@ def _describe_mem_map(f, txrx, x, y, p):
     for i in range(MAX_MEM_REGIONS):
         region_address, = _ONE_WORD.unpack_from(
             memmap_data, i * BYTES_PER_WORD)
-        f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
-            i, region_address))
+        f.write(f"Region {i:d}:\n\t start address: 0x{region_address:x}\n\n")
 
 
 def _get_region_table_addr(txrx, x, y, p):

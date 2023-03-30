@@ -16,7 +16,8 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
 class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
-    """ Indicates an object that provides locally obtained provenance data.
+    """
+    Indicates an object that provides locally obtained provenance data.
 
     GraphProvenanceGatherer will check all Vertices and all Edges in
     the ApplicationGraph
@@ -26,6 +27,8 @@ class AbstractProvidesLocalProvenanceData(object, metaclass=AbstractBase):
 
     @abstractmethod
     def get_local_provenance_data(self):
-        """ Get an iterable of provenance data items.
+        """
+        Get an iterable of provenance data items.
 
+        :rtype: iterable
         """

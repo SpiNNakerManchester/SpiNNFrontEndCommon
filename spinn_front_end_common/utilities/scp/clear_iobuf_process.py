@@ -41,7 +41,8 @@ class _ClearIOBUFRequest(AbstractSCPRequest):
 
 
 class ClearIOBUFProcess(AbstractMultiConnectionProcess):
-    """ How to clear the IOBUF buffers of a set of cores.
+    """
+    How to clear the IOBUF buffers of a set of cores.
 
     .. note::
         The cores must be using the simulation interface.

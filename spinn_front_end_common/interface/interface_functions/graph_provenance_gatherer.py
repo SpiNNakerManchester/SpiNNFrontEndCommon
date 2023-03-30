@@ -19,9 +19,9 @@ from spinn_front_end_common.interface.provenance import (
 
 
 def graph_provenance_gatherer():
-    """ Gets provenance information from the graph.
-
-     """
+    """
+    Gets provenance information from the graph.
+    """
     progress = ProgressBar(
         FecDataView.get_n_vertices() +
         FecDataView.get_n_partitions(),

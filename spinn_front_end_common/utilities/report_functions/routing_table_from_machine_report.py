@@ -20,7 +20,8 @@ _FOLDER_NAME = "routing_tables_from_machine"
 
 
 def routing_table_from_machine_report(routing_tables):
-    """ Report the routing table that was actually on the machine.
+    """
+    Report the routing table that was actually on the machine.
 
         folder_name = os.path.join(FecDataView().run_dir_path, _FOLDER_NAME)
         os.mkdir(folder_name)

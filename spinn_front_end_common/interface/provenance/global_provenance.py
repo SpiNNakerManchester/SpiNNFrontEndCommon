@@ -29,7 +29,8 @@ _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
 class GlobalProvenance(SQLiteDB):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     .. note::
         *Not thread safe on the same database file.*
@@ -46,7 +47,8 @@ class GlobalProvenance(SQLiteDB):
 
     @classmethod
     def get_global_provenace_path(cls):
-        """ Get the path of the current provenance database of the last run
+        """
+        Get the path of the current provenance database of the last run
 
         .. warning::
             Calling this method between start/reset and run may result in a
@@ -70,7 +72,7 @@ class GlobalProvenance(SQLiteDB):
         :type database_file: str or None
         :param bool memory:
             Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
+            Otherwise a `None` file will mean the default should be used
 
         """
         if database_file is None and not memory:
@@ -143,9 +145,9 @@ class GlobalProvenance(SQLiteDB):
         :param str algorithm: Algorithm name
         :param TimerWork work: Type of work being done
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param skip_reason: The reason the algorthm was skipped or None if
+        :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :tpye skip_reason: str or None
+        :type skip_reason: str or None
         """
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +

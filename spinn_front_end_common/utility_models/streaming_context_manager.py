@@ -14,8 +14,9 @@
 
 
 class StreamingContextManager(object):
-    """ The implementation of the context manager object for streaming \
-        configuration control.
+    """
+    The implementation of the context manager object for streaming
+    configuration control.
     """
     __slots__ = ["_gatherers"]
 

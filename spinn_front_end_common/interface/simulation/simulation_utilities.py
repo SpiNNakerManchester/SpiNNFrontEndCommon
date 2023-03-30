@@ -19,7 +19,8 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
 def get_simulation_header_array(binary_file_name):
-    """ Get data to be written to the simulation header
+    """
+    Get data to be written to the simulation header.
 
     :param str binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
@@ -40,7 +41,8 @@ def get_simulation_header_array(binary_file_name):
 
 
 def get_simulation_header_array_no_timestep(binary_file_name):
-    """ Get data to be written to the simulation header
+    """
+    Get data to be written to the simulation header.
 
     :param str binary_file_name: The name of the binary of the application
     :return: An array of values to be written as the simulation header
