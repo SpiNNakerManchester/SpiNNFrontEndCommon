@@ -19,7 +19,8 @@ from spinn_front_end_common.data import FecDataView
 
 
 def read_routing_tables_from_machine():
-    """ Reads compressed routing tables from a SpiNNaker machine.
+    """
+    Reads compressed routing tables from a SpiNNaker machine.
 
     :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
     """
@@ -44,8 +45,7 @@ def _read_routing_table(transceiver, table, app_id):
     :param ~.UnCompressedMulticastRoutingTable table:
     :param int app_id:
     """
-    machine_routing_table = \
-        CompressedMulticastRoutingTable(table.x, table.y)
+    machine_routing_table = CompressedMulticastRoutingTable(table.x, table.y)
     for routing_entry in transceiver.get_multicast_routes(
             table.x, table.y, app_id):
         machine_routing_table.add_multicast_routing_entry(routing_entry)

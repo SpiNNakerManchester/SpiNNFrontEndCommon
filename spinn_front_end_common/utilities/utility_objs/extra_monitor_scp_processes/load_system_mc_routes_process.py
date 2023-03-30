@@ -19,8 +19,9 @@ from spinn_front_end_common.utilities.utility_objs.\
 
 
 class LoadSystemMCRoutesProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to load the configured system multicast routing\
-        tables (and save the application routing tables).
+    """
+    How to send messages to load the configured system multicast routing
+    tables (and save the application routing tables).
     """
 
     def load_system_mc_routes(self, core_subsets):

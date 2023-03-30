@@ -20,8 +20,9 @@ from spinn_front_end_common.utility_models import (
 
 
 def insert_extra_monitor_vertices_to_graphs(placements):
-    """ Inserts the extra monitor vertices into the graph that correspond to\
-        the extra monitor cores required.
+    """
+    Inserts the extra monitor vertices into the graph that correspond to
+    the extra monitor cores required.
 
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,

@@ -23,13 +23,13 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def placements_provenance_gatherer(n_placements, placements):
-    """ Gets provenance information from placements
+    """
+    Gets provenance information from placements.
 
     :param int n_placements: Number of placements to gather
-    :param iterator(Placement) placements:
+    :param iterator(~pacman.model.placements.Placement) placements:
         The placements of the vertices to gather data form.
-        May not be all placements so dont use View
-    :return:
+        May not be all placements so don't use View
     """
     errors = list()
 

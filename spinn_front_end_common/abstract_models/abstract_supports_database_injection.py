@@ -19,22 +19,25 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
-    """ Marks a machine vertex as supporting injection of information via a\
-        database running on the controlling host.
+    """
+    Marks a machine vertex as supporting injection of information via a
+    database running on the controlling host.
     """
 
     __slots__ = ()
 
     @abstractproperty
     def is_in_injection_mode(self):
-        """ Whether this vertex is actually in injection mode.
+        """
+        Whether this vertex is actually in injection mode.
 
         :rtype: bool
         """
 
     @abstractproperty
     def injection_partition_id(self):
-        """ The partition that packets are being injected with
+        """
+        The partition that packets are being injected with.
 
         :rtype: str
         """

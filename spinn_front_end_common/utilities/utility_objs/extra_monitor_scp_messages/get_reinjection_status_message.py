@@ -25,9 +25,9 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
-    """ An SCP Request to get the status of the dropped packet reinjection.
     """
-
+    An SCP Request to get the status of the dropped packet reinjection.
+    """
     __slots__ = []
 
     def __init__(self, x, y, p):
@@ -53,12 +53,14 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
 
 
 class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
-    """ An SCP response to a request for the dropped packet reinjection status
     """
+    An SCP response to a request for the dropped packet reinjection status
+    """
+    __slots__ = ("_reinjection_status", "_command_code")
 
     def __init__(self, command_code):
         super().__init__()
-        self._reinjection_functionality_status = None
+        self._reinjection_status = None
         self._command_code = command_code
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
@@ -68,9 +70,8 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
             raise SpinnmanUnexpectedResponseCodeException(
                 "Get packet reinjection status", self._command_code,
                 result.name)
-        self._reinjection_functionality_status = \
-            ReInjectionStatus(data, offset)
+        self._reinjection_status = ReInjectionStatus(data, offset)
 
     @property
     def reinjection_functionality_status(self):
-        return self._reinjection_functionality_status
+        return self._reinjection_status

@@ -28,7 +28,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def drift_report():
-    """ A report on the clock drift as reported by each chip
+    """
+    A report on the clock drift as reported by each chip
     """
     ethernet_only = get_config_bool(
             "Reports", "drift_report_ethernet_only")
@@ -74,9 +75,9 @@ def drift_report():
                     elif last_drift != drift:
                         logger.warning(
                             "On board {}, chip {}, {} is not in sync"
-                            " ({} vs {})".format(
-                                eth_chip.ip_address, chip.x, chip.y,
-                                drift, last_drift))
+                            " ({} vs {})",
+                            eth_chip.ip_address, chip.x, chip.y,
+                            drift, last_drift)
                     progress.update()
         writer.write("\n")
 

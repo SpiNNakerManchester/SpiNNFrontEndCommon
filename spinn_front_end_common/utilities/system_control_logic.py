@@ -26,8 +26,9 @@ def run_system_application(
         read_algorithm_iobuf, check_for_success_function,
         cpu_end_states, needs_sync_barrier, filename_template,
         binaries_to_track=None, progress_bar=None, logger=None, timeout=None):
-    """ Executes the given _system_ application. \
-        Used for on-chip expanders, compressors, etc.
+    """
+    Executes the given _system_ application.
+    Used for on-chip expanders, compressors, etc.
 
     :param ~spinnman.model.ExecutableTargets executable_cores:
         the cores to run the executable on.
@@ -50,7 +51,7 @@ def run_system_application(
         If provided and IOBUF is extracted, will be used to log errors and
         warnings
     :param timeout:
-        Number of seconds to wait before force stopping, or None to wait
+        Number of seconds to wait before force stopping, or `None` to wait
         forever
     :type timeout: float or None
     :raise SpinnmanException:

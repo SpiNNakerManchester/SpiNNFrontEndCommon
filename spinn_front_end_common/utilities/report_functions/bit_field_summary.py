@@ -14,7 +14,8 @@
 
 
 class BitFieldSummary(object):
-    """ Summary description of generated bitfields.
+    """
+    Summary description of generated bitfields.
     """
 
     def __init__(

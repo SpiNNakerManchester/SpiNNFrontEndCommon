@@ -16,7 +16,8 @@ from enum import Enum
 
 
 class SpeedupInSCPCommands(Enum):
-    """ SCP Command codes for data speed up in
+    """
+    SCP Command codes for data speed up in.
     """
     SAVE_APPLICATION_MC_ROUTES = 6
     LOAD_APPLICATION_MC_ROUTES = 7

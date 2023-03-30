@@ -19,7 +19,8 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class ResetCountersProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to clear the reinjection state counters.
+    """
+    How to send messages to clear the reinjection state counters.
     """
 
     def reset_counters(self, core_subsets):

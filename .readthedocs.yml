@@ -1,4 +1,4 @@
-# Copyright (c) 2017 The University of Manchester
+# Copyright (c) 2017-2023 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,14 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
 
-
-def create_notification_protocol():
-    """
-    Builds the notification protocol for GUI and external device interaction.
-    """
-    notification_protocol = NotificationProtocol()
-    notification_protocol.send_read_notification()
-    return notification_protocol
+version: 2
+build:
+  os: ubuntu-20.04
+  tools:
+    python: "3.8"
+sphinx:
+  configuration: doc/source/conf.py
+  builder: dirhtml
+  fail_on_warning: false
+python:
+  install:
+    - requirements: doc/doc_requirements.txt
+    - method: pip
+      path: .

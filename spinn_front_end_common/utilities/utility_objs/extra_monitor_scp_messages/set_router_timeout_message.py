@@ -22,8 +22,9 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class SetRouterTimeoutMessage(AbstractSCPRequest):
-    """ An SCP Request to the extra monitor core to set the router timeout\
-        for dropped packet reinjection.
+    """
+    An SCP Request to the extra monitor core to set the router timeout
+    for dropped packet reinjection.
     """
 
     __slots__ = []

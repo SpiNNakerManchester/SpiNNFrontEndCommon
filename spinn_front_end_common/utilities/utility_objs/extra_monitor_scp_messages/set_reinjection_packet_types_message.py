@@ -23,7 +23,8 @@ from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
-    """ An SCP Request to set the dropped packet reinjected packet types.
+    """
+    An SCP Request to set the dropped packet reinjected packet types.
     """
 
     __slots__ = []

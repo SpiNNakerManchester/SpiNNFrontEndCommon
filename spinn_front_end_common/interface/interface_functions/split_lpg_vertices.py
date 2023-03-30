@@ -17,13 +17,15 @@ from spinn_front_end_common.utility_models import LivePacketGather
 
 
 def split_lpg_vertices(system_placements):
-    """ Split any LPG vertices found
+    """
+    Split any LPG vertices found.
 
-    :param ApplictiongGraph app_graph: The application graph
+    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        The application graph
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
-    :param Placements system_placements:
-        exiting placements to be added to
+    :param ~pacman.model.placements.Placements system_placements:
+        existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
         vertex.splitter.create_vertices(system_placements)
