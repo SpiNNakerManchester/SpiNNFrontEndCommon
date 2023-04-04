@@ -101,7 +101,8 @@
 
 
 <span class="k">class</span> <span class="nc">_MachineBitFieldRouterCompressor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; On-machine bitfield-aware routing table compression.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    On-machine bitfield-aware routing table compression.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_compressor_aplx&quot;</span><span class="p">,</span> <span class="s2">&quot;_compressor_type&quot;</span><span class="p">]</span>
@@ -141,8 +142,6 @@
     <span class="n">_BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX</span> <span class="o">=</span> \
         <span class="s2">&quot;bit_field_sorter_and_searcher.aplx&quot;</span>
 
-    <span class="n">_PROGRESS_BAR_TEXT</span> <span class="o">=</span> \
-        <span class="s2">&quot;on chip </span><span class="si">{}</span><span class="s2"> compressor with bitfields&quot;</span>
     <span class="n">_HOST_BAR_TEXT</span> <span class="o">=</span> \
         <span class="s2">&quot;on host compressing routing tables and merging in bitfields as &quot;</span> \
         <span class="s2">&quot;appropriate&quot;</span>
@@ -158,7 +157,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_compressor_type</span> <span class="o">=</span> <span class="n">compressor_type</span>
 
     <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; entrance for routing table compression with bit field</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Entrance for routing table compression with bit field.</span>
 
 <span class="sd">        :param routing_tables: routing tables</span>
 <span class="sd">        :param bool write_compressor_iobuf: flag saying if read IOBUF</span>
@@ -177,12 +177,12 @@
         <span class="c1"># new app id for this simulation</span>
         <span class="n">routing_table_compressor_app_id</span> <span class="o">=</span> <span class="n">view</span><span class="o">.</span><span class="n">get_new_id</span><span class="p">()</span>
 
-        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PROGRESS_BAR_TEXT</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_type</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;on chip </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_compressor_type</span><span class="si">}</span><span class="s2"> compressor with bitfields&quot;</span>
         <span class="n">retry_count</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
             <span class="s2">&quot;Mapping&quot;</span><span class="p">,</span>
             <span class="s2">&quot;router_table_compression_with_bit_field_retry_count&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">retry_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot; capped at </span><span class="si">{}</span><span class="s2"> retries&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">retry_count</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; capped at </span><span class="si">{</span><span class="n">retry_count</span><span class="si">}</span><span class="s2"> retries&quot;</span>
         <span class="n">progress_bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span>
             <span class="n">total_number_of_things_to_do</span><span class="o">=</span><span class="p">(</span>
                 <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">+</span>
@@ -280,14 +280,15 @@
         <span class="k">return</span> <span class="n">compressor_executable_targets</span>
 
     <span class="k">def</span> <span class="nf">_generate_core_subsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routing_tables</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; generates the core subsets for the binaries</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the core subsets for the binaries.</span>
 
 <span class="sd">        :param ~.MulticastRoutingTables routing_tables: the routing tables</span>
 <span class="sd">        :param ~.ProgressBar progress_bar: progress bar</span>
-<span class="sd">        :param ExecutableTargets system_executable_targets:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets system_executable_targets:</span>
 <span class="sd">            the executables targets to cores</span>
 <span class="sd">        :return: (targets, sorter path, and compressor path)</span>
-<span class="sd">        :rtype: tuple(ExecutableTargets, str, str)</span>
+<span class="sd">        :rtype: tuple(~spinnman.model.ExecutableTargets, str, str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bit_field_sorter_cores</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
         <span class="n">bit_field_compressor_cores</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
@@ -339,10 +340,11 @@
 
     <span class="k">def</span> <span class="nf">_check_bit_field_router_compressor_for_success</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">,</span> <span class="n">host_chips</span><span class="p">,</span> <span class="n">sorter_binary_path</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Goes through the cores checking for cores that have failed to\</span>
-<span class="sd">            generate the compressed routing tables with bitfield</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Goes through the cores checking for cores that have failed to</span>
+<span class="sd">        generate the compressed routing tables with bitfield.</span>
 
-<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">            cores to load router compressor with bitfield on</span>
 <span class="sd">        :param list(tuple(int,int)) host_chips:</span>
 <span class="sd">            the chips which need to be ran on host.</span>
@@ -380,7 +382,8 @@
             <span class="n">matrix_addresses_and_size</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
             <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; load all data onto the chip</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        load all data onto the chip.</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) addresses:</span>
 <span class="sd">            the addresses for bitfields in sdram</span>
@@ -392,7 +395,7 @@
 <span class="sd">        :param ~.ProgressBar progress_bar: progress bar</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
 <span class="sd">            whether to compress as much as possible</span>
-<span class="sd">        :param ExecutableTargets cores:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        :param dict matrix_addresses_and_size:</span>
 <span class="sd">            maps chips to regeneration sdram and size for exploitation</span>
@@ -402,7 +405,7 @@
 <span class="sd">            the path to the sorter binary</span>
 <span class="sd">        :param retry_count:</span>
 <span class="sd">            Number of times that the sorters should set of the compressions</span>
-<span class="sd">            again. None for as much as needed</span>
+<span class="sd">            again. `None` for as much as needed</span>
 <span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return:</span>
 <span class="sd">            the list of tuples saying which chips this will need to use</span>
@@ -448,17 +451,18 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span>
             <span class="n">compress_as_much_as_possible</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Updates the user addresses for the compressor cores with the</span>
-<span class="sd">            compression settings.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the user addresses for the compressor cores with the</span>
+<span class="sd">        compression settings.</span>
 
 <span class="sd">        :param int chip_x: chip x coord</span>
 <span class="sd">        :param int chip_y: chip y coord</span>
-<span class="sd">        :param ~.Transceiver transceiver: SpiNNMan instance</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance</span>
 <span class="sd">        :param str bit_field_compressor_executable_path:</span>
 <span class="sd">            path for the compressor binary</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
 <span class="sd">            whether to compress as much as possible</span>
-<span class="sd">        :param ExecutableTargets cores: the executable targets</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets cores: the executable targets</span>
 <span class="sd">        :param int comms_sdram: Address for comms block</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compressor_cores</span> <span class="o">=</span> <span class="n">cores</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
@@ -489,15 +493,18 @@
     <span class="k">def</span> <span class="nf">_load_usable_sdram</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">cores</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; loads the addresses of stealable sdram</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        loads the addresses of stealable SDRAM.</span>
 
 <span class="sd">        :param list(tuple(int,int)) matrix_addresses_and_size:</span>
 <span class="sd">            SDRAM usable and sizes</span>
 <span class="sd">        :param int chip_x: the chip x to consider here</span>
 <span class="sd">        :param int chip_y: the chip y to consider here</span>
-<span class="sd">        :param ~.Transceiver transceiver: the spinnman instance</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnman instance</span>
 <span class="sd">        :param int routing_table_compressor_app_id: system app id.</span>
-<span class="sd">        :param ExecutableTargets cores: the cores that compressor will run on</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
+<span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">address_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_chip_matrix_data</span><span class="p">(</span>
             <span class="n">matrix_addresses_and_size</span><span class="p">)</span>
@@ -530,7 +537,8 @@
             <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">user3_address</span><span class="p">,</span> <span class="n">sdram_address</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_generate_chip_matrix_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_of_sizes_and_address</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; generate the data for the chip matrix data</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate the data for the chip matrix data.</span>
 
 <span class="sd">        :param list(tuple(int,int)) list_of_sizes_and_address:</span>
 <span class="sd">            SDRAM addresses and sizes</span>
@@ -547,15 +555,18 @@
             <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">,</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">,</span>
             <span class="n">bit_field_sorter_executable_path</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; loads the bitfield addresses space</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        loads the bitfield addresses space.</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) addresses:</span>
 <span class="sd">            the addresses to load</span>
 <span class="sd">        :param int chip_x: the chip x to consider here</span>
 <span class="sd">        :param int chip_y: the chip y to consider here</span>
-<span class="sd">        :param ~.Transceiver transceiver: the spinnman instance</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            the spinnman instance</span>
 <span class="sd">        :param int routing_table_compressor_app_id: system app id.</span>
-<span class="sd">        :param ExecutableTargets cores: the cores that compressor will run on</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
+<span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        :param str bit_field_compressor_executable_path:</span>
 <span class="sd">            the path to the compressor binary path</span>
 <span class="sd">        :param str bit_field_sorter_executable_path:</span>
@@ -563,9 +574,8 @@
 <span class="sd">        :param int comms_sdram: Address for comms block</span>
 <span class="sd">        :param retry_count:</span>
 <span class="sd">            Number of times that the sorters should set of the compressions</span>
-<span class="sd">            again. None for as much as needed</span>
+<span class="sd">            again. `None` for as much as needed</span>
 <span class="sd">        :type retry_count: int or None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># generate address_data</span>
         <span class="n">address_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_chip_data</span><span class="p">(</span>
@@ -606,18 +616,21 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span>
             <span class="n">matrix_addresses_and_size</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; loads the routing table data</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        loads the routing table data.</span>
 
-<span class="sd">        :param AbsractMulticastRoutingTable table: the routing table to load</span>
+<span class="sd">        :param table: the routing table to load</span>
+<span class="sd">        :type table:</span>
+<span class="sd">            ~pacman.model.routing_tables.AbstractMulticastRoutingTable</span>
 <span class="sd">        :param int app_id: application app id</span>
-<span class="sd">        :param ~.Transceiver transceiver: spinnman instance</span>
-<span class="sd">        :param ~.ProgressBar progress_bar: progress bar</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance</span>
+<span class="sd">        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:</span>
+<span class="sd">            progress bar</span>
 <span class="sd">        :param int routing_table_compressor_app_id: system app id</span>
-<span class="sd">        :param ExecutableTargets cores:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that the compressor going to run on</span>
 <span class="sd">        :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">routing_table_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_routing_table_data</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
 
         <span class="c1"># go to spinnman and ask for a memory region of that size per chip.</span>
@@ -649,7 +662,8 @@
         <span class="n">progress_bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_build_routing_table_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">,</span> <span class="n">routing_table</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; builds routing data as needed for the compressor cores</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Builds routing data as needed for the compressor cores.</span>
 
 <span class="sd">        :param int app_id: appid of the application to load entries with</span>
 <span class="sd">        :param ~.AbsractMulticastRoutingTable routing_table:</span>
@@ -676,7 +690,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_steal_from_matrix_addresses</span><span class="p">(</span><span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">size_to_steal</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; steals memory from synaptic matrix as needed</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Steals memory from synaptic matrix as needed.</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:</span>
 <span class="sd">            matrix addresses and sizes; updated by this method</span>
@@ -696,7 +711,8 @@
     <span class="k">def</span> <span class="nf">_add_to_addresses</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">region_addresses</span><span class="p">,</span>
             <span class="n">sdram_block_addresses_and_sizes</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; adds data about the API-based vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds data about the API-based vertex.</span>
 
 <span class="sd">        :param AbstractSupportsBitFieldRoutingCompression vertex:</span>
 <span class="sd">            vertex which utilises the API</span>
@@ -724,7 +740,8 @@
             <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">data</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="nf">_generate_addresses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">progress_bar</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; generates the bitfield SDRAM addresses</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the bitfield SDRAM addresses.</span>
 
 <span class="sd">        :param ~.ProgressBar progress_bar: the progress bar</span>
 <span class="sd">        :return: region_addresses and the executable targets to load the</span>
@@ -751,7 +768,7 @@
     <span class="k">def</span> <span class="nf">_generate_chip_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">address_list</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">comms_sdram</span><span class="p">,</span> <span class="n">retry_count</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Generate the region_addresses_t data</span>
+<span class="sd">        Generate the region_addresses_t data.</span>
 
 <span class="sd">        Minimum percentage of bitfields to be merge in (currently ignored)</span>
 
@@ -769,7 +786,7 @@
 <span class="sd">        :param int comms_sdram: Address for comms block</span>
 <span class="sd">        :param retry_count:</span>
 <span class="sd">            Number of times that the sorters should set of the compressions</span>
-<span class="sd">            again. None for as much as needed</span>
+<span class="sd">            again. `None` for as much as needed</span>
 <span class="sd">        :type retry_count: int or None</span>
 <span class="sd">        :return: the byte array</span>
 <span class="sd">        :rtype: bytes</span>
@@ -791,12 +808,13 @@
 
 <div class="viewcode-block" id="machine_bit_field_ordered_covering_compressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor">[docs]</a><span class="k">def</span> <span class="nf">machine_bit_field_ordered_covering_compressor</span><span class="p">(</span>
         <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; compression with bit field and ordered covering</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compression with bit field and ordered covering.</span>
 
-<span class="sd">        :param bool compress_as_much_as_possible:</span>
-<span class="sd">            whether to compress as much as possible</span>
-<span class="sd">        :return: where the compressors ran</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    :param bool compress_as_much_as_possible:</span>
+<span class="sd">        whether to compress as much as possible</span>
+<span class="sd">    :return: where the compressors ran</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">compressor</span> <span class="o">=</span> <span class="n">_MachineBitFieldRouterCompressor</span><span class="p">(</span>
         <span class="s2">&quot;bit_field_ordered_covering_compressor.aplx&quot;</span><span class="p">,</span> <span class="s2">&quot;OrderedCovering&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">compressor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">compress_as_much_as_possible</span><span class="p">)</span></div>
@@ -804,12 +822,13 @@
 
 <div class="viewcode-block" id="machine_bit_field_pair_router_compressor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor">[docs]</a><span class="k">def</span> <span class="nf">machine_bit_field_pair_router_compressor</span><span class="p">(</span>
         <span class="n">compress_as_much_as_possible</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; compression with bit field and ordered covering</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compression with bit field pairing.</span>
 
-<span class="sd">        :param bool compress_as_much_as_possible:</span>
-<span class="sd">            whether to compress as much as possible</span>
-<span class="sd">        :return: where the compressors ran</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    :param bool compress_as_much_as_possible:</span>
+<span class="sd">        whether to compress as much as possible</span>
+<span class="sd">    :return: where the compressors ran</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">compressor</span> <span class="o">=</span> <span class="n">_MachineBitFieldRouterCompressor</span><span class="p">(</span>
         <span class="s2">&quot;bit_field_pair_compressor.aplx&quot;</span><span class="p">,</span> <span class="s2">&quot;Pair&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">compressor</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">compress_as_much_as_possible</span><span class="p">)</span></div>

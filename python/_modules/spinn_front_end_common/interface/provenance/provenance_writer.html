@@ -58,7 +58,8 @@
 
 
 <span class="k">class</span> <span class="nc">ProvenanceWriter</span><span class="p">(</span><span class="n">BaseDatabase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        *Not thread safe on the same database file.*</span>
@@ -81,8 +82,7 @@
 <span class="sd">        :type database_file: str or None</span>
 <span class="sd">        :param bool memory:</span>
 <span class="sd">            Flag to say unshared in-memory can be used.</span>
-<span class="sd">            Otherwise a None file will mean the default should be used</span>
-
+<span class="sd">            Otherwise a `None` file will mean the default should be used</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">database_file</span><span class="p">)</span>
 

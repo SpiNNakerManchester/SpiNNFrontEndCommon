@@ -112,6 +112,11 @@ the ApplicationGraph</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_local_provenance_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_local_provenance_data.html#AbstractProvidesLocalProvenanceData.get_local_provenance_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesLocalProvenanceData.get_local_provenance_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterable of provenance data items.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>iterable</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -120,14 +125,18 @@ the ApplicationGraph</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">AbstractProvidesProvenanceDataFromMachine</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Indicates that an object provides provenance data retrieved from the        machine.</p>
+<p>Indicates that an object provides provenance data retrieved from the
+machine.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_provenance_data_from_machine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/abstract_provides_provenance_data_from_machine.html#AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine.get_provenance_data_from_machine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get an iterable of provenance data items.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<em>Placement</em>) – the placement of the object</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>iterable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -204,7 +213,7 @@ called via the View!</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>category</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerCategory" title="spinn_front_end_common.interface.provenance.TimerCategory"><em>TimerCategory</em></a>) – category to switch to</p></li>
 <li><p><strong>machine_on</strong> (<em>None</em><em> or </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – What to change machine on too.
-Or None to leave as is</p></li>
+Or <cite>None</cite> to leave as is</p></li>
 </ul>
 </dd>
 </dl>
@@ -240,7 +249,7 @@ database holding the data.
 If omitted, either the default file path or an unshared in-memory
 database will be used (suitable only for testing).</p></li>
 <li><p><strong>memory</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Flag to say unshared in-memory can be used.
-Otherwise a None file will mean the default should be used</p></li>
+Otherwise a <cite>None</cite> file will mean the default should be used</p></li>
 </ul>
 </dd>
 </dl>
@@ -437,12 +446,9 @@ or some of the time</p></li>
 <li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Algorithm name</p></li>
 <li><p><strong>work</strong> (<a class="reference internal" href="#spinn_front_end_common.interface.provenance.TimerWork" title="spinn_front_end_common.interface.provenance.TimerWork"><em>TimerWork</em></a>) – Type of work being done</p></li>
 <li><p><strong>timedelta</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/datetime.html#datetime.timedelta" title="(in Python v3.8)"><em>timedelta</em></a>) – Time to be recorded</p></li>
-<li><p><strong>skip_reason</strong> – The reason the algorthm was skipped or None if
+<li><p><strong>skip_reason</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The reason the algorithm was skipped or <cite>None</cite> if
 it was not skipped</p></li>
 </ul>
-</dd>
-<dt class="field-even">Tpye skip_reason<span class="colon">:</span></dt>
-<dd class="field-even"><p>str or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -537,7 +543,7 @@ statement</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.LogStoreDB.get_location">
 <span class="sig-name descname"><span class="pre">get_location</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/log_store_db.html#LogStoreDB.get_location"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.LogStoreDB.get_location" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves the location of the log store</p>
+<dd><p>Retrieves the location of the log store.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
@@ -548,13 +554,16 @@ statement</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.LogStoreDB.retreive_log_messages">
 <span class="sig-name descname"><span class="pre">retreive_log_messages</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/log_store_db.html#LogStoreDB.retreive_log_messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.LogStoreDB.retreive_log_messages" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves all log messages at or above the min_level</p>
+<dd><p>Retrieves all log messages at or above the <cite>min_level</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>min_level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
+<dd class="field-odd"><p><strong>min_level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Constraint on the minimum logging level to retrieve.</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of messages that satisfy the constraint.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -562,12 +571,13 @@ statement</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.LogStoreDB.store_log">
 <span class="sig-name descname"><span class="pre">store_log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/log_store_db.html#LogStoreDB.store_log"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.LogStoreDB.store_log" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes the log message for later retreival</p>
+<dd><p>Writes the log message for later retrieval.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
+<li><p><strong>level</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The logging level.</p></li>
+<li><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The logged message.</p></li>
+<li><p><strong>timestamp</strong> (<em>datatime</em><em> or </em><em>None</em>) – The timestamp of the message.</p></li>
 </ul>
 </dd>
 </dl>
@@ -627,7 +637,7 @@ where their where late arriving spikes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace">
 <span class="sig-name descname"><span class="pre">get_cores_with_provenace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_cores_with_provenace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_cores_with_provenace" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the cores with provenance</p>
+<dd><p>Gets the cores with provenance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A list tuples (x, y, p)</p>
@@ -641,7 +651,9 @@ where their where late arriving spikes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_last_run_database_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_last_run_database_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_last_run_database_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the path of the current provenance database of the last run</p>
+<dd><blockquote>
+<div><p>Get the path of the current provenance database of the last run.</p>
+</div></blockquote>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <blockquote>
@@ -660,7 +672,7 @@ for example before run is called</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_monitor_by_chip">
 <span class="sig-name descname"><span class="pre">get_monitor_by_chip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_monitor_by_chip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_monitor_by_chip" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the monitor values for a specific item</p>
+<dd><p>Gets the monitor values for a specific item.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
@@ -677,7 +689,7 @@ for example before run is called</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_router">
 <span class="sig-name descname"><span class="pre">get_provenance_for_router</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_provenance_for_router"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_provenance_for_router" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the provenance item(s) from the last run relating to a chip</p>
+<dd><p>Gets the provenance item(s) from the last run relating to a chip.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -698,7 +710,7 @@ like a line <code class="docutils literal notranslate"><span class="pre">descrip
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.get_router_by_chip">
 <span class="sig-name descname"><span class="pre">get_router_by_chip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">description</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.get_router_by_chip"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.get_router_by_chip" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the router values for a specific item</p>
+<dd><p>Gets the router values for a specific item.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>description</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
@@ -715,7 +727,7 @@ like a line <code class="docutils literal notranslate"><span class="pre">descrip
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.messages">
 <span class="sig-name descname"><span class="pre">messages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.messages"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.messages" title="Permalink to this definition">¶</a></dt>
-<dd><p>List all the provenance messages</p>
+<dd><p>List all the provenance messages.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>all messages logged or not</p>
@@ -730,7 +742,7 @@ like a line <code class="docutils literal notranslate"><span class="pre">descrip
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvenanceReader.run_query">
 <span class="sig-name descname"><span class="pre">run_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provenance_reader.html#ProvenanceReader.run_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvenanceReader.run_query" title="Permalink to this definition">¶</a></dt>
 <dd><p>Opens a connection to the database, runs a query, extracts the results
-and closes the connection</p>
+and closes the connection.</p>
 <p>The return type depends on the use_sqlite_rows param.
 By default this method returns tuples (lookup by index) but the
 advanced tuple type can be used instead, which supports lookup by name
@@ -790,7 +802,7 @@ database holding the data.
 If omitted, either the default file path or an unshared in-memory
 database will be used (suitable only for testing).</p></li>
 <li><p><strong>memory</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Flag to say unshared in-memory can be used.
-Otherwise a None file will mean the default should be used</p></li>
+Otherwise a <cite>None</cite> file will mean the default should be used</p></li>
 </ul>
 </dd>
 </dl>
@@ -924,7 +936,8 @@ cfg provenance_report_cutoff</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.provenance.</span></span><span class="sig-name descname"><span class="pre">ProvidesProvenanceDataFromMachineImpl</span></span><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine" title="spinn_front_end_common.interface.provenance.AbstractProvidesProvenanceDataFromMachine"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractProvidesProvenanceDataFromMachine</span></code></a></p>
-<p>An implementation that gets provenance data from a region of ints on        the machine.</p>
+<p>An implementation that gets provenance data from a region of ints on
+the machine.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS">
 <span class="sig-name descname"><span class="pre">N_SYSTEM_PROVENANCE_WORDS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">6</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.N_SYSTEM_PROVENANCE_WORDS" title="Permalink to this definition">¶</a></dt>
@@ -934,7 +947,8 @@ cfg provenance_report_cutoff</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PROVENANCE_DATA_ENTRIES</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/provenance/provides_provenance_data_from_machine_impl.html#ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
-<p>Entries for the provenance data generated by models using provides            provenance vertex.</p>
+<p>Entries for the provenance data generated by models using provides
+provenance vertex.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED">
 <span class="sig-name descname"><span class="pre">CALLBACK_QUEUE_OVERLOADED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#spinn_front_end_common.interface.provenance.ProvidesProvenanceDataFromMachineImpl.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED" title="Permalink to this definition">¶</a></dt>
@@ -979,7 +993,7 @@ cfg provenance_report_cutoff</p>
 <dd><p>Retrieve the provenance data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<em>Placement</em>) – Which vertex are we retrieving from, and where was it</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Which vertex are we retrieving from, and where was it</p>
 </dd>
 </dl>
 </dd></dl>

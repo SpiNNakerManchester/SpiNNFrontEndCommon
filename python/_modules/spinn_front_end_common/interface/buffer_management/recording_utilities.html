@@ -58,7 +58,8 @@
 
 
 <div class="viewcode-block" id="get_recording_header_size"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_size">[docs]</a><span class="k">def</span> <span class="nf">get_recording_header_size</span><span class="p">(</span><span class="n">n_recording_regions</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the size of the data to be written for the recording header.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the size of the data to be written for the recording header.</span>
 
 <span class="sd">    This is the data that sets up how recording will be done, and indicates the</span>
 <span class="sd">    sizes of the regions to be stored.</span>
@@ -71,9 +72,10 @@
 
 
 <div class="viewcode-block" id="get_recording_data_constant_size"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_data_constant_size">[docs]</a><span class="k">def</span> <span class="nf">get_recording_data_constant_size</span><span class="p">(</span><span class="n">n_recording_regions</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the size of the headers that are stored in the SDRAM spaces</span>
-<span class="sd">        allocated during recording_initialise, and so do not need to be</span>
-<span class="sd">        reserved with DSG (but need to be accounted for in SDRAM calculations)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the size of the headers that are stored in the SDRAM spaces</span>
+<span class="sd">    allocated during recording_initialise, and so do not need to be</span>
+<span class="sd">    reserved with DSG (but need to be accounted for in SDRAM calculations).</span>
 
 <span class="sd">    :param int n_recording_regions: The number of regions that can be recorded</span>
 <span class="sd">    :rtype: int</span>
@@ -82,7 +84,8 @@
 
 
 <div class="viewcode-block" id="get_recording_header_array"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_array">[docs]</a><span class="k">def</span> <span class="nf">get_recording_header_array</span><span class="p">(</span><span class="n">recorded_region_sizes</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get data to be written for the recording header</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get data to be written for the recording header.</span>
 
 <span class="sd">    :param list(int) recorded_region_sizes:</span>
 <span class="sd">        A list of sizes of each region to be recorded.</span>

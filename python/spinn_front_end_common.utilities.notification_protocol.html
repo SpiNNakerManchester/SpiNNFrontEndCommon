@@ -53,7 +53,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.notification_protocol.</span></span><span class="sig-name descname"><span class="pre">NotificationProtocol</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
-<p>The protocol which hand shakes with external devices about the        database and starting execution.</p>
+<p>The protocol which hand shakes with external devices about the
+database and starting execution.</p>
 <p>The messages sent by this are received by instances of
 <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseConnection</span></code> (and its subclasses). They are not routed
 via SpiNNaker.</p>
@@ -66,29 +67,23 @@ via SpiNNaker.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification">
 <span class="sig-name descname"><span class="pre">send_read_notification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_read_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_read_notification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sends notifications to all devices which have expressed an            interest in when the database has been written</p>
+<dd><p>Sends notifications to all devices which have expressed an
+interest in when the database has been written</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification">
 <span class="sig-name descname"><span class="pre">send_start_resume_notification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_start_resume_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_start_resume_notification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Either waits till all sources have confirmed read the database            and are configured, and/or just sends the start notification            (when the system is executing)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<dd><p>Either waits till all sources have confirmed read the database
+and are configured, and/or just sends the start notification
+(when the system is executing).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification">
 <span class="sig-name descname"><span class="pre">send_stop_pause_notification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.send_stop_pause_notification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.send_stop_pause_notification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sends the pause / stop notifications when the script has either            finished or paused</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<dd><p>Sends the pause / stop notifications when the script has either
+finished or paused.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -105,12 +100,8 @@ via SpiNNaker.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation">
 <span class="sig-name descname"><span class="pre">wait_for_confirmation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/notification_protocol/notification_protocol.html#NotificationProtocol.wait_for_confirmation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol.wait_for_confirmation" title="Permalink to this definition">¶</a></dt>
-<dd><p>If asked to wait for confirmation, waits for all external systems            to confirm that they are configured and have read the database</p>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
-</dd>
-</dl>
+<dd><p>If asked to wait for confirmation, waits for all external systems
+to confirm that they are configured and have read the database.</p>
 </dd></dl>
 
 </dd></dl>

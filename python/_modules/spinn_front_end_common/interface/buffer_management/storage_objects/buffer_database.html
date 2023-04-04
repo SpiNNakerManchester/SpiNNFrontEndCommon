@@ -64,7 +64,8 @@
 
 
 <span class="k">class</span> <span class="nc">BufferDatabase</span><span class="p">(</span><span class="n">BaseDatabase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    There should only ever be a single Database Object in use at any time.</span>
 <span class="sd">    In the case of application_graph_changed the first should closed and</span>
@@ -72,7 +73,6 @@
 
 <span class="sd">    If 2 database objects where opened with the database_file they hold the</span>
 <span class="sd">    same data. Unless someone else deletes that file.</span>
-
 
 <span class="sd">    .. note::</span>
 <span class="sd">        *Not thread safe on the same database file!*</span>
@@ -82,7 +82,8 @@
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="BufferDatabase.clear_region"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.clear_region">[docs]</a>    <span class="k">def</span> <span class="nf">clear_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the data for a single region.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the data for a single region.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method *loses information!*</span>
@@ -188,8 +189,9 @@
         <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">lastrowid</span>
 
 <div class="viewcode-block" id="BufferDatabase.store_data_in_region_buffer"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.store_data_in_region_buffer">[docs]</a>    <span class="k">def</span> <span class="nf">store_data_in_region_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">missing</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Store some information in the corresponding buffer for a\</span>
-<span class="sd">            specific chip, core and recording region.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store some information in the corresponding buffer for a</span>
+<span class="sd">        specific chip, core and recording region.</span>
 
 <span class="sd">        :param int x: x coordinate of the chip</span>
 <span class="sd">        :param int y: y coordinate of the chip</span>
@@ -250,14 +252,16 @@
         <span class="k">return</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="BufferDatabase.get_region_data"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.get_region_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_region_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the data stored for a given region of a given core</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the data stored for a given region of a given core.</span>
 
 <span class="sd">        :param int x: x coordinate of the chip</span>
 <span class="sd">        :param int y: y coordinate of the chip</span>
 <span class="sd">        :param int p: Core within the specified chip</span>
 <span class="sd">        :param int region: Region containing the data</span>
-<span class="sd">        :return: a buffer containing all the data received during the\</span>
-<span class="sd">            simulation, and a flag indicating if any data was missing</span>
+<span class="sd">        :return:</span>
+<span class="sd">            A buffer containing all the data received during the</span>
+<span class="sd">            simulation, and a flag indicating if any data was missing.</span>
 
 <span class="sd">            .. note::</span>
 <span class="sd">                Implementations should not assume that the total buffer is</span>
@@ -275,7 +279,8 @@
             <span class="k">return</span> <span class="nb">memoryview</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;&#39;</span><span class="p">),</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="BufferDatabase.write_session_credentials_to_db"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferDatabase.write_session_credentials_to_db">[docs]</a>    <span class="k">def</span> <span class="nf">write_session_credentials_to_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write Spalloc session credentials to the database if in use</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write Spalloc session credentials to the database if in use.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=protected-access</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>
@@ -296,7 +301,6 @@
 <span class="sd">        :param int y:</span>
 <span class="sd">        :param int p:</span>
 <span class="sd">        :param str core_name:</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>

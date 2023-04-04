@@ -129,10 +129,15 @@
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Machine vertex for talking to extra monitor cores. \</span>
-<span class="sd">        Supports reinjection control and the faster data transfer protocols.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Machine vertex for talking to extra monitor cores.</span>
+<span class="sd">    Supports reinjection control and the faster data transfer protocols.</span>
 
 <span class="sd">    Usually deployed once per chip.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This is an unusual machine vertex, in that it has no associated</span>
+<span class="sd">        application vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
@@ -158,9 +163,6 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">reinject_point_to_point</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">reinject_nearest_neighbour</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reinject_fixed_route</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param bool reinject_multicast:</span>
-<span class="sd">            if we reinject multicast packets; defaults to value of</span>
-<span class="sd">            `enable_reinjection` setting in configuration file</span>
 <span class="sd">        :param bool reinject_point_to_point:</span>
 <span class="sd">            if we reinject point-to-point packets</span>
 <span class="sd">        :param bool reinject_nearest_neighbour:</span>
@@ -197,11 +199,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">TRANSACTION_ID_CAP</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; looks up from the machine what the current transaction id is</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Looks up from the machine what the current transaction id is</span>
 <span class="sd">        and updates the extra monitor.</span>
-
-<span class="sd">        :param txrx: SpiNNMan instance</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
@@ -255,7 +255,8 @@
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.static_get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_get_binary_start_type">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">static_get_binary_start_type</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The type of the binary implementing this vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The type of the binary implementing this vertex.</span>
 
 <span class="sd">        :rtype: ExecutableType</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -267,7 +268,8 @@
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.static_get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.static_get_binary_file_name">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">static_get_binary_file_name</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The name of the binary implementing this vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The name of the binary implementing this vertex.</span>
 
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -424,10 +426,11 @@
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
-<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
-<span class="sd">            between when a packet arrives and when it starts to be emergency\</span>
-<span class="sd">            routed. (Actual emergency routing is disabled by default.)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Supports setting of the router time outs for a set of chips via their</span>
+<span class="sd">        extra monitor cores. This sets the timeout for the time between when a</span>
+<span class="sd">        packet arrives and when it starts to be emergency routed. (Actual</span>
+<span class="sd">        emergency routing is disabled by default.)</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">            The mantissa and exponent of the timeout value, each between</span>
@@ -451,10 +454,11 @@
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Supports setting of the router time outs for a set of chips via\</span>
-<span class="sd">            their extra monitor cores. This sets the timeout for the time\</span>
-<span class="sd">            between when a packet starts to be emergency routed and when it\</span>
-<span class="sd">            is dropped. (Actual emergency routing is disabled by default.)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Supports setting of the router time outs for a set of chips via their</span>
+<span class="sd">        extra monitor cores. This sets the timeout for the time between when a</span>
+<span class="sd">        packet starts to be emergency routed and when it is dropped. (Actual</span>
+<span class="sd">        emergency routing is disabled by default.)</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">            The mantissa and exponent of the timeout value, each between</span>
@@ -477,7 +481,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.reset_reinjection_counters"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.reset_reinjection_counters">[docs]</a>    <span class="k">def</span> <span class="nf">reset_reinjection_counters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Resets the counters for reinjection</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Resets the counters for reinjection.</span>
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnMan interface</span>
@@ -498,7 +503,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.clear_reinjection_queue"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.clear_reinjection_queue">[docs]</a>    <span class="k">def</span> <span class="nf">clear_reinjection_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor_cores_to_set</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the queues for reinjection</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the queues for reinjection.</span>
 
 <span class="sd">        :param extra_monitor_cores_to_set:</span>
 <span class="sd">            Which extra monitors need to clear their queues.</span>
@@ -517,7 +523,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_reinjection_status"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_reinjection_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_reinjection_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the reinjection status from this extra monitor vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the reinjection status from this extra monitor vertex.</span>
 
 <span class="sd">        :return: the reinjection status for this vertex</span>
 <span class="sd">        :rtype: ReInjectionStatus</span>
@@ -533,7 +540,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.get_reinjection_status_for_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.get_reinjection_status_for_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">get_reinjection_status_for_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the reinjection status from a set of extra monitor cores</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the reinjection status from a set of extra monitor cores.</span>
 
 <span class="sd">        :rtype: dict(tuple(int,int), ReInjectionStatus)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -548,16 +556,16 @@
             <span class="n">fixed_route</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param point_to_point:</span>
-<span class="sd">            If point to point should be set, or None if left as before</span>
+<span class="sd">            If point to point should be set, or `None` if left as before</span>
 <span class="sd">        :type point_to_point: bool or None</span>
 <span class="sd">        :param multicast:</span>
-<span class="sd">            If multicast should be set, or None if left as before</span>
+<span class="sd">            If multicast should be set, or `None` if left as before</span>
 <span class="sd">        :type multicast: bool or None</span>
 <span class="sd">        :param nearest_neighbour:</span>
-<span class="sd">            If nearest neighbour should be set, or None if left as before</span>
+<span class="sd">            If nearest neighbour should be set, or `None` if left as before</span>
 <span class="sd">        :type nearest_neighbour: bool or None</span>
 <span class="sd">        :param fixed_route:</span>
-<span class="sd">            If fixed route should be set, or None if left as before.</span>
+<span class="sd">            If fixed route should be set, or `None` if left as before.</span>
 <span class="sd">        :type fixed_route: bool or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
@@ -585,8 +593,9 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.load_system_mc_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.load_system_mc_routes">[docs]</a>    <span class="k">def</span> <span class="nf">load_system_mc_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the extra monitor cores to load up the system-based \</span>
-<span class="sd">            multicast routes (used by data in).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the extra monitor cores to load up the system-based</span>
+<span class="sd">        multicast routes (used by the Data In protocol).</span>
 
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnMan interface</span>
@@ -602,9 +611,9 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="ExtraMonitorSupportMachineVertex.load_application_mc_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.load_application_mc_routes">[docs]</a>    <span class="k">def</span> <span class="nf">load_application_mc_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the extra monitor cores to load up the application-based\</span>
-<span class="sd">            multicast routes (used by data in).</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the extra monitor cores to load up the application-based</span>
+<span class="sd">        multicast routes (used by the Data In protocol).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_vertices_to_core_subset</span><span class="p">()</span>
         <span class="n">process</span> <span class="o">=</span> <span class="n">LoadApplicationMCRoutesProcess</span><span class="p">(</span>
@@ -618,8 +627,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_convert_vertices_to_core_subset</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Convert vertices into the subset of cores where they&#39;ve been\</span>
-<span class="sd">            placed.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert vertices into the subset of cores where they&#39;ve been placed.</span>
 
 <span class="sd">        :return: where the vertices have been placed</span>
 <span class="sd">        :rtype: ~.CoreSubsets</span>

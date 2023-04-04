@@ -171,7 +171,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SQLiteDB.close"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Finalises and closes the database.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finalises and closes the database.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -205,7 +206,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The underlying SQLite database connection.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The underlying SQLite database connection.</span>
 
 <span class="sd">        .. warning::</span>
 <span class="sd">            If you&#39;re using this a lot, consider contacting the SpiNNaker</span>
@@ -227,16 +229,20 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span>
 
 <div class="viewcode-block" id="SQLiteDB.transaction"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB.transaction">[docs]</a>    <span class="k">def</span> <span class="nf">transaction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">isolation_level</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a context manager that manages a transaction on the database.\</span>
-<span class="sd">        The value of the context manager is a :py:class:`~sqlite3.Cursor`.\</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a context manager that manages a transaction on the database.</span>
+<span class="sd">        The value of the context manager is a :py:class:`~sqlite3.Cursor`.</span>
 <span class="sd">        This means you can do this::</span>
 
 <span class="sd">            with db.transaction() as cursor:</span>
 <span class="sd">                cursor.execute(...)</span>
 
 <span class="sd">        :param Isolation isolation_level:</span>
-<span class="sd">            The transaction isolation level; note that this sets it for the</span>
-<span class="sd">            connection! Can usually be *not* specified.</span>
+<span class="sd">            The transaction isolation level.</span>
+
+<span class="sd">            .. note::</span>
+<span class="sd">                This sets it for the connection!</span>
+<span class="sd">                Can usually be *not* specified.</span>
 <span class="sd">        :rtype: ~typing.ContextManager(~sqlite3.Cursor)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__db</span><span class="p">:</span>

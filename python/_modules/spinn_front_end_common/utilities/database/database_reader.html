@@ -53,7 +53,8 @@
 
 
 <span class="k">class</span> <span class="nc">DatabaseReader</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A reader for the database.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A reader for the database.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;__job&quot;</span><span class="p">,</span> <span class="s2">&quot;__looked_for_job&quot;</span><span class="p">)</span>
 
@@ -90,7 +91,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__job</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_key_to_atom_id_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_key_to_atom_id_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_key_to_atom_id_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a mapping of event key to atom ID for a given vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a mapping of event key to atom ID for a given vertex.</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: dictionary of atom IDs indexed by event key</span>
@@ -106,7 +108,8 @@
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_atom_id_to_key_mapping"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_atom_id_to_key_mapping">[docs]</a>    <span class="k">def</span> <span class="nf">get_atom_id_to_key_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a mapping of atom ID to event key for a given vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a mapping of atom ID to event key for a given vertex.</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: dictionary of event keys indexed by atom ID</span>
@@ -122,8 +125,9 @@
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))}</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_live_output_details"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_live_output_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_live_output_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">receiver_label</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the IP address, port and whether the SDP headers are to be\</span>
-<span class="sd">            stripped from the output from a vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the IP address, port and whether the SDP headers are to be</span>
+<span class="sd">        stripped from the output from a vertex.</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: tuple of (IP address, port, strip SDP, board address, tag,</span>
@@ -141,7 +145,8 @@
             <span class="s2">&quot;chip_x&quot;</span><span class="p">,</span> <span class="s2">&quot;chip_y&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_configuration_parameter_value"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_configuration_parameter_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_configuration_parameter_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_name</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the value of a configuration parameter</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the value of a configuration parameter.</span>
 
 <span class="sd">        :param str parameter_name: The name of the parameter</span>
 <span class="sd">        :return: The value of the parameter</span>
@@ -159,7 +164,8 @@
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]),</span> <span class="nb">int</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;p&quot;</span><span class="p">])</span>
 
 <div class="viewcode-block" id="DatabaseReader.get_placements"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_placements">[docs]</a>    <span class="k">def</span> <span class="nf">get_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the placements of an application vertex with a given label</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the placements of an application vertex with a given label.</span>
 
 <span class="sd">        :param str label: The label of the vertex</span>
 <span class="sd">        :return: A list of x, y, p coordinates of the vertices</span>
@@ -174,7 +180,8 @@
 <span class="sd">                    &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">))]</span></div>
 
 <div class="viewcode-block" id="DatabaseReader.get_ip_address"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseReader.get_ip_address">[docs]</a>    <span class="k">def</span> <span class="nf">get_ip_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get an IP address to contact a chip</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get an IP address to contact a chip.</span>
 
 <span class="sd">        :param int x: The x-coordinate of the chip</span>
 <span class="sd">        :param int y: The y-coordinate of the chip</span>

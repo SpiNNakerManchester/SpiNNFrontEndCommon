@@ -62,9 +62,9 @@
 
 
 <span class="k">class</span> <span class="nc">GetReinjectionStatusMessage</span><span class="p">(</span><span class="n">AbstractSCPRequest</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; An SCP Request to get the status of the dropped packet reinjection.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An SCP Request to get the status of the dropped packet reinjection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
@@ -90,12 +90,14 @@
 
 
 <span class="k">class</span> <span class="nc">GetReinjectionStatusMessageResponse</span><span class="p">(</span><span class="n">AbstractSCPResponse</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; An SCP response to a request for the dropped packet reinjection status</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An SCP response to a request for the dropped packet reinjection status</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_reinjection_status&quot;</span><span class="p">,</span> <span class="s2">&quot;_command_code&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command_code</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_functionality_status</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_status</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_command_code</span> <span class="o">=</span> <span class="n">command_code</span>
 
 <div class="viewcode-block" id="GetReinjectionStatusMessageResponse.read_data_bytestring"><a class="viewcode-back" href="../../../../../spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.html#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessageResponse.read_data_bytestring">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span><span class="n">AbstractSCPResponse</span><span class="o">.</span><span class="n">read_data_bytestring</span><span class="p">)</span>
@@ -105,12 +107,11 @@
             <span class="k">raise</span> <span class="n">SpinnmanUnexpectedResponseCodeException</span><span class="p">(</span>
                 <span class="s2">&quot;Get packet reinjection status&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_command_code</span><span class="p">,</span>
                 <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_functionality_status</span> <span class="o">=</span> \
-            <span class="n">ReInjectionStatus</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_status</span> <span class="o">=</span> <span class="n">ReInjectionStatus</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">reinjection_functionality_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_functionality_status</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reinjection_status</span>
 </pre></div>
 
             <div class="clearer"></div>

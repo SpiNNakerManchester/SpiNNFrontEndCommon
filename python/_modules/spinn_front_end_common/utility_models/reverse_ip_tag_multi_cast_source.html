@@ -65,8 +65,9 @@
 
 <span class="k">class</span> <span class="nc">ReverseIpTagMultiCastSource</span><span class="p">(</span>
         <span class="n">ApplicationVertex</span><span class="p">,</span> <span class="n">LegacyPartitionerAPI</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A model which will allow events to be injected into a SpiNNaker\</span>
-<span class="sd">        machine and converted into multicast packets.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A model which will allow events to be injected into a SpiNNaker</span>
+<span class="sd">    machine and converted into multicast packets.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
@@ -138,10 +139,11 @@
 <span class="sd">        :param bool reserve_reverse_ip_tag:</span>
 <span class="sd">            Extra flag for input without a reserved port</span>
 <span class="sd">        :param str injection_partition:</span>
-<span class="sd">            If not None, will enable injection and specify the partition to</span>
+<span class="sd">            If not `None`, will enable injection and specify the partition to</span>
 <span class="sd">            send injected keys with</span>
 <span class="sd">        :param splitter: the splitter object needed for this vertex</span>
-<span class="sd">        :type splitter: None or AbstractSplitterCommon</span>
+<span class="sd">        :type splitter: None or</span>
+<span class="sd">            ~pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=too-many-arguments</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">max_atoms_per_core</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="n">splitter</span><span class="p">)</span>
@@ -177,9 +179,8 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                    <span class="s2">&quot;The array or arrays of times </span><span class="si">{}</span><span class="s2"> does not have the &quot;</span>
-                    <span class="s2">&quot;expected length of </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">send_buffer_times</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">&quot;The array or arrays of times </span><span class="si">{</span><span class="n">send_buffer_times</span><span class="si">}</span><span class="s2"> does &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;not have the expected length of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_atoms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">send_buffer_times</span><span class="p">)</span>
 
@@ -196,7 +197,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">send_buffer_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; When messages will be sent.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        When messages will be sent.</span>
 
 <span class="sd">        :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or</span>
 <span class="sd">            list(~numpy.ndarray(~numpy.int32)) or None</span>

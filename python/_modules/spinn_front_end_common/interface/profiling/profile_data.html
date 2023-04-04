@@ -67,7 +67,8 @@
 
 
 <span class="k">class</span> <span class="nc">ProfileData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A container for profile data</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A container for profile data.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">START_TIME</span> <span class="o">=</span> <span class="n">_START_TIME</span>
@@ -93,7 +94,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="ProfileData.add_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.add_data">[docs]</a>    <span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add profiling data read from the profile section</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add profiling data read from the profile section.</span>
 
 <span class="sd">        :param bytearray data:</span>
 <span class="sd">            Data read from the profile section on the machine</span>
@@ -175,15 +177,17 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The tags recorded as labels</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The tags recorded as labels.</span>
 
 <span class="sd">        :rtype: list(str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
 
 <div class="viewcode-block" id="ProfileData.get_mean_ms"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_ms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the mean time in milliseconds spent on operations with the</span>
-<span class="sd">            given tag</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the mean time in milliseconds spent on operations with the</span>
+<span class="sd">        given tag.</span>
 
 <span class="sd">        :param str tag: The tag to get the mean time for</span>
 <span class="sd">        :rtype: float</span>
@@ -191,7 +195,8 @@
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_DURATION</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProfileData.get_n_calls"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_n_calls">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_calls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the number of times the given tag was recorded</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of times the given tag was recorded.</span>
 
 <span class="sd">        :param str tag: The tag to get the number of calls of</span>
 <span class="sd">        :rtype: int</span>
@@ -199,8 +204,8 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_DURATION</span><span class="p">]</span><span class="o">.</span><span class="n">size</span></div>
 
 <div class="viewcode-block" id="ProfileData.get_mean_n_calls_per_ts"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_n_calls_per_ts">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_n_calls_per_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the mean number of times the given tag was recorded per\</span>
-<span class="sd">            timestep</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the mean number of times the given tag was recorded per timestep.</span>
 
 <span class="sd">        :param str tag: The tag to get the data for</span>
 <span class="sd">        :rtype: float</span>
@@ -214,8 +219,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">[</span><span class="n">tag</span><span class="p">][</span><span class="n">_START_TIME</span><span class="p">],</span> <span class="n">bins</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="ProfileData.get_mean_ms_per_ts"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.profiling.html#spinn_front_end_common.interface.profiling.ProfileData.get_mean_ms_per_ts">[docs]</a>    <span class="k">def</span> <span class="nf">get_mean_ms_per_ts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the mean time in milliseconds spent on operations with the\</span>
-<span class="sd">            given tag per timestep</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the mean time in milliseconds spent on operations with the</span>
+<span class="sd">        given tag per timestep.</span>
 
 <span class="sd">        :param str tag: The tag to get the data for</span>
 <span class="sd">        :rtype: float</span>

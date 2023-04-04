@@ -54,12 +54,12 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.data.fec_data_writer.</span></span><span class="sig-name descname"><span class="pre">FecDataWriter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PacmanDataWriter</span></code>, <a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.data/#spinnman.data.spinnman_data_writer.SpiNNManDataWriter" title="(in SpiNNMan v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpiNNManDataWriter</span></code></a>, <a class="reference internal" href="#spinn_front_end_common.data.FecDataView" title="spinn_front_end_common.data.FecDataView"><code class="xref py py-class docutils literal notranslate"><span class="pre">FecDataView</span></code></a></p>
-<p>See UtilsDataWriter</p>
-<p>This class is designed to only be used directly by AbstractSpinnakerBase
-and within the None PyNN repositories unittests as all methods are
-available to subclasses</p>
-<p>Creates a new writer clearing all previous data and sets the state</p>
+<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.data/#pacman.data.pacman_data_writer.PacmanDataWriter" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">PacmanDataWriter</span></code></a>, <a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.data/#spinnman.data.spinnman_data_writer.SpiNNManDataWriter" title="(in SpiNNMan v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpiNNManDataWriter</span></code></a>, <a class="reference internal" href="#spinn_front_end_common.data.FecDataView" title="spinn_front_end_common.data.FecDataView"><code class="xref py py-class docutils literal notranslate"><span class="pre">FecDataView</span></code></a></p>
+<p>See <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.data/#spinn_utilities.data.utils_data_writer.UtilsDataWriter" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UtilsDataWriter</span></code></a>.</p>
+<p>This class is designed to only be used directly by
+<code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSpinnakerBase</span></code>
+and within the Non-PyNN repositories unit tests as all methods are
+available to subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>state</strong> (<em>Data_Status</em>) – State writer should be in</p>
@@ -68,11 +68,11 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.add_vertex">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_vertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.add_vertex"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.add_vertex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds an Application vertex to the user graph</p>
-<p>Semantic sugar for get_graph().add_vertex</p>
+<dd><p>Adds an Application vertex to the user graph.</p>
+<p>Syntactic sugar for <cite>get_graph().add_vertex()</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertex</strong> (<em>ApplicationVertex</em>) – The vertex to add to the graph</p>
+<dd class="field-odd"><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – The vertex to add to the graph</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
@@ -89,7 +89,7 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_notification_protocol">
 <span class="sig-name descname"><span class="pre">clear_notification_protocol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.clear_notification_protocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_notification_protocol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Closes an existing notification_protocol and sets the value to None</p>
+<dd><p>Closes an existing notification_protocol and sets the value to <cite>None</cite>.</p>
 <p>If no notification_protocol exist this method silently returns.</p>
 <p>If the close causes an Exception it is logged and ignored</p>
 </dd></dl>
@@ -97,28 +97,25 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_run_steps">
 <span class="sig-name descname"><span class="pre">clear_run_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.clear_run_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_run_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the run step</p>
-<p>get_run_step will go back to returning None</p>
+<dd><p>Clears the run step.</p>
+<p>get_run_step will go back to returning <cite>None</cite></p>
 <p>next_run_step will restart at 1</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.finish_run">
 <span class="sig-name descname"><span class="pre">finish_run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.finish_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.finish_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Puts all data into the state expected after sim.run ends</p>
+<dd><p>Puts all data into the state expected after <cite>sim.run</cite> ends.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.increment_current_run_timesteps">
 <span class="sig-name descname"><span class="pre">increment_current_run_timesteps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">increment</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.increment_current_run_timesteps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.increment_current_run_timesteps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Increment the current_run_timesteps and sets first_machine_time_step</p>
-<p>A None increment signals run_forever</p>
+<dd><p>Increment the current_run_timesteps and sets first_machine_time_step.</p>
+<p>A <cite>None</cite> increment signals run_forever</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>increment</strong> – The timesteps for this do_run loop</p>
-</dd>
-<dt class="field-even">Rtype increment<span class="colon">:</span></dt>
-<dd class="field-even"><p>int or None</p>
+<dd class="field-odd"><p><strong>increment</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – The timesteps for this do_run loop</p>
 </dd>
 </dl>
 </dd></dl>
@@ -141,16 +138,16 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.reset_sync_signal">
 <span class="sig-name descname"><span class="pre">reset_sync_signal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.reset_sync_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.reset_sync_signal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retruns the snyc signal to the default value</p>
+<dd><p>Returns the sync signal to the default value.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_allocation_controller">
 <span class="sig-name descname"><span class="pre">set_allocation_controller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allocation_controller</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_allocation_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_allocation_controller" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the allocation controller variable</p>
+<dd><p>Sets the allocation controller variable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>buffer_manager</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="spinn_front_end_common.abstract_models.AbstractMachineAllocationController"><em>AbstractMachineAllocationController</em></a>) – </p>
+<dd class="field-odd"><p><strong>allocation_controller</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="spinn_front_end_common.abstract_models.AbstractMachineAllocationController"><em>AbstractMachineAllocationController</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -158,7 +155,7 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_buffer_manager">
 <span class="sig-name descname"><span class="pre">set_buffer_manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer_manager</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_buffer_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_buffer_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the Buffer manager variable</p>
+<dd><p>Sets the Buffer manager variable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>buffer_manager</strong> (<a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager"><em>BufferManager</em></a>) – </p>
@@ -169,16 +166,22 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_database_file_path">
 <span class="sig-name descname"><span class="pre">set_database_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_database_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_database_file_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the database_file_path variable. Possibly to None</p>
+<dd><p>Sets the database_file_path variable. Possibly to <cite>None</cite>.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>database_file_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_dsg_targets">
 <span class="sig-name descname"><span class="pre">set_dsg_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dsg_targets</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_dsg_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_dsg_targets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the data Spec targets database</p>
+<dd><p>Sets the Data Spec targets database.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dsg_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -187,6 +190,9 @@ available to subclasses</p>
 <span class="sig-name descname"><span class="pre">set_executable_targets</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_targets</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_executable_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_executable_targets" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets the executable_targets</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -194,6 +200,11 @@ available to subclasses</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_executable_types">
 <span class="sig-name descname"><span class="pre">set_executable_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">executable_types</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_executable_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_executable_types" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>executable_types</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(
+</em><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType"><em>ExecutableType</em></a><em>,
+</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a><em> or </em><em>None</em><em>)</em>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -201,14 +212,20 @@ available to subclasses</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_fixed_routes">
 <span class="sig-name descname"><span class="pre">set_fixed_routes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fixed_routes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_fixed_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_fixed_routes" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>fixed_routes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)"><em>FixedRouteEntry</em></a><em>)</em>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_gatherer_map">
 <span class="sig-name descname"><span class="pre">set_gatherer_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gatherer_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_gatherer_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_gatherer_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the map of x,y to Gatherer Vertices</p>
+<dd><p>Sets the map of (x,y) to Gatherer Vertices.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gatherer_map</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex"><em>DataSpeedUpPacketGatherMachineVertex</em></a><em>)</em>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -252,21 +269,21 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_monitor_map">
 <span class="sig-name descname"><span class="pre">set_monitor_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monitor_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_monitor_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_monitor_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the map of x,y to Monitor Vertices</p>
+<dd><p>Sets the map of (x,y) to Monitor Vertices.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>monitor_map</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_chips_in_graph">
 <span class="sig-name descname"><span class="pre">set_n_chips_in_graph</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_chips_in_graph</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_n_chips_in_graph"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_chips_in_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the number of chips needed by the graph</p>
+<dd><p>Sets the number of chips needed by the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n_chips_in_graph</strong> – </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
+<dd class="field-odd"><p><strong>n_chips_in_graph</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -274,14 +291,12 @@ available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_required">
 <span class="sig-name descname"><span class="pre">set_n_required</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_boards_required</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_chips_required</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_n_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets (if not None) the number of boards/chips requested by the user</p>
+<dd><p>Sets (if not <cite>None</cite>) the number of boards/chips requested by the user.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – None or the number of boards requested by
-the user</p></li>
-<li><p><strong>n_chips_required</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – None or the number of chips requested by
-the user</p></li>
+<li><p><strong>n_boards_required</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – <cite>None</cite> or the number of boards requested by the user</p></li>
+<li><p><strong>n_chips_required</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – <cite>None</cite> or the number of chips requested by the user</p></li>
 </ul>
 </dd>
 </dl>
@@ -290,23 +305,25 @@ the user</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_notification_protocol">
 <span class="sig-name descname"><span class="pre">set_notification_protocol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">notification_protocol</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_notification_protocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_notification_protocol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the notification_protocol</p>
+<dd><p>Sets the notification_protocol.</p>
 <dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>notification_protocol</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol"><em>NotificationProtocol</em></a>) – </p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_system_multicast_routing_data">
 <span class="sig-name descname"><span class="pre">set_system_multicast_routing_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_system_multicast_routing_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_system_multicast_routing_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the system_multicast_routing_data</p>
-<dl class="simple">
-<dt>These are data_in_multicast_routing_tables,</dt><dd><p>data_in_multicast_key_to_chip_map,
-system_multicast_router_timeout_keys</p>
-</dd>
-</dl>
+<dd><p>Sets the system_multicast_routing_data.</p>
+<p>These are: <cite>data_in_multicast_routing_tables</cite>,
+<cite>data_in_multicast_key_to_chip_map</cite>,
+<cite>system_multicast_router_timeout_keys</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>, </em><em>MulticastRoutingTables</em><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>)</em>) – new value</p>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a><em>,
+</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>)</em>) – new value</p>
 </dd>
 </dl>
 </dd></dl>
@@ -314,17 +331,17 @@ system_multicast_router_timeout_keys</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_up_timings">
 <span class="sig-name descname"><span class="pre">set_up_timings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simulation_time_step_us</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_scale_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_time_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_up_timings"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_up_timings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up timings for the simulation</p>
+<dd><p>Set up timings for the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>simulation_time_step_us</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – An explicitly specified time step for the simulation in .
-If None, the value is read from the config</p></li>
+If <cite>None</cite>, the value is read from the config</p></li>
 <li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><em>None</em>) – An explicitly specified time scale factor for the simulation.
-If None, the value is read from the config</p></li>
+If <cite>None</cite>, the value is read from the config</p></li>
 <li><p><strong>default_time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><em>None</em>) – A back up time scale factor for the simulation.
-Only used if time_scale_factor param and cfg are both None
-If None, the value is based on simulation_time_step</p></li>
+Only used if time_scale_factor param and cfg are both <cite>None</cite>
+If <cite>None</cite>, the value is based on simulation_time_step</p></li>
 </ul>
 </dd>
 </dl>
@@ -340,16 +357,17 @@ If None, the value is based on simulation_time_step</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.data.</span></span><span class="sig-name descname"><span class="pre">FecDataView</span></span><a class="headerlink" href="#spinn_front_end_common.data.FecDataView" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PacmanDataView</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">SpiNNManDataView</span></code></p>
 <p>Adds the extra Methods to the View for spinn_front_end_commom level.</p>
-<p>See UtilsDataView for a more detailed description.</p>
-<p>This class is designed to only be used directly within none PyNN
+<p>See <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.data/#spinn_utilities.data.UtilsDataView" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UtilsDataView</span></code></a> for a more detailed
+description.</p>
+<p>This class is designed to only be used directly within non-PyNN
 repositories as all methods are available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.add_database_socket_address">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_database_socket_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_socket_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.add_database_socket_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.add_database_socket_address" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds a socket address to the list of known addresses</p>
+<dd><p>Adds a socket address to the list of known addresses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>database_socket_address</strong> (<em>SocketAddress</em>) – </p>
+<dd class="field-odd"><p><strong>database_socket_address</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>) – </p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#TypeError" title="(in Python v3.8)"><strong>TypeError</strong></a> – if database_socket_address is not a SocketAddress</p>
@@ -360,13 +378,13 @@ repositories as all methods are available to subclasses</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.add_database_socket_addresses">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_database_socket_addresses</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_socket_addresses</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.add_database_socket_addresses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.add_database_socket_addresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds all socket addresses to the list of known addresses</p>
+<dd><p>Adds all socket addresses to the list of known addresses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><em>SocketAddress</em><em>)</em>) – </p>
+<dd class="field-odd"><p><strong>database_socket_addresses</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a><em>)</em>) – The addresses to add</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#TypeError" title="(in Python v3.8)"><strong>TypeError</strong></a> – if database_socket_address is not a iterable(SocketAddress)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#TypeError" title="(in Python v3.8)"><strong>TypeError</strong></a> – if database_socket_address is not a iterable of <cite>SocketAddress</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -379,7 +397,7 @@ recorded in the database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vertex</strong> (<em>ApplicationVertex</em>) – The vertex to add</p></li>
+<li><p><strong>vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – The vertex to add</p></li>
 <li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The partition to get the IDs of</p></li>
 </ul>
 </dd>
@@ -389,16 +407,22 @@ recorded in the database.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_live_packet_gatherer_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gatherer_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex_to_record_from</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_ids</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.add_live_packet_gatherer_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.add_live_packet_gatherer_parameters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds parameters for a new LPG if needed, or adds to the tracker             for parameters.</p>
-<blockquote>
-<div><p>Note If the Application Graph is used the vertex must be an
-Application Vertex if not it must be a MachineVertex</p>
-</div></blockquote>
+<dd><p>Adds parameters for a new LPG if needed, or adds to the tracker
+for parameters.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If the
+<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApplicationGraph</span></code></a>
+is used, the vertex must be an
+<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ApplicationVertex</span></code></a>.
+If not, it must be a
+<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MachineVertex</span></code></a>.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) – params to look for a LPG</p></li>
-<li><p><strong>vertex_to_record_from</strong> (<em>AbstractVertex</em>) – the vertex that needs to send to a given LPG</p></li>
+<li><p><strong>vertex_to_record_from</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – the vertex that needs to send to a given LPG</p></li>
 <li><p><strong>partition_ids</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – the IDs of the partitions to connect from the vertex</p></li>
 </ul>
 </dd>
@@ -408,13 +432,13 @@ Application Vertex if not it must be a MachineVertex</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_allocation_controller">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_allocation_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_allocation_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_allocation_controller" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the allocation controller if known</p>
+<dd><p>Returns the allocation controller if known.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="spinn_front_end_common.abstract_models.AbstractMachineAllocationController">AbstractMachineAllocationController</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the buffer manager unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the buffer manager unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -422,14 +446,17 @@ Application Vertex if not it must be a MachineVertex</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_app_provenance_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_app_provenance_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all app provenance files</p>
+<dd><p>Returns the path to the directory that holds all app provenance files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
-<p>..note: In unittest mode this returns a tempdir
-shared by all path methods</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In unittest mode this returns a tempdir
+shared by all path methods.</p>
+</div>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SimulatorNotSetupException" title="(in SpiNNUtils v6.0)"><strong>SimulatorNotSetupException</strong></a> – If the simulator has not been setup</p>
@@ -440,13 +467,13 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_buffer_manager">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_buffer_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_buffer_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_buffer_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the buffer manager if known</p>
+<dd><p>Returns the buffer manager if known.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.buffer_management.html#spinn_front_end_common.interface.buffer_management.BufferManager" title="spinn_front_end_common.interface.buffer_management.BufferManager"><em>BufferManager</em></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the buffer manager unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the buffer manager unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -455,12 +482,12 @@ shared by all path methods</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_current_run_time_ms">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_current_run_time_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_current_run_time_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_current_run_time_ms" title="Permalink to this definition">¶</a></dt>
 <dd><p>The end of this or the previous do__run loop time in ms.</p>
-<p>Semantic sugar for current_run_timesteps * simulation_time_step_ms</p>
+<p>Syntactic sugar for <cite>current_run_timesteps * simulation_time_step_ms</cite></p>
 <p>Will be zero if not yet run and not yet in the do_run_loop</p>
 <p>Will be zero if in run forever mode</p>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -470,10 +497,10 @@ shared by all path methods</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_current_run_timesteps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_current_run_timesteps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_current_run_timesteps" title="Permalink to this definition">¶</a></dt>
 <dd><p>The end of this or the previous do__run loop time in steps.</p>
 <p>Will be zero if not yet run and not yet in the do_run_loop</p>
-<p>Will be None if in run forever mode</p>
+<p>Will be <cite>None</cite> if in run forever mode</p>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int or None</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a> or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -481,13 +508,13 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_data_in_multicast_key_to_chip_map">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_data_in_multicast_key_to_chip_map</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_data_in_multicast_key_to_chip_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_data_in_multicast_key_to_chip_map" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retreive the data_in_multicast_key_to_chip_map if known</p>
+<dd><p>Retrieve the data_in_multicast_key_to_chip_map if known.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the data_in_multicast_key_to_chip_map is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the data_in_multicast_key_to_chip_map is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -498,7 +525,7 @@ shared by all path methods</p>
 <dd><p>Retreive the data_in_multicast_routing_tables if known</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>MulticastRoutingTables</p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the data_in_multicast_routing_tables is currently unavailable</p>
@@ -509,8 +536,8 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_database_file_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_database_file_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_database_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_database_file_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Will return the database_file_path if set or None if not set
-or set to None</p>
+<dd><p>Will return the database_file_path if set or <cite>None</cite> if not set
+or set to <cite>None</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a> or None</p>
@@ -521,7 +548,7 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_dsg_targets">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_dsg_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_dsg_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_dsg_targets" title="Permalink to this definition">¶</a></dt>
-<dd><p>data Spec targets database</p>
+<dd><p>Data Spec targets database.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase" title="spinn_front_end_common.interface.ds.DsSqlliteDatabase">DsSqlliteDatabase</a></p>
@@ -535,10 +562,10 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_executable_targets">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_executable_targets</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_executable_targets"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_executable_targets" title="Permalink to this definition">¶</a></dt>
-<dd><p>binaries to be executed.</p>
+<dd><p>Binaries to be executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ExecutableTargets</p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the executable_targets is currently unavailable</p>
@@ -549,7 +576,7 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_executable_types">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_executable_types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_executable_types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_executable_types" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the _executable_types if they have been created</p>
+<dd><p>Gets the _executable_types if they have been created.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(
@@ -565,11 +592,11 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_first_machine_time_step">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_first_machine_time_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_first_machine_time_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_first_machine_time_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>The start of this or the next do_run loop time in steps</p>
-<p>Will be None if in run forever mode</p>
+<dd><p>The start of this or the next do_run loop time in steps.</p>
+<p>Will be <cite>None</cite> if in run forever mode</p>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int or None</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a> or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -577,7 +604,7 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_fixed_routes">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_fixed_routes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_fixed_routes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_fixed_routes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the fixed routes if they have been created</p>
+<dd><p>Gets the fixed routes if they have been created.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>), <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.FixedRouteEntry" title="(in SpiNNMachine v6.0)"><em>FixedRouteEntry</em></a>)</p>
@@ -591,15 +618,21 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_gatherer_by_xy">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_gatherer_by_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_gatherer_by_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_gatherer_by_xy" title="Permalink to this definition">¶</a></dt>
-<dd><p>DataSpeedUpPacketGatherMachineVertex for core x, y</p>
+<dd><p>The DataSpeedUpPacketGatherMachineVertex for chip (x,y).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">DataSpeedUpPacketGatherMachineVertex</a></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of chip</p></li>
+</ul>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">DataSpeedUpPacketGatherMachineVertex</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
 <li><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the gatherers are currently unavailable</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#KeyError" title="(in Python v3.8)"><strong>KeyError</strong></a> – If core x,y does not have a monitor</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#KeyError" title="(in Python v3.8)"><strong>KeyError</strong></a> – If chip (x,y) does not have a monitor</p></li>
 </ul>
 </dd>
 </dl>
@@ -608,14 +641,14 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_hardware_time_step_ms">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hardware_time_step_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_hardware_time_step_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_hardware_time_step_ms" title="Permalink to this definition">¶</a></dt>
-<dd><p>The hardware timestep, in milliseconds</p>
-<p>Semantic sugar for simulation_time_step_ms * time_scale_factor</p>
+<dd><p>The hardware timestep, in milliseconds.</p>
+<p>Syntactic sugar for <cite>simulation_time_step_ms * time_scale_factor</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the hardware_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the hardware_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -623,14 +656,14 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_hardware_time_step_us">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_hardware_time_step_us</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_hardware_time_step_us"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_hardware_time_step_us" title="Permalink to this definition">¶</a></dt>
-<dd><p>The hardware timestep, in microseconds</p>
-<p>Semantic sugar for simulation_time_step_us * time_scale_factor</p>
+<dd><p>The hardware timestep, in microseconds.</p>
+<p>Syntactic sugar for <cite>simulation_time_step_us * time_scale_factor</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the hardware_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the hardware_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -638,13 +671,13 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_ipaddress">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_ipaddress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_ipaddress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_ipaddress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the ipaddress of the board with chip 0,0 if it has been set</p>
+<dd><p>Gets the IP address of the board with chip 0,0 if it has been set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the ipaddress is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the IP address is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -652,7 +685,7 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_java_caller">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_java_caller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_java_caller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_java_caller" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the Java_caller</p>
+<dd><p>Gets the Java_caller.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
@@ -666,17 +699,20 @@ or set to None</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_json_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_json_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_json_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_json_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all json files</p>
+<dd><p>Returns the path to the directory that holds all JSON files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
-<p>..note: In unittest mode this returns a tempdir
-shared by all path methods</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In unittest mode this returns a tempdir
+shared by all path methods.</p>
+</div>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -684,10 +720,12 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_live_packet_recorder_params">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_live_packet_recorder_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_live_packet_recorder_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_live_packet_recorder_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mapping of live_packet_gatherer_params to a list of tuples        (vertex and list of ids))</p>
+<dd><p>Mapping of live_packet_gatherer_params to a list of tuples
+(vertex and list of ids)).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(live_packet_gatherer_params, (vertex, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters">LivePacketGatherParameters</a>,
+<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the _live_packet_recorder_params is currently unavailable</p>
@@ -698,16 +736,16 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_max_run_time_steps">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_max_run_time_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_max_run_time_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_max_run_time_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the calculated longest time this or a future run loop could be</p>
-<p>Mainly ued to indicate the number of timesteps the vertex can and
-therefore should reserve memry for</p>
+<dd><p>Returns the calculated longest time this or a future run loop could be.</p>
+<p>Mainly used to indicate the number of timesteps the vertex can and
+therefore should reserve memory for</p>
 <p>Guaranteed to be positive int if available</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the max run time is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the max run time is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -715,15 +753,21 @@ therefore should reserve memry for</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_monitor_by_xy">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_monitor_by_xy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_monitor_by_xy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_monitor_by_xy" title="Permalink to this definition">¶</a></dt>
-<dd><p>ExtraMonitorSupportMachineVertex for core x, y</p>
+<dd><p>The ExtraMonitorSupportMachineVertex for chip (x,y).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">ExtraMonitorSupportMachineVertex</a></p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of chip</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of chip</p></li>
+</ul>
 </dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><ul class="simple">
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">ExtraMonitorSupportMachineVertex</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
 <li><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the monitors are currently unavailable</p></li>
-<li><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#KeyError" title="(in Python v3.8)"><strong>KeyError</strong></a> – If core x,y does not have a monitor</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#KeyError" title="(in Python v3.8)"><strong>KeyError</strong></a> – If chip (x,y) does not have a monitor</p></li>
 </ul>
 </dd>
 </dl>
@@ -747,7 +791,7 @@ therefore should reserve memry for</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_n_chips_needed">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_chips_needed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_n_chips_needed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_n_chips_needed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the number of chips needed if set</p>
+<dd><p>Gets the number of chips needed, if set.</p>
 <p>This will be the number of chips requested by the user during setup,
 even if this is less that what the partitioner reported.</p>
 <p>If the partitioner has run and the user has not specified a number,
@@ -758,7 +802,7 @@ this will be what the partitioner requested.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If data for n_chips_needed is not available</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If data for n_chips_needed is not available</p>
 </dd>
 </dl>
 </dd></dl>
@@ -766,7 +810,7 @@ this will be what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_n_database_socket_addresses">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_database_socket_addresses</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_n_database_socket_addresses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_n_database_socket_addresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of registered database_socket_addresses</p>
+<dd><p>Number of registered database_socket_addresses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -777,7 +821,7 @@ this will be what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_n_gathers">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_gathers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_n_gathers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_n_gathers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of DataSpeedUpPacketGatherMachineVertex(s)</p>
+<dd><p>Number of DataSpeedUpPacketGatherMachineVertex(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -791,7 +835,7 @@ this will be what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_n_monitors">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_monitors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_n_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_n_monitors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Number of ExtraMonitorSupportMachineVertexs</p>
+<dd><p>Number of ExtraMonitorSupportMachineVertexs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -805,27 +849,29 @@ this will be what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_next_none_labelled_edge_number">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_next_none_labelled_edge_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_next_none_labelled_edge_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_next_none_labelled_edge_number" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an unused number for a none_labelled_edge</p>
+<dd><p>Returns an unused number for labelling an unlabelled edge.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye int<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_next_sync_signal">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_next_sync_signal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_next_sync_signal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_next_sync_signal" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns alteratively Signal.SYNC0 and Signal.SYNC1</p>
+<dd><p>Returns alternately Signal.SYNC0 and Signal.SYNC1.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye ~spinnman.messages.scp.enums.signal.Signal<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.scp.enums/#spinnman.messages.scp.enums.Signal" title="(in SpiNNMan v6.0)"><em>Signal</em></a></p>
+</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_notification_protocol">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_notification_protocol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_notification_protocol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_notification_protocol" title="Permalink to this definition">¶</a></dt>
-<dd><p>binaries to be executed.</p>
+<dd><p>The notification protocol handler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.notification_protocol.html#spinn_front_end_common.utilities.notification_protocol.NotificationProtocol" title="spinn_front_end_common.utilities.notification_protocol.NotificationProtocol">NotificationProtocol</a></p>
@@ -839,14 +885,17 @@ this will be what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_provenance_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_provenance_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_provenance_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_provenance_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all provenance files</p>
+<dd><p>Returns the path to the directory that holds all provenance files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
-<p>..note: In unittest mode this returns a tempdir
-shared by all path methods</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In unittest mode this returns a tempdir
+shared by all path methods.</p>
+</div>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
@@ -863,8 +912,8 @@ shared by all path methods</p>
 Double reset calls without a run and resets before run are ignored.</p>
 <p>Reset numbers start at zero</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the run_number is currently unavailable</p>
@@ -877,7 +926,7 @@ Double reset calls without a run and resets before run are ignored.</p>
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_reset_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_reset_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_reset_str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of times a reset has happened as a string.</p>
 <p>An empty string is returned if the system has never been reset
-(ie the reset number is 0)</p>
+(i.e., the reset number is 0)</p>
 <p>Only counts the first reset after each run.</p>
 <p>So resets that are first soft then hard are ignored.
 Double reset calls without a run and resets before run are ignored.</p>
@@ -885,6 +934,9 @@ Double reset calls without a run and resets before run are ignored.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the run_number is currently unavailable</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -895,8 +947,8 @@ Double reset calls without a run and resets before run are ignored.</p>
 <dd><p>Get the number of this or the next run.</p>
 <p>Run numbers start at 1</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the run_number is currently unavailable</p>
@@ -910,7 +962,7 @@ Double reset calls without a run and resets before run are ignored.</p>
 <dd><p>Get the auto pause and resume step currently running if any.</p>
 <p>If and only if currently in an auto pause and resume loop this will
 report the number of the step. Starting at 1</p>
-<p>In most cases this will return None, including when running without
+<p>In most cases this will return <cite>None</cite>, including when running without
 steps.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -922,14 +974,14 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_ms" title="Permalink to this definition">¶</a></dt>
-<dd><p>The simulation time step, in milliseconds</p>
-<p>Semantic sugar for simulation_time_step_us / 1000.</p>
+<dd><p>The simulation time step, in milliseconds.</p>
+<p>Syntactic sugar for <cite>simulation_time_step_us / 1000</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step_ms is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step_ms is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -937,14 +989,14 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_ms">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_per_ms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_per_ms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_ms" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of simulation time steps in a millisecond</p>
-<p>Semantic sugar for 1000 / simulation_time_step_us</p>
+<dd><p>The number of simulation time steps in a millisecond.</p>
+<p>Syntactic sugar for <cite>1000 / simulation_time_step_us</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsExceptionn</strong> – If the simulation_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -952,14 +1004,14 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_s">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_per_s</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_per_s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_per_s" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of simulation time steps in a seconds</p>
-<p>Semantic sugar for 1,000,000 / simulation_time_step_us</p>
+<dd><p>The number of simulation time steps in a seconds.</p>
+<p>Syntactic sugar for <cite>1,000,000 / simulation_time_step_us</cite></p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -967,14 +1019,14 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_s">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_s</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_s"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_s" title="Permalink to this definition">¶</a></dt>
-<dd><p>The simulation timestep, in seconds</p>
-<p>Semantic sugar for simulation_time_step() / 1,000,000.</p>
+<dd><p>The simulation timestep, in seconds.</p>
+<p>Syntactic sugar for <cite>simulation_time_step() / 1,000,000</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step_ms is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step_ms is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -982,14 +1034,14 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_simulation_time_step_us">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_simulation_time_step_us</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_simulation_time_step_us"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_simulation_time_step_us" title="Permalink to this definition">¶</a></dt>
-<dd><p>The simulation timestep, in microseconds</p>
-<p>Previously know as “machine_time_step”</p>
+<dd><p>The simulation timestep, in microseconds.</p>
+<p>Previously known as “machine_time_step”</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step_us is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step_us is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -997,13 +1049,13 @@ steps.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_system_multicast_router_timeout_keys">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_system_multicast_router_timeout_keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_system_multicast_router_timeout_keys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_system_multicast_router_timeout_keys" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retreive the system_multicast_router_timeout_keys if known</p>
+<dd><p>Retrieve the system_multicast_router_timeout_keys if known.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the system_multicast_router_timeout_keys is currently
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the system_multicast_router_timeout_keys is currently
 unavailable</p>
 </dd>
 </dl>
@@ -1012,14 +1064,17 @@ unavailable</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_system_provenance_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_system_provenance_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all provenance files</p>
+<dd><p>Returns the path to the directory that holds all provenance files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
-<p>..note: In unittest mode this returns a tempdir
-shared by all path methods</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In unittest mode this returns a tempdir
+shared by all path methods.</p>
+</div>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
@@ -1046,15 +1101,18 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_timestamp_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_timestamp_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_timestamp_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_timestamp_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns path to existing timestamped director in the reports directory</p>
-<p>..note: In unittest mode this returns a tempdir
+<dd><p>Returns path to existing timestamped director in the reports directory.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In unittest mode this returns a tempdir
 shared by all path methods</p>
+</div>
 <dl class="field-list simple">
-<dt class="field-odd">Rtpye<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If the simulation_time_step is currently unavailable</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the simulation_time_step is currently unavailable</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1062,7 +1120,7 @@ shared by all path methods</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_allocation_controller">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_allocation_controller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_allocation_controller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_allocation_controller" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reports if an AllocationController object has already been set</p>
+<dd><p>Reports if an AllocationController object has already been set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>True if and only if an AllocationController has been added and
@@ -1077,11 +1135,10 @@ not reset.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_buffer_manager">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_buffer_manager</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_buffer_manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_buffer_manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reports if a BufferManager object has already been set</p>
+<dd><p>Reports if a BufferManager object has already been set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>True if and only if a Buffermanager has been added and not
-reset</p>
+<dd class="field-odd"><p>True if and only if a BufferManager has been added and not reset</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -1092,10 +1149,10 @@ reset</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_ipaddress">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_ipaddress</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_ipaddress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_ipaddress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detects if the ipaddress of the board with chip 0,0 if known</p>
+<dd><p>Detects if the IP address of the board with chip 0,0 is known.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1104,7 +1161,7 @@ reset</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_java_caller">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_java_caller</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_java_caller"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_java_caller" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reports if there is a Java called that can be used.</p>
-<p>Equivellent to get_config_bool(“Java”, “use_java”) as the writer will
+<p>Equivalent to <cite>get_config_bool(“Java”, “use_java”)</cite> as the writer will
 have created the caller during setup</p>
 <p>The behaviour when Mocked is currently to always return False.</p>
 <dl class="field-list simple">
@@ -1117,15 +1174,19 @@ have created the caller during setup</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_live_packet_recorder_params">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_live_packet_recorder_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_live_packet_recorder_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_live_packet_recorder_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reports if there are live_packet_recorder_params</p>
+<dd><p>Reports if there are live_packet_recorder_params.</p>
 <p>If True the live_packet_recorder_params not be empty</p>
-<p>:rtype bool</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_max_run_time_steps">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_max_run_time_steps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_max_run_time_steps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_max_run_time_steps" title="Permalink to this definition">¶</a></dt>
-<dd><p>Indicates if max_run_time_steps is currently available</p>
+<dd><p>Indicates if max_run_time_steps is currently available.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -1136,7 +1197,7 @@ have created the caller during setup</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_monitors">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_monitors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_monitors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Detect is ExtraMonitorSupportMachineVertex(s) have been created</p>
+<dd><p>Detect is ExtraMonitorSupportMachineVertex(s) have been created.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -1147,13 +1208,13 @@ have created the caller during setup</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_n_boards_required">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_n_boards_required</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_n_boards_required"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_n_boards_required" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reports if a user has sets the number of boards requested during setup</p>
+<dd><p>Reports if a user has sets the number of boards requested during setup.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>SpiNNUtilsException</strong> – If n_boards_required is not set or set to None</p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If n_boards_required is not set or set to <cite>None</cite></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1184,7 +1245,7 @@ what the partitioner requested.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.has_time_step">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_time_step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.has_time_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.has_time_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if any/all of the time_step values are known</p>
+<dd><p>Check if any/all of the time_step values are known.</p>
 <p>True When all simulation/hardware_time_step methods are known
 False when none of the simulation/hardware_time_step values are known.
 There is never a case when some are known and others not</p>
@@ -1198,7 +1259,7 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_database_socket_addresses">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_database_socket_addresses</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_database_socket_addresses"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_database_socket_addresses" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the registered database_socket_addresses</p>
+<dd><p>Iterates over the registered database_socket_addresses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.socket_address.SocketAddress" title="(in SpiNNUtils v6.0)"><em>SocketAddress</em></a>)</p>
@@ -1209,7 +1270,7 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_gather_items">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_gather_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_gather_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_gather_items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the (X,y) and  DataSpeedUpPacketGatherMachineVertex</p>
+<dd><p>Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.</p>
 <p>get_n_gathers returns the number of items this iterable will provide</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -1225,7 +1286,7 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_gathers">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_gathers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_gathers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_gathers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the DataSpeedUpPacketGatherMachineVertex(s)</p>
+<dd><p>Iterates over the DataSpeedUpPacketGatherMachineVertex(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex">DataSpeedUpPacketGatherMachineVertex</a>)</p>
@@ -1239,10 +1300,11 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_live_output_vertices">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_live_output_vertices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_live_output_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_live_output_vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an iterator over the live output vertices and partition ids</p>
+<dd><p>Get an iterator over the live output vertices and partition IDs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)">set</a>((ApplicationVertex, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>,
+<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1250,8 +1312,8 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_monitor_items">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_monitor_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_monitor_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_monitor_items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the (X,y) and ExtraMonitorSupportMachineVertex</p>
-<p>get_n_monitors returns the number of items this iterable will provide</p>
+<dd><p>Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.</p>
+<p>get_n_monitors returns the number of items this iterable will provide.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),
@@ -1266,7 +1328,7 @@ There is never a case when some are known and others not</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.iterate_monitors">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iterate_monitors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.iterate_monitors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.iterate_monitors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Iterates over the ExtraMonitorSupportMachineVertex(s)</p>
+<dd><p>Iterates over the ExtraMonitorSupportMachineVertex(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference internal" href="spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex">ExtraMonitorSupportMachineVertex</a>)</p>

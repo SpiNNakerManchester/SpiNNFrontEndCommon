@@ -60,7 +60,8 @@
 
 
 <div class="viewcode-block" id="LPGSplitter"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter">[docs]</a><span class="k">class</span> <span class="nc">LPGSplitter</span><span class="p">(</span><span class="n">AbstractSplitterCommon</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Splitter for the LivePacketGather vertex</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Splitter for the :py:class:`LivePacketGather` vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -75,8 +76,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__targeted_lpgs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
 <div class="viewcode-block" id="LPGSplitter.create_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">create_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Special way of making LPG machine vertices, where one is placed</span>
-<span class="sd">            on each Ethernet chip.  Note that this adds to system placements.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Special way of making LPG machine vertices, where one is placed</span>
+<span class="sd">        on each Ethernet chip.</span>
+
+<span class="sd">        .. note::</span>
+<span class="sd">            This adds to system placements.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">machine</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">eth</span> <span class="ow">in</span> <span class="n">machine</span><span class="o">.</span><span class="n">ethernet_connected_chips</span><span class="p">:</span>
@@ -132,12 +137,14 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">targeted_lpgs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get which LPG machine vertex is targeted by which machine vertex</span>
-<span class="sd">            and partition</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Which LPG machine vertex is targeted by which machine vertex</span>
+<span class="sd">        and partition.</span>
 
 <span class="sd">        :return:</span>
 <span class="sd">             A set of (lpg machine vertex, source machine vertex, partition_id)</span>
-<span class="sd">        :rtype: set(LivePacketGatherMachineVertex, MachineVertex, str)</span>
+<span class="sd">        :rtype: set(tuple(LivePacketGatherMachineVertex,</span>
+<span class="sd">            ~pacman.model.graphs.machine.MachineVertex, str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__targeted_lpgs</span>
 

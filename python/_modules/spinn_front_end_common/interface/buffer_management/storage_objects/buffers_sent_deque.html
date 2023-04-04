@@ -64,7 +64,8 @@
 
 
 <span class="k">class</span> <span class="nc">BuffersSentDeque</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A tracker of buffers sent / to send for a region</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A tracker of buffers sent / to send for a region</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -108,30 +109,34 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_full</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if the number of messages sent is at the limit for the\</span>
-<span class="sd">            sequencing system.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether the number of messages sent is at the limit for the</span>
+<span class="sd">        sequencing system.</span>
 
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffers_sent</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_sequences_per_transmission</span>
 
 <div class="viewcode-block" id="BuffersSentDeque.is_empty"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.is_empty">[docs]</a>    <span class="k">def</span> <span class="nf">is_empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if there are no messages.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if there are no messages.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buffers_sent</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="BuffersSentDeque.send_stop_message"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.send_stop_message">[docs]</a>    <span class="k">def</span> <span class="nf">send_stop_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send a message to indicate the end of all the messages.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a message to indicate the end of all the messages.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sent_stop_message</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sent_stop_message</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">add_message_to_send</span><span class="p">(</span><span class="n">EventStopRequest</span><span class="p">())</span></div>
 
 <div class="viewcode-block" id="BuffersSentDeque.add_message_to_send"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.add_message_to_send">[docs]</a>    <span class="k">def</span> <span class="nf">add_message_to_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a message to send.  The message is converted to a sequenced\</span>
-<span class="sd">            message.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a message to send.  The message is converted to a sequenced</span>
+<span class="sd">        message.</span>
 
 <span class="sd">        :param message: The message to be added</span>
 <span class="sd">        :type message:</span>
@@ -154,7 +159,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The messages that have been added to the set.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The messages that have been added to the set.</span>
 
 <span class="sd">        :rtype:</span>
 <span class="sd">            iterable(~spinnman.messages.eieio.command_messages.HostSendSequencedData)</span>
@@ -162,12 +168,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buffers_sent</span>
 
 <div class="viewcode-block" id="BuffersSentDeque.update_last_received_sequence_number"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BuffersSentDeque.update_last_received_sequence_number">[docs]</a>    <span class="k">def</span> <span class="nf">update_last_received_sequence_number</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">last_received_sequence_no</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Updates the last received sequence number.  If the sequence number\</span>
-<span class="sd">            is within the valid window, packets before the sequence number\</span>
-<span class="sd">            within the window are removed, and the last received sequence\</span>
-<span class="sd">            number is updated, thus moving the window for the next call.  If\</span>
-<span class="sd">            the sequence number is not within the valid window, it is assumed\</span>
-<span class="sd">            to be invalid and so is ignored.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the last received sequence number.  If the sequence number is</span>
+<span class="sd">        within the valid window, packets before the sequence number within the</span>
+<span class="sd">        window are removed, and the last received sequence number is updated,</span>
+<span class="sd">        thus moving the window for the next call.  If the sequence number is</span>
+<span class="sd">        not within the valid window, it is assumed to be invalid and so is</span>
+<span class="sd">        ignored.</span>
 
 <span class="sd">        :param int last_received_sequence_no: The new sequence number</span>
 <span class="sd">        :return: True if update went ahead, False if it was ignored</span>
@@ -205,8 +212,9 @@
         <span class="k">return</span> <span class="kc">False</span></div>
 
     <span class="k">def</span> <span class="nf">_remove_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Remove messages that are no longer relevant, based on the last\</span>
-<span class="sd">            sequence number received.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Remove messages that are no longer relevant, based on the last</span>
+<span class="sd">        sequence number received.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">min_sequence</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_received_sequence_number</span> <span class="o">-</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_n_sequences_per_transmission</span><span class="p">)</span>

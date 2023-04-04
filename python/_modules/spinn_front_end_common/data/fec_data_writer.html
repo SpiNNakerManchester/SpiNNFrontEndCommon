@@ -87,11 +87,12 @@
 
 <div class="viewcode-block" id="FecDataWriter"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter">[docs]</a><span class="k">class</span> <span class="nc">FecDataWriter</span><span class="p">(</span><span class="n">PacmanDataWriter</span><span class="p">,</span> <span class="n">SpiNNManDataWriter</span><span class="p">,</span> <span class="n">FecDataView</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    See UtilsDataWriter</span>
+<span class="sd">    See :py:class:`~spinn_utilities.data.utils_data_writer.UtilsDataWriter`.</span>
 
-<span class="sd">    This class is designed to only be used directly by AbstractSpinnakerBase</span>
-<span class="sd">    and within the None PyNN repositories unittests as all methods are</span>
-<span class="sd">    available to subclasses</span>
+<span class="sd">    This class is designed to only be used directly by</span>
+<span class="sd">    :py:class:`AbstractSpinnakerBase`</span>
+<span class="sd">    and within the Non-PyNN repositories unit tests as all methods are</span>
+<span class="sd">    available to subclasses.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__fec_data</span> <span class="o">=</span> <span class="n">_FecDataModel</span><span class="p">()</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
@@ -172,9 +173,9 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_allocation_controller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_allocation_controller">[docs]</a>    <span class="k">def</span> <span class="nf">set_allocation_controller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allocation_controller</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the allocation controller variable</span>
+<span class="sd">        Sets the allocation controller variable.</span>
 
-<span class="sd">        :param AbstractMachineAllocationController buffer_manager:</span>
+<span class="sd">        :param AbstractMachineAllocationController allocation_controller:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">allocation_controller</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
                 <span class="n">allocation_controller</span><span class="p">,</span> <span class="n">AbstractMachineAllocationController</span><span class="p">):</span>
@@ -184,7 +185,7 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_buffer_manager"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_buffer_manager">[docs]</a>    <span class="k">def</span> <span class="nf">set_buffer_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buffer_manager</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the Buffer manager variable</span>
+<span class="sd">        Sets the Buffer manager variable.</span>
 
 <span class="sd">        :param BufferManager buffer_manager:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -194,17 +195,16 @@
 
 <div class="viewcode-block" id="FecDataWriter.increment_current_run_timesteps"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.increment_current_run_timesteps">[docs]</a>    <span class="k">def</span> <span class="nf">increment_current_run_timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">increment</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Increment the current_run_timesteps and sets first_machine_time_step</span>
+<span class="sd">        Increment the current_run_timesteps and sets first_machine_time_step.</span>
 
-<span class="sd">        A None increment signals run_forever</span>
+<span class="sd">        A `None` increment signals run_forever</span>
 
 <span class="sd">        :param increment: The timesteps for this do_run loop</span>
-<span class="sd">        :rtype increment: int or None</span>
+<span class="sd">        :type increment: int or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">increment</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                    <span class="s2">&quot;Run forever after another run&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Run forever after another run&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">increment</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
@@ -213,8 +213,7 @@
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;increment </span><span class="si">{</span><span class="n">increment</span><span class="si">}</span><span class="s2"> must not be negative&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                    <span class="s2">&quot;Run after run forever&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Run after run forever&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_first_machine_time_step</span> <span class="o">=</span> \
                 <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_current_run_timesteps</span> <span class="o">+=</span> <span class="n">increment</span></div>
@@ -235,20 +234,21 @@
 <div class="viewcode-block" id="FecDataWriter.set_up_timings"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_up_timings">[docs]</a>    <span class="k">def</span> <span class="nf">set_up_timings</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">simulation_time_step_us</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span>
             <span class="n">default_time_scale_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set up timings for the simulation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up timings for the simulation.</span>
 
 <span class="sd">        :param simulation_time_step_us:</span>
 <span class="sd">            An explicitly specified time step for the simulation in .</span>
-<span class="sd">            If None, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the config</span>
 <span class="sd">        :type simulation_time_step_us: int or None</span>
 <span class="sd">        :param time_scale_factor:</span>
 <span class="sd">            An explicitly specified time scale factor for the simulation.</span>
-<span class="sd">            If None, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the config</span>
 <span class="sd">        :type time_scale_factor: float or None</span>
 <span class="sd">        :param default_time_scale_factor:</span>
 <span class="sd">            A back up time scale factor for the simulation.</span>
-<span class="sd">            Only used if time_scale_factor param and cfg are both None</span>
-<span class="sd">            If None, the value is based on simulation_time_step</span>
+<span class="sd">            Only used if time_scale_factor param and cfg are both `None`</span>
+<span class="sd">            If `None`, the value is based on simulation_time_step</span>
 <span class="sd">        :type default_time_scale_factor: float or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -269,9 +269,8 @@
 
     <span class="k">def</span> <span class="nf">_set_simulation_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simulation_time_step_us</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-
 <span class="sd">        :param simulation_time_step_us:</span>
-<span class="sd">            An explicitly specified time step for the simulation.  If None,</span>
+<span class="sd">            An explicitly specified time step for the simulation.  If `None`,</span>
 <span class="sd">            the value is read from the config</span>
 <span class="sd">        :type simulation_time_step: int or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -285,7 +284,7 @@
         <span class="k">if</span> <span class="n">simulation_time_step_us</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;invalid simulation_time_step </span><span class="si">{</span><span class="n">simulation_time_step_us</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
+                <span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_simulation_time_step_us</span> <span class="o">=</span> <span class="n">simulation_time_step_us</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_simulation_time_step_ms</span> <span class="o">=</span> <span class="p">(</span>
@@ -299,11 +298,12 @@
 
     <span class="k">def</span> <span class="nf">_set_time_scale_factor</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">time_scale_factor</span><span class="p">,</span> <span class="n">default_time_scale_factor</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set up time_scale_factor</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up time_scale_factor.</span>
 
 <span class="sd">        If time_scale_factor is provide that is used</span>
 
-<span class="sd">        Then if cfg is not None that is used</span>
+<span class="sd">        Then if cfg is not `None` that is used</span>
 
 <span class="sd">        Then if default is provided that is used</span>
 
@@ -311,13 +311,12 @@
 
 <span class="sd">        :param time_scale_factor:</span>
 <span class="sd">            An explicitly specified time scale factor for the simulation.</span>
-<span class="sd">            If None, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the config</span>
 <span class="sd">        :type time_scale_factor: float or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Note while this reads from the cfg the cfg default is None</span>
-            <span class="n">time_scale_factor</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
-                <span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
+            <span class="n">time_scale_factor</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span><span class="s2">&quot;Machine&quot;</span><span class="p">,</span> <span class="s2">&quot;time_scale_factor&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">default_time_scale_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -338,7 +337,7 @@
         <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;invalid time_scale_factor </span><span class="si">{</span><span class="n">time_scale_factor</span><span class="si">}</span><span class="s1">&#39;</span>
-                <span class="sa">f</span><span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
+                <span class="s1">&#39;: must greater than zero&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_time_scale_factor</span> <span class="o">=</span> <span class="n">time_scale_factor</span>
 
@@ -348,7 +347,7 @@
         <span class="n">rounded</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rounded</span> <span class="o">-</span> <span class="n">raw</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.0001</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The multiplication of simulation time step in microseconds: &quot;</span>
+                <span class="s2">&quot;The multiplication of simulation time step in microseconds: &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_simulation_time_step_us</span><span class="p">()</span><span class="si">}</span><span class="s2"> and times scale factor&quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">get_time_scale_factor</span><span class="p">()</span><span class="si">}</span><span class="s2"> produced a non integer &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;hardware time step of </span><span class="si">{</span><span class="n">raw</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -363,13 +362,16 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_system_multicast_routing_data"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_system_multicast_routing_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_system_multicast_routing_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the system_multicast_routing_data</span>
+<span class="sd">        Sets the system_multicast_routing_data.</span>
 
-<span class="sd">        These are data_in_multicast_routing_tables,</span>
-<span class="sd">                 data_in_multicast_key_to_chip_map,</span>
-<span class="sd">                 system_multicast_router_timeout_keys</span>
+<span class="sd">        These are: `data_in_multicast_routing_tables`,</span>
+<span class="sd">        `data_in_multicast_key_to_chip_map`,</span>
+<span class="sd">        `system_multicast_router_timeout_keys`</span>
 
-<span class="sd">        :param tuple(dict, MulticastRoutingTables, dict) data: new value</span>
+<span class="sd">        :param data: new value</span>
+<span class="sd">        :type data:</span>
+<span class="sd">            tuple(~pacman.model.routing_tables.MulticastRoutingTables,</span>
+<span class="sd">            dict, dict)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="p">(</span><span class="n">data_in_multicast_routing_tables</span><span class="p">,</span>
          <span class="n">data_in_multicast_key_to_chip_map</span><span class="p">,</span>
@@ -390,13 +392,13 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_n_required"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_required">[docs]</a>    <span class="k">def</span> <span class="nf">set_n_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_boards_required</span><span class="p">,</span> <span class="n">n_chips_required</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets (if not None) the number of boards/chips requested by the user</span>
+<span class="sd">        Sets (if not `None`) the number of boards/chips requested by the user.</span>
 
-<span class="sd">        :param n_boards_required: None or the number of boards requested by</span>
-<span class="sd">            the user</span>
+<span class="sd">        :param n_boards_required:</span>
+<span class="sd">            `None` or the number of boards requested by the user</span>
 <span class="sd">        :type n_boards_required: int or None</span>
-<span class="sd">        :param n_chips_required: None or the number of chips requested by</span>
-<span class="sd">            the user</span>
+<span class="sd">        :param n_chips_required:</span>
+<span class="sd">            `None` or the number of chips requested by the user</span>
 <span class="sd">        :type n_chips_required: int or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">n_boards_required</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -406,18 +408,18 @@
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;n_chips_required must be an int (or None)&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">n_chips_required</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;n_chips_required must be positive and not &quot;</span>
+                    <span class="s2">&quot;n_chips_required must be positive and not &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_chips_required</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">n_chips_required</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Illegal call with both both param provided as &quot;</span>
+                    <span class="s2">&quot;Illegal call with both both param provided as &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_boards_required</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">n_chips_required</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_boards_required</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;n_boards_required must be an int (or None)&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">n_boards_required</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;n_boards_required must be positive and not &quot;</span>
+                    <span class="s2">&quot;n_boards_required must be positive and not &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_boards_required</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_n_boards_required</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> \
                 <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_n_chips_required</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -428,22 +430,20 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_n_chips_in_graph"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_n_chips_in_graph">[docs]</a>    <span class="k">def</span> <span class="nf">set_n_chips_in_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_chips_in_graph</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the number of chips needed by the graph</span>
+<span class="sd">        Sets the number of chips needed by the graph.</span>
 
-<span class="sd">        :param n_chips_in_graph:</span>
-<span class="sd">        :return:</span>
+<span class="sd">        :param int n_chips_in_graph:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_chips_in_graph</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;n_chips_in_graph must be an int (or None)&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">n_chips_in_graph</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;n_chips_in_graph must be positive and not &quot;</span>
+                <span class="s2">&quot;n_chips_in_graph must be positive and not &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_chips_in_graph</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_n_chips_in_graph</span> <span class="o">=</span> <span class="n">n_chips_in_graph</span></div>
 
 <div class="viewcode-block" id="FecDataWriter.set_ipaddress"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress">[docs]</a>    <span class="k">def</span> <span class="nf">set_ipaddress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ipaddress</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-
 <span class="sd">        :param str ipaddress:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ipaddress</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -452,7 +452,7 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_fixed_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_fixed_routes">[docs]</a>    <span class="k">def</span> <span class="nf">set_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-
+<span class="sd">        :param fixed_routes:</span>
 <span class="sd">        :type fixed_routes:</span>
 <span class="sd">            dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -462,24 +462,22 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_java_caller"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_java_caller">[docs]</a>    <span class="k">def</span> <span class="nf">set_java_caller</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">java_caller</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :param  JavaCaller java_caller:</span>
+<span class="sd">        :param JavaCaller java_caller:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">java_caller</span><span class="p">,</span> <span class="n">JavaCaller</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;java_calle must be a JavaCaller&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;java_caller must be a JavaCaller&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_java_caller</span> <span class="o">=</span> <span class="n">java_caller</span></div>
 
 <div class="viewcode-block" id="FecDataWriter.reset_sync_signal"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.reset_sync_signal">[docs]</a>    <span class="k">def</span> <span class="nf">reset_sync_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retruns the snyc signal to the default value</span>
-
+<span class="sd">        Returns the sync signal to the default value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_next_sync_signal</span> <span class="o">=</span> <span class="n">Signal</span><span class="o">.</span><span class="n">SYNC0</span></div>
 
 <div class="viewcode-block" id="FecDataWriter.set_executable_types"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_executable_types">[docs]</a>    <span class="k">def</span> <span class="nf">set_executable_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_types</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">        :type executable_types:  dict(</span>
+<span class="sd">        :param executable_types:</span>
+<span class="sd">        :type executable_types: dict(</span>
 <span class="sd">            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,</span>
 <span class="sd">            ~spinn_machine.CoreSubsets or None)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -497,8 +495,9 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_database_file_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_database_file_path">[docs]</a>    <span class="k">def</span> <span class="nf">set_database_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_file_path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the database_file_path variable. Possibly to None</span>
+<span class="sd">        Sets the database_file_path variable. Possibly to `None`.</span>
 
+<span class="sd">        :param database_file_path:</span>
 <span class="sd">        :type database_file_path: str or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">database_file_path</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">))):</span>
@@ -509,7 +508,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets the executable_targets</span>
 
-<span class="sd">        :type executable_targets: ExecutableTargets</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">executable_targets</span><span class="p">,</span> <span class="n">ExecutableTargets</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;executable_targets must be a ExecutableTargets&quot;</span><span class="p">)</span>
@@ -517,9 +516,9 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_dsg_targets"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_dsg_targets">[docs]</a>    <span class="k">def</span> <span class="nf">set_dsg_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsg_targets</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the data Spec targets database</span>
+<span class="sd">        Sets the Data Spec targets database.</span>
 
-<span class="sd">        :type dsg_targets: ExecutableTargets</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets dsg_targets:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dsg_targets</span><span class="p">,</span> <span class="n">DsSqlliteDatabase</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;dsg_targets must be a DsSqlliteDatabase&quot;</span><span class="p">)</span>
@@ -532,8 +531,9 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_gatherer_map"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_gatherer_map">[docs]</a>    <span class="k">def</span> <span class="nf">set_gatherer_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gatherer_map</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the map of x,y to Gatherer Vertices</span>
+<span class="sd">        Sets the map of (x,y) to Gatherer Vertices.</span>
 
+<span class="sd">        :param gatherer_map:</span>
 <span class="sd">        :type gatherer_map:</span>
 <span class="sd">            dict((int, int), DataSpeedUpPacketGatherMachineVertex)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -560,8 +560,9 @@
 
 <div class="viewcode-block" id="FecDataWriter.set_monitor_map"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_monitor_map">[docs]</a>    <span class="k">def</span> <span class="nf">set_monitor_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">monitor_map</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the map of x,y to Monitor Vertices</span>
+<span class="sd">        Sets the map of (x,y) to Monitor Vertices.</span>
 
+<span class="sd">        :param monitor_map:</span>
 <span class="sd">        :type monitor_map:</span>
 <span class="sd">            dict((int, int), ExtraMonitorSupportMachineVertex)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -576,15 +577,17 @@
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">ExtraMonitorSupportMachineVertex</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">__monitor_map_error</span><span class="p">()</span>
                 <span class="k">break</span>  <span class="c1"># assume if first is ok all are</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">raise</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
             <span class="k">raise</span> <span class="bp">self</span><span class="o">.</span><span class="n">__monitor_map_error</span><span class="p">()</span> <span class="kn">from</span> <span class="nn">ex</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_monitor_map</span> <span class="o">=</span> <span class="n">monitor_map</span></div>
 
 <div class="viewcode-block" id="FecDataWriter.set_notification_protocol"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_notification_protocol">[docs]</a>    <span class="k">def</span> <span class="nf">set_notification_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">notification_protocol</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Sets the notification_protocol</span>
+<span class="sd">        Sets the notification_protocol.</span>
 
-<span class="sd">        :type notification_protocol: NotificationProtocol</span>
+<span class="sd">        :param NotificationProtocol notification_protocol:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_clear_notification_protocol</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">notification_protocol</span><span class="p">,</span> <span class="n">NotificationProtocol</span><span class="p">):</span>
@@ -594,7 +597,7 @@
 
 <div class="viewcode-block" id="FecDataWriter.clear_notification_protocol"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_notification_protocol">[docs]</a>    <span class="k">def</span> <span class="nf">clear_notification_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Closes an existing notification_protocol and sets the value to None</span>
+<span class="sd">        Closes an existing notification_protocol and sets the value to `None`.</span>
 
 <span class="sd">        If no notification_protocol exist this method silently returns.</span>
 
@@ -625,12 +628,11 @@
 
 <div class="viewcode-block" id="FecDataWriter.clear_run_steps"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.clear_run_steps">[docs]</a>    <span class="k">def</span> <span class="nf">clear_run_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Clears the run step</span>
+<span class="sd">        Clears the run step.</span>
 
-<span class="sd">        get_run_step will go back to returning None</span>
+<span class="sd">        get_run_step will go back to returning `None`</span>
 
 <span class="sd">        next_run_step will restart at 1</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_run_step</span> <span class="o">=</span> <span class="kc">None</span></div></div>
 </pre></div>

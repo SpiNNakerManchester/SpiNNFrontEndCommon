@@ -59,9 +59,10 @@
 
 <span class="k">class</span> <span class="nc">CommandSender</span><span class="p">(</span>
         <span class="n">AbstractOneAppOneMachineVertex</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A utility for sending commands to a vertex (possibly an external\</span>
-<span class="sd">        device) at fixed times in the simulation or in response to \</span>
-<span class="sd">        simulation events (e.g., starting and stopping).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A utility for sending commands to a vertex (possibly an external device)</span>
+<span class="sd">    at fixed times in the simulation or in response to simulation events</span>
+<span class="sd">    (e.g., starting and stopping).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
@@ -74,7 +75,8 @@
 <div class="viewcode-block" id="CommandSender.add_commands"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.add_commands">[docs]</a>    <span class="k">def</span> <span class="nf">add_commands</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span>
             <span class="n">timed_commands</span><span class="p">,</span> <span class="n">vertex_to_send_to</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add commands to be sent down a given edge</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add commands to be sent down a given edge.</span>
 
 <span class="sd">        :param iterable(MultiCastCommand) start_resume_commands:</span>
 <span class="sd">            The commands to send when the simulation starts or resumes from</span>
@@ -92,8 +94,9 @@
             <span class="n">vertex_to_send_to</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="CommandSender.edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSender.edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Construct application edges from this vertex to the app vertices\</span>
-<span class="sd">            that this vertex knows how to target (and has keys allocated for).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct application edges from this vertex to the app vertices</span>
+<span class="sd">        that this vertex knows how to target (and has keys allocated for).</span>
 
 <span class="sd">        :return: edges, partition IDs</span>
 <span class="sd">        :rtype: tuple(list(~pacman.model.graphs.application.ApplicationEdge),</span>

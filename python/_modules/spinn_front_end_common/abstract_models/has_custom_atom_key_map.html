@@ -55,19 +55,23 @@
 
 <span class="nd">@require_subclass</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">HasCustomAtomKeyMap</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; An object that can provide a custom atom-key mapping for a partition.</span>
-<span class="sd">        Useful when there isn&#39;t a one-to-one correspondence between atoms</span>
-<span class="sd">        and keys for a given partition.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An object that can provide a custom atom-key mapping for a partition.</span>
+<span class="sd">    Useful when there isn&#39;t a one-to-one correspondence between atoms</span>
+<span class="sd">    and keys for a given partition.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="HasCustomAtomKeyMap.get_atom_key_map"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.HasCustomAtomKeyMap.get_atom_key_map">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_atom_key_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">,</span> <span class="n">routing_info</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the mapping between atoms and keys for the given partition id,</span>
-<span class="sd">            and for the given machine pre-vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the mapping between atoms and keys for the given partition id,</span>
+<span class="sd">        and for the given machine pre-vertex.</span>
 
-<span class="sd">        :param MachineVertex pre_vertex: The machine vertex to get the map for</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineVertex pre_vertex:</span>
+<span class="sd">            The machine vertex to get the map for</span>
 <span class="sd">        :param str partition_id: The partition to get the map for</span>
-<span class="sd">        :param RoutingInfo routing_info: Routing information</span>
+<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_info:</span>
+<span class="sd">            Routing information</span>
 <span class="sd">        :return: A list of (atom_id, key)</span>
 <span class="sd">        :rtype: list(tuple(int,int))</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>

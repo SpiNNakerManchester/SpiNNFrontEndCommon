@@ -70,7 +70,8 @@
 
 
 <span class="k">def</span> <span class="nf">get_n_bytes</span><span class="p">(</span><span class="n">n_keys</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the number of bytes used by a given number of keys.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the number of bytes used by a given number of keys.</span>
 
 <span class="sd">    :param int n_keys: The number of keys</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -83,8 +84,12 @@
 
 
 <span class="k">class</span> <span class="nc">BufferedSendingRegion</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A set of keys to be sent at given timestamps for a given region of\</span>
-<span class="sd">        data.  Note that keys must be added in timestamp order or else an\</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A set of keys to be sent at given timestamps for a given region of</span>
+<span class="sd">    data.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        Keys must be added in timestamp order or else an</span>
 <span class="sd">        exception will be raised.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -105,7 +110,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_timestamp_pos</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="BufferedSendingRegion.add_key"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_key">[docs]</a>    <span class="k">def</span> <span class="nf">add_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a key to be sent at a given time.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a key to be sent at a given time.</span>
 
 <span class="sd">        :param int timestamp: The time at which the key is to be sent</span>
 <span class="sd">        :param int key: The key to send</span>
@@ -116,7 +122,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span><span class="p">[</span><span class="n">timestamp</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BufferedSendingRegion.add_keys"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.add_keys">[docs]</a>    <span class="k">def</span> <span class="nf">add_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a set of keys to be sent at the given time.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a set of keys to be sent at the given time.</span>
 
 <span class="sd">        :param int timestamp: The time at which the keys are to be sent</span>
 <span class="sd">        :param iterable(int) keys: The keys to send</span>
@@ -126,7 +133,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_timestamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The number of timestamps available.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of timestamps available.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -134,14 +142,16 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">timestamps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The timestamps for which there are keys.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The timestamps for which there are keys.</span>
 
 <span class="sd">        :rtype: iterable(int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span>
 
 <div class="viewcode-block" id="BufferedSendingRegion.get_n_keys"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.get_n_keys">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the number of keys for a given timestamp.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of keys for a given timestamp.</span>
 
 <span class="sd">        :param timestamp:</span>
 <span class="sd">            the time stamp to check if there&#39;s still keys to transmit</span>
@@ -152,16 +162,18 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">is_next_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determines if the region is empty.</span>
-<span class="sd">            True if the region is empty, false otherwise.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Whether the region is empty.</span>
 
+<span class="sd">        :return: True if the region is empty, false otherwise.</span>
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_timestamp_pos</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">next_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The next timestamp of the data to be sent, or None if no more data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The next timestamp of the data to be sent, or `None` if no more data.</span>
 
 <span class="sd">        :rtype: int or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -170,7 +182,8 @@
         <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="BufferedSendingRegion.is_next_key"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.is_next_key">[docs]</a>    <span class="k">def</span> <span class="nf">is_next_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if there is another key for the given timestamp.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if there is another key for the given timestamp.</span>
 
 <span class="sd">        :param bool timestamp:</span>
 <span class="sd">            the time stamp to check if there&#39;s still keys to transmit</span>
@@ -181,7 +194,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">next_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The next key to be sent.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The next key to be sent.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -195,19 +209,23 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">current_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The current timestamp in the iterator.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The current timestamp in the iterator.</span>
+
+<span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_timestamp_pos</span>
 
 <div class="viewcode-block" id="BufferedSendingRegion.rewind"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.rewind">[docs]</a>    <span class="k">def</span> <span class="nf">rewind</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Rewind the buffer to initial position.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rewind the buffer to initial position.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_timestamp_pos</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="BufferedSendingRegion.clear"><a class="viewcode-back" href="../../../../../spinn_front_end_common.interface.buffer_management.storage_objects.html#spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the buffer.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the buffer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">_buffer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timestamps</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_current_timestamp_pos</span> <span class="o">=</span> <span class="mi">0</span></div>

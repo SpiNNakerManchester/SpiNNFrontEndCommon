@@ -63,8 +63,9 @@
         <span class="n">read_algorithm_iobuf</span><span class="p">,</span> <span class="n">check_for_success_function</span><span class="p">,</span>
         <span class="n">cpu_end_states</span><span class="p">,</span> <span class="n">needs_sync_barrier</span><span class="p">,</span> <span class="n">filename_template</span><span class="p">,</span>
         <span class="n">binaries_to_track</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress_bar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Executes the given _system_ application. \</span>
-<span class="sd">        Used for on-chip expanders, compressors, etc.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executes the given _system_ application.</span>
+<span class="sd">    Used for on-chip expanders, compressors, etc.</span>
 
 <span class="sd">    :param ~spinnman.model.ExecutableTargets executable_cores:</span>
 <span class="sd">        the cores to run the executable on.</span>
@@ -87,7 +88,7 @@
 <span class="sd">        If provided and IOBUF is extracted, will be used to log errors and</span>
 <span class="sd">        warnings</span>
 <span class="sd">    :param timeout:</span>
-<span class="sd">        Number of seconds to wait before force stopping, or None to wait</span>
+<span class="sd">        Number of seconds to wait before force stopping, or `None` to wait</span>
 <span class="sd">        forever</span>
 <span class="sd">    :type timeout: float or None</span>
 <span class="sd">    :raise SpinnmanException:</span>

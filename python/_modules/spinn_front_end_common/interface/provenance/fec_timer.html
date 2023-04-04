@@ -67,7 +67,8 @@
     <span class="n">_NANO_TO_MICRO</span> <span class="o">=</span> <span class="mf">1000.0</span>
 
     <span class="k">def</span> <span class="nf">_convert_to_timedelta</span><span class="p">(</span><span class="n">time_diff</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Have to convert to a timedelta for rest of code to read.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Have to convert to a timedelta for rest of code to read.</span>
 
 <span class="sd">        As perf_counter_ns is nano seconds, and time delta lowest is micro,</span>
 <span class="sd">        need to convert.</span>
@@ -79,7 +80,8 @@
     <span class="n">_now</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span>  <span class="c1"># pylint: disable=no-member</span>
 
     <span class="k">def</span> <span class="nf">_convert_to_timedelta</span><span class="p">(</span><span class="n">time_diff</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Have to convert to a timedelta for rest of code to read.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Have to convert to a timedelta for rest of code to read.</span>
 
 <span class="sd">        As perf_counter is fractional seconds, put into correct time delta.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -198,8 +200,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_report</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_stop_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Describes how long has elapsed since the instance that the\</span>
-<span class="sd">            :py:meth:`start_timing` method was last called.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Describes how long has elapsed since the instance that the</span>
+<span class="sd">        :py:meth:`start_timing` method was last called.</span>
 
 <span class="sd">        :rtype: datetime.timedelta</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -221,8 +224,8 @@
                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">skip</span> <span class="o">=</span> <span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
-                <span class="n">message</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> exited with an exception&quot;</span> \
-                          <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_algorithm</span><span class="si">}</span><span class="s2"> exited with an exception&quot;</span>
+                           <span class="sa">f</span><span class="s2">&quot;after </span><span class="si">{</span><span class="n">time_taken</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">skip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Exception </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -265,7 +268,7 @@
 
 <span class="sd">        :param TimerCategory category: category to switch to</span>
 <span class="sd">        :param machine_on: What to change machine on too.</span>
-<span class="sd">            Or None to leave as is</span>
+<span class="sd">            Or `None` to leave as is</span>
 <span class="sd">        :type machine_on: None or bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_previous</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_category</span><span class="p">)</span>

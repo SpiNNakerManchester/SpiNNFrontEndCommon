@@ -74,9 +74,10 @@
 <span class="k">class</span> <span class="nc">LivePacketGatherMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Used to gather multicast packets coming from cores and stream them \</span>
-<span class="sd">        out to a receiving application on host. Only ever deployed on chips \</span>
-<span class="sd">        with a working Ethernet connection.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to gather multicast packets coming from cores and stream them</span>
+<span class="sd">    out to a receiving application on host. Only ever deployed on chips</span>
+<span class="sd">    with a working Ethernet connection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">class</span> <span class="nc">_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
         <span class="n">SYSTEM</span> <span class="o">=</span> <span class="mi">0</span>
@@ -91,11 +92,11 @@
     <span class="n">_PROVENANCE_REGION_SIZE</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
     <span class="n">KEY_ENTRY_SIZE</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">BYTES_PER_WORD</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpg_params</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param LivePacketGatherParameters lpg_params:</span>
-<span class="sd">        :param str label:</span>
+<span class="sd">        :param LivePacketGatherParameters lpg_params: The parameters object</span>
+<span class="sd">        :param LivePacketGather app_vertex: The application vertex</span>
+<span class="sd">        :param str label: An optional label</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># inheritance</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -106,9 +107,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.add_incoming_source"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.add_incoming_source">[docs]</a>    <span class="k">def</span> <span class="nf">add_incoming_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a machine vertex source incoming into this gatherer</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a machine vertex source incoming into this gatherer.</span>
 
-<span class="sd">        :param MachineVertex m_vertex: The source machine vertex</span>
+<span class="sd">        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:</span>
+<span class="sd">            The source machine vertex</span>
 <span class="sd">        :param str partition_id: The incoming partition id</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_sources</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">m_vertex</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">))</span></div>
@@ -180,11 +183,7 @@
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
-            <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.tags.Tags tags:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>  <span class="c1"># @UnusedVariable</span>
         <span class="c1"># pylint: disable=arguments-differ</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for LivePacketGather Instance ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -198,7 +197,8 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reserve SDRAM space for memory areas.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reserve SDRAM space for memory areas.</span>
 
 <span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -215,7 +215,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reserve_provenance_data_region</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_configuration_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">iptags</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write the configuration region to the spec</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the configuration region to the spec.</span>
 
 <span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        :param iterable(~.IPTag) iptags:</span>
@@ -270,7 +271,8 @@
                 <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="o">.</span><span class="n">lo_atom</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_setup_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write basic info to the system region</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write basic info to the system region.</span>
 
 <span class="sd">        :param ~.DataSpecificationGenerator spec:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -281,7 +283,8 @@
 
 <div class="viewcode-block" id="LivePacketGatherMachineVertex.get_sdram_usage"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.get_sdram_usage">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_sdram_usage</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the SDRAM used by this vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the SDRAM used by this vertex.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>

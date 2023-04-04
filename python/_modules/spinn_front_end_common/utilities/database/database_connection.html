@@ -65,10 +65,11 @@
 
 
 <span class="k">class</span> <span class="nc">DatabaseConnection</span><span class="p">(</span><span class="n">UDPConnection</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A connection from the toolchain which will be notified when the \</span>
-<span class="sd">        database has been written, and can then respond when the database \</span>
-<span class="sd">        has been read, and further wait for notification that the simulation \</span>
-<span class="sd">        has started.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A connection from the toolchain which will be notified when the</span>
+<span class="sd">    database has been written, and can then respond when the database</span>
+<span class="sd">    has been read, and further wait for notification that the simulation</span>
+<span class="sd">    has started.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        The machine description database reader can only be used while the</span>
@@ -117,7 +118,8 @@
         <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
 <div class="viewcode-block" id="DatabaseConnection.add_database_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.database.html#spinn_front_end_common.utilities.database.DatabaseConnection.add_database_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_database_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">database_callback_function</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a database callback to be called when the database is ready.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a database callback to be called when the database is ready.</span>
 
 <span class="sd">        :param callable(DatabaseReader,None) database_callback_function:</span>
 <span class="sd">            A function to be called when the database message has been</span>

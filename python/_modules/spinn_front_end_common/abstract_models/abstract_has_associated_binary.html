@@ -56,21 +56,24 @@
 
 <span class="nd">@require_subclass</span><span class="p">(</span><span class="n">MachineVertex</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">AbstractHasAssociatedBinary</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Marks a machine graph vertex that can be launched on a SpiNNaker core.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Marks a machine graph vertex that can be launched on a SpiNNaker core.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="AbstractHasAssociatedBinary.get_binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_file_name">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_binary_file_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the binary name to be run for this vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the binary name to be run for this vertex.</span>
 
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractHasAssociatedBinary.get_binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary.get_binary_start_type">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_binary_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the start type of the binary to be run.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the start type of the binary to be run.</span>
 
 <span class="sd">        :rtype: ~spinn_front_end_common.utilities.utility_objs.ExecutableType</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>

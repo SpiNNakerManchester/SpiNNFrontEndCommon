@@ -49,7 +49,8 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 
-<span class="sd">&quot;&quot;&quot; Utility calls for interpreting bits of the DSG</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility calls for interpreting bits of the DSG</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">io</span>
@@ -73,7 +74,8 @@
 
 
 <span class="k">def</span> <span class="nf">_mkdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Make a directory if it doesn&#39;t exist.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a directory if it doesn&#39;t exist.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        This code is not intended to be secure against malicious third parties</span>
@@ -92,7 +94,8 @@
 
 
 <div class="viewcode-block" id="get_region_base_address_offset"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_region_base_address_offset">[docs]</a><span class="k">def</span> <span class="nf">get_region_base_address_offset</span><span class="p">(</span><span class="n">app_data_base_address</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Find the address of the of a given region for the DSG</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find the address of the of a given region for the DSG.</span>
 
 <span class="sd">    :param int app_data_base_address: base address for the core</span>
 <span class="sd">    :param int region: the region ID we&#39;re looking for</span>
@@ -110,7 +113,8 @@
 <div class="viewcode-block" id="get_data_spec_and_file_writer_filename"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_data_spec_and_file_writer_filename">[docs]</a><span class="k">def</span> <span class="nf">get_data_spec_and_file_writer_filename</span><span class="p">(</span>
         <span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">,</span>
         <span class="n">application_run_time_report_folder</span><span class="o">=</span><span class="s2">&quot;TEMP&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Encapsulates the creation of the DSG writer and the file paths.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encapsulates the creation of the DSG writer and the file paths.</span>
 
 <span class="sd">    :param int processor_chip_x: x-coordinate of the chip</span>
 <span class="sd">    :param int processor_chip_y: y-coordinate of the chip</span>
@@ -119,7 +123,7 @@
 <span class="sd">        The folder to contain the resulting specification files; if &#39;TEMP&#39;</span>
 <span class="sd">        then a temporary directory is used.</span>
 <span class="sd">    :return: the filename of the data writer and the data specification object</span>
-<span class="sd">    :rtype: tuple(str, DataSpecificationGenerator)</span>
+<span class="sd">    :rtype: tuple(str, ~data_specification.DataSpecificationGenerator)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-many-arguments</span>
     <span class="k">if</span> <span class="n">application_run_time_report_folder</span> <span class="o">==</span> <span class="s2">&quot;TEMP&quot;</span><span class="p">:</span>
@@ -142,13 +146,14 @@
 
 
 <div class="viewcode-block" id="get_report_writer"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.utility_calls.get_report_writer">[docs]</a><span class="k">def</span> <span class="nf">get_report_writer</span><span class="p">(</span><span class="n">processor_chip_x</span><span class="p">,</span> <span class="n">processor_chip_y</span><span class="p">,</span> <span class="n">processor_id</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Check if text reports are needed, and if so initialise the report\</span>
-<span class="sd">        writer to send down to DSG.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if text reports are needed, and if so initialise the report</span>
+<span class="sd">    writer to send down to DSG.</span>
 
 <span class="sd">    :param int processor_chip_x: x-coordinate of the chip</span>
 <span class="sd">    :param int processor_chip_y: y-coordinate of the chip</span>
 <span class="sd">    :param int processor_id: The processor ID</span>
-<span class="sd">    :return: the report_writer_object, or None if not reporting</span>
+<span class="sd">    :return: the report_writer_object, or `None` if not reporting</span>
 <span class="sd">    :rtype: ~io.FileIO or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=too-many-arguments</span>
@@ -200,8 +205,9 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Make a tag deliver to the given connection.</span>
 
-<span class="sd">    :param ~.UDPConnection connection:</span>
-<span class="sd">        The connection to deliver to.</span>
+<span class="sd">    :param connection: The connection to deliver to.</span>
+<span class="sd">    :type connection:</span>
+<span class="sd">        ~spinnman.connections.udp_packet_connections.UDPConnection</span>
 <span class="sd">    :param int x:</span>
 <span class="sd">        The X coordinate of the ethernet chip we are sending the message to.</span>
 <span class="sd">    :param int y:</span>

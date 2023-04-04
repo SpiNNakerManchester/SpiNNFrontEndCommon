@@ -72,8 +72,9 @@
 <span class="k">class</span> <span class="nc">CommandSenderMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">ProvidesProvenanceDataFromMachineImpl</span><span class="p">,</span>
         <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Machine vertex for injecting packets at particular times or in \</span>
-<span class="sd">        response to particular events into a SpiNNaker application.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Machine vertex for injecting packets at particular times or in</span>
+<span class="sd">    response to particular events into a SpiNNaker application.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Regions for populations</span>
 <div class="viewcode-block" id="CommandSenderMachineVertex.DATA_REGIONS"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.DATA_REGIONS">[docs]</a>    <span class="k">class</span> <span class="nc">DATA_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
@@ -104,12 +105,6 @@
     <span class="c1"># all commands will use this mask</span>
     <span class="n">_DEFAULT_COMMAND_MASK</span> <span class="o">=</span> <span class="mh">0xFFFFFFFF</span>
 
-    <span class="n">_NOT_GOT_KEY_ERROR_MESSAGE</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">&quot;The command sender </span><span class="si">{}</span><span class="s2"> has requested key </span><span class="si">{}</span><span class="s2"> for outgoing &quot;</span>
-        <span class="s2">&quot;partition </span><span class="si">{}</span><span class="s2">, but the keys allocated to it (</span><span class="si">{}</span><span class="s2">) do not match. this &quot;</span>
-        <span class="s2">&quot;will cause errors in the external devices support and therefore &quot;</span>
-        <span class="s2">&quot;needs fixing&quot;</span><span class="p">)</span>
-
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str label: The label of this vertex</span>
@@ -128,7 +123,8 @@
 <div class="viewcode-block" id="CommandSenderMachineVertex.add_commands"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.add_commands">[docs]</a>    <span class="k">def</span> <span class="nf">add_commands</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">start_resume_commands</span><span class="p">,</span> <span class="n">pause_stop_commands</span><span class="p">,</span>
             <span class="n">timed_commands</span><span class="p">,</span> <span class="n">vertex_to_send_to</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add commands to be sent down a given edge</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add commands to be sent down a given edge.</span>
 
 <span class="sd">        :param iterable(MultiCastCommand) start_resume_commands:</span>
 <span class="sd">            The commands to send when the simulation starts or resumes from</span>
@@ -160,17 +156,17 @@
         <span class="c1"># create mapping between keys and partitions via partition constraint</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command_keys</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">:</span>
-                <span class="n">partition_id</span> <span class="o">=</span> <span class="s2">&quot;COMMANDS</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span><span class="p">)</span>
+                <span class="n">partition_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;COMMANDS</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">partition_id</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_keys</span><span class="p">[</span><span class="n">partition_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_edge_partition_id_counter</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="CommandSenderMachineVertex.get_fixed_key_and_mask"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_fixed_key_and_mask">[docs]</a>    <span class="k">def</span> <span class="nf">get_fixed_key_and_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partition_id</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the key and mask for the given partition</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the key and mask for the given partition.</span>
 
 <span class="sd">        :param str partition_id: The partition to get the key for</span>
-<span class="sd">        :rtype: BaseKeyAndMask</span>
+<span class="sd">        :rtype: ~pacman.model.routing_info.BaseKeyAndMask</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">BaseKeyAndMask</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_partition_id_keys</span><span class="p">[</span><span class="n">partition_id</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_DEFAULT_COMMAND_MASK</span><span class="p">)</span></div>
@@ -201,26 +197,24 @@
 <div class="viewcode-block" id="CommandSenderMachineVertex.generate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.generate_data_specification">[docs]</a>    <span class="nd">@overrides</span><span class="p">(</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="o">.</span><span class="n">generate_data_specification</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
-<span class="sd">            the routing infos</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">mc_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">allocated_mc_key</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_first_key_from_pre_vertex</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">app_vertex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">allocated_mc_key</span> <span class="o">!=</span> <span class="n">mc_key</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_NOT_GOT_KEY_ERROR_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="p">,</span> <span class="n">mc_key</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">],</span>
-                        <span class="n">allocated_mc_key</span><span class="p">))</span>
+                    <span class="sa">f</span><span class="s2">&quot;The command sender </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_label</span><span class="si">}</span><span class="s2"> has requested key &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mc_key</span><span class="si">}</span><span class="s2"> for outgoing partition &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_keys_to_partition_id</span><span class="p">[</span><span class="n">mc_key</span><span class="p">]</span><span class="si">}</span><span class="s2">, but the keys &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;allocated to it (</span><span class="si">{</span><span class="n">allocated_mc_key</span><span class="si">}</span><span class="s2">) do not match. This &quot;</span>
+                    <span class="s2">&quot;will cause errors in the external devices support and &quot;</span>
+                    <span class="s2">&quot;therefore needs fixing&quot;</span><span class="p">)</span>
 
         <span class="n">timed_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timed_commands_bytes</span><span class="p">()</span>
-        <span class="n">start_resume_commands_size</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span>
-        <span class="n">pause_stop_commands_size</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">)</span>
+        <span class="n">start_resume_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_start_resume</span><span class="p">)</span>
+        <span class="n">pause_stop_commands_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_n_command_bytes</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_commands_at_pause_stop</span><span class="p">)</span>
 
         <span class="c1"># reverse memory regions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reserve_memory_regions</span><span class="p">(</span>
@@ -291,7 +285,8 @@
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">time_command_size</span><span class="p">,</span> <span class="n">start_command_size</span><span class="p">,</span>
             <span class="n">end_command_size</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reserve SDRAM space for memory areas:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reserve SDRAM space for memory areas:</span>
 
 <span class="sd">        1. Area for general system information</span>
 <span class="sd">        2. Area for timed commands</span>
@@ -354,8 +349,9 @@
         <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span></div>
 
 <div class="viewcode-block" id="CommandSenderMachineVertex.get_edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.get_edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">vertex_type</span><span class="p">,</span> <span class="n">edge_type</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Construct edges from this vertex to the vertices that this vertex\</span>
-<span class="sd">            knows how to target (and has keys allocated for).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct edges from this vertex to the vertices that this vertex</span>
+<span class="sd">        knows how to target (and has keys allocated for).</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Do not call this directly from outside either a</span>
@@ -364,10 +360,12 @@
 
 <span class="sd">        :param pre_vertex:</span>
 <span class="sd">        :type pre_vertex: CommandSender or CommandSenderMachineVertex</span>
-<span class="sd">        :param type vertex_type: subclass of :py:class:`~.AbstractVertex`</span>
-<span class="sd">        :param callable edge_type: subclass of :py:class:`~.AbstractEdge`</span>
+<span class="sd">        :param type vertex_type:</span>
+<span class="sd">            subclass of :py:class:`~pacman.model.graphs.AbstractVertex`</span>
+<span class="sd">        :param type edge_type:</span>
+<span class="sd">            subclass of :py:class:`~pacman.model.graphs.AbstractEdge`</span>
 <span class="sd">        :return: edges, partition IDs</span>
-<span class="sd">        :rtype: tuple(list(~.AbstractEdge), list(str))</span>
+<span class="sd">        :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">edges</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">partition_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -383,8 +381,9 @@
         <span class="k">return</span> <span class="n">edges</span><span class="p">,</span> <span class="n">partition_ids</span></div>
 
 <div class="viewcode-block" id="CommandSenderMachineVertex.edges_and_partitions"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.CommandSenderMachineVertex.edges_and_partitions">[docs]</a>    <span class="k">def</span> <span class="nf">edges_and_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Construct machine edges from this vertex to the machine vertices\</span>
-<span class="sd">            that this vertex knows how to target (and has keys allocated for).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct machine edges from this vertex to the machine vertices</span>
+<span class="sd">        that this vertex knows how to target (and has keys allocated for).</span>
 
 <span class="sd">        :return: edges, partition IDs</span>
 <span class="sd">        :rtype:</span>

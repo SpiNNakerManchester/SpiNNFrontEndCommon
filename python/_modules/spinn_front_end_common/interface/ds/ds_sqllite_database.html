@@ -91,7 +91,9 @@
                             <span class="sa">f</span><span class="s2">&quot;ds</span><span class="si">{</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_reset_str</span><span class="p">()</span><span class="si">}</span><span class="s2">.sqlite3&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__init_db_contents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set up the database contents from the machine. &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set up the database contents from the machine.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">eth_chips</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_machine</span><span class="p">()</span><span class="o">.</span><span class="n">ethernet_connected_chips</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span>
@@ -148,7 +150,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">,</span> <span class="n">FecDataView</span><span class="p">()</span><span class="o">.</span><span class="n">get_app_id</span><span class="p">()))</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.get_ds"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds">[docs]</a>    <span class="k">def</span> <span class="nf">get_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Retrieves the data spec as byte code for this core.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the data spec as byte code for this core.</span>
 
 <span class="sd">        :param int x: core x</span>
 <span class="sd">        :param int y: core y</span>
@@ -167,9 +170,10 @@
         <span class="k">return</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.keys"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the keys.</span>
 
-<span class="sd">        .. note:</span>
+<span class="sd">        .. note::</span>
 <span class="sd">            Do not use the database for anything else while iterating.</span>
 
 <span class="sd">        :return: Yields the (x, y, p)</span>
@@ -184,9 +188,10 @@
                 <span class="k">yield</span> <span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;processor&quot;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.items">[docs]</a>    <span class="k">def</span> <span class="nf">items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the keys and values for the DS data.</span>
 
-<span class="sd">        .. note:</span>
+<span class="sd">        .. note::</span>
 <span class="sd">            Do not use the database for anything else while iterating.</span>
 
 <span class="sd">        :return: Yields the (x, y, p) and saved ds pairs</span>
@@ -202,9 +207,10 @@
                        <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]))</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.system_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.system_items">[docs]</a>    <span class="k">def</span> <span class="nf">system_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data for system cores</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the keys and values for the DS data for system cores.</span>
 
-<span class="sd">        .. note:</span>
+<span class="sd">        .. note::</span>
 <span class="sd">            Do not use the database for anything else while iterating.</span>
 
 <span class="sd">        :return: Yields the (x, y, p), saved ds and region_size triples</span>
@@ -220,9 +226,10 @@
                        <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]),</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.app_items"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items">[docs]</a>    <span class="k">def</span> <span class="nf">app_items</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys and values for the DS data for application cores</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the keys and values for the DS data for application cores.</span>
 
-<span class="sd">        .. note:</span>
+<span class="sd">        .. note::</span>
 <span class="sd">            Do not use the database for anything else while iterating.</span>
 
 <span class="sd">        :return: Yields the (x, y, p) and saved ds pairs</span>
@@ -238,7 +245,8 @@
                        <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s2">&quot;content&quot;</span><span class="p">]),</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;memory_used&quot;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_n_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for cores there is a ds saved for</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number for cores there is a ds saved for.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        :raises DsDatabaseException:</span>
@@ -254,7 +262,8 @@
         <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_n_app_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_app_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for application cores there is a ds saved for</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number for application cores there is a ds saved for.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        :raises DsDatabaseException:</span>
@@ -270,7 +279,8 @@
         <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_n_system_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores">[docs]</a>    <span class="k">def</span> <span class="nf">ds_n_system_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for system cores there is a ds saved for</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number for system cores there is a ds saved for.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        :raises DsDatabaseException:</span>
@@ -286,7 +296,8 @@
         <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.set_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_id</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the same app_id for all rows that have ds content</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the same app_id for all rows that have ds content.</span>
 
 <span class="sd">        :param int app_id: value to set</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -299,7 +310,8 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">app_id</span><span class="p">,))</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_get_app_id"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id">[docs]</a>    <span class="k">def</span> <span class="nf">ds_get_app_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Gets the app_id set for this core</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the app_id set for this core.</span>
 
 <span class="sd">        :param int x: core x</span>
 <span class="sd">        :param int y: core y</span>
@@ -329,7 +341,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ds_mark_as_system</span><span class="p">(</span><span class="n">cores_to_mark</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.ds_mark_as_system"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system">[docs]</a>    <span class="k">def</span> <span class="nf">ds_mark_as_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">core_list</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Flags a list of processors as running system binaries.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flags a list of processors as running system binaries.</span>
 
 <span class="sd">        :param iterable(tuple(int,int,int)) core_list:</span>
 <span class="sd">            list of (core x, core y, core p)</span>
@@ -343,7 +356,8 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">core_list</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.get_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_write_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Gets the provenance returned by the Data Spec executor.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the provenance returned by the Data Spec executor.</span>
 
 <span class="sd">        :param int x: core x</span>
 <span class="sd">        :param int y: core y</span>
@@ -365,7 +379,8 @@
 
 <div class="viewcode-block" id="DsSqlliteDatabase.set_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_write_info</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">used</span><span class="p">,</span> <span class="n">written</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the provenance returned by the Data Spec executor.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the provenance returned by the Data Spec executor.</span>
 
 <span class="sd">        :param int x: core x</span>
 <span class="sd">        :param int y: core y</span>
@@ -424,7 +439,8 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">_root_ethernet_id</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.clear_write_info"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_write_info">[docs]</a>    <span class="k">def</span> <span class="nf">clear_write_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the provenance for all rows.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the provenance for all rows.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
             <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
@@ -436,7 +452,8 @@
 <span class="sd">                &quot;&quot;&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.info_n_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_n_cores">[docs]</a>    <span class="k">def</span> <span class="nf">info_n_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Returns the number for cores there is a info saved for.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the number for cores there is a info saved for.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        :raises DsDatabaseException:</span>
@@ -452,9 +469,10 @@
         <span class="k">raise</span> <span class="n">DsDatabaseException</span><span class="p">(</span><span class="s2">&quot;Count query failed&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.info_iteritems"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems">[docs]</a>    <span class="k">def</span> <span class="nf">info_iteritems</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Yields the keys and values for the Info data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Yields the keys and values for the Info data.</span>
 
-<span class="sd">        .. note:</span>
+<span class="sd">        .. note::</span>
 <span class="sd">            A DB transaction may be held while this iterator is processing.</span>
 <span class="sd">            Reentrant use of this class is not supported.</span>
 
@@ -485,7 +503,8 @@
         <span class="k">return</span> <span class="n">DataRowWriter</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DsSqlliteDatabase.write_session_credentials_to_db"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_session_credentials_to_db">[docs]</a>    <span class="k">def</span> <span class="nf">write_session_credentials_to_db</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write Spalloc session credentials to the database if in use</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write Spalloc session credentials to the database if in use</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># pylint: disable=protected-access</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">has_allocation_controller</span><span class="p">():</span>

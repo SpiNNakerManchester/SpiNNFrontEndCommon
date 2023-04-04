@@ -55,8 +55,9 @@
 
 
 <span class="k">class</span> <span class="nc">TDMAAwareApplicationVertex</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; An application vertex that contains the code for using TDMA to spread\</span>
-<span class="sd">        packet transmission to try to avoid overloading any SpiNNaker routers.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An application vertex that contains the code for using TDMA to spread</span>
+<span class="sd">    packet transmission to try to avoid overloading any SpiNNaker routers.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
@@ -91,24 +92,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__clocks_per_cycle</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.set_initial_offset"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_initial_offset">[docs]</a>    <span class="k">def</span> <span class="nf">set_initial_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the initial offset</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the initial offset.</span>
 
 <span class="sd">        :param int new_value: the new initial offset, in clock ticks</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__initial_offset</span> <span class="o">=</span> <span class="n">new_value</span></div>
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.get_n_phases"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_phases</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Compute the number of phases needed for this application vertex. \</span>
-<span class="sd">            This is the maximum number of packets any machine vertex created \</span>
-<span class="sd">            by this application vertex can send in one simulation time step,</span>
-<span class="sd">            which defaults to the number of atoms in the graph.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the number of phases needed for this application vertex.</span>
+<span class="sd">        This is the maximum number of packets any machine vertex created</span>
+<span class="sd">        by this application vertex can send in one simulation time step,</span>
+<span class="sd">        which defaults to the number of atoms in the graph.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_atoms</span></div>
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.generate_tdma_data_specification_data"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data">[docs]</a>    <span class="k">def</span> <span class="nf">generate_tdma_data_specification_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex_index</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Generates the TDMA configuration data needed for the data spec</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the TDMA configuration data needed for the data spec.</span>
 
 <span class="sd">        :param int vertex_index: the machine vertex index in the pop</span>
 <span class="sd">        :return: array of data to write.</span>
@@ -125,7 +129,8 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">tdma_sdram_size_in_bytes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The number of bytes needed by the TDMA data</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of bytes needed by the TDMA data.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -134,7 +139,8 @@
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.set_other_timings"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_other_timings">[docs]</a>    <span class="k">def</span> <span class="nf">set_other_timings</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">clocks_between_cores</span><span class="p">,</span> <span class="n">n_slots</span><span class="p">,</span> <span class="n">clocks_between_spikes</span><span class="p">,</span>
             <span class="n">n_phases</span><span class="p">,</span> <span class="n">clocks_per_cycle</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sets the other timings needed for the TDMA.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the other timings needed for the TDMA.</span>
 
 <span class="sd">        :param int clocks_between_cores: clock cycles between cores</span>
 <span class="sd">        :param int n_slots: the number of slots</span>
@@ -151,8 +157,8 @@
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.get_n_cores"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_cores">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">get_n_cores</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the number of cores this application vertex is using in \</span>
-<span class="sd">            the TDMA.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the number of cores this application vertex is using in the TDMA.</span>
 
 <span class="sd">        :return: the number of cores to use in the TDMA</span>
 <span class="sd">        :rtype: int</span>
@@ -160,7 +166,8 @@
 
 <div class="viewcode-block" id="TDMAAwareApplicationVertex.get_tdma_provenance_item"><a class="viewcode-back" href="../../../../spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item">[docs]</a>    <span class="k">def</span> <span class="nf">get_tdma_provenance_item</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>  <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">desc_label</span><span class="p">,</span> <span class="n">tdma_slots_missed</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the provenance item used for the TDMA provenance</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the provenance item used for the TDMA provenance.</span>
 
 <span class="sd">        :param int x: x coordinate of the chip where this core</span>
 <span class="sd">        :param int y: y coordinate of the core where this core</span>

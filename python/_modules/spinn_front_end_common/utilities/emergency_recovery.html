@@ -73,8 +73,9 @@
         <span class="k">if</span> <span class="n">rte_count</span> <span class="ow">or</span> <span class="n">watchdog_count</span><span class="p">:</span>
             <span class="n">states</span> <span class="o">=</span> <span class="n">txrx</span><span class="o">.</span><span class="n">get_cores_in_state</span><span class="p">(</span>
                 <span class="kc">None</span><span class="p">,</span> <span class="p">[</span><span class="n">CPUState</span><span class="o">.</span><span class="n">RUN_TIME_EXCEPTION</span><span class="p">,</span> <span class="n">CPUState</span><span class="o">.</span><span class="n">WATCHDOG</span><span class="p">])</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;unexpected core states (rte=</span><span class="si">{}</span><span class="s2">, wdog=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">rte_count</span><span class="p">,</span> <span class="n">watchdog_count</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;unexpected core states (rte=</span><span class="si">{}</span><span class="s2">, wdog=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="n">rte_count</span><span class="p">,</span> <span class="n">watchdog_count</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">txrx</span><span class="o">.</span><span class="n">get_core_status_string</span><span class="p">(</span><span class="n">states</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
@@ -95,17 +96,18 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">infos</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">txrx</span><span class="o">.</span><span class="n">get_core_status_string</span><span class="p">(</span><span class="n">infos</span><span class="p">))</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">):</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not read information from </span><span class="si">{}</span><span class="s2"> cores&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Could not read information from </span><span class="si">{}</span><span class="s2"> cores&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">errors</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not read information from cores </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">errors</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Could not read information from cores </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">errors</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_emergency_iobuf_extract</span><span class="p">(</span><span class="n">executable_targets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param executable_targets: The specific targets to extract of None for all</span>
-<span class="sd">    :type executable_targets: ExecutableTargets  or None</span>
+<span class="sd">    :param executable_targets:</span>
+<span class="sd">        The specific targets to extract, or `None` for all</span>
+<span class="sd">    :type executable_targets: ExecutableTargets or None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=protected-access</span>
     <span class="n">extractor</span> <span class="o">=</span> <span class="n">IOBufExtractor</span><span class="p">(</span>
@@ -115,9 +117,9 @@
 
 
 <div class="viewcode-block" id="emergency_recover_state_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.emergency_recovery.emergency_recover_state_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_state_from_failure</span><span class="p">(</span><span class="n">vertex</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
-<span class="sd">        does.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to get at least *some* information out of a core when something</span>
+<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
 
 <span class="sd">    :param ~spinnman.transceiver.Transceiver txrx: The transceiver.</span>
 <span class="sd">    :param AbstractHasAssociatedBinary vertex:</span>
@@ -136,9 +138,9 @@
 
 
 <div class="viewcode-block" id="emergency_recover_states_from_failure"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.emergency_recovery.emergency_recover_states_from_failure">[docs]</a><span class="k">def</span> <span class="nf">emergency_recover_states_from_failure</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Used to get at least *some* information out of a core when something\</span>
-<span class="sd">        goes badly wrong. Not a replacement for what abstract spinnaker base\</span>
-<span class="sd">        does.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Used to get at least *some* information out of a core when something</span>
+<span class="sd">    goes badly wrong. Not a replacement for what abstract spinnaker base does.</span>
 
 <span class="sd">    :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">        The what/where mapping</span>

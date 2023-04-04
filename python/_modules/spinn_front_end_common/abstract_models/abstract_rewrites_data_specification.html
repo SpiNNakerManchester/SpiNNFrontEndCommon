@@ -56,16 +56,18 @@
 
 <span class="nd">@require_subclass</span><span class="p">(</span><span class="n">MachineVertex</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">AbstractRewritesDataSpecification</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Indicates an object that allows data to be changed after run,\</span>
-<span class="sd">        and so can rewrite the data specification</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Indicates an object that allows data to be changed after run,</span>
+<span class="sd">    and so can rewrite the data specification.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="AbstractRewritesDataSpecification.regenerate_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.regenerate_data_specification">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">regenerate_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Regenerate the data specification, only generating regions that\</span>
-<span class="sd">            have changed and need to be reloaded</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Regenerate the data specification, only generating regions that</span>
+<span class="sd">        have changed and need to be reloaded.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            Where to write the regenerated spec</span>
@@ -75,17 +77,18 @@
 
 <div class="viewcode-block" id="AbstractRewritesDataSpecification.reload_required"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.reload_required">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">reload_required</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return true if any data region needs to be reloaded</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return true if any data region needs to be reloaded.</span>
 
 <span class="sd">        :rtype: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractRewritesDataSpecification.set_reload_required"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification.set_reload_required">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">set_reload_required</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Indicate that the regions have been reloaded</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Indicate that the regions have been reloaded.</span>
 
 <span class="sd">        :param new_value: the new value</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 </pre></div>
 

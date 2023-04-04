@@ -88,8 +88,13 @@
 <span class="k">class</span> <span class="nc">ChipPowerMonitorMachineVertex</span><span class="p">(</span>
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
         <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span> <span class="n">AbstractReceiveBuffersToHost</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Machine vertex for C code representing functionality to record\</span>
-<span class="sd">        idle times in a machine graph.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Machine vertex for C code representing functionality to record</span>
+<span class="sd">    idle times in a machine graph.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This is an unusual machine vertex, in that it has no associated</span>
+<span class="sd">        application vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;_sampling_frequency&quot;</span><span class="p">]</span>
@@ -103,22 +108,19 @@
     <span class="c1">#: which channel in the recording region has the recorded samples</span>
     <span class="n">_SAMPLE_RECORDING_CHANNEL</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-            <span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-            <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param str label: vertex label</span>
 <span class="sd">        :param int sampling_frequency: how often to sample, in microseconds</span>
-<span class="sd">        :param ChipPowerMonitor app_vertex: associated application vertex</span>
-<span class="sd">        :param ~pacman.model.graphs.common.Slice vertex_slice:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="o">=</span><span class="n">vertex_slice</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vertex_slice</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span> <span class="o">=</span> <span class="n">sampling_frequency</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">sampling_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; how often to sample, in microseconds</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        How often to sample, in microseconds.</span>
 
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -131,7 +133,8 @@
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_resources"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_resources">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_resources</span><span class="p">(</span><span class="n">sampling_frequency</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the resources used by this vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the resources used by this vertex.</span>
 
 <span class="sd">        :param float sampling_frequency:</span>
 <span class="sd">        :rtype: ~pacman.model.resources.VariableSDRAM</span>
@@ -161,7 +164,8 @@
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.binary_file_name"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_file_name">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">binary_file_name</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return the string binary file name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the filename of the binary.</span>
 
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -171,11 +175,6 @@
     <span class="k">def</span> <span class="nf">generate_data_specification</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span>  <span class="c1"># @UnusedVariable</span>
             <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Supports the application vertex calling this directly</span>
-
-<span class="sd">        :param ~data_specification.DataSpecificationGenerator spec: data spec</span>
-<span class="sd">        :param int data_n_time_steps: timesteps to reserve data for</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">comment</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">*** Spec for ChipPowerMonitor Instance ***</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># Construct the data images needed for the Neuron:</span>
@@ -187,7 +186,8 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_write_configuration_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write the data needed by the C code to configure itself</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the data needed by the C code to configure itself.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            spec object</span>
@@ -199,7 +199,8 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">write_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">DataType</span><span class="o">.</span><span class="n">UINT32</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_write_setup_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the system data as required.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the system data as required.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            the DSG spec writer</span>
@@ -216,7 +217,8 @@
             <span class="n">recorded_region_sizes</span><span class="p">))</span>
 
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Reserve the DSG memory regions as required</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reserve the DSG memory regions as required.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
 <span class="sd">            the DSG specification to reserve in</span>
@@ -242,7 +244,8 @@
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.binary_start_type"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.binary_start_type">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">binary_start_type</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The type of binary that implements this vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The type of binary that implements this vertex.</span>
 
 <span class="sd">        :return: starttype enum</span>
 <span class="sd">        :rtype: ExecutableType</span>
@@ -259,21 +262,22 @@
         <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
     <span class="k">def</span> <span class="nf">_deduce_sdram_requirements_per_timer_tick</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Deduce SDRAM usage per timer tick</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deduce SDRAM usage per timer tick.</span>
 
 <span class="sd">        :return: the SDRAM usage</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">recording_time</span> <span class="o">=</span> \
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span> <span class="o">*</span> <span class="n">get_config_int</span><span class="p">(</span>
-                <span class="s2">&quot;EnergyMonitor&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples_per_recording_entry&quot;</span><span class="p">)</span>
+        <span class="n">recording_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_frequency</span> <span class="o">*</span> <span class="n">get_config_int</span><span class="p">(</span>
+            <span class="s2">&quot;EnergyMonitor&quot;</span><span class="p">,</span> <span class="s2">&quot;n_samples_per_recording_entry&quot;</span><span class="p">)</span>
         <span class="n">n_entries</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_hardware_time_step_us</span><span class="p">()</span> <span class="o">/</span>
                                <span class="n">recording_time</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_entries</span> <span class="o">*</span> <span class="n">RECORDING_SIZE_PER_ENTRY</span><span class="p">))</span>
 
 <div class="viewcode-block" id="ChipPowerMonitorMachineVertex.get_recorded_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.ChipPowerMonitorMachineVertex.get_recorded_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_recorded_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get data from SDRAM given placement and buffer manager. \</span>
-<span class="sd">            Also arranges for provenance data to be available.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get data from SDRAM given placement and buffer manager.</span>
+<span class="sd">        Also arranges for provenance data to be available.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            the location on machine to get data from</span>

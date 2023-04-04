@@ -53,9 +53,12 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.connections.</span></span><span class="sig-name descname"><span class="pre">LiveEventConnection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">live_packet_gather_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">receive_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19999</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DatabaseConnection</span></code></p>
-<p>A connection for receiving and sending live events from and to        SpiNNaker.</p>
-<p>Note that this class is intended to be potentially usable from another
+<p>A connection for receiving and sending live events from and to SpiNNaker.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class is intended to be potentially usable from another
 process than the one that the simulator is present in.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -73,7 +76,7 @@ by default)</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.add_init_callback">
 <span class="sig-name descname"><span class="pre">add_init_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.add_init_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_init_callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a callback to be called to initialise a vertex</p>
+<dd><p>Add a callback to be called to initialise a vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -92,7 +95,7 @@ milliseconds</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.add_pause_stop_callback">
 <span class="sig-name descname"><span class="pre">add_pause_stop_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pause_stop_callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.add_pause_stop_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_pause_stop_callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a callback for the pause and stop state of the simulation</p>
+<dd><p>Add a callback for the pause and stop state of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -103,16 +106,13 @@ label of the referenced  vertex, and an instance of this class,
 which can be used to send events.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.add_receive_callback">
 <span class="sig-name descname"><span class="pre">add_receive_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">live_event_callback</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translate_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.add_receive_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_receive_callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a callback for the reception of live events from a vertex</p>
+<dd><p>Add a callback for the reception of live events from a vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -142,7 +142,7 @@ key should stay a key</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_callback">
 <span class="sig-name descname"><span class="pre">add_start_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.add_start_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a callback for the start of the simulation</p>
+<dd><p>Add a callback for the start of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -159,7 +159,7 @@ be used to send events</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_resume_callback">
 <span class="sig-name descname"><span class="pre">add_start_resume_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_resume_callback</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.add_start_resume_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_resume_callback" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a callback for the start and resume state of the simulation</p>
+<dd><p>Add a callback for the start and resume state of the simulation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -170,22 +170,20 @@ the label of the referenced vertex, and an instance of this
 class, which can be used to send events.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.close">
 <span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.close" title="Permalink to this definition">¶</a></dt>
-<dd><p>Closes the connection</p>
+<dd><p>Closes the connection.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.send_eieio_message">
 <span class="sig-name descname"><span class="pre">send_eieio_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.send_eieio_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_eieio_message" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an EIEIO message (using one-way the live input) to the             vertex with the given label.</p>
+<dd><p>Send an EIEIO message (using one-way the live input) to the
+vertex with the given label.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -199,7 +197,7 @@ class, which can be used to send events.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.send_event">
 <span class="sig-name descname"><span class="pre">send_event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_full_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.send_event"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an event from a single atom</p>
+<dd><p>Send an event from a single atom.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -216,7 +214,7 @@ directly</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.send_event_with_payload">
 <span class="sig-name descname"><span class="pre">send_event_with_payload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.send_event_with_payload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event_with_payload" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send an event with a payload from a single atom</p>
+<dd><p>Send an event with a payload from a single atom.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -231,7 +229,7 @@ directly</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.send_events">
 <span class="sig-name descname"><span class="pre">send_events</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">send_full_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.send_events"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send a number of events</p>
+<dd><p>Send a number of events.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -248,7 +246,7 @@ directly</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.connections.LiveEventConnection.send_events_with_payloads">
 <span class="sig-name descname"><span class="pre">send_events_with_payloads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atom_ids_and_payloads</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/connections/live_event_connection.html#LiveEventConnection.send_events_with_payloads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events_with_payloads" title="Permalink to this definition">¶</a></dt>
-<dd><p>Send a number of events with payloads</p>
+<dd><p>Send a number of events with payloads.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

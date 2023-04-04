@@ -175,7 +175,8 @@
 
 
 <div class="viewcode-block" id="AbstractSpinnakerBase"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase">[docs]</a><span class="k">class</span> <span class="nc">AbstractSpinnakerBase</span><span class="p">(</span><span class="n">ConfigHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Main interface into the tools logic flow.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main interface into the tools logic flow.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=broad-except</span>
 
@@ -256,7 +257,6 @@
     <span class="k">def</span> <span class="nf">_hard_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This clears all data that if no longer valid after a hard reset</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_transceiver</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">stop_application</span><span class="p">(</span>
@@ -273,11 +273,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_java_caller</span><span class="p">(</span><span class="n">JavaCaller</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">__signal_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_signal</span><span class="p">,</span> <span class="n">_frame</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Handles closing down of script via keyboard interrupt</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles closing down of script via keyboard interrupt</span>
 
 <span class="sd">        :param _signal: the signal received (ignored)</span>
 <span class="sd">        :param _frame: frame executed in (ignored)</span>
-<span class="sd">        :return: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If we are to raise the keyboard interrupt, do so</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_raise_keyboard_interrupt</span><span class="p">:</span>
@@ -308,7 +308,8 @@
         <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OIDC_BEARER_TOKEN&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.exception_handler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">[docs]</a>    <span class="k">def</span> <span class="nf">exception_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback_obj</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Handler of exceptions</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handler of exceptions.</span>
 
 <span class="sd">        :param type exctype: the type of exception received</span>
 <span class="sd">        :param Exception value: the value of the exception</span>
@@ -336,10 +337,11 @@
         <span class="k">return</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.run_until_complete"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run_until_complete">[docs]</a>    <span class="k">def</span> <span class="nf">run_until_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Run a simulation until it completes</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a simulation until it completes.</span>
 
 <span class="sd">        :param int n_steps:</span>
-<span class="sd">            If not None, this specifies that the simulation should be</span>
+<span class="sd">            If not `None`, this specifies that the simulation should be</span>
 <span class="sd">            requested to run for the given number of steps.  The host will</span>
 <span class="sd">            still wait until the simulation itself says it has completed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -349,7 +351,8 @@
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Run a simulation for a fixed amount of time</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run a simulation for a fixed amount of time.</span>
 
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        :param float sync_time:</span>
@@ -364,7 +367,8 @@
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RUN_OTHER</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">__timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_in_ms</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get a number of timesteps for a given time in milliseconds.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get a number of timesteps for a given time in milliseconds.</span>
 
 <span class="sd">        :return: The number of timesteps</span>
 <span class="sd">        :rtype: int</span>
@@ -384,13 +388,13 @@
 
     <span class="k">def</span> <span class="nf">_calc_run_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calculates n_machine_time_steps and total_run_time based on run_time\</span>
-<span class="sd">        and machine_time_step</span>
+<span class="sd">        Calculates n_machine_time_steps and total_run_time based on run_time</span>
+<span class="sd">        and machine_time_step.</span>
 
-<span class="sd">        This method rounds the run up to the next timestep as discussed in\</span>
+<span class="sd">        This method rounds the run up to the next timestep as discussed in</span>
 <span class="sd">        https://github.com/SpiNNakerManchester/sPyNNaker/issues/149</span>
 
-<span class="sd">        If run_time is None (run forever) both values will be None</span>
+<span class="sd">        If run_time is `None` (run forever) both values will be `None`</span>
 
 <span class="sd">        :param run_time: time user requested to run for in milliseconds</span>
 <span class="sd">        :type run_time: float or None</span>
@@ -432,7 +436,8 @@
             <span class="k">raise</span>
 
     <span class="k">def</span> <span class="nf">__run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">,</span> <span class="n">sync_time</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The main internal run function.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The main internal run function.</span>
 
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
 <span class="sd">        :param int sync_time:</span>
@@ -570,8 +575,8 @@
                 <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_no_stop_requested</span><span class="p">():</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running forever in steps of </span><span class="si">{}</span><span class="s2">ms&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">()))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running forever in steps of </span><span class="si">{}</span><span class="s2">ms&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_max_run_time_steps</span><span class="p">())</span>
             <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_no_stop_requested</span><span class="p">():</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Run </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">next_run_step</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_do_run</span><span class="p">(</span>
@@ -593,7 +598,7 @@
 
     <span class="k">def</span> <span class="nf">_add_commands_to_command_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the VirtualMachineGenerator if required</span>
+<span class="sd">        Runs, times and logs the VirtualMachineGenerator if required.</span>
 
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -624,9 +629,10 @@
                             <span class="n">dependant_edge</span><span class="p">,</span> <span class="n">edge_identifier</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_deduce_data_n_timesteps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Operates the auto pause and resume functionality by figuring out\</span>
-<span class="sd">            how many timer ticks a simulation can run before SDRAM runs out,\</span>
-<span class="sd">            and breaks simulation into chunks of that long.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Operates the auto pause and resume functionality by figuring out</span>
+<span class="sd">        how many timer ticks a simulation can run before SDRAM runs out,</span>
+<span class="sd">        and breaks simulation into chunks of that long.</span>
 
 <span class="sd">        :return: max time a simulation can run.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -660,8 +666,9 @@
         <span class="k">return</span> <span class="n">max_time_steps</span>
 
     <span class="k">def</span> <span class="nf">_generate_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Generates the list of &quot;timer&quot; runs. These are usually in terms of\</span>
-<span class="sd">            time steps, but need not be.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates the list of &quot;timer&quot; runs. These are usually in terms of</span>
+<span class="sd">        time steps, but need not be.</span>
 
 <span class="sd">        :param int n_steps: the total runtime in machine time steps</span>
 <span class="sd">        :return: list of time step lengths</span>
@@ -679,7 +686,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_get_virtual_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the VirtualMachineGenerator if required</span>
+<span class="sd">        Runs, times and logs the VirtualMachineGenerator if required.</span>
 
 <span class="sd">        May set then &quot;machine&quot; value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -689,7 +696,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SpallocAllocator or HBPAllocator if required</span>
+<span class="sd">        Runs, times and logs the SpallocAllocator or HBPAllocator if required.</span>
 
 <span class="sd">        :param total_run_time: The total run time to request</span>
 <span class="sd">        :type total_run_time: int or None</span>
@@ -711,12 +718,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_machine_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allocator_data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the MachineGenerator if required</span>
+<span class="sd">        Runs, times and logs the MachineGenerator if required.</span>
 
 <span class="sd">        May set the &quot;machine&quot; value if not already set</span>
 
-<span class="sd">        :param str category: Algorithm category for provenance</span>
-<span class="sd">        :allocator_data: None or</span>
+<span class="sd">        :param allocator_data: `None` or</span>
 <span class="sd">            (machine name, machine version, BMP details (if any),</span>
 <span class="sd">            reset on startup flag, auto-detect BMP, SCAMP connection details,</span>
 <span class="sd">            boot port, allocation controller)</span>
@@ -756,7 +762,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_machine</span><span class="p">(</span><span class="n">machine</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_known_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The python machine description object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The python machine description object.</span>
 
 <span class="sd">        :param float total_run_time: The total run time to request</span>
 <span class="sd">        :rtype: ~spinn_machine.Machine</span>
@@ -769,7 +776,8 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_execute_machine_generator</span><span class="p">(</span><span class="n">allocator_data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The factory method to get a machine</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The factory method to get a machine.</span>
 
 <span class="sd">        :rtype: ~spinn_machine.Machine</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -788,7 +796,8 @@
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">end_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">GET_MACHINE</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_create_version_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add the version information to the provenance data at the start.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add the version information to the provenance data at the start.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">GlobalProvenance</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
             <span class="n">db</span><span class="o">.</span><span class="n">insert_version</span><span class="p">(</span><span class="s2">&quot;spinn_utilities_version&quot;</span><span class="p">,</span> <span class="n">spinn_utils_version</span><span class="p">)</span>
@@ -803,13 +812,12 @@
 
     <span class="k">def</span> <span class="nf">_do_extra_mapping_algorithms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Allows overriding classes to add algorithms</span>
+<span class="sd">        Allows overriding classes to add algorithms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_json_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs WriteJsonMachine if required</span>
-
+<span class="sd">        Runs, times and logs WriteJsonMachine if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json machine&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_json_machine&quot;</span><span class="p">):</span>
@@ -818,8 +826,7 @@
 
     <span class="k">def</span> <span class="nf">_report_network_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Network Specification report is requested</span>
-
+<span class="sd">        Runs, times and logs the Network Specification report is requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Network Specification report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -830,15 +837,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_split_lpg_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SplitLPGVertices if required</span>
+<span class="sd">        Runs, times and logs the SplitLPGVertices if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Split Live Gather Vertices&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">split_lpg_vertices</span><span class="p">(</span><span class="n">system_placements</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_report_board_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the BoardChipReport is requested</span>
-
+<span class="sd">        Runs, times and logs the BoardChipReport is requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Board chip report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -852,8 +858,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_splitter_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the splitter_reset</span>
-
+<span class="sd">        Runs, times and logs the splitter_reset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Splitter reset&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">splitter_reset</span><span class="p">()</span>
@@ -861,20 +866,20 @@
     <span class="c1"># Overriden by spynaker to choose an extended algorithm</span>
     <span class="k">def</span> <span class="nf">_execute_splitter_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SplitterSelector</span>
+<span class="sd">        Runs, times and logs the SplitterSelector.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Splitter selector&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">splitter_selector</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_delay_support_adder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Stub to allow spynakker to add delay supports</span>
+<span class="sd">        Stub to allow spynakker to add delay supports.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="c1"># Overriden by spynaker to choose a different algorithm</span>
     <span class="k">def</span> <span class="nf">_execute_splitter_partitioner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SplitterPartitioner if required</span>
+<span class="sd">        Runs, times and logs the SplitterPartitioner if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
@@ -883,7 +888,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_insert_chip_power_monitors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run, time and log the InsertChipPowerMonitorsToGraphs if required</span>
+<span class="sd">        Run, time and log the InsertChipPowerMonitorsToGraphs if required.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Insert chip power monitors&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -893,8 +898,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_insert_extra_monitor_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run, time and log the InsertExtraMonitorVerticesToGraphs if required</span>
-
+<span class="sd">        Run, time and log the InsertExtraMonitorVerticesToGraphs if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Insert extra monitor vertices&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -910,8 +914,7 @@
 
     <span class="k">def</span> <span class="nf">_report_partitioner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, times and logs the partitioner_report if needed</span>
-
+<span class="sd">        Write, times and logs the partitioner_report if needed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Partitioner report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -921,14 +924,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_local_tdma_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs times and logs the LocalTDMABuilder</span>
+<span class="sd">        Runs times and logs the LocalTDMABuilder.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Local TDMA builder&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">local_tdma_builder</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Application Placer</span>
+<span class="sd">        Runs, times and logs the Application Placer.</span>
 
 <span class="sd">        Sets the &quot;placements&quot; data</span>
 
@@ -942,7 +945,7 @@
 
     <span class="k">def</span> <span class="nf">_do_placer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs one of the placers</span>
+<span class="sd">        Runs, times and logs one of the placers.</span>
 
 <span class="sd">        Sets the &quot;placements&quot; data</span>
 
@@ -963,7 +966,7 @@
 
     <span class="k">def</span> <span class="nf">_do_write_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Do the various functions to write metadata to the sqlite files</span>
+<span class="sd">        Do the various functions to write metadata to the sqlite files.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Record vertex labels to database&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">):</span>
@@ -972,7 +975,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_system_multicast_routing_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SystemMulticastRoutingGenerator is required</span>
+<span class="sd">        Runs, times and logs the SystemMulticastRoutingGenerator if required.</span>
 
 <span class="sd">        May sets the data &quot;data_in_multicast_routing_tables&quot;,</span>
 <span class="sd">        &quot;data_in_multicast_key_to_chip_map&quot; and</span>
@@ -990,7 +993,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_fixed_route_router</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the FixedRouteRouter if required</span>
+<span class="sd">        Runs, times and logs the FixedRouteRouter if required.</span>
 
 <span class="sd">        May set the &quot;fixed_routes&quot; data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1004,7 +1007,7 @@
     <span class="k">def</span> <span class="nf">_report_placements_with_application_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Writes, times and logs the application graph placer report if</span>
-<span class="sd">        requested</span>
+<span class="sd">        requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_n_vertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1018,8 +1021,7 @@
 
     <span class="k">def</span> <span class="nf">_json_placements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Does, times and logs the writing of placements as json if requested</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Does, times and logs the writing of placements as json if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json placements&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1030,7 +1032,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_ner_route_traffic_aware</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the NerRouteTrafficAware</span>
+<span class="sd">        Runs, times and logs the NerRouteTrafficAware.</span>
 
 <span class="sd">        Sets the &quot;routing_table_by_partition&quot; data if called</span>
 
@@ -1043,7 +1045,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_ner_route</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the NerRoute</span>
+<span class="sd">        Runs, times and logs the NerRoute.</span>
 
 <span class="sd">        Sets the &quot;routing_table_by_partition&quot; data</span>
 
@@ -1055,7 +1057,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_basic_dijkstra_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the BasicDijkstraRouting</span>
+<span class="sd">        Runs, times and logs the BasicDijkstraRouting.</span>
 
 <span class="sd">        Sets the &quot;routing_table_by_partition&quot; data if called</span>
 
@@ -1068,7 +1070,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_application_router</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ApplicationRouter</span>
+<span class="sd">        Runs, times and logs the ApplicationRouter.</span>
 
 <span class="sd">        Sets the &quot;routing_table_by_partition&quot; data if called</span>
 
@@ -1081,7 +1083,7 @@
 
     <span class="k">def</span> <span class="nf">_do_routing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs one of the routers</span>
+<span class="sd">        Runs, times and logs one of the routers.</span>
 
 <span class="sd">        Sets the &quot;routing_table_by_partition&quot; data</span>
 
@@ -1108,7 +1110,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_basic_tag_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Tag Allocator</span>
+<span class="sd">        Runs, times and logs the Tag Allocator.</span>
 
 <span class="sd">        Sets the &quot;tag&quot; data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1118,7 +1120,7 @@
 
     <span class="k">def</span> <span class="nf">_report_tag_allocations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, times and logs the tag allocator report if requested</span>
+<span class="sd">        Write, times and logs the tag allocator report if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Tag allocator report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1128,14 +1130,12 @@
 
     <span class="k">def</span> <span class="nf">_execute_global_allocate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_allocations</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Global Zoned Routing Info Allocator</span>
+<span class="sd">        Runs, times and logs the Global Zoned Routing Info Allocator.</span>
 
 <span class="sd">        Sets &quot;routing_info&quot; is called</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg info_allocator value</span>
-
-<span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Global allocate&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_infos</span><span class="p">(</span>
@@ -1143,14 +1143,12 @@
 
     <span class="k">def</span> <span class="nf">_execute_flexible_allocate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_allocations</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Zoned Routing Info Allocator</span>
+<span class="sd">        Runs, times and logs the Zoned Routing Info Allocator.</span>
 
 <span class="sd">        Sets &quot;routing_info&quot; is called</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg info_allocator value</span>
-
-<span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Zoned routing info allocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">set_routing_infos</span><span class="p">(</span>
@@ -1158,16 +1156,16 @@
 
     <span class="k">def</span> <span class="nf">_do_info_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs one of the info allocaters</span>
+<span class="sd">        Runs, times and logs one of the info allocators.</span>
 
 <span class="sd">        Sets the &quot;routing_info&quot; data</span>
 
-<span class="sd">        Which alloactor is run depends on the cfg info_allocator value</span>
+<span class="sd">        Which allocator is run depends on the cfg info_allocator value</span>
 
 <span class="sd">        This method is the entry point for adding a new Info Allocator</span>
 
-<span class="sd">        :raise ConfigurationException: if the cfg info_allocator value is</span>
-<span class="sd">            unexpected</span>
+<span class="sd">        :raise ConfigurationException:</span>
+<span class="sd">            if the cfg info_allocator value is unexpected</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">get_config_str</span><span class="p">(</span><span class="s2">&quot;Mapping&quot;</span><span class="p">,</span> <span class="s2">&quot;info_allocator&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;GlobalZonedRoutingInfoAllocator&quot;</span><span class="p">:</span>
@@ -1182,7 +1180,7 @@
 
     <span class="k">def</span> <span class="nf">_report_router_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Writes, times and logs the router info report if requested</span>
+<span class="sd">        Writes, times and logs the router info report if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router info report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1192,7 +1190,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_basic_routing_table_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Routing Table Generator</span>
+<span class="sd">        Runs, times and logs the Routing Table Generator.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Currently no other Routing Table Generator supported.</span>
@@ -1203,7 +1201,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_merged_routing_table_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Routing Table Generator</span>
+<span class="sd">        Runs, times and logs the Routing Table Generator.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Currently no other Routing Table Generator supported.</span>
@@ -1217,7 +1215,7 @@
 
     <span class="k">def</span> <span class="nf">_do_routing_table_generator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs one of the routing table generators</span>
+<span class="sd">        Runs, times and logs one of the routing table generators.</span>
 
 <span class="sd">        Sets the &quot;routing_info&quot; data</span>
 
@@ -1242,7 +1240,7 @@
 
     <span class="k">def</span> <span class="nf">_report_routers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, times and logs the router report if requested</span>
+<span class="sd">        Write, times and logs the router report if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1252,7 +1250,7 @@
 
     <span class="k">def</span> <span class="nf">_report_router_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, times and logs the router summary report if requested</span>
+<span class="sd">        Write, times and logs the router summary report if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Router summary report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1262,7 +1260,7 @@
 
     <span class="k">def</span> <span class="nf">_json_routing_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, time and log the routing tables as json if requested</span>
+<span class="sd">        Write, time and log the routing tables as JSON if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Json routing tables&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1273,7 +1271,7 @@
 
     <span class="k">def</span> <span class="nf">_report_router_collision_potential</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write, time and log the router collision report</span>
+<span class="sd">        Write, time and log the router collision report.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Router collision potential report&quot;</span><span class="p">,</span>
@@ -1284,7 +1282,8 @@
             <span class="n">router_collision_potential_report</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_report_drift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write, time and log the drift</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write, time and log the inter-board timer drift.</span>
 
 <span class="sd">        :param bool start: Is this the start or the end</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1301,7 +1300,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_locate_executable_start_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs LocateExecutableStartType if required</span>
+<span class="sd">        Runs, times and logs LocateExecutableStartType if required.</span>
 
 <span class="sd">        May set the executable_types data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1311,7 +1310,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_buffer_manager_creator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run, times and logs the buffer manager creator if required</span>
+<span class="sd">        Run, times and logs the buffer manager creator if required.</span>
 
 <span class="sd">        May set the buffer_manager data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1325,13 +1324,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_sdram_outgoing_partition_allocator</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the SDRAMOutgoingPartitionAllocator</span>
+<span class="sd">        Runs, times and logs the SDRAMOutgoingPartitionAllocator.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;SDRAM outgoing partition allocator&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">):</span>
             <span class="n">sdram_outgoing_partition_allocator</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_control_sync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_sync</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Control synchronization on board</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Control synchronization on board.</span>
 
 <span class="sd">        :param bool do_sync: Whether to enable synchronization</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1342,7 +1342,7 @@
 
     <span class="k">def</span> <span class="nf">_do_mapping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_run_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs all the algorithms in the mapping stage</span>
+<span class="sd">        Runs, times and logs all the algorithms in the mapping stage.</span>
 
 <span class="sd">        :param float total_run_time:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1398,7 +1398,7 @@
     <span class="c1"># Overridden by spy which adds placement_order</span>
     <span class="k">def</span> <span class="nf">_execute_graph_data_specification_writer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times, and logs the GraphDataSpecificationWriter</span>
+<span class="sd">        Runs, times, and logs the GraphDataSpecificationWriter.</span>
 
 <span class="sd">        Sets the dsg_targets data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1408,7 +1408,7 @@
 
     <span class="k">def</span> <span class="nf">_do_data_generation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, Times and logs the data generation</span>
+<span class="sd">        Runs, Times and logs the data generation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># set up timing</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_graph_data_specification_writer</span><span class="p">()</span>
@@ -1416,7 +1416,6 @@
     <span class="k">def</span> <span class="nf">_execute_routing_setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the RoutingSetup if required.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1429,7 +1428,6 @@
     <span class="k">def</span> <span class="nf">_execute_graph_binary_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Runs, times and logs the GraphBinaryGatherer if required.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Graph binary gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -1451,8 +1449,8 @@
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
 
-<span class="sd">        :return: CompressedRoutingTables</span>
-<span class="sd">        :rtype: MulticastRoutingTables</span>
+<span class="sd">        :return: Compressed routing tables</span>
+<span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Host based bitfield router compressor&quot;</span><span class="p">,</span>
@@ -1465,14 +1463,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_machine_bitfield_ordered_covering_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the MachineBitFieldOrderedCoveringCompressor</span>
+<span class="sd">        Runs, times and logs the MachineBitFieldOrderedCoveringCompressor.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Machine bitfield ordered covering compressor&quot;</span><span class="p">,</span>
@@ -1485,14 +1480,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_machine_bitfield_pair_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the MachineBitFieldPairRouterCompressor</span>
+<span class="sd">        Runs, times and logs the MachineBitFieldPairRouterCompressor.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">         &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                <span class="s2">&quot;Machine bitfield pair router compressor&quot;</span><span class="p">,</span>
@@ -1505,14 +1497,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_ordered_covering_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the OrderedCoveringCompressor</span>
+<span class="sd">        Runs, times and logs the OrderedCoveringCompressor.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
 
-<span class="sd">        :return: CompressedRoutingTables</span>
-<span class="sd">        :rtype: MulticastRoutingTables</span>
+<span class="sd">        :return: Compressed routing tables</span>
+<span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1525,14 +1517,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_ordered_covering_compression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ordered covering compressor on machine</span>
+<span class="sd">        Runs, times and logs the ordered covering compressor on machine.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Ordered covering compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1549,14 +1538,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_pair_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the PairCompressor</span>
+<span class="sd">        Runs, times and logs the PairCompressor.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
 
-<span class="sd">        :return: CompressedRoutingTable</span>
-<span class="sd">        :rtype: MulticastRoutingTables</span>
+<span class="sd">        :return: Compressed routing table</span>
+<span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="n">precompressed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_precompressed</span><span class="p">()</span>
@@ -1569,14 +1558,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_pair_compression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the pair compressor on machine</span>
+<span class="sd">        Runs, times and logs the pair compressor on machine.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
-
-<span class="sd">        :return: None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair on chip router compression&quot;</span><span class="p">,</span>
                       <span class="n">TimerWork</span><span class="o">.</span><span class="n">COMPRESSING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1593,14 +1579,14 @@
 
     <span class="k">def</span> <span class="nf">_execute_pair_unordered_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the CheckedUnorderedPairCompressor</span>
+<span class="sd">        Runs, times and logs the CheckedUnorderedPairCompressor.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            Calling of this method is based on the cfg compressor or</span>
 <span class="sd">            virtual_compressor value</span>
 
-<span class="sd">        :return: CompressedRoutingTables</span>
-<span class="sd">        :rtype: MulticastRoutingTables</span>
+<span class="sd">        :return: compressed routing tables</span>
+<span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Pair unordered compressor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1654,17 +1640,18 @@
 
     <span class="k">def</span> <span class="nf">_do_early_compression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Calls a compressor based on the name provided</span>
+<span class="sd">        Calls a compressor based on the name provided.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method is the entry point for adding a new compressor that</span>
 <span class="sd">             can or must run early.</span>
 
 <span class="sd">        :param str name: Name of a compressor</span>
-<span class="sd">        :raise ConfigurationException: if the name is not expected</span>
-<span class="sd">        :return: CompressedRoutingTables (likely to be None),</span>
+<span class="sd">        :return: CompressedRoutingTables (likely to be `None)`,</span>
 <span class="sd">            RouterCompressorProvenanceItems (may be an empty list)</span>
-<span class="sd">        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))</span>
+<span class="sd">        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables or</span>
+<span class="sd">            None, list(ProvenanceDataItem))</span>
+<span class="sd">        :raise ConfigurationException: if the name is not expected</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;MachineBitFieldOrderedCoveringCompressor&quot;</span><span class="p">:</span>
             <span class="k">return</span> \
@@ -1687,17 +1674,18 @@
 
     <span class="k">def</span> <span class="nf">_do_delayed_compression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">compressed</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        run compression that must be delayed until later</span>
+<span class="sd">        Run compression that must be delayed until later.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This method is the entry point for adding a new compressor that</span>
 <span class="sd">            can not run at the normal place</span>
 
 <span class="sd">        :param str name: Name of a compressor</span>
-<span class="sd">        :raise ConfigurationException: if the name is not expected</span>
-<span class="sd">        :return: CompressedRoutingTables (likely to be None),</span>
+<span class="sd">        :return: CompressedRoutingTables (likely to be `None`),</span>
 <span class="sd">            RouterCompressorProvenanceItems (may be an empty list)</span>
-<span class="sd">        :rtype: tuple(MulticastRoutingTables or None, list(ProvenanceDataItem))</span>
+<span class="sd">        :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables</span>
+<span class="sd">            or None, list(ProvenanceDataItem))</span>
+<span class="sd">        :raise ConfigurationException: if the name is not expected</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multicast_routes_loaded</span> <span class="ow">or</span> <span class="n">compressed</span><span class="p">:</span>
             <span class="c1"># Already compressed</span>
@@ -1717,10 +1705,10 @@
 
     <span class="k">def</span> <span class="nf">_execute_load_routing_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compressed</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the RoutingTableLoader if required</span>
+<span class="sd">        Runs, times and logs the RoutingTableLoader if required.</span>
 
 <span class="sd">        :param compressed:</span>
-<span class="sd">        :type compressed: MulticastRoutingTables or None</span>
+<span class="sd">        :type compressed: ~.MulticastRoutingTables or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span><span class="p">:</span>
             <span class="k">return</span>
@@ -1732,7 +1720,7 @@
 
     <span class="k">def</span> <span class="nf">_report_uncompressed_routing_table</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the router report from router tables if requested</span>
+<span class="sd">        Runs, times and logs the router report from router tables if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Uncompressed routing table report&quot;</span><span class="p">,</span>
@@ -1744,7 +1732,7 @@
 
     <span class="k">def</span> <span class="nf">_report_bit_field_compressor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the BitFieldCompressorReport if requested</span>
+<span class="sd">        Runs, times and logs the BitFieldCompressorReport if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Bitfield compressor report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1755,7 +1743,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_load_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs Load Fixed Routes is required</span>
+<span class="sd">        Runs, times and logs Load Fixed Routes if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Load fixed routes&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1767,8 +1755,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_system_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the execute_system_data_specs if required</span>
-
+<span class="sd">        Runs, times and logs the execute_system_data_specs if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Execute system data specification&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1778,7 +1765,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_load_system_executable_images</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the loading of exectuable images</span>
+<span class="sd">        Runs, times and logs the loading of exectuable images.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Load executable system Images&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1788,7 +1775,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_application_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the execute_application_data_specs if required</span>
+<span class="sd">        Runs, times and logs the execute_application_data_specs if required.</span>
 
 <span class="sd">        :return: map of placement and DSG data, and loaded data flag.</span>
 <span class="sd">        :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo</span>
@@ -1800,8 +1787,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_tags_from_machine_report</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Run, times and logs the TagsFromMachineReport if requested</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Run, times and logs the TagsFromMachineReport if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Tags from machine report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1814,7 +1800,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_load_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the Tags Loader if required</span>
+<span class="sd">        Runs, times and logs the Tags Loader if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO why: if graph_changed or data_changed:</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Tags Loader&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1824,14 +1810,12 @@
 
     <span class="k">def</span> <span class="nf">_do_extra_load_algorithms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs any extra load algorithms</span>
-
+<span class="sd">        Runs, times and logs any extra load algorithms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_report_memory_on_host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs MemoryMapOnHostReport is requested</span>
-
+<span class="sd">        Runs, times and logs MemoryMapOnHostReport if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Memory report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -1843,8 +1827,7 @@
 
     <span class="k">def</span> <span class="nf">_report_memory_on_chip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs MemoryMapOnHostChipReport is requested</span>
-
+<span class="sd">        Runs, times and logs MemoryMapOnHostChipReport if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Memory report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -1858,10 +1841,10 @@
     <span class="c1"># TODO consider different cfg flags</span>
     <span class="k">def</span> <span class="nf">_report_compressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compressed</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the compressor reports if requested</span>
+<span class="sd">        Runs, times and logs the compressor reports if requested.</span>
 
 <span class="sd">        :param compressed:</span>
-<span class="sd">        :type compressed: MulticastRoutingTables or None</span>
+<span class="sd">        :type compressed: ~.MulticastRoutingTables or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Compressor report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span>
@@ -1886,7 +1869,7 @@
 
     <span class="k">def</span> <span class="nf">_report_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the FixedRouteFromMachineReport is requested</span>
+<span class="sd">        Runs, times and logs the FixedRouteFromMachineReport if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Fixed route report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -1898,9 +1881,8 @@
             <span class="n">fixed_route_from_machine_report</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_execute_application_load_executables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; algorithms needed for loading the binaries to the SpiNNaker machine</span>
-
-<span class="sd">        :return:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Algorithms needed for loading the binaries to the SpiNNaker machine.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Load executable app images&quot;</span><span class="p">,</span>
                       <span class="n">TimerWork</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -1910,8 +1892,7 @@
 
     <span class="k">def</span> <span class="nf">_do_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the load algotithms</span>
-
+<span class="sd">        Runs, times and logs the load algorithms.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">LOADING</span><span class="p">)</span>
 
@@ -1960,12 +1941,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_dsg_region_reloader</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">            Runs, times and logs the DSGRegionReloader if required</span>
+<span class="sd">        Runs, times and logs the DSGRegionReloader if required.</span>
 
-<span class="sd">            Reload any parameters over the loaded data if we have already</span>
-<span class="sd">            run and not using a virtual board and the data hasn&#39;t already</span>
-<span class="sd">            been regenerated</span>
-
+<span class="sd">        Reload any parameters over the loaded data if we have already</span>
+<span class="sd">        run and not using a virtual board and the data hasn&#39;t already</span>
+<span class="sd">        been regenerated</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_ever</span><span class="p">():</span>
             <span class="k">return</span>
@@ -1978,8 +1958,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_graph_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and log the GraphProvenanceGatherer if requested</span>
-
+<span class="sd">        Runs, times and log the GraphProvenanceGatherer if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Graph provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
@@ -1988,7 +1967,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_placements_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and log the PlacementsProvenanceGatherer if requested</span>
+<span class="sd">        Runs, times and log the PlacementsProvenanceGatherer if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Placements provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">OTHER</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -2004,7 +1983,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_router_provenance_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and log the RouterProvenanceGatherer if requested</span>
+<span class="sd">        Runs, times and log the RouterProvenanceGatherer if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span>
                 <span class="s2">&quot;Router provenance gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
@@ -2016,7 +1995,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_profile_data_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ProfileDataGatherer if requested</span>
+<span class="sd">        Runs, times and logs the ProfileDataGatherer if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Profile data gatherer&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;read_provenance_data&quot;</span><span class="p">):</span>
@@ -2027,7 +2006,7 @@
 
     <span class="k">def</span> <span class="nf">_do_read_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and log the methods that gather provenance</span>
+<span class="sd">        Runs, times and log the methods that gather provenance.</span>
 
 <span class="sd">        :rtype: list(ProvenanceDataItem)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2038,8 +2017,7 @@
 
     <span class="k">def</span> <span class="nf">_report_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the energy report if requested</span>
-
+<span class="sd">        Runs, times and logs the energy report if requested.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Energy report&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">REPORT</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_cfg_false</span><span class="p">(</span><span class="s2">&quot;Reports&quot;</span><span class="p">,</span> <span class="s2">&quot;write_energy_report&quot;</span><span class="p">):</span>
@@ -2060,14 +2038,12 @@
 
     <span class="k">def</span> <span class="nf">_do_provenance_reports</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs any reports based on provenance</span>
-
+<span class="sd">        Runs any reports based on provenance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">_execute_clear_io_buf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ChipIOBufClearer if required</span>
-
+<span class="sd">        Runs, times and logs the ChipIOBufClearer if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_current_run_timesteps</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
@@ -2081,7 +2057,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_runtime_update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the runtime updater if required</span>
+<span class="sd">        Runs, times and logs the runtime updater if required.</span>
 
 <span class="sd">        :param int n_sync_steps:</span>
 <span class="sd">            The number of timesteps between synchronisations</span>
@@ -2097,7 +2073,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_create_database_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs Database Interface Creater</span>
+<span class="sd">        Runs, times and logs Database Interface Creator.</span>
 
 <span class="sd">        Sets the _database_file_path data object</span>
 
@@ -2111,7 +2087,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_create_notifiaction_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the creation of the Notification Protocol</span>
+<span class="sd">        Runs, times and logs the creation of the Notification Protocol.</span>
 
 <span class="sd">        Sets the notification_interface data object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2121,12 +2097,11 @@
 
     <span class="k">def</span> <span class="nf">_execute_runner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_sync_steps</span><span class="p">,</span> <span class="n">run_time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ApplicationRunner</span>
+<span class="sd">        Runs, times and logs the ApplicationRunner.</span>
 
 <span class="sd">        :param int n_sync_steps:</span>
 <span class="sd">            The number of timesteps between synchronisations</span>
 <span class="sd">        :param int run_time: the run duration in milliseconds.</span>
-<span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="n">FecTimer</span><span class="o">.</span><span class="n">APPLICATION_RUNNER</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2142,7 +2117,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_extract_iobuff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the ChipIOBufExtractor if required</span>
+<span class="sd">        Runs, times and logs the ChipIOBufExtractor if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Extract IO buff&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACTING</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2155,7 +2130,7 @@
 
     <span class="k">def</span> <span class="nf">_execute_buffer_extractor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the BufferExtractor if required</span>
+<span class="sd">        Runs, times and logs the BufferExtractor if required.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">FecTimer</span><span class="p">(</span><span class="s2">&quot;Buffer extractor&quot;</span><span class="p">,</span> <span class="n">TimerWork</span><span class="o">.</span><span class="n">EXTRACT_DATA</span><span class="p">)</span> <span class="k">as</span> <span class="n">timer</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">timer</span><span class="o">.</span><span class="n">skip_if_virtual_board</span><span class="p">():</span>
@@ -2165,7 +2140,7 @@
 
     <span class="k">def</span> <span class="nf">_do_extract_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Runs, times and logs the steps to extract data from the machine</span>
+<span class="sd">        Runs, times and logs the steps to extract data from the machine.</span>
 
 <span class="sd">        :param run_time: the run duration in milliseconds.</span>
 <span class="sd">        :type run_time: int or None</span>
@@ -2346,7 +2321,8 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.reset"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Code that puts the simulation back at time zero</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Puts the simulation back at time zero.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">RESETTING</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">is_ran_last</span><span class="p">():</span>
@@ -2377,8 +2353,8 @@
 
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">has_ipaddress</span><span class="p">():</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;general front end instance for machine &quot;</span> \
-                   <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_ipaddress</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;general front end instance for machine &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_ipaddress</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;general front end instance no machine set&quot;</span>
 
@@ -2425,7 +2401,6 @@
 <div class="viewcode-block" id="AbstractSpinnakerBase.stop"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        End running of the simulation.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">stopping</span><span class="p">()</span>
         <span class="n">FecTimer</span><span class="o">.</span><span class="n">start_category</span><span class="p">(</span><span class="n">TimerCategory</span><span class="o">.</span><span class="n">SHUTTING_DOWN</span><span class="p">)</span>
@@ -2458,16 +2433,14 @@
             <span class="n">application_finisher</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_do_stop_workflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :rtype: ~.PACMANAlgorithmExecutor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_execute_application_finisher</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_do_extract_from_machine</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">get_number_of_available_cores_on_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; The number of available cores on the machine after taking\</span>
-<span class="sd">            into account preallocated resources.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The number of available cores on the machine after taking</span>
+<span class="sd">        into account preallocated resources.</span>
 
 <span class="sd">        :return: number of available cores</span>
 <span class="sd">        :rtype: int</span>
@@ -2488,13 +2461,14 @@
         <span class="k">return</span> <span class="n">cores</span>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.stop_run"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.stop_run">[docs]</a>    <span class="k">def</span> <span class="nf">stop_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Request that the current infinite run stop.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Request that the current infinite run stop.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            This will need to be called from another thread as the infinite \</span>
+<span class="sd">            This will need to be called from another thread as the infinite</span>
 <span class="sd">            run call is blocking.</span>
 
-<span class="sd">        raises SpiNNUtilsException:</span>
+<span class="sd">        :raises SpiNNUtilsException:</span>
 <span class="sd">            If the stop_run was not expected in the current state.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Do not do start category here</span>
@@ -2508,7 +2482,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_state_condition</span><span class="o">.</span><span class="n">notify_all</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="AbstractSpinnakerBase.continue_simulation"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.continue_simulation">[docs]</a>    <span class="k">def</span> <span class="nf">continue_simulation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Continue a simulation that has been started in stepped mode</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Continue a simulation that has been started in stepped mode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sync_signal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_next_sync_signal</span><span class="p">()</span>
         <span class="n">transceiver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_writer</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>

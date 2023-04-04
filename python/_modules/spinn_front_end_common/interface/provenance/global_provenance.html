@@ -66,7 +66,8 @@
 
 
 <span class="k">class</span> <span class="nc">GlobalProvenance</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    .. note::</span>
 <span class="sd">        *Not thread safe on the same database file.*</span>
@@ -83,7 +84,8 @@
 
 <div class="viewcode-block" id="GlobalProvenance.get_global_provenace_path"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_global_provenace_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_global_provenace_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Get the path of the current provenance database of the last run</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the path of the current provenance database of the last run</span>
 
 <span class="sd">        .. warning::</span>
 <span class="sd">            Calling this method between start/reset and run may result in a</span>
@@ -107,7 +109,7 @@
 <span class="sd">        :type database_file: str or None</span>
 <span class="sd">        :param bool memory:</span>
 <span class="sd">            Flag to say unshared in-memory can be used.</span>
-<span class="sd">            Otherwise a None file will mean the default should be used</span>
+<span class="sd">            Otherwise a `None` file will mean the default should be used</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">memory</span><span class="p">:</span>
@@ -180,9 +182,9 @@
 <span class="sd">        :param str algorithm: Algorithm name</span>
 <span class="sd">        :param TimerWork work: Type of work being done</span>
 <span class="sd">        :param ~datetime.timedelta timedelta: Time to be recorded</span>
-<span class="sd">        :param skip_reason: The reason the algorthm was skipped or None if</span>
+<span class="sd">        :param skip_reason: The reason the algorithm was skipped or `None` if</span>
 <span class="sd">            it was not skipped</span>
-<span class="sd">        :tpye skip_reason: str or None</span>
+<span class="sd">        :type skip_reason: str or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time_taken</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="p">(</span><span class="n">timedelta</span><span class="o">.</span><span class="n">seconds</span> <span class="o">*</span> <span class="n">MICRO_TO_MILLISECOND_CONVERSION</span><span class="p">)</span> <span class="o">+</span>

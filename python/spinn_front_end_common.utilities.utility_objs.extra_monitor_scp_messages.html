@@ -102,7 +102,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.speedup_in_scp_commands.SpeedupInSCPCommands">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.speedup_in_scp_commands.</span></span><span class="sig-name descname"><span class="pre">SpeedupInSCPCommands</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/speedup_in_scp_commands.html#SpeedupInSCPCommands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.speedup_in_scp_commands.SpeedupInSCPCommands" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
-<p>SCP Command codes for data speed up in</p>
+<p>SCP Command codes for data speed up in.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.speedup_in_scp_commands.SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES">
 <span class="sig-name descname"><span class="pre">LOAD_APPLICATION_MC_ROUTES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">7</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.speedup_in_scp_commands.SpeedupInSCPCommands.LOAD_APPLICATION_MC_ROUTES" title="Permalink to this definition">¶</a></dt>
@@ -140,10 +140,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/clear_reinjection_queue_message.html#ClearReinjectionQueueMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ClearReinjectionQueueMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -170,10 +171,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/get_reinjection_status_message.html#GetReinjectionStatusMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -191,7 +193,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessageResponse.read_data_bytestring">
 <span class="sig-name descname"><span class="pre">read_data_bytestring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/get_reinjection_status_message.html#GetReinjectionStatusMessageResponse.read_data_bytestring"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.GetReinjectionStatusMessageResponse.read_data_bytestring" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads the remainder of the data following the header</p>
+<dd><p>Reads the remainder of the data following the header.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -213,7 +215,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</span></span><span class="sig-name descname"><span class="pre">LoadApplicationMCRoutesMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSCPRequest</span></code></p>
-<p>An SCP Request to write the application multicast routes into the        router.</p>
+<p>An SCP Request to write the application multicast routes into the router.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -226,10 +228,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_application_mc_routes_message.html#LoadApplicationMCRoutesMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadApplicationMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -256,10 +259,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/load_system_mc_routes_message.html#LoadSystemMCRoutesMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.LoadSystemMCRoutesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -273,7 +277,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ResetCountersMessage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</span></span><span class="sig-name descname"><span class="pre">ResetCountersMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ResetCountersMessage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSCPRequest</span></code></p>
-<p>An SCP Request to reset the statistics counters of the dropped packet        reinjection.</p>
+<p>An SCP Request to reset the statistics counters of the dropped packet
+reinjection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -286,10 +291,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ResetCountersMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/reset_counters_message.html#ResetCountersMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.ResetCountersMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -320,10 +326,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetReinjectionPacketTypesMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_reinjection_packet_types_message.html#SetReinjectionPacketTypesMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetReinjectionPacketTypesMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>
@@ -337,7 +344,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.</span></span><span class="sig-name descname"><span class="pre">SetRouterTimeoutMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_mantissa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout_exponent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSCPRequest</span></code></p>
-<p>An SCP Request to the extra monitor core to set the router timeout        for dropped packet reinjection.</p>
+<p>An SCP Request to the extra monitor core to set the router timeout
+for dropped packet reinjection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -353,10 +361,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage.get_scp_response">
 <span class="sig-name descname"><span class="pre">get_scp_response</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/extra_monitor_scp_messages/set_router_timeout_message.html#SetRouterTimeoutMessage.get_scp_response"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.SetRouterTimeoutMessage.get_scp_response" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an SCP response message to be used to process any response            received</p>
+<dd><p>Get an SCP response message to be used to process any response
+received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>An SCP response, or None if no response is required</p>
+<dd class="field-odd"><p>An SCP response, or <cite>None</cite> if no response is required</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>AbstractSCPResponse</p>

@@ -102,11 +102,12 @@
 
 
 <span class="k">class</span> <span class="nc">LiveEventConnection</span><span class="p">(</span><span class="n">DatabaseConnection</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A connection for receiving and sending live events from and to\</span>
-<span class="sd">        SpiNNaker.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A connection for receiving and sending live events from and to SpiNNaker.</span>
 
-<span class="sd">    Note that this class is intended to be potentially usable from another</span>
-<span class="sd">    process than the one that the simulator is present in.</span>
+<span class="sd">    .. note::</span>
+<span class="sd">        This class is intended to be potentially usable from another</span>
+<span class="sd">        process than the one that the simulator is present in.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s2">&quot;_atom_id_to_key&quot;</span><span class="p">,</span>
@@ -211,7 +212,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__init_callbacks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.add_init_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_init_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_init_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">init_callback</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a callback to be called to initialise a vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a callback to be called to initialise a vertex.</span>
 
 <span class="sd">        :param str label:</span>
 <span class="sd">            The label of the vertex to be notified about. Must be one of the</span>
@@ -227,7 +229,8 @@
 
 <div class="viewcode-block" id="LiveEventConnection.add_receive_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_receive_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_receive_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">live_event_callback</span><span class="p">,</span>
                              <span class="n">translate_key</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a callback for the reception of live events from a vertex</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a callback for the reception of live events from a vertex.</span>
 
 <span class="sd">        :param str label: The label of the vertex to be notified about.</span>
 <span class="sd">            Must be one of the vertices listed in the constructor</span>
@@ -241,13 +244,14 @@
 <span class="sd">            key should stay a key</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">label_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Receive callback </span><span class="si">{}</span><span class="s2"> registered to label </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">live_event_callback</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Receive callback </span><span class="si">{}</span><span class="s2"> registered to label </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">live_event_callback</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__live_event_callbacks</span><span class="p">[</span><span class="n">label_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">(</span><span class="n">live_event_callback</span><span class="p">,</span> <span class="n">translate_key</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.add_start_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_start_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">start_callback</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a callback for the start of the simulation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a callback for the start of the simulation.</span>
 
 <span class="sd">        :param start_callback: A function to be called when the start</span>
 <span class="sd">            message has been received. This function should take the label of</span>
@@ -264,7 +268,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">add_start_resume_callback</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">start_callback</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.add_start_resume_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_start_resume_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_start_resume_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">start_resume_callback</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a callback for the start and resume state of the simulation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a callback for the start and resume state of the simulation.</span>
 
 <span class="sd">        :param str label: the label of the function to be sent</span>
 <span class="sd">        :param start_resume_callback: A function to be called when the start</span>
@@ -272,12 +277,12 @@
 <span class="sd">            the label of the referenced vertex, and an instance of this</span>
 <span class="sd">            class, which can be used to send events.</span>
 <span class="sd">        :type start_resume_callback: callable(str, LiveEventConnection) -&gt; None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__start_resume_callbacks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">start_resume_callback</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.add_pause_stop_callback"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.add_pause_stop_callback">[docs]</a>    <span class="k">def</span> <span class="nf">add_pause_stop_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">pause_stop_callback</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Add a callback for the pause and stop state of the simulation</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a callback for the pause and stop state of the simulation.</span>
 
 <span class="sd">        :param str label: the label of the function to be sent</span>
 <span class="sd">        :param pause_stop_callback: A function to be called when the pause</span>
@@ -285,7 +290,6 @@
 <span class="sd">            label of the referenced  vertex, and an instance of this class,</span>
 <span class="sd">            which can be used to send events.</span>
 <span class="sd">        :type pause_stop_callback: callable(str, LiveEventConnection) -&gt; None</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__pause_stop_callbacks</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pause_stop_callback</span><span class="p">)</span></div>
 
@@ -411,8 +415,8 @@
     <span class="k">def</span> <span class="nf">__launch_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kind</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">callback</span><span class="p">):</span>
         <span class="n">thread</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span>
             <span class="n">target</span><span class="o">=</span><span class="n">callback</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="bp">self</span><span class="p">),</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> callback thread for live_event_connection </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">kind</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_port</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_ip_address</span><span class="p">))</span>
+            <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kind</span><span class="si">}</span><span class="s2"> callback thread for live_event_connection &quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_port</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_ip_address</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">))</span>
         <span class="n">thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">__do_start_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -542,10 +546,11 @@
     <span class="k">def</span> <span class="nf">__handle_unknown_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__error_keys</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__error_keys</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Received unexpected key </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Received unexpected key </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
 
 <div class="viewcode-block" id="LiveEventConnection.send_event"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event">[docs]</a>    <span class="k">def</span> <span class="nf">send_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">send_full_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send an event from a single atom</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send an event from a single atom.</span>
 
 <span class="sd">        :param str label:</span>
 <span class="sd">            The label of the vertex from which the event will originate</span>
@@ -558,7 +563,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">send_events</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">[</span><span class="n">atom_id</span><span class="p">],</span> <span class="n">send_full_keys</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_events"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events">[docs]</a>    <span class="k">def</span> <span class="nf">send_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_ids</span><span class="p">,</span> <span class="n">send_full_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send a number of events</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a number of events.</span>
 
 <span class="sd">        :param str label:</span>
 <span class="sd">            The label of the vertex from which the events will originate</span>
@@ -590,7 +596,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_event_with_payload"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_event_with_payload">[docs]</a>    <span class="k">def</span> <span class="nf">send_event_with_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_id</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send an event with a payload from a single atom</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send an event with a payload from a single atom.</span>
 
 <span class="sd">        :param str label:</span>
 <span class="sd">            The label of the vertex from which the event will originate</span>
@@ -600,7 +607,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">send_events_with_payloads</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">[(</span><span class="n">atom_id</span><span class="p">,</span> <span class="n">payload</span><span class="p">)])</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_events_with_payloads"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_events_with_payloads">[docs]</a>    <span class="k">def</span> <span class="nf">send_events_with_payloads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">atom_ids_and_payloads</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send a number of events with payloads</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send a number of events with payloads.</span>
 
 <span class="sd">        :param str label:</span>
 <span class="sd">            The label of the vertex from which the events will originate</span>
@@ -624,8 +632,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_send</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="LiveEventConnection.send_eieio_message"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.connections.html#spinn_front_end_common.utilities.connections.LiveEventConnection.send_eieio_message">[docs]</a>    <span class="k">def</span> <span class="nf">send_eieio_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send an EIEIO message (using one-way the live input) to the \</span>
-<span class="sd">            vertex with the given label.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send an EIEIO message (using one-way the live input) to the</span>
+<span class="sd">        vertex with the given label.</span>
 
 <span class="sd">        :param ~spinnman.messages.eieio.AbstractEIEIOMessage message:</span>
 <span class="sd">            The EIEIO message to send</span>

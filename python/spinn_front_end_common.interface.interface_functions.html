@@ -56,7 +56,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.</span></span><span class="sig-name descname"><span class="pre">Compression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">binary_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_text</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_register</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/host_no_bitfield_router_compression.html#Compression"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Compression algorithm implementation that uses a on-chip router        compressor in order to parallelise.</p>
+<p>Compression algorithm implementation that uses a on-chip router
+compressor in order to parallelise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -119,7 +120,7 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">machine_bit_field_ordered_covering_compressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compress_as_much_as_possible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/machine_bit_field_router_compressor.html#machine_bit_field_ordered_covering_compressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_ordered_covering_compressor" title="Permalink to this definition">¶</a></dt>
-<dd><p>compression with bit field and ordered covering</p>
+<dd><p>Compression with bit field and ordered covering.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to compress as much as possible</p>
@@ -133,7 +134,7 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">machine_bit_field_pair_router_compressor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">compress_as_much_as_possible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/machine_bit_field_router_compressor.html#machine_bit_field_pair_router_compressor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.machine_bit_field_pair_router_compressor" title="Permalink to this definition">¶</a></dt>
-<dd><p>compression with bit field and ordered covering</p>
+<dd><p>Compression with bit field pairing.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>compress_as_much_as_possible</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to compress as much as possible</p>
@@ -151,14 +152,14 @@ the exact same algorithm implemented in Python.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">FindApplicationChipsUsed</span></span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Builds a set of stats on how many chips were used for application        cores.</p>
+<p>Builds a set of stats on how many chips were used for application cores.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/interface_functions/find_application_chips_used.html#FindApplicationChipsUsed.__call__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.FindApplicationChipsUsed.__call__" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finds how many application chips there were and the cost on             each chip</p>
+<dd><p>Finds how many application chips there were and the cost on each chip</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placements</strong> (<em>Placements</em>) – placements</p>
+<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – placements</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>a tuple with 4 elements.</p>
@@ -187,7 +188,8 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.application_finisher">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">application_finisher</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.application_finisher" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles finishing the running of an application, collecting the        status of the cores that the application was running on.</p>
+<dd><p>Handles finishing the running of an application, collecting the
+status of the cores that the application was running on.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException" title="spinn_front_end_common.utilities.exceptions.ExecutableFailedToStopException"><strong>ExecutableFailedToStopException</strong></a> – </p>
@@ -198,7 +200,8 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.application_runner">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">application_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_until_complete</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.application_runner" title="Permalink to this definition">¶</a></dt>
-<dd><p>Ensures all cores are initialised correctly, ran, and completed        successfully.</p>
+<dd><p>Ensures all cores are initialised correctly, ran, and completed
+successfully.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -216,13 +219,15 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.chip_io_buf_clearer">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">chip_io_buf_clearer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_clearer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clears the logging output buffer of an application running on a        SpiNNaker machine.</p>
+<dd><p>Clears the logging output buffer of an application running on a
+SpiNNaker machine.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.chip_io_buf_extractor">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">chip_io_buf_extractor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.chip_io_buf_extractor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract the logging output buffers from the machine, and separates        lines based on their prefix.</p>
+<dd><p>Extract the logging output buffers from the machine, and separates
+lines based on their prefix.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>error_entries, warn_entries</p>
@@ -252,7 +257,8 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.compute_energy_used">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">compute_energy_used</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.compute_energy_used" title="Permalink to this definition">¶</a></dt>
-<dd><p>This algorithm does the actual work of computing energy used by a        simulation (or other application) running on SpiNNaker.</p>
+<dd><p>This algorithm does the actual work of computing energy used by a
+simulation (or other application) running on SpiNNaker.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.PowerUsed" title="spinn_front_end_common.utilities.utility_objs.PowerUsed">PowerUsed</a></p>
@@ -263,7 +269,7 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.create_notification_protocol">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">create_notification_protocol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.create_notification_protocol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds the notification protocol for GUI and external device         interaction.</p>
+<dd><p>Builds the notification protocol for GUI and external device interaction.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -271,13 +277,13 @@ the exact same algorithm implemented in Python.</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">database_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">runtime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.database_interface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>tags</strong> (<em>Tags</em>) – </p>
+<dd class="field-odd"><p><strong>runtime</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Database interface, where the database is located</p>
+<dd class="field-even"><p>where the database is located</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(DatabaseInterface, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -311,7 +317,7 @@ the exact same algorithm implemented in Python.</p>
 <dd><p>Extracts binaries to be executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ExecutableTargets</p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -321,10 +327,10 @@ the exact same algorithm implemented in Python.</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_data_specification_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_data_specification_writer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><em>Placement</em><em>)</em>) – the optional order in which placements should be examined</p>
+<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – the optional order in which placements should be examined</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>DataSpecificationTargets</p>
+<dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase" title="spinn_front_end_common.interface.ds.DsSqlliteDatabase">DsSqlliteDatabase</a></p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If the DSG asks to use more SDRAM than is available.</p>
@@ -341,7 +347,8 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.hbp_allocator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">hbp_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">total_run_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.hbp_allocator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Request a machine from the HBP remote access server that will fit        a number of chips.</p>
+<dd><p>Request a machine from the HBP remote access server that will fit
+a number of chips.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>total_run_time</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The total run time to request</p>
@@ -356,7 +363,7 @@ boot port, allocation controller</p>
 <a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController">MachineAllocationController</a>)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>PacmanConfigurationException</strong> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman/#pacman.exceptions.PacmanConfigurationException" title="(in PACMAN v6.0)"><strong>PacmanConfigurationException</strong></a> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
 </dd>
 </dl>
 </dd></dl>
@@ -364,13 +371,13 @@ boot port, allocation controller</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.host_based_bit_field_router_compressor">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">host_based_bit_field_router_compressor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.host_based_bit_field_router_compressor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Entry point when using the PACMANAlgorithmExecutor</p>
+<dd><p>Entry point when using the PACMANAlgorithmExecutor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>compressed routing table entries</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><em>MulticastRoutingTables</em></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -385,7 +392,8 @@ boot port, allocation controller</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">insert_extra_monitor_vertices_to_graphs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inserts the extra monitor vertices into the graph that correspond to        the extra monitor cores required.</p>
+<dd><p>Inserts the extra monitor vertices into the graph that correspond to
+the extra monitor cores required.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>vertex to Ethernet connection map,
@@ -404,7 +412,8 @@ vertex_to_chip_map</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.load_app_images">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">load_app_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.load_app_images" title="Permalink to this definition">¶</a></dt>
-<dd><p>Go through the executable targets and load each binary to everywhere         and then send a start request to the cores that actually use it.</p>
+<dd><p>Go through the executable targets and load each binary to everywhere
+and then send a start request to the cores that actually use it.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -421,13 +430,14 @@ vertex_to_chip_map</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.load_sys_images">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">load_sys_images</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.load_sys_images" title="Permalink to this definition">¶</a></dt>
-<dd><p>Go through the executable targets and load each binary to everywhere         and then send a start request to the cores that actually use it.</p>
+<dd><p>Go through the executable targets and load each binary to everywhere
+and then send a start request to the cores that actually use it.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.local_tdma_builder">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">local_tdma_builder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.local_tdma_builder" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds a localised TDMA</p>
+<dd><p>Builds a localised TDMA.</p>
 <p>Builds a localised TDMA which allows a number of machine vertices
 of the same application vertex to fire at the same time. Ensures that
 other application vertices are not firing at the same time. Verifies if
@@ -497,7 +507,7 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 <li><p><strong>board_version</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the version of the boards being used within the machine
 (1, 2, 3, 4 or 5)</p></li>
 <li><p><strong>auto_detect_bmp</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the BMP should be automatically determined</p></li>
-<li><p><strong>scamp_connection_data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>) or </em><em>None</em>) – Job.connection dict,a String SC&amp;MP connection data or None</p></li>
+<li><p><strong>scamp_connection_data</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>) or </em><em>None</em>) – Job.connection dict, a String SC&amp;MP connection data or <cite>None</cite></p></li>
 <li><p><strong>reset_machine_on_start_up</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
 <li><p><strong>allocation_controller</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController"><em>MachineAllocationController</em></a>) – The allocation controller; in some cases, we delegate the creation of
 the transceiver to it.</p></li>
@@ -516,17 +526,14 @@ the transceiver to it.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">placements_provenance_gatherer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_placements</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets provenance information from placements</p>
+<dd><p>Gets provenance information from placements.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_placements</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of placements to gather</p></li>
-<li><p><strong>placements</strong> (<em>iterator</em><em>(</em><em>Placement</em><em>)</em>) – The placements of the vertices to gather data form.
-May not be all placements so dont use View</p></li>
+<li><p><strong>placements</strong> (<em>iterator</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – The placements of the vertices to gather data form.
+May not be all placements so don’t use View</p></li>
 </ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p></p>
 </dd>
 </dl>
 </dd></dl>
@@ -534,7 +541,7 @@ May not be all placements so dont use View</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.profile_data_gatherer">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">profile_data_gatherer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.profile_data_gatherer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets all the profiling data recorded by vertices and writes it to        files.</p>
+<dd><p>Gets all the profiling data recorded by vertices and writes it to files.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -543,7 +550,7 @@ May not be all placements so dont use View</p></li>
 <dd><p>Reads compressed routing tables from a SpiNNaker machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>MulticastRoutingTables</em></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -551,7 +558,7 @@ May not be all placements so dont use View</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.reload_dsg_regions">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">reload_dsg_regions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.reload_dsg_regions" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reloads DSG regions where needed</p>
+<dd><p>Reloads DSG regions where needed.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -562,7 +569,11 @@ May not be all placements so dont use View</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.routing_setup">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">routing_setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.routing_setup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialises the routers. Note that this does not load any routes into    them.</p>
+<dd><p>Initialises the routers.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This does not load any routes into them.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p>
@@ -576,10 +587,7 @@ May not be all placements so dont use View</p></li>
 <dd><p>Loads routes into initialised routers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>router_tables</strong> (<em>MulticastRoutingTables</em>) – </p></li>
-<li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-</ul>
+<dd class="field-odd"><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -592,7 +600,8 @@ May not be all placements so dont use View</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.spalloc_allocator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">spalloc_allocator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bearer_token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3.8/library/typing.html#typing.Tuple" title="(in Python v3.8)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><span class="pre">bool</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/typing.html#typing.Dict" title="(in Python v3.8)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.8/library/typing.html#typing.Tuple" title="(in Python v3.8)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3.8/library/constants.html#None" title="(in Python v3.8)"><span class="pre">None</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController"><span class="pre">MachineAllocationController</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.spalloc_allocator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Request a machine from a SPALLOC server that will fit the given        number of chips.</p>
+<dd><p>Request a machine from a SPALLOC server that will fit the given
+number of chips.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>bearer_token</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The bearer token to use</p>
@@ -611,13 +620,13 @@ auto-detect BMP flag, board address map, allocation controller</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.split_lpg_vertices">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">split_lpg_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system_placements</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.split_lpg_vertices" title="Permalink to this definition">¶</a></dt>
-<dd><p>Split any LPG vertices found</p>
+<dd><p>Split any LPG vertices found.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>app_graph</strong> (<em>ApplictiongGraph</em>) – The application graph</p></li>
+<li><p><strong>app_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – The application graph</p></li>
 <li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
-<li><p><strong>system_placements</strong> (<em>Placements</em>) – exiting placements to be added to</p></li>
+<li><p><strong>system_placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – existing placements to be added to</p></li>
 </ul>
 </dd>
 </dl>
@@ -626,14 +635,15 @@ auto-detect BMP flag, board address map, allocation controller</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">system_multicast_routing_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates routing table entries used by the data in processes with the        extra monitor cores.</p>
+<dd><p>Generates routing table entries used by the data in processes with the
+extra monitor cores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>routing tables, destination-to-key map,
 board-locn-to-timeout-key map</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(MulticastRoutingTables,
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>,
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>

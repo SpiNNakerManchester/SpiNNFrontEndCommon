@@ -62,14 +62,16 @@
 
 <div class="viewcode-block" id="generate_routing_compression_checker_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.routing_compression_report.generate_routing_compression_checker_report">[docs]</a><span class="k">def</span> <span class="nf">generate_routing_compression_checker_report</span><span class="p">(</span>
         <span class="n">routing_tables</span><span class="p">,</span> <span class="n">compressed_routing_tables</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Make a full report of how the compressed covers all routes in the\</span>
-<span class="sd">        and uncompressed routing table</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a full report of how the compressed covers all routes in the</span>
+<span class="sd">    and uncompressed routing table.</span>
 
 <span class="sd">    :param str report_folder: the folder to store the resulting report</span>
-<span class="sd">    :param MulticastRoutingTables routing_tables: the original routing tables</span>
-<span class="sd">    :param MulticastRoutingTables compressed_routing_tables:</span>
-<span class="sd">        the compressed routing tables</span>
-<span class="sd">    :rtype: None</span>
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
+<span class="sd">        the original routing tables</span>
+<span class="sd">    :param compressed_routing_tables: the compressed routing tables</span>
+<span class="sd">    :type compressed_routing_tables:</span>
+<span class="sd">        ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span>
@@ -81,7 +83,7 @@
                 <span class="n">routing_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">,</span>
                 <span class="s2">&quot;Generating routing compression checker report&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;If this table did not raise an exception compression &quot;</span>
-                    <span class="s2">&quot;was fully checked. </span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="s2">&quot;was fully checked.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;The format is:</span><span class="se">\n</span><span class="s2">&quot;</span>
                     <span class="s2">&quot;Chip x, y</span><span class="se">\n</span><span class="s2">&quot;</span>
                     <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> Uncompressed Route</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -90,17 +92,18 @@
             <span class="k">for</span> <span class="n">original</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">routing_tables</span><span class="o">.</span><span class="n">routing_tables</span><span class="p">):</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">x</span>
                 <span class="n">y</span> <span class="o">=</span> <span class="n">original</span><span class="o">.</span><span class="n">y</span>
-                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Chip: X:</span><span class="si">{}</span><span class="s2"> Y:</span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Chip: X:</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2"> Y:</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
                 <span class="n">compressed_table</span> <span class="o">=</span> <span class="n">compressed_routing_tables</span><span class="o">.</span>\
                     <span class="n">get_routing_table_for_chip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
                 <span class="n">compressed_dict</span> <span class="o">=</span> <span class="n">codify_table</span><span class="p">(</span><span class="n">compressed_table</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">o_route</span> <span class="ow">in</span> <span class="n">original</span><span class="o">.</span><span class="n">multicast_routing_entries</span><span class="p">:</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">format_route</span><span class="p">(</span><span class="n">o_route</span><span class="p">)))</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">format_route</span><span class="p">(</span><span class="n">o_route</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="n">compare_route</span><span class="p">(</span><span class="n">o_route</span><span class="p">,</span> <span class="n">compressed_dict</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_router_comparison_reports: Can&#39;t open file&quot;</span>
-                         <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate router comparison reports: &quot;</span>
+            <span class="s2">&quot;Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
 </pre></div>
 
             <div class="clearer"></div>

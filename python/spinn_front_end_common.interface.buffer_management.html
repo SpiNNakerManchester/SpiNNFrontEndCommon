@@ -136,11 +136,9 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_data_constant_size">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.recording_utilities.</span></span><span class="sig-name descname"><span class="pre">get_recording_data_constant_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_recording_regions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/recording_utilities.html#get_recording_data_constant_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_data_constant_size" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Get the size of the headers that are stored in the SDRAM spaces</dt><dd><p>allocated during recording_initialise, and so do not need to be
-reserved with DSG (but need to be accounted for in SDRAM calculations)</p>
-</dd>
-</dl>
+<dd><p>Get the size of the headers that are stored in the SDRAM spaces
+allocated during recording_initialise, and so do not need to be
+reserved with DSG (but need to be accounted for in SDRAM calculations).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>n_recording_regions</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of regions that can be recorded</p>
@@ -154,7 +152,7 @@ reserved with DSG (but need to be accounted for in SDRAM calculations)</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_array">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.buffer_management.recording_utilities.</span></span><span class="sig-name descname"><span class="pre">get_recording_header_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recorded_region_sizes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/recording_utilities.html#get_recording_header_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.recording_utilities.get_recording_header_array" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get data to be written for the recording header</p>
+<dd><p>Get data to be written for the recording header.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>recorded_region_sizes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – A list of sizes of each region to be recorded.
@@ -209,11 +207,12 @@ sizes of the regions to be stored.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement">
 <span class="sig-name descname"><span class="pre">get_data_by_placement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recording_region_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.get_data_by_placement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.get_data_by_placement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the data container for all the data retrieved            during the simulation from a specific region area of a core.</p>
+<dd><p>Get the data container for all the data retrieved
+during the simulation from a specific region area of a core.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>placement</strong> (<em>Placement</em>) – the placement to get the data from</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement to get the data from</p></li>
 <li><p><strong>recording_region_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – desired recording data region</p></li>
 </ul>
 </dd>
@@ -241,7 +240,8 @@ simulation, and a flag indicating if any data was missing</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.buffer_management.BufferManager.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/buffer_management/buffer_manager.html#BufferManager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.buffer_management.BufferManager.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Resets the buffered regions to start transmitting from the            beginning of its expected regions and clears the buffered out            data files.</p>
+<dd><p>Resets the buffered regions to start transmitting from the beginning
+of its expected regions and clears the buffered out data files.</p>
 </dd></dl>
 
 <dl class="py method">

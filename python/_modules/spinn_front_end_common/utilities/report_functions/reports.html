@@ -87,10 +87,9 @@
 
 
 <div class="viewcode-block" id="tag_allocator_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.tag_allocator_report">[docs]</a><span class="k">def</span> <span class="nf">tag_allocator_report</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reports the tags that are being used by the tool chain for this\</span>
-<span class="sd">        simulation</span>
-
-<span class="sd">    :rtype: None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reports the tags that are being used by the tool chain for this</span>
+<span class="sd">    simulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tag_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_TAGS_FILENAME</span><span class="p">)</span>
@@ -105,22 +104,22 @@
             <span class="k">for</span> <span class="n">reverse_ip_tag</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">tag_infos</span><span class="o">.</span><span class="n">reverse_ip_tags</span><span class="p">):</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">reverse_ip_tag</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Generate_tag_report: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for &quot;</span>
-                     <span class="s2">&quot;writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="s2">&quot;Generate tag report: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="placer_reports_with_application_graph"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.placer_reports_with_application_graph">[docs]</a><span class="k">def</span> <span class="nf">placer_reports_with_application_graph</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reports that can be produced from placement given a application\</span>
-<span class="sd">        graph&#39;s existence</span>
-
-<span class="sd">    :rtype: None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reports that can be produced from placement given a application</span>
+<span class="sd">    graph&#39;s existence.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">placement_report_with_application_graph_by_vertex</span><span class="p">()</span>
     <span class="n">placement_report_with_application_graph_by_core</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="router_summary_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_summary_report">[docs]</a><span class="k">def</span> <span class="nf">router_summary_report</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generates a text file of routing summaries</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a text file of routing summaries.</span>
 
 <span class="sd">    :rtype: RouterSummary</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -133,9 +132,10 @@
 
 
 <div class="viewcode-block" id="router_compressed_summary_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_compressed_summary_report">[docs]</a><span class="k">def</span> <span class="nf">router_compressed_summary_report</span><span class="p">(</span><span class="n">routing_tables</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generates a text file of routing summaries</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a text file of routing summaries.</span>
 
-<span class="sd">    :param MulticastRoutingTables routing_tables:</span>
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
 <span class="sd">        The in-operation COMPRESSED routing tables.</span>
 <span class="sd">    :rtype: RouterSummary</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -150,7 +150,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param str file_name:</span>
 <span class="sd">    :param ~spinn_utilities.progress_bar.Progress progress:</span>
-<span class="sd">    :param MulticastRoutingTables routing_tables:</span>
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
 <span class="sd">        The compressed or uncompressed tables being reported</span>
 <span class="sd">    :return: RouterSummary</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -180,11 +180,11 @@
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">entry</span><span class="o">.</span><span class="n">processor_ids</span><span class="p">:</span>
                             <span class="n">link_only</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="n">spinnaker_routes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">convert</span><span class="p">(</span><span class="n">entry</span><span class="p">))</span>
-                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> entries of which </span><span class="si">{}</span><span class="s2"> are &quot;</span>
-                            <span class="s2">&quot;defaultable and </span><span class="si">{}</span><span class="s2"> link only with </span><span class="si">{}</span><span class="s2"> unique &quot;</span>
-                            <span class="s2">&quot;spinnaker routes</span><span class="se">\n</span><span class="s2">&quot;</span>
-                            <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">entries</span><span class="p">,</span> <span class="n">defaultable</span><span class="p">,</span> <span class="n">link_only</span><span class="p">,</span>
-                                      <span class="nb">len</span><span class="p">(</span><span class="n">spinnaker_routes</span><span class="p">)))</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Chip </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has </span><span class="si">{</span><span class="n">entries</span><span class="si">}</span><span class="s2"> entries of which &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">defaultable</span><span class="si">}</span><span class="s2"> are defaultable and </span><span class="si">{</span><span class="n">link_only</span><span class="si">}</span><span class="s2"> link &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;only with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">spinnaker_routes</span><span class="p">)</span><span class="si">}</span><span class="s2"> unique spinnaker &quot;</span>
+                        <span class="s2">&quot;routes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="n">total_entries</span> <span class="o">+=</span> <span class="n">entries</span>
                     <span class="n">max_entries</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_entries</span><span class="p">,</span> <span class="n">entries</span><span class="p">)</span>
                     <span class="n">max_none_defaultable</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
@@ -193,24 +193,24 @@
                     <span class="n">max_spinnaker_routes</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
                         <span class="n">max_spinnaker_routes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">spinnaker_routes</span><span class="p">))</span>
 
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Total entries </span><span class="si">{}</span><span class="s2">, max per chip </span><span class="si">{}</span><span class="s2"> max none &quot;</span>
-                    <span class="s2">&quot;defaultable </span><span class="si">{}</span><span class="s2"> max link only </span><span class="si">{}</span><span class="s2"> &quot;</span>
-                    <span class="s2">&quot;max unique spinnaker routes </span><span class="si">{}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">total_entries</span><span class="p">,</span> <span class="n">max_entries</span><span class="p">,</span> <span class="n">max_none_defaultable</span><span class="p">,</span>
-                        <span class="n">max_link_only</span><span class="p">,</span> <span class="n">max_spinnaker_routes</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total entries </span><span class="si">{</span><span class="n">total_entries</span><span class="si">}</span><span class="s2">, max per chip </span><span class="si">{</span><span class="n">max_entries</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;max non-defaultable </span><span class="si">{</span><span class="n">max_none_defaultable</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;max link only </span><span class="si">{</span><span class="n">max_link_only</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;max unique spinnaker routes </span><span class="si">{</span><span class="n">max_spinnaker_routes</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">RouterSummary</span><span class="p">(</span>
                 <span class="n">total_entries</span><span class="p">,</span> <span class="n">max_entries</span><span class="p">,</span> <span class="n">max_none_defaultable</span><span class="p">,</span>
                 <span class="n">max_link_only</span><span class="p">,</span> <span class="n">max_spinnaker_routes</span><span class="p">)</span>
 
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_routing summary reports: &quot;</span>
-                         <span class="s2">&quot;Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate routing summary report: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span>
+            <span class="n">file_name</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="router_report_from_paths"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_report_from_paths">[docs]</a><span class="k">def</span> <span class="nf">router_report_from_paths</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generates a text file of routing paths</span>
-
-<span class="sd">    :rtype: None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a text file of routing paths.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_ROUTING_FILENAME</span><span class="p">)</span>
     <span class="n">time_date_string</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%c</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -228,8 +228,9 @@
             <span class="k">for</span> <span class="n">partition</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">partitions</span><span class="p">):</span>
                 <span class="n">_write_one_router_partition_report</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">partition</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_routing_reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for &quot;</span>
-                         <span class="s2">&quot;writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate routing reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span>
+            <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_write_one_router_partition_report</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">partition</span><span class="p">):</span>
@@ -248,21 +249,20 @@
             <span class="n">source_placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">m_vertex</span><span class="p">)</span>
             <span class="n">r_info</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_routing_info_from_pre_vertex</span><span class="p">(</span>
                 <span class="n">m_vertex</span><span class="p">,</span> <span class="n">partition</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
-            <span class="n">path</span> <span class="o">=</span> <span class="n">_search_route</span><span class="p">(</span>
-                <span class="n">source_placement</span><span class="p">,</span> <span class="n">r_info</span><span class="o">.</span><span class="n">key_and_mask</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    Edge &#39;</span><span class="si">{}</span><span class="s2">&#39;, from vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39; to vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">edge</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">edge</span><span class="o">.</span><span class="n">post_vertex</span><span class="o">.</span><span class="n">label</span><span class="p">))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">_search_route</span><span class="p">(</span><span class="n">source_placement</span><span class="p">,</span> <span class="n">r_info</span><span class="o">.</span><span class="n">key_and_mask</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;    Edge &#39;</span><span class="si">{</span><span class="n">edge</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;from vertex: &#39;</span><span class="si">{</span><span class="n">edge</span><span class="o">.</span><span class="n">pre_vertex</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;to vertex: &#39;</span><span class="si">{</span><span class="n">edge</span><span class="o">.</span><span class="n">post_vertex</span><span class="o">.</span><span class="n">label</span><span class="si">}</span><span class="s2">&#39;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="c1"># End one entry:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="partitioner_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.partitioner_report">[docs]</a><span class="k">def</span> <span class="nf">partitioner_report</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generate report on the placement of vertices onto cores.</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate report on the partitioning of vertices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># Cycle through all vertices, and for each cycle through its vertices.</span>
     <span class="c1"># For each vertex, describe its core mapping.</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -281,22 +281,23 @@
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_vertices</span><span class="p">()):</span>
                 <span class="n">_write_one_vertex_partition</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for&quot;</span>
-                         <span class="s2">&quot; writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate partitioning reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span>
+            <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_write_one_vertex_partition</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param ~io.FileIO f:</span>
-<span class="sd">    :param ApplicationVertex vertex:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationVertex vertex:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">vertex_name</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
     <span class="n">vertex_model</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="n">num_atoms</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">n_atoms</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;**** Vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex_name</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex_model</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Pop size: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_atoms</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Machine Vertices: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;**** Vertex: &#39;</span><span class="si">{</span><span class="n">vertex_name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="n">vertex_model</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pop size: </span><span class="si">{</span><span class="n">num_atoms</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Machine Vertices:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Sort by slice and then by label</span>
     <span class="n">machine_vertices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">machine_vertices</span><span class="p">,</span>
@@ -309,10 +310,9 @@
 
 
 <div class="viewcode-block" id="placement_report_with_application_graph_by_vertex"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_vertex">[docs]</a><span class="k">def</span> <span class="nf">placement_report_with_application_graph_by_vertex</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generate report on the placement of vertices onto cores by vertex.</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate report on the placement of vertices onto cores by vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># Cycle through all vertices, and for each cycle through its vertices.</span>
     <span class="c1"># For each vertex, describe its core mapping.</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -331,21 +331,22 @@
             <span class="k">for</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_vertices</span><span class="p">()):</span>
                 <span class="n">_write_one_vertex_application_placement</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for&quot;</span>
-                         <span class="s2">&quot; writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate placement reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span>
+            <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_write_one_vertex_application_placement</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param ~io.FileIO f:</span>
-<span class="sd">    :param ApplicationVertex vertex:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationVertex vertex:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">vertex_name</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
     <span class="n">vertex_model</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
     <span class="n">num_atoms</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">n_atoms</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;**** Vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex_name</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Model: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex_model</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Pop size: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_atoms</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;**** Vertex: &#39;</span><span class="si">{</span><span class="n">vertex_name</span><span class="si">}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model: </span><span class="si">{</span><span class="n">vertex_model</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pop size: </span><span class="si">{</span><span class="n">num_atoms</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Machine Vertices: </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># Sort by slice and then by label</span>
@@ -367,16 +368,14 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">cur_placement</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_placement_of_vertex</span><span class="p">(</span><span class="n">sv</span><span class="p">)</span>
             <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">cur_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cur_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cur_placement</span><span class="o">.</span><span class="n">p</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  Slice </span><span class="si">{}</span><span class="s2"> on core (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">) </span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sv</span><span class="o">.</span><span class="n">vertex_slice</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Slice </span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">vertex_slice</span><span class="si">}</span><span class="s2"> on core (</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">) </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="placement_report_with_application_graph_by_core"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.placement_report_with_application_graph_by_core">[docs]</a><span class="k">def</span> <span class="nf">placement_report_with_application_graph_by_core</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generate report on the placement of vertices onto cores by core.</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate report on the placement of vertices onto cores by core.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># File 2: Placement by core.</span>
     <span class="c1"># Cycle through all chips and by all cores within each chip.</span>
     <span class="c1"># For each core, display what is held on it.</span>
@@ -397,23 +396,23 @@
             <span class="k">for</span> <span class="n">chip</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">machine</span><span class="o">.</span><span class="n">chips</span><span class="p">):</span>
                 <span class="n">_write_one_chip_application_placement</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">chip</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for &quot;</span>
-                         <span class="s2">&quot;writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate_placement_reports: Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span>
+            <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_write_one_chip_application_placement</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">chip</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param ~io.FileIO f:</span>
 <span class="sd">    :param ~spinn_machine.Chip chip:</span>
-<span class="sd">    :param Placements placements:</span>
+<span class="sd">    :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">written_header</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">total_sdram</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">for</span> <span class="n">placement</span> <span class="ow">in</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placements_on_core</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">written_header</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;**** Chip: (</span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Application cores: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">processors</span><span class="p">))))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;**** Chip: (</span><span class="si">{</span><span class="n">chip</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">chip</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Application cores: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">chip</span><span class="o">.</span><span class="n">processors</span><span class="p">))</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">written_header</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">pro_id</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span>
         <span class="n">vertex</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span>
@@ -424,8 +423,8 @@
             <span class="n">vertex_atoms</span> <span class="o">=</span> <span class="n">app_vertex</span><span class="o">.</span><span class="n">n_atoms</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  Processor </span><span class="si">{}</span><span class="s2">: Vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39;, pop size: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">pro_id</span><span class="p">,</span> <span class="n">vertex_label</span><span class="p">,</span> <span class="n">vertex_atoms</span><span class="p">))</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;              Slice on this core: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;              Slice on this core: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">vertex</span><span class="o">.</span><span class="n">vertex_slice</span><span class="p">))</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;              Model: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vertex_model</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;  Processor </span><span class="si">{}</span><span class="s2">: System Vertex: &#39;</span><span class="si">{}</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -448,9 +447,8 @@
 
 
 <div class="viewcode-block" id="sdram_usage_report_per_chip"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.sdram_usage_report_per_chip">[docs]</a><span class="k">def</span> <span class="nf">sdram_usage_report_per_chip</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Reports the SDRAM used per chip</span>
-
-<span class="sd">    :rtype: None</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reports the SDRAM used per chip.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_SDRAM_FILENAME</span><span class="p">)</span>
     <span class="n">n_placements</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_n_placements</span><span class="p">()</span>
@@ -487,7 +485,7 @@
 <span class="sd">    :param bool end_progress:</span>
 <span class="sd">    :param bool details: If True will get costs printed by regions</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Based on </span><span class="si">{}</span><span class="s2"> timesteps</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timesteps</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Based on </span><span class="si">{</span><span class="n">timesteps</span><span class="si">}</span><span class="s2"> timesteps</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">used_sdram_by_chip</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">placements</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">iterate_placemements</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
@@ -498,7 +496,7 @@
         <span class="k">if</span> <span class="n">details</span><span class="p">:</span>
             <span class="n">vertex_sdram</span><span class="o">.</span><span class="n">report</span><span class="p">(</span>
                 <span class="n">timesteps</span><span class="o">=</span><span class="n">timesteps</span><span class="p">,</span>
-                <span class="n">preamble</span><span class="o">=</span><span class="s2">&quot;core (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">target</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+                <span class="n">preamble</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;core (</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
                 <span class="s2">&quot;SDRAM reqs for core (</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">,</span><span class="si">{}</span><span class="s2">) is </span><span class="si">{}</span><span class="s2"> KB (</span><span class="si">{}</span><span class="s2"> bytes) for </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
@@ -526,9 +524,9 @@
 
 
 <div class="viewcode-block" id="routing_info_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.routing_info_report">[docs]</a><span class="k">def</span> <span class="nf">routing_info_report</span><span class="p">(</span><span class="n">extra_allocations</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Generates a report which says which keys is being allocated to each\</span>
-<span class="sd">        vertex</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates a report which says which keys is being allocated to each</span>
+<span class="sd">    vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_VIRTKEY_FILENAME</span><span class="p">)</span>
     <span class="n">routing_infos</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_routing_infos</span><span class="p">()</span>
@@ -551,9 +549,9 @@
 <span class="k">def</span> <span class="nf">_write_vertex_virtual_keys</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">pre_vertex</span><span class="p">,</span> <span class="n">part_id</span><span class="p">,</span> <span class="n">routing_infos</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    :param ~io.FileIO f:</span>
-<span class="sd">    :param ApplicationVertex pre_vertex:</span>
+<span class="sd">    :param ~pacman.model.graphs.application.ApplicationVertex pre_vertex:</span>
 <span class="sd">    :param str part_id:</span>
-<span class="sd">    :param RoutingInfo routing_infos:</span>
+<span class="sd">    :param ~pacman.model.routing_info.RoutingInfo routing_infos:</span>
 <span class="sd">    :param ~spinn_utilities.progress_bar.ProgressBar progress:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rinfo</span> <span class="o">=</span> <span class="n">routing_infos</span><span class="o">.</span><span class="n">get_routing_info_from_pre_vertex</span><span class="p">(</span>
@@ -561,7 +559,7 @@
     <span class="c1"># Might be None if the partition has no outgoing vertices e.g. a Poisson</span>
     <span class="c1"># source replaced by SDRAM comms</span>
     <span class="k">if</span> <span class="n">rinfo</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Vertex: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pre_vertex</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Vertex: </span><span class="si">{</span><span class="n">pre_vertex</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;    Partition: </span><span class="si">{}</span><span class="s2">, Routing Info: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">part_id</span><span class="p">,</span> <span class="n">rinfo</span><span class="o">.</span><span class="n">key_and_mask</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">m_vertex</span> <span class="ow">in</span> <span class="n">pre_vertex</span><span class="o">.</span><span class="n">splitter</span><span class="o">.</span><span class="n">get_out_going_vertices</span><span class="p">(</span><span class="n">part_id</span><span class="p">):</span>
@@ -575,9 +573,8 @@
 
 <div class="viewcode-block" id="router_report_from_router_tables"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_report_from_router_tables">[docs]</a><span class="k">def</span> <span class="nf">router_report_from_router_tables</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :rtype: None</span>
+<span class="sd">    Report the uncompressed routing tables.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">top_level_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_ROUTING_TABLE_DIR</span><span class="p">)</span>
     <span class="n">routing_tables</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">()</span><span class="o">.</span><span class="n">routing_tables</span>
@@ -591,11 +588,11 @@
 
 <div class="viewcode-block" id="router_report_from_compressed_router_tables"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.router_report_from_compressed_router_tables">[docs]</a><span class="k">def</span> <span class="nf">router_report_from_compressed_router_tables</span><span class="p">(</span><span class="n">routing_tables</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param MulticastRoutingTables routing_tables:</span>
-<span class="sd">        the compressed routing tables</span>
-<span class="sd">    :rtype: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    Report the compressed routing tables.</span>
 
+<span class="sd">    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:</span>
+<span class="sd">        the compressed routing tables</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">top_level_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_run_dir_path</span><span class="p">(),</span> <span class="n">_C_ROUTING_TABLE_DIR</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">top_level_folder</span><span class="p">):</span>
@@ -609,7 +606,9 @@
 
 <div class="viewcode-block" id="generate_routing_table"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.generate_routing_table">[docs]</a><span class="k">def</span> <span class="nf">generate_routing_table</span><span class="p">(</span><span class="n">routing_table</span><span class="p">,</span> <span class="n">top_level_folder</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param AbstractMulticastRoutingTable routing_table:</span>
+<span class="sd">    :param routing_table: The routing table to describe</span>
+<span class="sd">    :type routing_table:</span>
+<span class="sd">        ~pacman.model.routing_tables.AbstractMulticastRoutingTable</span>
 <span class="sd">    :param str top_level_folder:</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;routing_table_</span><span class="si">{}</span><span class="s2">_</span><span class="si">{}</span><span class="s2">.rpt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -636,14 +635,15 @@
                 <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">defaultable</span><span class="p">:</span>
                     <span class="n">n_defaultable</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">entry_str</span><span class="p">)</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Defaultable entries</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_defaultable</span><span class="p">))</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_defaultable</span><span class="si">}</span><span class="s2"> Defaultable entries</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_placement_reports: Can&#39;t open file&quot;</span>
                          <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_compression_ratio</span><span class="p">(</span><span class="n">uncompressed</span><span class="p">,</span> <span class="n">compressed</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Get the compression ratio, as a percentage.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the compression ratio, as a percentage.</span>
 
 <span class="sd">    :param int uncompressed:</span>
 <span class="sd">    :param int compressed:</span>
@@ -655,12 +655,13 @@
 
 
 <div class="viewcode-block" id="generate_comparison_router_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.utilities.report_functions.html#spinn_front_end_common.utilities.report_functions.reports.generate_comparison_router_report">[docs]</a><span class="k">def</span> <span class="nf">generate_comparison_router_report</span><span class="p">(</span><span class="n">compressed_routing_tables</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Make a report on comparison of the compressed and uncompressed \</span>
-<span class="sd">        routing tables</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make a report on comparison of the compressed and uncompressed</span>
+<span class="sd">    routing tables.</span>
 
-<span class="sd">    :param MulticastRoutingTables compressed_routing_tables:</span>
-<span class="sd">        the compressed routing tables</span>
-<span class="sd">    :rtype: None</span>
+<span class="sd">    :param compressed_routing_tables: the compressed routing tables</span>
+<span class="sd">    :type compressed_routing_tables:</span>
+<span class="sd">        ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">routing_tables</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">()</span><span class="o">.</span><span class="n">routing_tables</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -683,40 +684,39 @@
                 <span class="n">total_uncompressed</span> <span class="o">+=</span> <span class="n">n_entries_uncompressed</span>
                 <span class="n">n_entries_compressed</span> <span class="o">=</span> <span class="n">compressed_table</span><span class="o">.</span><span class="n">number_of_entries</span>
                 <span class="n">total_compressed</span> <span class="o">+=</span> <span class="n">n_entries_compressed</span>
+                <span class="n">ratio</span> <span class="o">=</span> <span class="n">_compression_ratio</span><span class="p">(</span>
+                    <span class="n">n_entries_uncompressed</span><span class="p">,</span> <span class="n">n_entries_compressed</span><span class="p">)</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;Uncompressed table at </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> has </span><span class="si">{}</span><span class="s2"> entries &quot;</span>
-                    <span class="s2">&quot;whereas compressed table has </span><span class="si">{}</span><span class="s2"> entries. &quot;</span>
-                    <span class="s2">&quot;This is a decrease of </span><span class="si">{}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n_entries_uncompressed</span><span class="p">,</span> <span class="n">n_entries_compressed</span><span class="p">,</span>
-                        <span class="n">_compression_ratio</span><span class="p">(</span>
-                            <span class="n">n_entries_uncompressed</span><span class="p">,</span> <span class="n">n_entries_compressed</span><span class="p">)))</span>
+                    <span class="sa">f</span><span class="s2">&quot;Uncompressed table at </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2"> has &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_entries_uncompressed</span><span class="si">}</span><span class="s2"> entries whereas compressed &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;table has </span><span class="si">{</span><span class="n">n_entries_compressed</span><span class="si">}</span><span class="s2"> entries. This is a &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;decrease of </span><span class="si">{</span><span class="n">ratio</span><span class="si">}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">max_compressed</span> <span class="o">&lt;</span> <span class="n">n_entries_compressed</span><span class="p">:</span>
                     <span class="n">max_compressed</span> <span class="o">=</span> <span class="n">n_entries_compressed</span>
                     <span class="n">uncompressed_for_max</span> <span class="o">=</span> <span class="n">n_entries_uncompressed</span>
             <span class="k">if</span> <span class="n">total_uncompressed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">ratio</span> <span class="o">=</span> <span class="n">_compression_ratio</span><span class="p">(</span>
+                    <span class="n">total_uncompressed</span><span class="p">,</span> <span class="n">total_compressed</span><span class="p">)</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total has </span><span class="si">{}</span><span class="s2"> entries whereas compressed tables &quot;</span>
-                    <span class="s2">&quot;have </span><span class="si">{}</span><span class="s2"> entries. This is an average decrease of </span><span class="si">{}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span>
-                    <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">total_uncompressed</span><span class="p">,</span> <span class="n">total_compressed</span><span class="p">,</span>
-                        <span class="n">_compression_ratio</span><span class="p">(</span>
-                            <span class="n">total_uncompressed</span><span class="p">,</span> <span class="n">total_compressed</span><span class="p">)))</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total has </span><span class="si">{</span><span class="n">total_uncompressed</span><span class="si">}</span><span class="s2"> entries whereas &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;compressed tables have </span><span class="si">{</span><span class="n">total_compressed</span><span class="si">}</span><span class="s2"> entries. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;This is an average decrease of </span><span class="si">{</span><span class="n">ratio</span><span class="si">}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">ratio</span> <span class="o">=</span> <span class="n">_compression_ratio</span><span class="p">(</span>
+                    <span class="n">uncompressed_for_max</span><span class="p">,</span> <span class="n">max_compressed</span><span class="p">)</span>
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                    <span class="s2">&quot;Worst case has </span><span class="si">{}</span><span class="s2"> entries whereas compressed tables &quot;</span>
-                    <span class="s2">&quot;have </span><span class="si">{}</span><span class="s2"> entries. This is a decrease of </span><span class="si">{}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">uncompressed_for_max</span><span class="p">,</span> <span class="n">max_compressed</span><span class="p">,</span>
-                        <span class="n">_compression_ratio</span><span class="p">(</span>
-                            <span class="n">uncompressed_for_max</span><span class="p">,</span> <span class="n">max_compressed</span><span class="p">)))</span>
+                    <span class="sa">f</span><span class="s2">&quot;Worst case has </span><span class="si">{</span><span class="n">uncompressed_for_max</span><span class="si">}</span><span class="s2"> entries whereas &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;compressed tables have </span><span class="si">{</span><span class="n">max_compressed</span><span class="si">}</span><span class="s2"> entries. This &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;is a decrease of </span><span class="si">{</span><span class="n">ratio</span><span class="si">}</span><span class="s2">%</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Generate_router_comparison_reports: Can&#39;t open file&quot;</span>
-                         <span class="s2">&quot; </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;Generate router comparison reports: &quot;</span>
+            <span class="s2">&quot;Can&#39;t open file </span><span class="si">{}</span><span class="s2"> for writing.&quot;</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_search_route</span><span class="p">(</span><span class="n">source_placement</span><span class="p">,</span> <span class="n">key_and_mask</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    :param Placement source_placement:</span>
-<span class="sd">    :param Placement dest_placement:</span>
-<span class="sd">    :param BaseKeyAndMask key_and_mask:</span>
+<span class="sd">    :param ~pacman.model.placements.Placement source_placement:</span>
+<span class="sd">    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:</span>
 <span class="sd">    :rtype: tuple(str, int)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Create text for starting point</span>
@@ -752,18 +752,18 @@
 <span class="c1"># Locates the destinations of a route</span>
 <span class="k">def</span> <span class="nf">_recursive_trace_to_destinations</span><span class="p">(</span>
         <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">key_and_mask</span><span class="p">,</span> <span class="n">pre_space</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Recursively search though routing tables till no more entries are\</span>
-<span class="sd">        registered with this key</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recursively search though routing tables till no more entries are</span>
+<span class="sd">    registered with this key</span>
 
 <span class="sd">    :param int chip_x:</span>
 <span class="sd">    :param int chip_y</span>
-<span class="sd">    :param BaseKeyAndMask key_and_mask:</span>
+<span class="sd">    :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:</span>
 <span class="sd">    :rtype: str</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span>
 
-    <span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;-&gt; Chip </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;-&gt; Chip </span><span class="si">{</span><span class="n">chip_x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">chip_y</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="n">routing_tables</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_uncompressed</span><span class="p">()</span>
     <span class="n">table</span> <span class="o">=</span> <span class="n">routing_tables</span><span class="o">.</span><span class="n">get_routing_table_for_chip</span><span class="p">(</span><span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">)</span>
     <span class="n">entry</span> <span class="o">=</span> <span class="n">_locate_routing_entry</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">key_and_mask</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
@@ -771,9 +771,9 @@
     <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">for</span> <span class="n">link_id</span> <span class="ow">in</span> <span class="n">entry</span><span class="o">.</span><span class="n">link_ids</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
-            <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pre_space</span><span class="p">)</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">pre_space</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">link</span> <span class="o">=</span> <span class="n">chip</span><span class="o">.</span><span class="n">router</span><span class="o">.</span><span class="n">get_link</span><span class="p">(</span><span class="n">link_id</span><span class="p">)</span>
-        <span class="n">text</span> <span class="o">+=</span> <span class="s2">&quot;-&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;-&gt; </span><span class="si">{</span><span class="n">link</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">text</span> <span class="o">+=</span> <span class="n">_recursive_trace_to_destinations</span><span class="p">(</span>
             <span class="n">link</span><span class="o">.</span><span class="n">destination_x</span><span class="p">,</span> <span class="n">link</span><span class="o">.</span><span class="n">destination_y</span><span class="p">,</span> <span class="n">key_and_mask</span><span class="p">,</span>
             <span class="n">new_pre_space</span><span class="p">)</span>
@@ -783,7 +783,8 @@
 
 
 <span class="k">def</span> <span class="nf">_locate_routing_entry</span><span class="p">(</span><span class="n">current_router</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Locate the entry from the router based off the edge</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Locate the entry from the router based off the edge</span>
 
 <span class="sd">    :param ~spinn_machine.MulticastRoutingTable current_router:</span>
 <span class="sd">        the current router being used in the trace</span>

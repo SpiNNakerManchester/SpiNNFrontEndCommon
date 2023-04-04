@@ -56,8 +56,9 @@
 
 <span class="k">class</span> <span class="nc">SendsBuffersFromHostPreBufferedImpl</span><span class="p">(</span>
         <span class="n">AbstractSendsBuffersFromHost</span><span class="p">,</span> <span class="n">allow_derivation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Implementation of :py:class:`AbstractReceiveBuffersToHost`\</span>
-<span class="sd">        which uses an existing set of buffers for the details.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Implementation of :py:class:`AbstractReceiveBuffersToHost`</span>
+<span class="sd">    that uses an existing set of buffers for the details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># pylint: disable=unsubscriptable-object, no-member</span>
 
@@ -66,6 +67,8 @@
     <span class="nd">@abstractproperty</span>
     <span class="k">def</span> <span class="nf">send_buffers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The buffer for each region that has keys to send.</span>
+
 <span class="sd">        :rtype: dict(int,</span>
 <span class="sd">            ~spinn_front_end_common.interface.buffer_management.storage_objects.BufferedSendingRegion)</span>
 <span class="sd">        &quot;&quot;&quot;</span>

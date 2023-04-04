@@ -158,7 +158,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.DPRIFlags">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">DPRIFlags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.DPRIFlags" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
-<p>SCP Dropped Packet Reinjection (DPRI) packet type flags</p>
+<p>SCP Dropped Packet Reinjection (DPRI) packet type flags.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.DPRIFlags.FIXED_ROUTE">
 <span class="sig-name descname"><span class="pre">FIXED_ROUTE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.DPRIFlags.FIXED_ROUTE" title="Permalink to this definition">¶</a></dt>
@@ -185,7 +185,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ExecutableType">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">ExecutableType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
-<p>The different types of executable from the perspective of how they        are started and controlled.</p>
+<p>The different types of executable from the perspective of how they
+are started and controlled.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ExecutableType.NO_APPLICATION">
 <span class="sig-name descname"><span class="pre">NO_APPLICATION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ExecutableType.NO_APPLICATION" title="Permalink to this definition">¶</a></dt>
@@ -217,7 +218,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_objs.</span></span><span class="sig-name descname"><span class="pre">LivePacketGatherParameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strip_sdp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">EIEIOType.KEY_32_BIT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_as_time_stamps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_payload_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_right_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_packets_sent_per_time_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">received_key_mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4294967295</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translate_keys</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">translated_key_right_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Parameter holder for LPGs so that they can be instantiated at a        later date.</p>
+<p>Parameter holder for <code class="xref py py-class docutils literal notranslate"><span class="pre">LivePacketGather</span></code>ers so that they can be
+instantiated at a later date.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – If the parameters passed are known to be an invalid combination.</p>
@@ -226,10 +228,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.get_iptag_resource">
 <span class="sig-name descname"><span class="pre">get_iptag_resource</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/live_packet_gather_parameters.html#LivePacketGatherParameters.get_iptag_resource"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.get_iptag_resource" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get a description of the IPtag that the LPG for these parameters             will require.</p>
+<dd><p>Get a description of the IPtag that the LPG for these parameters
+will require.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><em>IPtagResource</em></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -237,92 +240,202 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.hostname">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hostname</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.hostname" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Where to send data from SpiNNaker: the host name of the listening UDP
+socket.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.key_prefix">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">key_prefix</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.key_prefix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The EIEIO key prefix to remove from messages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.label">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">label</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.label" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A label.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.message_type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">message_type</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.message_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The type of messages to send.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOType" title="(in SpiNNMan v6.0)"><em>EIEIOType</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.number_of_packets_sent_per_time_step">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number_of_packets_sent_per_time_step</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.number_of_packets_sent_per_time_step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The maximum number of packets to send in a timestep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_as_time_stamps">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_as_time_stamps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_as_time_stamps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether the payloads are timestamps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_prefix">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_prefix</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_prefix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The payload prefix to remove if applying compaction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_right_shift">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">payload_right_shift</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.payload_right_shift" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Shift to apply to payloads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.port">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">port</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.port" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Where to send data from SpiNNaker:
+the port of the listening UDP socket.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.prefix_type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prefix_type</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.prefix_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>The type of prefix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v6.0)"><em>EIEIOPrefix</em></a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.received_key_mask">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">received_key_mask</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.received_key_mask" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A mask to select which keys are dispatched.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.right_shift">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">right_shift</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.right_shift" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Shift to apply to keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.strip_sdp">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">strip_sdp</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.strip_sdp" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether to remove SDP headers from the messages before sending.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.tag">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tag</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.tag" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>A fixed tag ID to assign, or <cite>None</cite> if any tag is OK</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.translate_keys">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translate_keys</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.translate_keys" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether to apply translation to keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.translated_key_right_shift">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translated_key_right_shift</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.translated_key_right_shift" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Shift to apply in key translation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.use_payload_prefix">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_payload_prefix</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.use_payload_prefix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether to use prefix compaction for payloads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.use_prefix">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">use_prefix</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters.use_prefix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Whether to use EIEIO prefix compaction on keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -334,7 +447,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.active_cores">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_cores</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.active_cores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enumeration of the coordinates of the cores that can report active            energy usage.</p>
+<dd><p>Enumeration of the coordinates of the cores that can report active
+energy usage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
@@ -345,7 +459,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.active_routers">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">active_routers</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.active_routers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Enumeration of the coordinates of the routers that can report            active energy usage.</p>
+<dd><p>Enumeration of the coordinates of the routers that can report
+active energy usage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
@@ -356,7 +471,8 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.add_core_active_energy">
 <span class="sig-name descname"><span class="pre">add_core_active_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/power_used.html#PowerUsed.add_core_active_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_core_active_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds energy for a particular core. It can be called multiple            times per core.</p>
+<dd><p>Adds energy for a particular core.
+It can be called multiple times per core.</p>
 <p>Only intended to be used during construction of this object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -373,7 +489,8 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.add_router_active_energy">
 <span class="sig-name descname"><span class="pre">add_router_active_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">joules</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/power_used.html#PowerUsed.add_router_active_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.add_router_active_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds energy for a particular router. It can be called multiple            times per router.</p>
+<dd><p>Adds energy for a particular router.
+It can be called multiple times per router.</p>
 <p>Only intended to be used during construction of this object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -389,7 +506,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.baseline_joules">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">baseline_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.baseline_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Baseline/idle energy used, in Joules. This is used by things like            the frames the SpiNNaker boards are held in, the cooling system,            etc.</p>
+<dd><p>Baseline/idle energy used, in Joules. This is used by things like the
+frames the SpiNNaker boards are held in, the cooling system, etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
@@ -411,7 +529,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.chip_energy_joules">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chip_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.chip_energy_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Energy used by all SpiNNaker chips during active simulation            running, in Joules.</p>
+<dd><p>Energy used by all SpiNNaker chips during active simulation
+running, in Joules.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
@@ -422,7 +541,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.data_gen_joules">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_gen_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.data_gen_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Energy used during the data generation phase, in Joules. Assumes            that the SpiNNaker system has been shut down.</p>
+<dd><p>Energy used during the data generation phase, in Joules. Assumes
+that the SpiNNaker system has been shut down.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
@@ -455,7 +575,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.fpga_exec_energy_joules">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fpga_exec_energy_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.fpga_exec_energy_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Energy used by all FPGAs during active simulation running, in            Joules. This is <em>included</em> in the total FPGA energy.</p>
+<dd><p>Energy used by all FPGAs during active simulation running, in
+Joules. This is <em>included</em> in the total FPGA energy.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
@@ -496,7 +617,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.get_router_active_energy_joules">
 <span class="sig-name descname"><span class="pre">get_router_active_energy_joules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_objs/power_used.html#PowerUsed.get_router_active_energy_joules"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.get_router_active_energy_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Energy used (above idle baseline) by a particular router, in             Joules.</p>
+<dd><p>Energy used (above idle baseline) by a particular router, in Joules.</p>
 <p>Unused routers always report 0.0 for this.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -536,7 +657,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.PowerUsed.mapping_joules">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_joules</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.PowerUsed.mapping_joules" title="Permalink to this definition">¶</a></dt>
-<dd><p>Energy used during the mapping phase, in Joules. Assumes that            the SpiNNaker system has been shut down.</p>
+<dd><p>Energy used during the mapping phase, in Joules. Assumes that
+the SpiNNaker system has been shut down.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)">float</a></p>
@@ -672,7 +794,7 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_fixed_route">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_fixed_route</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_fixed_route" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if re-injection of fixed-route packets is enabled</p>
+<dd><p>True if re-injection of fixed-route packets is enabled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -683,7 +805,7 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_multicast">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_multicast</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_multicast" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if re-injection of multicast packets is enabled</p>
+<dd><p>True if re-injection of multicast packets is enabled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -694,7 +816,7 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_nearest_neighbour">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_nearest_neighbour</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_nearest_neighbour" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if re-injection of nearest neighbour packets is enabled</p>
+<dd><p>True if re-injection of nearest neighbour packets is enabled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -705,7 +827,7 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_point_to_point">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_reinjecting_point_to_point</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.is_reinjecting_point_to_point" title="Permalink to this definition">¶</a></dt>
-<dd><p>True if re-injection of point-to-point packets is enabled</p>
+<dd><p>True if re-injection of point-to-point packets is enabled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
@@ -721,7 +843,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packet_overflows">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_dropped_packet_overflows</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packet_overflows" title="Permalink to this definition">¶</a></dt>
-<dd><p>Of the n_dropped_packets received, how many were lost due to not            having enough space in the queue of packets to reinject</p>
+<dd><p>Of the n_dropped_packets received, how many were lost due to not
+having enough space in the queue of packets to reinject.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -732,7 +855,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packets">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_dropped_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_dropped_packets" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of packets dropped by the router and received by            the reinjection functionality (may not fit in the queue though)</p>
+<dd><p>The number of packets dropped by the router and received by
+the reinjection functionality (may not fit in the queue though).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -743,7 +867,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_link_dumps">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_link_dumps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_link_dumps" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of times that when a dropped packet was caused due to            a link failing to take the packet.</p>
+<dd><p>The number of times that when a dropped packet was caused due to
+a link failing to take the packet.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -754,7 +879,9 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_missed_dropped_packets">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_missed_dropped_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_missed_dropped_packets" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of times that when a dropped packet was read it was            found that another one or more packets had also been dropped,            but had been missed</p>
+<dd><p>The number of times that when a dropped packet was read it was
+found that another one or more packets had also been dropped,
+but had been missed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -765,7 +892,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_processor_dumps">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_processor_dumps</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_processor_dumps" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of times that when a dropped packet was caused due to            a processor failing to take the packet.</p>
+<dd><p>The number of times that when a dropped packet was caused due to
+a processor failing to take the packet.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -776,7 +904,8 @@
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_reinjected_packets">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_reinjected_packets</span></span><a class="headerlink" href="#spinn_front_end_common.utilities.utility_objs.ReInjectionStatus.n_reinjected_packets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Of the n_dropped_packets received, how many packets were            successfully re injected</p>
+<dd><p>Of the n_dropped_packets received, how many packets were
+successfully re-injected.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>

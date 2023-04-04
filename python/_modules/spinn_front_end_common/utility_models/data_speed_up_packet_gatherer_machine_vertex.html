@@ -90,8 +90,6 @@
 <span class="n">DEST_X_SHIFT</span> <span class="o">=</span> <span class="mi">16</span>
 
 <span class="n">TIMEOUT_RETRY_LIMIT</span> <span class="o">=</span> <span class="mi">100</span>
-<span class="n">TIMEOUT_MESSAGE</span> <span class="o">=</span> <span class="s2">&quot;Failed to hear from the machine during </span><span class="si">{}</span><span class="s2"> attempts. &quot;</span>\
-    <span class="s2">&quot;Please try removing firewalls.&quot;</span>
 <span class="n">_MINOR_LOSS_THRESHOLD</span> <span class="o">=</span> <span class="mi">10</span>
 
 <span class="c1"># cap for stopping wrap arounds</span>
@@ -157,14 +155,18 @@
 
 
 <span class="k">class</span> <span class="nc">_DATA_REGIONS</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;DSG data regions&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DSG data regions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">CONFIG</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">CHIP_TO_KEY_SPACE</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">PROVENANCE_REGION</span> <span class="o">=</span> <span class="mi">2</span>
 
 
 <span class="k">class</span> <span class="nc">DATA_OUT_COMMANDS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;command IDs for the SDP packets for data out&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command IDs for the SDP packets for data out.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">START_SENDING</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="n">START_MISSING_SEQ</span> <span class="o">=</span> <span class="mi">1000</span>
     <span class="n">MISSING_SEQ</span> <span class="o">=</span> <span class="mi">1001</span>
@@ -172,7 +174,9 @@
 
 
 <span class="k">class</span> <span class="nc">DATA_IN_COMMANDS</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;command IDs for the SDP packets for data in&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Command IDs for the SDP packets for data in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">SEND_DATA_TO_LOCATION</span> <span class="o">=</span> <span class="mi">200</span>
     <span class="n">SEND_SEQ_DATA</span> <span class="o">=</span> <span class="mi">2000</span>
     <span class="n">SEND_TELL</span> <span class="o">=</span> <span class="mi">2001</span>
@@ -197,7 +201,8 @@
 
 
 <span class="k">def</span> <span class="nf">ceildiv</span><span class="p">(</span><span class="n">dividend</span><span class="p">,</span> <span class="n">divisor</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; How to divide two possibly-integer numbers and round up.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    How to divide two possibly-integer numbers and round up.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">divisor</span> <span class="o">&gt;</span> <span class="mi">0</span>
     <span class="n">q</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="nb">divmod</span><span class="p">(</span><span class="n">dividend</span><span class="p">,</span> <span class="n">divisor</span><span class="p">)</span>
@@ -214,11 +219,15 @@
         <span class="n">MachineVertex</span><span class="p">,</span> <span class="n">AbstractGeneratesDataSpecification</span><span class="p">,</span>
         <span class="n">AbstractHasAssociatedBinary</span><span class="p">,</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Machine vertex for handling fast data transfer between host and \</span>
-<span class="sd">        SpiNNaker. This machine vertex is only ever placed on chips with a \</span>
-<span class="sd">        working Ethernet connection; it collaborates with the \</span>
-<span class="sd">        :py:class:`ExtraMonitorSupportMachineVertex` to write data on other \</span>
-<span class="sd">        chips..</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Machine vertex for handling fast data transfer between host and  SpiNNaker.</span>
+<span class="sd">    This machine vertex is only ever placed on chips with a working Ethernet</span>
+<span class="sd">    connection; it collaborates with the</span>
+<span class="sd">    :py:class:`ExtraMonitorSupportMachineVertex` to write data on other chips.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        This is an unusual machine vertex, in that it has no associated</span>
+<span class="sd">        application vertex.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="c1"># x coordinate</span>
@@ -291,7 +300,7 @@
     <span class="n">FLAG_FOR_MISSING_ALL_SEQUENCES</span> <span class="o">=</span> <span class="mh">0xFFFFFFFE</span>
 
     <span class="n">_ADDRESS_PACKET_BYTE_FORMAT</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">Struct</span><span class="p">(</span>
-        <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">B&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">BYTES_IN_FULL_PACKET_WITH_KEY</span><span class="p">))</span>
+        <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">BYTES_IN_FULL_PACKET_WITH_KEY</span><span class="si">}</span><span class="s2">B&quot;</span><span class="p">)</span>
 
     <span class="c1"># Router timeouts, in mantissa,exponent form. See datasheet for details</span>
     <span class="n">_LONG_TIMEOUT</span> <span class="o">=</span> <span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
@@ -302,20 +311,15 @@
     <span class="c1"># Initial port for the reverse IP tag (to be replaced later)</span>
     <span class="n">_TAG_INITIAL_PORT</span> <span class="o">=</span> <span class="mi">10000</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int x: Where this gatherer is.</span>
 <span class="sd">        :param int y: Where this gatherer is.</span>
 <span class="sd">        :param str ip_address:</span>
 <span class="sd">            How to talk directly to the chip where the gatherer is.</span>
-<span class="sd">        :param app_vertex:</span>
-<span class="sd">            The application vertex that caused this machine vertex to be</span>
-<span class="sd">            created. If None, there is no such application vertex.</span>
-<span class="sd">        :type app_vertex:</span>
-<span class="sd">            ~pacman.model.graphs.application.ApplicationVertex or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
-            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="n">app_vertex</span><span class="p">)</span>
+            <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;SYSTEM:PacketGatherer(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">app_vertex</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
         <span class="c1"># data holders for the output, and sequence numbers</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_view</span> <span class="o">=</span> <span class="kc">None</span>
@@ -348,10 +352,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_last_status</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="nf">__throttled_send</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; slows down transmissions to allow spinnaker to keep up.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Slows down transmissions to allow SpiNNaker to keep up.</span>
 
 <span class="sd">        :param ~.SDPMessage message: message to send</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># send first message</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -372,9 +376,9 @@
             <span class="n">ip_address</span><span class="o">=</span><span class="s2">&quot;localhost&quot;</span><span class="p">,</span> <span class="n">traffic_identifier</span><span class="o">=</span><span class="s2">&quot;DATA_SPEED_UP&quot;</span><span class="p">)]</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.update_transaction_id_from_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_transaction_id_from_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Looks up from the machine what the current transaction ID is\</span>
-<span class="sd">            and updates the data speed up gatherer.</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Looks up from the machine what the current transaction ID is</span>
+<span class="sd">        and updates the data speed up gatherer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span><span class="o">.</span><span class="n">read_user_1</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="o">.</span><span class="n">p</span><span class="p">)</span></div>
@@ -445,8 +449,9 @@
         <span class="n">spec</span><span class="o">.</span><span class="n">end_specification</span><span class="p">()</span></div>
 
     <span class="k">def</span> <span class="nf">_reserve_memory_regions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spec</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the DSG regions memory sizes. Static so that it can be used\</span>
-<span class="sd">            by the application vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the DSG regions memory sizes. Static so that it can be used</span>
+<span class="sd">        by the application vertex.</span>
 
 <span class="sd">        :param ~.DataSpecificationGenerator spec: spec file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -470,8 +475,9 @@
     <span class="k">def</span> <span class="nf">locate_correct_write_data_function_for_chip_location</span><span class="p">(</span>
             <span class="n">uses_advanced_monitors</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">extra_monitor_cores_to_ethernet_connection_map</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Supports other components figuring out which gatherer and function\</span>
-<span class="sd">            to call for writing data onto SpiNNaker.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Supports other components figuring out which gatherer and function</span>
+<span class="sd">        to call for writing data onto SpiNNaker.</span>
 
 <span class="sd">        :param bool uses_advanced_monitors:</span>
 <span class="sd">            Whether the system is using advanced monitors</span>
@@ -499,7 +505,8 @@
     <span class="k">def</span> <span class="nf">_generate_data_in_report</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">time_diff</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span>
             <span class="n">address_written_to</span><span class="p">,</span> <span class="n">missing_seq_nums</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Writes the data in report for this stage.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Writes the data in report for this stage.</span>
 
 <span class="sd">        :param ~datetime.timedelta time_diff:</span>
 <span class="sd">            the time taken to write the memory</span>
@@ -511,7 +518,6 @@
 <span class="sd">        :param int address_written_to: where in SDRAM it was written to</span>
 <span class="sd">        :param list(set(int)) missing_seq_nums:</span>
 <span class="sd">            the set of missing sequence numbers per data transmission attempt</span>
-<span class="sd">        :rtype: None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span><span class="p">):</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
@@ -533,14 +539,14 @@
 
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_in_report_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
             <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\t\t\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\t\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address_written_to</span><span class="p">,</span> <span class="n">data_size</span><span class="p">,</span> <span class="n">time_took_ms</span><span class="p">,</span>
-                    <span class="n">mbs</span><span class="p">,</span> <span class="n">missing_seq_nums</span><span class="p">))</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">address_written_to</span><span class="si">}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">data_size</span><span class="si">}</span><span class="se">\t\t</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">time_took_ms</span><span class="si">}</span><span class="se">\t\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">mbs</span><span class="si">}</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">missing_seq_nums</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.send_data_into_spinnaker"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.send_data_into_spinnaker">[docs]</a>    <span class="k">def</span> <span class="nf">send_data_into_spinnaker</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">n_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">cpu</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">is_filename</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># pylint: disable=unused-argument</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Sends a block of data into SpiNNaker to a given chip.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends a block of data into SpiNNaker to a given chip.</span>
 
 <span class="sd">        :param int x: chip x for data</span>
 <span class="sd">        :param int y: chip y for data</span>
@@ -548,7 +554,7 @@
 <span class="sd">        :param data: the data to write (or filename to load data from,</span>
 <span class="sd">            if ``is_filename`` is True; that&#39;s the only time this is a str)</span>
 <span class="sd">        :type data: bytes or bytearray or memoryview or str</span>
-<span class="sd">        :param int n_bytes: how many bytes to read, or None if not set</span>
+<span class="sd">        :param int n_bytes: how many bytes to read, or `None` if not set</span>
 <span class="sd">        :param int offset: where in the data to start from</span>
 <span class="sd">        :param int cpu:</span>
 <span class="sd">        :param bool is_filename: whether data is actually a file.</span>
@@ -624,7 +630,7 @@
 <span class="sd">        Open an SCP connection and make our tag target it.</span>
 
 <span class="sd">        :return: The opened connection, ready for use.</span>
-<span class="sd">        :rtype: SCAMPConnection</span>
+<span class="sd">        :rtype: ~.SCAMPConnection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">connection</span> <span class="o">=</span> <span class="n">open_scp_connection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_address</span><span class="p">)</span>
         <span class="n">retarget_tag</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_tag</span><span class="p">)</span>
@@ -633,7 +639,8 @@
     <span class="k">def</span> <span class="nf">_send_data_via_extra_monitors</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">destination_chip_x</span><span class="p">,</span> <span class="n">destination_chip_y</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span>
             <span class="n">data_to_write</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; sends data using the extra monitor cores</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends data using the extra monitor cores.</span>
 
 <span class="sd">        :param int destination_chip_x: chip x</span>
 <span class="sd">        :param int destination_chip_y: chip y</span>
@@ -695,8 +702,7 @@
 
                         <span class="k">if</span> <span class="n">cmd</span> <span class="o">!=</span> <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">RECEIVE_MISSING_SEQ_DATA</span>\
                                 <span class="o">.</span><span class="n">value</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;Unknown command </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> received&quot;</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown command </span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s2"> received&quot;</span><span class="p">)</span>
 
                         <span class="c1"># The currently received packet has missing sequence</span>
                         <span class="c1"># numbers. Accumulate and dispatch transactionId when</span>
@@ -723,8 +729,9 @@
                             <span class="n">emergency_recover_state_from_failure</span><span class="p">(</span>
                                 <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">)</span>
                             <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
-                                <span class="n">TIMEOUT_MESSAGE</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                                    <span class="n">time_out_count</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+                                <span class="s2">&quot;Failed to hear from the machine during &quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">time_out_count</span><span class="si">}</span><span class="s2"> attempts. &quot;</span>
+                                <span class="s2">&quot;Please try removing firewalls.&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
                         <span class="c1"># If we never received a packet, we will never have</span>
                         <span class="c1"># created the buffer, so send everything again</span>
@@ -736,7 +743,8 @@
                         <span class="n">missing</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_read_in_missing_seq_nums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; handles a missing seq num packet from spinnaker</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles a missing sequence number packet from SpiNNaker.</span>
 
 <span class="sd">        :param data: the data to translate into missing seq nums</span>
 <span class="sd">        :type data: bytearray or bytes</span>
@@ -769,8 +777,9 @@
 
     <span class="k">def</span> <span class="nf">_outgoing_retransmit_missing_seq_nums</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">data_to_write</span><span class="p">,</span> <span class="n">missing</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Transmits back into SpiNNaker the missing data based off missing\</span>
-<span class="sd">            sequence numbers</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transmits back into SpiNNaker the missing data based off missing</span>
+<span class="sd">        sequence numbers.</span>
 
 <span class="sd">        :param bytearray data_to_write: the data to write.</span>
 <span class="sd">        :param set(int) missing: a set of missing sequence numbers</span>
@@ -791,8 +800,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_calculate_position_from_seq_number</span><span class="p">(</span><span class="n">seq_num</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Calculates where in the raw data to start reading from, given a\</span>
-<span class="sd">            sequence number</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates where in the raw data to start reading from, given a</span>
+<span class="sd">        sequence number.</span>
 
 <span class="sd">        :param int seq_num: the sequence number to determine position from</span>
 <span class="sd">        :return: the position in the byte data</span>
@@ -802,8 +812,9 @@
 
     <span class="k">def</span> <span class="nf">_calculate_data_in_data_from_seq_number</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">data_to_write</span><span class="p">,</span> <span class="n">seq_num</span><span class="p">,</span> <span class="n">command_id</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine the data needed to be sent to the SpiNNaker machine\</span>
-<span class="sd">            given a sequence number</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the data needed to be sent to the SpiNNaker machine</span>
+<span class="sd">        given a sequence number.</span>
 
 <span class="sd">        :param bytearray data_to_write:</span>
 <span class="sd">            the data to write to the SpiNNaker machine</span>
@@ -838,7 +849,7 @@
         <span class="n">_THREE_WORDS</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span>
             <span class="n">packet_data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">command_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span><span class="p">,</span> <span class="n">seq_num</span><span class="p">)</span>
         <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span>
-            <span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">B&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">packet_data_length</span><span class="p">),</span> <span class="n">packet_data</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">packet_data_length</span><span class="si">}</span><span class="s2">B&quot;</span><span class="p">,</span> <span class="n">packet_data</span><span class="p">,</span>
             <span class="n">BYTES_FOR_COMMAND_AND_ADDRESS_HEADER</span><span class="p">,</span>
             <span class="o">*</span><span class="n">data_to_write</span><span class="p">[</span><span class="n">position</span><span class="p">:</span><span class="n">position</span><span class="o">+</span><span class="n">packet_data_length</span><span class="p">])</span>
 
@@ -854,7 +865,8 @@
         <span class="k">return</span> <span class="n">message</span><span class="p">,</span> <span class="n">packet_data_length</span>
 
     <span class="k">def</span> <span class="nf">_send_location</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start_address</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send location as separate message.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send location as separate message.</span>
 
 <span class="sd">        :param int start_address: SDRAM location</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -865,11 +877,12 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span><span class="p">,</span> <span class="n">start_address</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coord_word</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_max_seq_num</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
-            <span class="s2">&quot;start address for transaction </span><span class="si">{}</span><span class="s2"> is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span><span class="p">,</span> <span class="n">start_address</span><span class="p">))</span>
+            <span class="s2">&quot;start address for transaction </span><span class="si">{}</span><span class="s2"> is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span><span class="p">,</span> <span class="n">start_address</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_send_tell_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send tell flag as separate message.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send tell flag as separate message.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_connection</span><span class="o">.</span><span class="n">send_sdp_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__make_sdp_message</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_placement</span><span class="p">,</span> <span class="n">SDP_PORTS</span><span class="o">.</span><span class="n">EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP</span><span class="p">,</span>
@@ -877,7 +890,8 @@
                 <span class="n">DATA_IN_COMMANDS</span><span class="o">.</span><span class="n">SEND_TELL</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transaction_id</span><span class="p">)))</span>
 
     <span class="k">def</span> <span class="nf">_send_all_data_based_packets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_to_write</span><span class="p">,</span> <span class="n">start_address</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Send all the data as one block.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send all the data as one block.</span>
 
 <span class="sd">        :param bytearray data_to_write: the data to send</span>
 <span class="sd">        :param int start_address:</span>
@@ -906,9 +920,9 @@
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sent end flag&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">set_cores_for_data_streaming</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Helper method for setting the router timeouts to a state usable\</span>
-<span class="sd">            for data streaming.</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method for setting the router timeouts to a state usable</span>
+<span class="sd">        for data streaming.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">lead_monitor</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="c1"># Store the last reinjection status for resetting</span>
@@ -929,20 +943,21 @@
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_application_routing_tables">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_application_routing_tables</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set all chips to have application table loaded in the router</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set all chips to have application table loaded in the router.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">load_application_mc_routes</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.load_system_routing_tables">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">load_system_routing_tables</span><span class="p">():</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set all chips to have the system table loaded in the router</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set all chips to have the system table loaded in the router.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_monitor_by_xy</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">load_system_mc_routes</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait1_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set the wait1 field for a set of routers.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the wait1 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
@@ -959,7 +974,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.set_router_wait2_timeout">[docs]</a>    <span class="k">def</span> <span class="nf">set_router_wait2_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Set the wait2 field for a set of routers.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the wait2 field for a set of routers.</span>
 
 <span class="sd">        :param tuple(int,int) timeout:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -975,7 +991,8 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.clear_reinjection_queue">[docs]</a>    <span class="k">def</span> <span class="nf">clear_reinjection_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Clears the queues for reinjection.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clears the queues for reinjection.</span>
 
 <span class="sd">        :param ~pacman.model.placements.Placements placements:</span>
 <span class="sd">            the placements object</span>
@@ -991,9 +1008,9 @@
             <span class="k">raise</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.unset_cores_for_data_streaming">[docs]</a>    <span class="k">def</span> <span class="nf">unset_cores_for_data_streaming</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Helper method for restoring the router timeouts to normal after\</span>
-<span class="sd">            being in a state usable for data streaming.</span>
-
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper method for restoring the router timeouts to normal after</span>
+<span class="sd">        being in a state usable for data streaming.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set the routers to temporary values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_router_wait1_timeout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_TEMP_TIMEOUT</span><span class="p">)</span>
@@ -1026,15 +1043,15 @@
                 <span class="n">error_cores</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">get_cores_not_in_state</span><span class="p">(</span>
                     <span class="n">core_subsets</span><span class="p">,</span> <span class="p">{</span><span class="n">CPUState</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">})</span>
                 <span class="k">if</span> <span class="n">error_cores</span><span class="p">:</span>
-                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cores in an unexpected state: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="n">error_cores</span><span class="p">))</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cores in an unexpected state: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">error_cores</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
                 <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Couldn&#39;t get core state&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.get_data"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">extra_monitor</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">memory_address</span><span class="p">,</span>
             <span class="n">length_in_bytes</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Gets data from a given core and memory address.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets data from a given core and memory address.</span>
 
 <span class="sd">        :param ExtraMonitorSupportMachineVertex extra_monitor:</span>
 <span class="sd">            the extra monitor used for this data</span>
@@ -1138,14 +1155,13 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                         <span class="s2">&quot;ignoring packet as transaction id should be </span><span class="si">{}</span><span class="s2">&quot;</span>
-                        <span class="s2">&quot; but is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">transaction_id</span><span class="p">,</span> <span class="n">response_transaction_id</span><span class="p">))</span>
+                        <span class="s2">&quot; but is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">,</span> <span class="n">response_transaction_id</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">SpinnmanTimeoutException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">timeoutcount</span> <span class="o">&gt;</span> <span class="n">TIMEOUT_RETRY_LIMIT</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
-                        <span class="s2">&quot;Failed to hear from the machine during </span><span class="si">{}</span><span class="s2"> attempts. &quot;</span>
-                        <span class="s2">&quot;Please try removing firewalls&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                            <span class="n">timeoutcount</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+                        <span class="s2">&quot;Failed to hear from the machine during &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">timeoutcount</span><span class="si">}</span><span class="s2"> attempts. &quot;</span>
+                        <span class="s2">&quot;Please try removing firewalls&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
 
                 <span class="n">timeoutcount</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="c1"># self.__reset_connection()</span>
@@ -1157,8 +1173,9 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_determine_which_routers_were_used</span><span class="p">(</span><span class="n">placement</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Traverse the fixed route paths from a given location to its\</span>
-<span class="sd">            destination. Used for determining which routers were used.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Traverse the fixed route paths from a given location to its</span>
+<span class="sd">        destination. Used for determining which routers were used.</span>
 
 <span class="sd">        :param ~.Placement placement: the source to start from</span>
 <span class="sd">        :return: list of chip locations</span>
@@ -1182,7 +1199,8 @@
         <span class="k">return</span> <span class="n">routers</span>
 
     <span class="k">def</span> <span class="nf">_write_routers_used_into_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">routers_been_in_use</span><span class="p">,</span> <span class="n">placement</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Write the used routers into a report</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write the used routers into a report.</span>
 
 <span class="sd">        :param str report_path: the path to the report file</span>
 <span class="sd">        :param list(tuple(int,int)) routers_been_in_use:</span>
@@ -1190,11 +1208,13 @@
 <span class="sd">        :param ~.Placement placement: the first placement used</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_out_report_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
-            <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;[</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">] = </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">routers_been_in_use</span><span class="p">))</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="si">}</span><span class="s2">] &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">routers_been_in_use</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_calculate_missing_seq_nums</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine which sequence numbers we&#39;ve missed</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine which sequence numbers we&#39;ve missed.</span>
 
 <span class="sd">        :param set(int) seq_nums: the set already acquired</span>
 <span class="sd">        :return: list of missing sequence numbers</span>
@@ -1205,9 +1225,10 @@
     <span class="k">def</span> <span class="nf">_determine_and_retransmit_missing_seq_nums</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">lost_seq_nums</span><span class="p">,</span>
             <span class="n">transaction_id</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Determine if there are any missing sequence numbers, and if so\</span>
-<span class="sd">            retransmits the missing sequence numbers back to the core for\</span>
-<span class="sd">            retransmission.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if there are any missing sequence numbers, and if so</span>
+<span class="sd">        retransmits the missing sequence numbers back to the core for</span>
+<span class="sd">        retransmission.</span>
 
 <span class="sd">        :param set(int) seq_nums: the sequence numbers already received</span>
 <span class="sd">        :param ~.Transceiver transceiver: spinnman instance</span>
@@ -1306,7 +1327,8 @@
     <span class="k">def</span> <span class="nf">_process_data</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">,</span> <span class="n">finished</span><span class="p">,</span> <span class="n">placement</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">lost_seq_nums</span><span class="p">,</span> <span class="n">transaction_id</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Take a packet and processes it see if we&#39;re finished yet.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Take a packet and process it see if we&#39;re finished yet.</span>
 
 <span class="sd">        :param bytearray data: the packet data</span>
 <span class="sd">        :param set(int) seq_nums: the list of sequence numbers received so far</span>
@@ -1380,7 +1402,8 @@
     <span class="k">def</span> <span class="nf">_write_into_view</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">view_start_position</span><span class="p">,</span> <span class="n">view_end_position</span><span class="p">,</span>
             <span class="n">data</span><span class="p">,</span> <span class="n">data_start_position</span><span class="p">,</span> <span class="n">data_end_position</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Puts data into the view</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Puts data into the view.</span>
 
 <span class="sd">        :param int view_start_position: where in view to start</span>
 <span class="sd">        :param int view_end_position: where in view to end</span>
@@ -1399,7 +1422,8 @@
             <span class="n">data</span><span class="p">[</span><span class="n">data_start_position</span><span class="p">:</span><span class="n">data_end_position</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seq_nums</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Verify if the sequence numbers are correct.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verify if the sequence numbers are correct.</span>
 
 <span class="sd">        :param list(int) seq_nums: the received sequence numbers</span>
 <span class="sd">        :return: Whether all the sequence numbers have been received</span>
@@ -1413,7 +1437,8 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">)</span> <span class="o">==</span> <span class="n">max_needed</span> <span class="o">+</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="DataSpeedUpPacketGatherMachineVertex.calculate_max_seq_num"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.calculate_max_seq_num">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_max_seq_num</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Deduce the max sequence number expected to be received</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deduce the max sequence number expected to be received.</span>
 
 <span class="sd">        :return: the biggest sequence num expected</span>
 <span class="sd">        :rtype: int</span>
@@ -1424,7 +1449,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_missing</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Debug printer for the missing sequence numbers from the pile.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Debug printer for the missing sequence numbers from the pile.</span>
 
 <span class="sd">        :param list(int) seq_nums: the sequence numbers received so far</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1433,7 +1459,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_missing_n_packets</span><span class="p">(</span><span class="n">n_packets</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Debug printer for the number of missing packets from the pile.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Debug printer for the number of missing packets from the pile.</span>
 
 <span class="sd">        :param n_packets: the number of packets</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1441,23 +1468,25 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_out_packet_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">position</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Debug prints out the data from the packet.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Debug prints out the data from the packet.</span>
 
 <span class="sd">        :param bytearray data: the packet data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">reread_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s2">&quot;&lt;</span><span class="si">{}</span><span class="s2">B&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)),</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">reread_data</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">B&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">position2</span> <span class="o">=</span> <span class="n">position</span>
-        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;size of data is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">))</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;size of data is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">reread_data_element</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reread_data</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">index</span> <span class="o">&gt;=</span> <span class="mi">12</span><span class="p">:</span>
-                <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">,&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">position2</span><span class="p">,</span> <span class="n">reread_data_element</span><span class="p">)</span>
+                <span class="n">output</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">position2</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">reread_data_element</span><span class="si">}</span><span class="s2">,&quot;</span>
                 <span class="n">position2</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;converted data back into readable form is </span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_length_of_received_seq_nums</span><span class="p">(</span><span class="n">seq_nums</span><span class="p">,</span> <span class="n">max_needed</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Debug helper method for figuring out if everything been received.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Debug helper method for figuring out if everything been received.</span>
 
 <span class="sd">        :param list(int) seq_nums: sequence numbers received</span>
 <span class="sd">        :param int max_needed: biggest expected to have</span>
@@ -1468,8 +1497,8 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_print_packet_num_being_sent</span><span class="p">(</span><span class="n">packet_count</span><span class="p">,</span> <span class="n">n_packets</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Debug helper for printing missing sequence number packet\</span>
-<span class="sd">            transmission.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Debug helper for printing missing sequence number packet transmission.</span>
 
 <span class="sd">        :param int packet_count: which packet is being fired</span>
 <span class="sd">        :param int n_packets: how many packets to fire.</span>

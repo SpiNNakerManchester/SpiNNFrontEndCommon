@@ -72,7 +72,8 @@
 
 
 <div class="viewcode-block" id="pair_compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.pair_compression">[docs]</a><span class="k">def</span> <span class="nf">pair_compression</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Load routing tables and compress then using the Pair Algorithm.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load routing tables and compress then using the Pair Algorithm.</span>
 
 <span class="sd">    See ``pacman/operations/router_compressors/pair_compressor.py`` which is</span>
 <span class="sd">    the exact same algorithm implemented in Python.</span>
@@ -89,7 +90,8 @@
 
 
 <div class="viewcode-block" id="ordered_covering_compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.ordered_covering_compression">[docs]</a><span class="k">def</span> <span class="nf">ordered_covering_compression</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Load routing tables and compress then using the unordered Algorithm.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load routing tables and compress then using the unordered Algorithm.</span>
 
 <span class="sd">    To the best of our knowledge this is the same algorithm as</span>
 <span class="sd">    :py:func:`mundy_on_chip_router_compression`, except this one is still</span>
@@ -108,8 +110,9 @@
 
 
 <div class="viewcode-block" id="Compression"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression">[docs]</a><span class="k">class</span> <span class="nc">Compression</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Compression algorithm implementation that uses a on-chip router\</span>
-<span class="sd">        compressor in order to parallelise.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compression algorithm implementation that uses a on-chip router</span>
+<span class="sd">    compressor in order to parallelise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -143,7 +146,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__result_register</span> <span class="o">=</span> <span class="n">result_register</span>
 
 <div class="viewcode-block" id="Compression.compress"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.interface_functions.html#spinn_front_end_common.interface.interface_functions.host_no_bitfield_router_compression.Compression.compress">[docs]</a>    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Apply the on-machine compression algorithm.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply the on-machine compression algorithm.</span>
 
 <span class="sd">        :raises SpinnFrontEndException: If compression fails</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -176,7 +180,7 @@
             <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_binary_path</span><span class="p">],</span> <span class="n">progress_bar</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__failures</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">SpinnFrontEndException</span><span class="p">(</span>
-                <span class="s2">&quot;The router compressor failed on </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__failures</span><span class="p">))</span></div>
+                <span class="sa">f</span><span class="s2">&quot;The router compressor failed on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__failures</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_load_routing_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -195,11 +199,11 @@
         <span class="n">transceiver</span><span class="o">.</span><span class="n">write_memory</span><span class="p">(</span><span class="n">table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">table</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">base_address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_check_for_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">executable_targets</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Goes through the cores checking for cores that have failed to\</span>
-<span class="sd">            compress the routing tables to the level where they fit into the\</span>
-<span class="sd">            router</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Goes through the cores checking for cores that have failed to compress</span>
+<span class="sd">        the routing tables to the level where they fit into the router.</span>
 
-<span class="sd">        :param ExecutableTargets executable_targets:</span>
+<span class="sd">        :param ~spinnman.model.ExecutableTargets executable_targets:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">core_subset</span> <span class="ow">in</span> <span class="n">executable_targets</span><span class="o">.</span><span class="n">all_core_subsets</span><span class="p">:</span>
@@ -222,18 +226,17 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__failures</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="nf">_load_executables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Plans the loading of the router compressor onto the chips.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plans the loading of the router compressor onto the chips.</span>
 
 <span class="sd">        :return:</span>
 <span class="sd">            the executable targets that represent all cores/chips which have</span>
 <span class="sd">            active routing tables</span>
-<span class="sd">        :rtype: ExecutableTargets</span>
+<span class="sd">        :rtype: ~spinnman.model.ExecutableTargets</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># build core subsets</span>
         <span class="n">core_subsets</span> <span class="o">=</span> <span class="n">CoreSubsets</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">routing_table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_routing_tables</span><span class="p">:</span>
-
             <span class="c1"># get the first none monitor core</span>
             <span class="n">chip</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_chip_at</span><span class="p">(</span><span class="n">routing_table</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">routing_table</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
             <span class="n">processor</span> <span class="o">=</span> <span class="n">chip</span><span class="o">.</span><span class="n">get_first_none_monitor_processor</span><span class="p">()</span>
@@ -250,15 +253,15 @@
         <span class="k">return</span> <span class="n">executable_targets</span>
 
     <span class="k">def</span> <span class="nf">_build_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Convert the router table into the data needed by the router\</span>
-<span class="sd">            compressor C code.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the router table into the data needed by the router</span>
+<span class="sd">        compressor C code.</span>
 
-<span class="sd">        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:</span>
-<span class="sd">            the pacman router table instance</span>
+<span class="sd">        :param table: the pacman router table instance</span>
+<span class="sd">        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable</span>
 <span class="sd">        :return: The byte array of data</span>
 <span class="sd">        :rtype: bytearray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># write header data of the app ID to load the data, if to store</span>
         <span class="c1"># results in SDRAM and the router table entries</span>
 

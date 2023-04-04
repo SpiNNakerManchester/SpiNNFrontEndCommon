@@ -53,7 +53,8 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineAllocationController">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.impl.</span></span><span class="sig-name descname"><span class="pre">MachineAllocationController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">thread_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hostname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">connection_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController" title="spinn_front_end_common.abstract_models.AbstractMachineAllocationController"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractMachineAllocationController</span></code></a></p>
-<p>How to manage the allocation of a machine so that it gets cleaned up        neatly when the script dies.</p>
+<p>How to manage the allocation of a machine so that it gets cleaned up
+neatly when the script dies.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>thread_name</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
@@ -142,11 +143,8 @@ port will result in a connection that can’t easily be configured.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<em>Placement</em>) – The placement the vertex is located at</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -158,13 +156,10 @@ port will result in a connection that can’t easily be configured.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write into.</p></li>
-<li><p><strong>placement</strong> (<em>Placement</em>) – Where this node is on the SpiNNaker machine.</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Where this node is on the SpiNNaker machine.</p></li>
 <li><p><strong>iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><em>IPTag</em></a><em>) or </em><em>None</em>) – The (forward) IP tags for the vertex, if any</p></li>
 <li><p><strong>reverse_iptags</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><em>ReverseIPTag</em></a><em>) or </em><em>None</em>) – The reverse IP tags for the vertex, if any</p></li>
 </ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -175,7 +170,8 @@ port will result in a connection that can’t easily be configured.</p></li>
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.abstract_models.impl.</span></span><span class="sig-name descname"><span class="pre">TDMAAwareApplicationVertex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_atoms_per_core</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">splitter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ApplicationVertex</span></code></p>
-<p>An application vertex that contains the code for using TDMA to spread        packet transmission to try to avoid overloading any SpiNNaker routers.</p>
+<p>An application vertex that contains the code for using TDMA to spread
+packet transmission to try to avoid overloading any SpiNNaker routers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -188,7 +184,7 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data">
 <span class="sig-name descname"><span class="pre">generate_tdma_data_specification_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex_index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.generate_tdma_data_specification_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.generate_tdma_data_specification_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates the TDMA configuration data needed for the data spec</p>
+<dd><p>Generates the TDMA configuration data needed for the data spec.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>vertex_index</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the machine vertex index in the pop</p>
@@ -205,7 +201,7 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_cores">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_n_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_n_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_cores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the number of cores this application vertex is using in             the TDMA.</p>
+<dd><p>Get the number of cores this application vertex is using in the TDMA.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>the number of cores to use in the TDMA</p>
@@ -219,10 +215,10 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases">
 <span class="sig-name descname"><span class="pre">get_n_phases</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_n_phases"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_n_phases" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Compute the number of phases needed for this application vertex.             This is the maximum number of packets any machine vertex created             by this application vertex can send in one simulation time step,</dt><dd><p>which defaults to the number of atoms in the graph.</p>
-</dd>
-</dl>
+<dd><p>Compute the number of phases needed for this application vertex.
+This is the maximum number of packets any machine vertex created
+by this application vertex can send in one simulation time step,
+which defaults to the number of atoms in the graph.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -233,7 +229,7 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item">
 <span class="sig-name descname"><span class="pre">get_tdma_provenance_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc_label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tdma_slots_missed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.get_tdma_provenance_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.get_tdma_provenance_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the provenance item used for the TDMA provenance</p>
+<dd><p>Get the provenance item used for the TDMA provenance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -250,7 +246,7 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_initial_offset">
 <span class="sig-name descname"><span class="pre">set_initial_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/tdma_aware_application_vertex.html#TDMAAwareApplicationVertex.set_initial_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.set_initial_offset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the initial offset</p>
+<dd><p>Sets the initial offset.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>new_value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the new initial offset, in clock ticks</p>
@@ -278,7 +274,7 @@ placed on a core, used in partitioning.</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.tdma_sdram_size_in_bytes">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tdma_sdram_size_in_bytes</span></span><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.TDMAAwareApplicationVertex.tdma_sdram_size_in_bytes" title="Permalink to this definition">¶</a></dt>
-<dd><p>The number of bytes needed by the TDMA data</p>
+<dd><p>The number of bytes needed by the TDMA data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>

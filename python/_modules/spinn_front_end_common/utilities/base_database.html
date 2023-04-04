@@ -67,7 +67,8 @@
 
 
 <div class="viewcode-block" id="BaseDatabase"><a class="viewcode-back" href="../../../spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.base_database.BaseDatabase">[docs]</a><span class="k">class</span> <span class="nc">BaseDatabase</span><span class="p">(</span><span class="n">SQLiteDB</span><span class="p">,</span> <span class="n">AbstractContextManager</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Specific implementation of the Database for SQLite 3.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Specific implementation of the Database for SQLite 3.</span>
 
 <span class="sd">    There should only ever be a single Database Object in use at any time.</span>
 <span class="sd">    In the case of application_graph_changed the first should closed and</span>
@@ -75,7 +76,6 @@
 
 <span class="sd">    If 2 database objects where opened with the database_file they hold the</span>
 <span class="sd">    same data. Unless someone else deletes that file.</span>
-
 
 <span class="sd">    .. note::</span>
 <span class="sd">        *Not thread safe on the same database file!*</span>

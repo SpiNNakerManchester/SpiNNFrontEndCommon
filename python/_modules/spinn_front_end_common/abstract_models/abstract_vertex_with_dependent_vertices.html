@@ -57,23 +57,26 @@
 <span class="nd">@require_subclass</span><span class="p">(</span><span class="n">ApplicationVertex</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">AbstractVertexWithEdgeToDependentVertices</span><span class="p">(</span>
         <span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">AbstractBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; A vertex with a dependent vertices, which should be connected to this\</span>
-<span class="sd">        vertex by an edge directly to each of them</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A vertex with a dependent vertices, which should be connected to this</span>
+<span class="sd">    vertex by an edge directly to each of them.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="AbstractVertexWithEdgeToDependentVertices.dependent_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.dependent_vertices">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">dependent_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return the vertices which this vertex depends upon</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the vertices which this vertex depends upon.</span>
 
 <span class="sd">        :rtype: iterable(~pacman.model.graphs.application.ApplicationVertex)</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractVertexWithEdgeToDependentVertices.edge_partition_identifiers_for_dependent_vertex">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">edge_partition_identifiers_for_dependent_vertex</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot; Return the dependent edge identifiers for a particular dependent\</span>
-<span class="sd">            vertex.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the dependent edge identifiers for a particular dependent</span>
+<span class="sd">        vertex.</span>
 
 <span class="sd">        :param ~pacman.model.graphs.application.ApplicationVertex vertex:</span>
 <span class="sd">        :rtype: iterable(str)</span>
