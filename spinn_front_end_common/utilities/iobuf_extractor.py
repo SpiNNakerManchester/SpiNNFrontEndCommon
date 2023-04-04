@@ -266,7 +266,7 @@ class IOBufExtractor(object):
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
                         "failed to retrieve iobufs from "
-                        f"{core_subset.x},{core_subset.y},{core_subset.p}; "
+                        f"{core_subset.x},{core_subset.y},{p}; "
                         f"{str(e)}"))
         return io_buffers
 
