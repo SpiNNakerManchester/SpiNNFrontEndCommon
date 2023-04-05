@@ -125,8 +125,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         """ Test that an application vertex's data is rewritten correctly
         """
         writer = FecDataWriter.mock()
-        machine = writer.get_machine()
-        machine.set_max_sdram_found(117 * 1024 * 1024)
+        writer.set_max_sdram_found(117 * 1024 * 1024)
         m_vertex_1 = _TestMachineVertex()
         m_vertex_2 = _TestMachineVertex()
 
