@@ -15,7 +15,7 @@
 import os
 import numpy
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import SDRAM
+from spinn_machine import Machine
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -93,7 +93,7 @@ def regenerate_data_spec(placement, data_dir):
     # execute the spec
     with open(spec_file, "rb") as spec_reader:
         data_spec_executor = DataSpecificationExecutor(
-            spec_reader, SDRAM.max_sdram_found)
+            spec_reader, Machine.get_max_sdram_found())
         data_spec_executor.execute()
     try:
         os.remove(spec_file)

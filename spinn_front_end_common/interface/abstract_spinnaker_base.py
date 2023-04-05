@@ -617,7 +617,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the minimum number of machine timesteps to assign
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
-            size = self._data_writer.get_chip_at(x, y).sdram.size
+            size = self._data_writer.get_chip_at(x, y).sdram
             if sdram.fixed > size:
                 raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "

@@ -15,7 +15,6 @@
 import unittest
 import numpy
 from spinn_utilities.overrides import overrides
-from spinn_machine import SDRAM
 from pacman.model.placements import Placements, Placement
 from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.abstract_models import (
@@ -125,9 +124,9 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
     def test_with_application_vertices(self):
         """ Test that an application vertex's data is rewritten correctly
         """
-        # Create a default SDRAM to set the max to default
         writer = FecDataWriter.mock()
-        SDRAM()
+        machine = writer.get_machine()
+        machine.set_max_sdram_found(117 * 1024 * 1024)
         m_vertex_1 = _TestMachineVertex()
         m_vertex_2 = _TestMachineVertex()
 
