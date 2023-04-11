@@ -39,7 +39,7 @@ from spinnman.model.enums.cpu_state import CPUState
 
 from data_specification import __version__ as data_spec_version
 
-from spalloc import __version__ as spalloc_version
+from spalloc_client import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
 from pacman.exceptions import PacmanPlaceException
@@ -173,9 +173,9 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __init__(self, data_writer_cls=None):
         """
         :param int n_chips_required:
-            Overrides the number of chips to allocate from spalloc
+            Overrides the number of chips to allocate from spalloc_client
         :param int n_boards_required:
-            Overrides the number of boards to allocate from spalloc
+            Overrides the number of boards to allocate from spalloc_client
         :param FecDataWriter data_writer_cls:
             The Global data writer class
         """
