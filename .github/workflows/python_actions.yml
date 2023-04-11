@@ -37,16 +37,21 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install pip, etc
       uses: ./support/actions/python-tools
-    - name: Install Spinnaker Dependencies
-      uses: ./support/actions/checkout-spinn-deps
       with:
-        repositories: >
+        pylint: False
+
+    - name: Install Spinnaker Dependencies
+      uses: ./support/actions/install-spinn-deps
+      with:
+        repositories:
           SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
         install: true
+
     - name: Setup
-      uses: ./support/actions/run-setup
+      uses: ./support/actions/run-install
 
     - name: Test with pytest
       uses: ./support/actions/pytest
@@ -60,7 +65,7 @@ jobs:
       run: flake8 spinn_front_end_common unittests fec_integration_tests
     - name: Lint with pylint
       uses: ./support/actions/pylint
-      with: 
+      with:
         package: spinn_front_end_common
         exitcheck: 39
 
