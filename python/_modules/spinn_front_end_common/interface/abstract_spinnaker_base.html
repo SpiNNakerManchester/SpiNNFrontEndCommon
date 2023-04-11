@@ -76,7 +76,7 @@
 
 <span class="kn">from</span> <span class="nn">data_specification</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">data_spec_version</span>
 
-<span class="kn">from</span> <span class="nn">spalloc</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spalloc_version</span>
+<span class="kn">from</span> <span class="nn">spalloc_client</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">spalloc_version</span>
 
 <span class="kn">from</span> <span class="nn">pacman</span> <span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">pacman_version</span>
 <span class="kn">from</span> <span class="nn">pacman.exceptions</span> <span class="kn">import</span> <span class="n">PacmanPlaceException</span>
@@ -210,9 +210,9 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_writer_cls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param int n_chips_required:</span>
-<span class="sd">            Overrides the number of chips to allocate from spalloc</span>
+<span class="sd">            Overrides the number of chips to allocate from spalloc_client</span>
 <span class="sd">        :param int n_boards_required:</span>
-<span class="sd">            Overrides the number of boards to allocate from spalloc</span>
+<span class="sd">            Overrides the number of boards to allocate from spalloc_client</span>
 <span class="sd">        :param FecDataWriter data_writer_cls:</span>
 <span class="sd">            The Global data writer class</span>
 <span class="sd">        &quot;&quot;&quot;</span>
