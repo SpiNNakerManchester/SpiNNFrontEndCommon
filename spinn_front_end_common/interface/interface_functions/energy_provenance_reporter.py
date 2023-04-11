@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,7 +33,8 @@ _PROV_KEY = "power_provenance"
 
 
 def energy_provenance_reporter(power_used):
-    """ Converts the power usage information into provenance data.
+    """
+    Converts the power usage information into provenance data.
 
     :param PowerUsed power_used:
         The computed basic power consumption information
@@ -59,4 +60,4 @@ def __prop_name(name):
 
 
 def __router_name(x, y):
-    return "router@{},{} energy (Joules)".format(x, y)
+    return f"router@{x},{y} energy (Joules)"

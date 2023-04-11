@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,8 +20,9 @@ from spinn_front_end_common.utility_models import (
 
 
 def insert_extra_monitor_vertices_to_graphs(placements):
-    """ Inserts the extra monitor vertices into the graph that correspond to\
-        the extra monitor cores required.
+    """
+    Inserts the extra monitor vertices into the graph that correspond to
+    the extra monitor cores required.
 
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,

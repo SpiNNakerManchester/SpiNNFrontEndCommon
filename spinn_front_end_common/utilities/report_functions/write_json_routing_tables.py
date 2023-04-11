@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,9 +23,10 @@ ROUTING_TABLES_FILENAME = "routing_tables.json"
 
 
 def write_json_routing_tables(router_tables):
-    """ Runs the code to write the machine in Java readable JSON.
+    """
+    Runs the code to write the machine in Java readable JSON.
 
-    :param MulticastRoutingTables router_tables:
+    :param ~pacman.model.routing_tables.MulticastRoutingTables router_tables:
         Routing Tables to convert. Could be uncompressed or compressed
     :param str json_folder: the folder to which the JSON are being written
     """

@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +18,8 @@ from typing import Dict, Tuple
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spalloc import Job
-from spalloc.states import JobState
+from spalloc_client import Job
+from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
@@ -58,9 +58,11 @@ class SpallocJobController(MachineAllocationController):
             self, client: SpallocClient, job: SpallocJob,
             task: AbstractContextManager, use_proxy: bool):
         """
-        :param SpallocClient client:
-        :param SpallocJob job:
-        :param AbstractContextManager task:
+        :param ~spinnman.spalloc.SpallocClient client:
+        :param ~spinnman.spalloc.SpallocJob job:
+        :param task:
+        :type task:
+            ~spinn_utilities.abstract_context_manager.AbstractContextManager
         :param bool use_proxy:
         """
         if job is None:
@@ -117,10 +119,10 @@ class SpallocJobController(MachineAllocationController):
     def create_transceiver(self):
         """
         .. note::
-
             This allocation controller proxies the transceiver's connections
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
+
         """
         if not self.__use_proxy:
             return super(SpallocJobController, self).create_transceiver()
@@ -132,9 +134,9 @@ class SpallocJobController(MachineAllocationController):
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
         """
         .. note::
-
             This allocation controller proxies connections via Spalloc. This
             allows it to work even outside the UNIMAN firewall.
+
         """
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
@@ -202,11 +204,6 @@ class _OldSpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
-        """
-        :param int chip_x:
-        :param int chip_y:
-        :rtype: tuple(int,int,int)
-        """
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)
@@ -235,8 +232,9 @@ def spalloc_allocator(
         bearer_token: str = None) -> Tuple[
             str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
             MachineAllocationController]:
-    """ Request a machine from a SPALLOC server that will fit the given\
-        number of chips.
+    """
+    Request a machine from a SPALLOC server that will fit the given
+    number of chips.
 
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None

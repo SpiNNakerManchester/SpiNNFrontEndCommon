@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,7 +35,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def pair_compression():
-    """ Load routing tables and compress then using the Pair Algorithm.
+    """
+    Load routing tables and compress then using the Pair Algorithm.
 
     See ``pacman/operations/router_compressors/pair_compressor.py`` which is
     the exact same algorithm implemented in Python.
@@ -52,7 +53,8 @@ def pair_compression():
 
 
 def ordered_covering_compression():
-    """ Load routing tables and compress then using the unordered Algorithm.
+    """
+    Load routing tables and compress then using the unordered Algorithm.
 
     To the best of our knowledge this is the same algorithm as
     :py:func:`mundy_on_chip_router_compression`, except this one is still
@@ -71,8 +73,9 @@ def ordered_covering_compression():
 
 
 class Compression(object):
-    """ Compression algorithm implementation that uses a on-chip router\
-        compressor in order to parallelise.
+    """
+    Compression algorithm implementation that uses a on-chip router
+    compressor in order to parallelise.
     """
 
     __slots__ = [
@@ -106,7 +109,8 @@ class Compression(object):
         self.__result_register = result_register
 
     def compress(self):
-        """ Apply the on-machine compression algorithm.
+        """
+        Apply the on-machine compression algorithm.
 
         :raises SpinnFrontEndException: If compression fails
         """
@@ -139,7 +143,7 @@ class Compression(object):
             [self._binary_path], progress_bar)
         if self.__failures:
             raise SpinnFrontEndException(
-                "The router compressor failed on {}".format(self.__failures))
+                f"The router compressor failed on {self.__failures}")
 
     def _load_routing_table(self, table):
         """
@@ -158,11 +162,11 @@ class Compression(object):
         transceiver.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(self, executable_targets):
-        """ Goes through the cores checking for cores that have failed to\
-            compress the routing tables to the level where they fit into the\
-            router
+        """
+        Goes through the cores checking for cores that have failed to compress
+        the routing tables to the level where they fit into the router.
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
@@ -185,18 +189,17 @@ class Compression(object):
         return len(self.__failures) == 0
 
     def _load_executables(self):
-        """ Plans the loading of the router compressor onto the chips.
+        """
+        Plans the loading of the router compressor onto the chips.
 
         :return:
             the executable targets that represent all cores/chips which have
             active routing tables
-        :rtype: ExecutableTargets
+        :rtype: ~spinnman.model.ExecutableTargets
         """
-
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables:
-
             # get the first none monitor core
             chip = FecDataView.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
@@ -213,15 +216,15 @@ class Compression(object):
         return executable_targets
 
     def _build_data(self, table):
-        """ Convert the router table into the data needed by the router\
-            compressor C code.
+        """
+        Convert the router table into the data needed by the router
+        compressor C code.
 
-        :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the pacman router table instance
+        :param table: the pacman router table instance
+        :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
         :rtype: bytearray
         """
-
         # write header data of the app ID to load the data, if to store
         # results in SDRAM and the router table entries
 

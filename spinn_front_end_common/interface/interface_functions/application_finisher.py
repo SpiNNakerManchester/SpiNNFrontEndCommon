@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,8 +29,9 @@ _ONE_WORD = struct.Struct("<I")
 
 
 def application_finisher():
-    """ Handles finishing the running of an application, collecting the\
-        status of the cores that the application was running on.
+    """
+    Handles finishing the running of an application, collecting the
+    status of the cores that the application was running on.
 
     :raises ExecutableFailedToStopException:
     """
@@ -61,10 +62,9 @@ def application_finisher():
 
         if processors_rte > 0 or processors_watchdogged > 0:
             raise ExecutableFailedToStopException(
-                "{} of {} processors went into an error state when"
-                " shutting down".format(
-                    processors_rte + processors_watchdogged,
-                    total_processors))
+                f"{processors_rte + processors_watchdogged} of "
+                f"{total_processors} processors went into an error state "
+                "when shutting down")
 
         successful_cores_finished = txrx.get_cores_in_state(
             all_core_subsets, CPUState.FINISHED)

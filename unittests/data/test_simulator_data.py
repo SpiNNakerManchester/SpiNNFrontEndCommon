@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -593,8 +593,8 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_n_gathers()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_gathers()
-        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None, None)
-        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None, None)
+        vertex1 = DataSpeedUpPacketGatherMachineVertex(0, 0, None)
+        vertex2 = DataSpeedUpPacketGatherMachineVertex(8, 8, None)
         map = dict()
         # Setting empty ok
         writer.set_gatherer_map(map)
@@ -642,8 +642,8 @@ class TestSimulatorData(unittest.TestCase):
             FecDataView.get_n_monitors()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.iterate_monitors()
-        vertex1 = ExtraMonitorSupportMachineVertex(None, None)
-        vertex2 = ExtraMonitorSupportMachineVertex(None, None)
+        vertex1 = ExtraMonitorSupportMachineVertex()
+        vertex2 = ExtraMonitorSupportMachineVertex()
         map = dict()
         # Setting empty ok
         writer.set_monitor_map(map)

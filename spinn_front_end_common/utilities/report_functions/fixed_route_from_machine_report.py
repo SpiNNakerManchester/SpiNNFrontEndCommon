@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,10 +18,9 @@ from spinn_front_end_common.data import FecDataView
 
 
 def fixed_route_from_machine_report():
-    """ Writes the fixed routes from the machine
-
-        :param int app_id: the application ID the fixed routes were loaded with
-        """
+    """
+    Writes the fixed routes from the machine.
+    """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), "fixed_route_routers")
     transceiver = FecDataView.get_transceiver()
@@ -53,8 +52,9 @@ def _reduce_route_value(processors_ids, link_ids):
 
 
 def _expand_route_value(processors_ids, link_ids):
-    """ Convert a 32-bit route word into a string which lists the target\
-        cores and links.
+    """
+    Convert a 32-bit route word into a string which lists the target
+    cores and links.
     """
 
     # Convert processor targets to readable values:
