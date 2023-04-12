@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +17,15 @@ from spinn_front_end_common.utility_models import LivePacketGather
 
 
 def split_lpg_vertices(system_placements):
-    """ Split any LPG vertices found
+    """
+    Split any LPG vertices found.
 
-    :param ApplictiongGraph app_graph: The application graph
+    :param ~pacman.model.graphs.application.ApplicationGraph app_graph:
+        The application graph
     :param ~spinn_machine.Machine machine:
         the SpiNNaker machine as discovered
-    :param Placements system_placements:
-        exiting placements to be added to
+    :param ~pacman.model.placements.Placements system_placements:
+        existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
         vertex.splitter.create_vertices(system_placements)

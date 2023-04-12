@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,7 +46,8 @@ POWER_CYCLE_FAILURE_WARNING = (
 def machine_generator(
         bmp_details, board_version, auto_detect_bmp,
         scamp_connection_data, reset_machine_on_start_up):
-    """ Makes a transceiver and a machine object.
+    """
+    Makes a transceiver and a machine object.
 
     :param str bmp_details: the details of the BMP connections
     :param int board_version:
@@ -55,7 +56,7 @@ def machine_generator(
     :param bool auto_detect_bmp:
         Whether the BMP should be automatically determined
     :param scamp_connection_data:
-        Job.connection dict,a String SC&MP connection data or None
+        Job.connection dict, a String SC&MP connection data or `None`
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:
@@ -141,10 +142,11 @@ def _parse_bmp_boards(bmp_boards):
 
 
 def _parse_bmp_connection(bmp_detail):
-    """ Parses one item of BMP connection data. Maximal format:\
-        `cabinet;frame;host,port/boards`
+    """
+    Parses one item of BMP connection data. Maximal format:
+    `cabinet;frame;host,port/boards`
 
-    All parts except host can be omitted. Boards can be a \
+    All parts except host can be omitted. Boards can be a
     hyphen-separated range or a comma-separated list.
 
     :param str bmp_detail:
@@ -160,8 +162,9 @@ def _parse_bmp_connection(bmp_detail):
 
 
 def _parse_bmp_details(bmp_string):
-    """ Take a BMP line (a colon-separated list) and split it into the\
-        BMP connection data.
+    """
+    Take a BMP line (a colon-separated list) and split it into the
+    BMP connection data.
 
     :param str bmp_string: the BMP string to be converted
     :return: the BMP connection data

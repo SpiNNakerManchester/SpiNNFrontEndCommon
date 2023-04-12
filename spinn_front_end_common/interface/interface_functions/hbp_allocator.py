@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,11 +43,11 @@ class _HBPJobController(MachineAllocationController):
         :param str url:
         :param str machine_name:
         """
-        self._extend_lease_url = "{}/extendLease".format(url)
-        self._check_lease_url = "{}/checkLease".format(url)
+        self._extend_lease_url = f"{url}/extendLease"
+        self._check_lease_url = f"{url}/checkLease"
         self._release_machine_url = url
-        self._set_power_url = "{}/power".format(url)
-        self._where_is_url = "{}/chipCoordinates".format(url)
+        self._set_power_url = f"{url}/power"
+        self._where_is_url = f"{url}/chipCoordinates"
         self._machine_name = machine_name
         self._power_on = True
         # Lower the level of requests to WARNING to avoid extra messages
@@ -110,8 +110,9 @@ class _HBPJobController(MachineAllocationController):
 
 
 def hbp_allocator(total_run_time):
-    """ Request a machine from the HBP remote access server that will fit\
-        a number of chips.
+    """
+    Request a machine from the HBP remote access server that will fit
+    a number of chips.
 
     :param int total_run_time: The total run time to request
     :return: machine name, machine version, BMP details (if any),

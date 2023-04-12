@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,7 +16,8 @@ from enum import Enum
 
 
 class DPRIFlags(Enum):
-    """ SCP Dropped Packet Reinjection (DPRI) packet type flags
+    """
+    SCP Dropped Packet Reinjection (DPRI) packet type flags.
     """
     MULTICAST = 1
     POINT_TO_POINT = 2

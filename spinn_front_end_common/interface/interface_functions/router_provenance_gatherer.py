@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,13 +29,15 @@ def router_provenance_gatherer():
 
 
 class _RouterProvenanceGatherer(object):
-    """ Gathers diagnostics from the routers.
+    """
+    Gathers diagnostics from the routers.
     """
 
     __slots__ = []
 
     def _add_router_provenance_data(self):
-        """ Writes the provenance data of the router diagnostics
+        """
+        Writes the provenance data of the router diagnostics
         """
         progress = ProgressBar(FecDataView.get_machine().n_chips*2,
                                "Getting Router Provenance")
@@ -108,7 +110,8 @@ class _RouterProvenanceGatherer(object):
         return reinjection_data[x, y] if reinjection_data else None
 
     def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
-        """ Describes the router diagnostics for one router.
+        """
+        Describes the router diagnostics for one router.
 
         :param int x: x coordinate of the router in question
         :param int y: y coordinate of the router in question

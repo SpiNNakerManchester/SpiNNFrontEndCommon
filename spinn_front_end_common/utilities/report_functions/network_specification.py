@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,9 +24,8 @@ _FILENAME = "network_specification.rpt"
 
 
 def network_specification():
-    """ Generate report on the user's network specification.
-
-    :rtype: None
+    """
+    Generate report on the user's network specification.
     """
     filename = os.path.join(FecDataView.get_run_dir_path(), _FILENAME)
     try:
@@ -42,16 +41,15 @@ def network_specification():
 def _write_report(f, vertex):
     """
     :param ~io.FileIO f:
-    :param vertex:
-    :type vertex: ApplicationVertex
+    :param ~pacman.model.graphs.application.ApplicationVertex vertex:
     """
     if isinstance(vertex, ApplicationVertex):
-        f.write("Vertex {}, size: {}, model: {}, max_atoms{}\n".format(
-            vertex.label, vertex.n_atoms, vertex.__class__.__name__,
-            vertex.get_max_atoms_per_core()))
+        f.write(
+            f"Vertex {vertex.label}, size: {vertex.n_atoms}, "
+            f"model: {vertex.__class__.__name__}, "
+            f"max_atoms: {vertex.get_max_atoms_per_core()}\n")
     else:
-        f.write("Vertex {}, model: {}\n".format(
-            vertex.label, vertex.__class__.__name__))
+        f.write(f"Vertex {vertex.label}, model: {vertex.__class__.__name__}\n")
 
     if vertex.get_fixed_location():
         f.write(f"    Fixed at:{vertex.get_fixed_location()}\n")
@@ -60,10 +58,10 @@ def _write_report(f, vertex):
     for partition in \
             FecDataView.get_outgoing_edge_partitions_starting_at_vertex(
                 vertex):
-        f.write("    Partition {}:\n".format(
-            partition.identifier))
+        f.write(f"    Partition {partition.identifier}:\n")
         for edge in partition.edges:
-            f.write("        Edge: {}, From {} to {}, model: {}\n".format(
-                edge.label, edge.pre_vertex.label,
-                edge.post_vertex.label, edge.__class__.__name__))
+            f.write(
+                f"        Edge: {edge.label}, "
+                f"From {edge.pre_vertex.label} to {edge.post_vertex.label}, "
+                f"model: {edge.__class__.__name__}\n")
     f.write("\n")

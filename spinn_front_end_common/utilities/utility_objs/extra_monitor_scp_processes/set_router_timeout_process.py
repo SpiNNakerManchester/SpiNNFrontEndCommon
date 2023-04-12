@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,8 +19,9 @@ from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
 
 
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
-    """ How to send messages to set router timeouts. These messages need to be\
-        sent to cores running the extra monitor binary.
+    """
+    How to send messages to set router timeouts. These messages need to be
+    sent to cores running the extra monitor binary.
 
     .. note::
         SCAMP sets wait2 to zero by default!
@@ -31,8 +32,9 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
     """
 
     def set_wait1_timeout(self, mantissa, exponent, core_subsets):
-        """ The wait1 timeout is the time from when a packet is received to\
-            when emergency routing becomes enabled.
+        """
+        The wait1 timeout is the time from when a packet is received to
+        when emergency routing becomes enabled.
 
         :param int mantissa: Timeout mantissa (0 to 15)
         :param int exponent: Timeout exponent (0 to 15)
@@ -45,8 +47,9 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                     core_subset, processor_id, mantissa, exponent, wait=1)
 
     def set_wait2_timeout(self, mantissa, exponent, core_subsets):
-        """ The wait2 timeout is the time from when a packet has emergency\
-            routing enabled for it to when it is dropped.
+        """
+        The wait2 timeout is the time from when a packet has emergency
+        routing enabled for it to when it is dropped.
 
         :param int mantissa: Timeout mantissa (0 to 15)
         :param int exponent: Timeout exponent (0 to 15)
@@ -59,9 +62,10 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                     core_subset, processor_id, mantissa, exponent, wait=2)
 
     def _set_timeout(self, core, processor_id, mantissa, exponent, wait):
-        """ Set a timeout for a router controlled by an extra monitor on a\
-            core. This is not a parallelised operation in order to aid\
-            debugging when it fails.
+        """
+        Set a timeout for a router controlled by an extra monitor on a core.
+        This is not a parallelised operation in order to aid debugging when
+        it fails.
 
         :param ~spinn_machine.CoreSubset core:
         :param int processor_id:

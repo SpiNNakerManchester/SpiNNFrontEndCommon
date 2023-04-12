@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,8 +50,13 @@ CONFIG_SIZE_IN_BYTES = 2 * BYTES_PER_WORD
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
-    """ Machine vertex for C code representing functionality to record\
-        idle times in a machine graph.
+    """
+    Machine vertex for C code representing functionality to record
+    idle times in a machine graph.
+
+    .. note::
+        This is an unusual machine vertex, in that it has no associated
+        application vertex.
     """
     __slots__ = [
         "_sampling_frequency"]
@@ -65,22 +70,19 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(
-            self, label, sampling_frequency, app_vertex=None,
-            vertex_slice=None):
+    def __init__(self, label, sampling_frequency):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
-        :param ChipPowerMonitor app_vertex: associated application vertex
-        :param ~pacman.model.graphs.common.Slice vertex_slice:
         """
         super().__init__(
-            label=label, app_vertex=app_vertex, vertex_slice=vertex_slice)
+            label=label, app_vertex=None, vertex_slice=None)
         self._sampling_frequency = sampling_frequency
 
     @property
     def sampling_frequency(self):
-        """ how often to sample, in microseconds
+        """
+        How often to sample, in microseconds.
 
         :rtype: int
         """
@@ -93,7 +95,8 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def get_resources(sampling_frequency):
-        """ Get the resources used by this vertex
+        """
+        Get the resources used by this vertex.
 
         :param float sampling_frequency:
         :rtype: ~pacman.model.resources.VariableSDRAM
@@ -123,7 +126,8 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def binary_file_name():
-        """ Return the string binary file name
+        """
+        Get the filename of the binary.
 
         :rtype: str
         """
@@ -133,11 +137,6 @@ class ChipPowerMonitorMachineVertex(
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
             ):
-        """ Supports the application vertex calling this directly
-
-        :param ~data_specification.DataSpecificationGenerator spec: data spec
-        :param int data_n_time_steps: timesteps to reserve data for
-        """
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -149,7 +148,8 @@ class ChipPowerMonitorMachineVertex(
         spec.end_specification()
 
     def _write_configuration_region(self, spec):
-        """ Write the data needed by the C code to configure itself
+        """
+        Write the data needed by the C code to configure itself.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             spec object
@@ -161,7 +161,8 @@ class ChipPowerMonitorMachineVertex(
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
     def _write_setup_info(self, spec):
-        """ Writes the system data as required.
+        """
+        Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG spec writer
@@ -178,7 +179,8 @@ class ChipPowerMonitorMachineVertex(
             recorded_region_sizes))
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve the DSG memory regions as required
+        """
+        Reserve the DSG memory regions as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
             the DSG specification to reserve in
@@ -204,7 +206,8 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def binary_start_type():
-        """ The type of binary that implements this vertex
+        """
+        The type of binary that implements this vertex.
 
         :return: starttype enum
         :rtype: ExecutableType
@@ -221,21 +224,22 @@ class ChipPowerMonitorMachineVertex(
         return [0]
 
     def _deduce_sdram_requirements_per_timer_tick(self):
-        """ Deduce SDRAM usage per timer tick
+        """
+        Deduce SDRAM usage per timer tick.
 
         :return: the SDRAM usage
         :rtype: int
         """
-        recording_time = \
-            self._sampling_frequency * get_config_int(
-                "EnergyMonitor", "n_samples_per_recording_entry")
+        recording_time = self._sampling_frequency * get_config_int(
+            "EnergyMonitor", "n_samples_per_recording_entry")
         n_entries = math.floor(FecDataView.get_hardware_time_step_us() /
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
     def get_recorded_data(self, placement):
-        """ Get data from SDRAM given placement and buffer manager. \
-            Also arranges for provenance data to be available.
+        """
+        Get data from SDRAM given placement and buffer manager.
+        Also arranges for provenance data to be available.
 
         :param ~pacman.model.placements.Placement placement:
             the location on machine to get data from

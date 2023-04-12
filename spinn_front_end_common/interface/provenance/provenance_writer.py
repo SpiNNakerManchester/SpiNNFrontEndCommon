@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class ProvenanceWriter(BaseDatabase):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     .. note::
         *Not thread safe on the same database file.*
@@ -44,8 +45,7 @@ class ProvenanceWriter(BaseDatabase):
         :type database_file: str or None
         :param bool memory:
             Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
-
+            Otherwise a `None` file will mean the default should be used
         """
         super().__init__(database_file)
 
@@ -188,7 +188,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_board_provenance(self, connections):
         """
-        Write the conection treived from spalloc job
+        Write the conection treived from spalloc_client job
 
         :param connections: {(x, y): hostname, ...} or None
         :type connections: dict((int, int): str) or None

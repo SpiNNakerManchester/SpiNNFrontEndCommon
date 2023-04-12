@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,18 +28,18 @@ _APP_READY_TIMEOUT = 10.0
 
 
 def load_app_images():
-    """ Go through the executable targets and load each binary to everywhere\
-         and then send a start request to the cores that actually use it.
-
+    """
+    Go through the executable targets and load each binary to everywhere
+    and then send a start request to the cores that actually use it.
     """
     __load_images(lambda ty: ty is not ExecutableType.SYSTEM,
                   "Loading executables onto the machine")
 
 
 def load_sys_images():
-    """ Go through the executable targets and load each binary to everywhere\
-         and then send a start request to the cores that actually use it.
-
+    """
+    Go through the executable targets and load each binary to everywhere
+    and then send a start request to the cores that actually use it.
     """
     __load_images(lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
@@ -84,7 +84,7 @@ def filter_targets(filt):
     """
     :param ~spinnman.model.ExecutableTargets executable_targets:
     :param callable(ExecutableType,bool) filt:
-    :rtype: tuple(list(str), ExecutableTargets)
+    :rtype: tuple(list(str), ~spinnman.model.ExecutableTargets)
     """
     binaries = []
     cores = ExecutableTargets()

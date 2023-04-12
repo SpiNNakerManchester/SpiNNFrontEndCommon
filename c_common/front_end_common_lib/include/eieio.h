@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,8 +56,8 @@ enum eieio_bit_masks {
 // use uint16_t as a base type means that we know they'll all be in the same
 // memory slot (which they will fit into).
 //
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka10202.html
-// http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0491e/Babjddhe.html
+// https://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.faqs/ka10202.html
+// https://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0491e/Babjddhe.html
 //
 // THIS IS NOT PORTABLE TO NON-SPINNAKER!
 

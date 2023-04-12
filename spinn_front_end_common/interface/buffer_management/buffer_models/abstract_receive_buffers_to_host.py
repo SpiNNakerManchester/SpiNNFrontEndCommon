@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +19,17 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
-    """ Indicates that this MachineVertex can receive buffers.
+    """
+    Indicates that this :py:class:`~pacman.model.graphs.machine.MachineVertex`
+    can receive buffers.
     """
 
     __slots__ = ()
 
     @abstractmethod
     def get_recorded_region_ids(self):
-        """ Get the recording region IDs that have been recorded using
-        buffering
+        """
+        Get the recording region IDs that have been recorded using buffering.
 
         :return: The region numbers that have active recording
         :rtype: iterable(int)
@@ -35,7 +37,8 @@ class AbstractReceiveBuffersToHost(object, metaclass=AbstractBase):
 
     @abstractmethod
     def get_recording_region_base_address(self, placement):
-        """ Get the recording region base address
+        """
+        Get the recording region base address.
 
         :param ~pacman.model.placements.Placement placement:
             the placement object of the core to find the address of

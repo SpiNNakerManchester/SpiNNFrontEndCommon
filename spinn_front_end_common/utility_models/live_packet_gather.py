@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,11 +16,16 @@ from .lpg_splitter import LPGSplitter
 
 
 class LivePacketGather(ApplicationVertex):
-    """ A vertex that gathers and forwards multicast packets to the host
+    """
+    A vertex that gathers and forwards multicast packets to the host.
     """
     __slots__ = ["__params"]
 
     def __init__(self, params, label=None):
+        """
+        :param LivePacketGatherParameters params: The parameters object
+        :param str label: An optional label
+        """
         super(LivePacketGather, self).__init__(label)
         self.__params = params
         self.splitter = LPGSplitter()

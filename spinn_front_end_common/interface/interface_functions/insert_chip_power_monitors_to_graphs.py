@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,8 @@ _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 def insert_chip_power_monitors_to_graphs(placements):
-    """ Adds chip power monitors into a given graph.
+    """
+    Adds chip power monitors into a given graph.
 
     param Placements placements:
     """
