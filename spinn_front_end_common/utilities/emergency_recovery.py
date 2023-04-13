@@ -18,8 +18,7 @@ from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.interface_functions import (
-    chip_provenance_updater)
+from .chip_provenance_updater import chip_provenance_updater
 from .iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
