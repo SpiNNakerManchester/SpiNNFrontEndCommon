@@ -46,6 +46,7 @@ def insert_chip_power_monitors_to_graphs(placements):
     # return any one of the Vertices created
     return vertex
 
+
 def __cores(machine, x, y):
     return [p.processor_id for p in machine.get_chip_at(x, y).processors
             if not p.is_monitor]
