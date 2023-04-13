@@ -19,12 +19,16 @@ spalloc
 BMP
 SDP
 SCP
+eieio
 EIEIO
 malloc
+DSG
 
 # Our special words
 bitfield
+bitfields
 precompiled
+timestep
 
 # Our types
 IPTag
@@ -32,3 +36,20 @@ ReverseIPTag
 AbstractVertex
 ApplicationVertex
 MachineVertex
+AbstractEdge
+ExecutableTargets
+LivePacketGatherParameters
+LivePacketGatherMachineVertex
+DataSpeedUpPacketGatherMachineVertex
+ExtraMonitorSupportMachineVertex
+AbstractEIEIOMessage
+CPUState
+CoreSubsets
+MultiCastCommand
+
+# Python packages
+io
+
+# PythonTypes
+FileIO
+TextIOBase
