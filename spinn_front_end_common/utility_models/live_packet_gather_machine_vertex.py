@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from enum import IntEnum
 import struct
@@ -37,9 +36,10 @@ _TWO_BYTES = struct.Struct("<BB")
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
-    """ Used to gather multicast packets coming from cores and stream them \
-        out to a receiving application on host. Only ever deployed on chips \
-        with a working Ethernet connection.
+    """
+    Used to gather multicast packets coming from cores and stream them
+    out to a receiving application on host. Only ever deployed on chips
+    with a working Ethernet connection.
     """
     class _REGIONS(IntEnum):
         SYSTEM = 0
@@ -54,11 +54,11 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 2 * BYTES_PER_WORD
     KEY_ENTRY_SIZE = 3 * BYTES_PER_WORD
 
-    def __init__(
-            self, lpg_params, app_vertex=None, label=None):
+    def __init__(self, lpg_params, app_vertex=None, label=None):
         """
-        :param LivePacketGatherParameters lpg_params:
-        :param str label:
+        :param LivePacketGatherParameters lpg_params: The parameters object
+        :param LivePacketGather app_vertex: The application vertex
+        :param str label: An optional label
         """
         # inheritance
         super().__init__(
@@ -69,9 +69,11 @@ class LivePacketGatherMachineVertex(
         self._incoming_sources = list()
 
     def add_incoming_source(self, m_vertex, partition_id):
-        """ Add a machine vertex source incoming into this gatherer
+        """
+        Add a machine vertex source incoming into this gatherer.
 
-        :param MachineVertex m_vertex: The source machine vertex
+        :param ~pacman.model.graphs.machine.MachineVertex m_vertex:
+            The source machine vertex
         :param str partition_id: The incoming partition id
         """
         self._incoming_sources.append((m_vertex, partition_id))
@@ -143,11 +145,7 @@ class LivePacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
-            ):
-        """
-        :param ~pacman.model.tags.Tags tags:
-        """
+            self, spec, placement):  # @UnusedVariable
         # pylint: disable=arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
@@ -161,7 +159,8 @@ class LivePacketGatherMachineVertex(
         spec.end_specification()
 
     def _reserve_memory_regions(self, spec):
-        """ Reserve SDRAM space for memory areas.
+        """
+        Reserve SDRAM space for memory areas.
 
         :param ~.DataSpecificationGenerator spec:
         """
@@ -178,7 +177,8 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
-        """ Write the configuration region to the spec
+        """
+        Write the configuration region to the spec.
 
         :param ~.DataSpecificationGenerator spec:
         :param iterable(~.IPTag) iptags:
@@ -233,7 +233,8 @@ class LivePacketGatherMachineVertex(
                 spec.write_value(vertex.vertex_slice.lo_atom)
 
     def _write_setup_info(self, spec):
-        """ Write basic info to the system region
+        """
+        Write basic info to the system region.
 
         :param ~.DataSpecificationGenerator spec:
         """
@@ -244,7 +245,8 @@ class LivePacketGatherMachineVertex(
 
     @classmethod
     def get_sdram_usage(cls):
-        """ Get the SDRAM used by this vertex
+        """
+        Get the SDRAM used by this vertex.
 
         :rtype: int
         """

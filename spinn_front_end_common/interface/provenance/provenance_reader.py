@@ -1,17 +1,16 @@
 # Copyright (c) 2021 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 from spinn_front_end_common.data import FecDataView
@@ -41,7 +40,8 @@ class ProvenanceReader(BaseDatabase):
 
     @classmethod
     def get_last_run_database_path(cls):
-        """ Get the path of the current provenance database of the last run
+        """
+        Get the path of the current provenance database of the last run.
 
        .. warning::
             Calling this method between start/reset and run may result in a
@@ -71,7 +71,7 @@ class ProvenanceReader(BaseDatabase):
     def run_query(self, query, params=()):
         """
         Opens a connection to the database, runs a query, extracts the results
-        and closes the connection
+        and closes the connection.
 
         The return type depends on the use_sqlite_rows param.
         By default this method returns tuples (lookup by index) but the
@@ -124,7 +124,7 @@ class ProvenanceReader(BaseDatabase):
 
     def get_provenance_for_router(self, x, y):
         """
-        Gets the provenance item(s) from the last run relating to a chip
+        Gets the provenance item(s) from the last run relating to a chip.
 
         :param int x:
             The X coordinate of the chip
@@ -150,7 +150,7 @@ class ProvenanceReader(BaseDatabase):
 
     def get_cores_with_provenace(self):
         """
-        Gets the cores with provenance
+        Gets the cores with provenance.
 
         :return: A list tuples (x, y, p)
         :rtype: list(tuple(int, int, int))
@@ -164,7 +164,7 @@ class ProvenanceReader(BaseDatabase):
 
     def get_router_by_chip(self, description):
         """
-        Gets the router values for a specific item
+        Gets the router values for a specific item.
 
         :param str description:
         :return: list of tuples x, y, value)
@@ -183,7 +183,7 @@ class ProvenanceReader(BaseDatabase):
 
     def get_monitor_by_chip(self, description):
         """
-        Gets the monitor values for a specific item
+        Gets the monitor values for a specific item.
 
         :param str description:
         :return: list of tuples x, y, value)
@@ -202,7 +202,7 @@ class ProvenanceReader(BaseDatabase):
 
     def messages(self):
         """
-        List all the provenance messages
+        List all the provenance messages.
 
         :return: all messages logged or not
         :rtype: list(str)
@@ -215,7 +215,8 @@ class ProvenanceReader(BaseDatabase):
 
     @staticmethod
     def demo():
-        """ A demonstration of how to use this class.
+        """
+        A demonstration of how to use this class.
 
         See also unittests/interface/provenance/test_provenance_database.py
         """

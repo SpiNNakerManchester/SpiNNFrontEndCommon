@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import defaultdict
 import logging
@@ -36,7 +35,7 @@ def graph_data_specification_writer(placement_order=None):
     """
     :param list(~pacman.model.placements.Placement) placement_order:
         the optional order in which placements should be examined
-    :rtype: DataSpecificationTargets
+    :rtype: DsSqlliteDatabase
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
@@ -46,7 +45,8 @@ def graph_data_specification_writer(placement_order=None):
 
 
 class _GraphDataSpecificationWriter(object):
-    """ Executes the data specification generation step.
+    """
+    Executes the data specification generation step.
     """
 
     __slots__ = (
@@ -64,14 +64,13 @@ class _GraphDataSpecificationWriter(object):
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
         :return: DSG targets
-        :rtype: DataSpecificationTargets
+        :rtype: DsSqlliteDatabase
         :raises ConfigurationException:
             If the DSG asks to use more SDRAM than is available.
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
         targets = DsSqlliteDatabase()
-        targets.clear_ds()
         targets.write_session_credentials_to_db()
 
         if placement_order is None:
@@ -115,7 +114,7 @@ class _GraphDataSpecificationWriter(object):
         """
         :param ~.Placement pl: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
-        :param DataSpecificationTargets targets:
+        :param DsSqlliteDatabase targets:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         :raises ConfigurationException: if things don't fit
@@ -165,13 +164,11 @@ class _GraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
-                vert, region_size,
-                sum(region_size),
+                vert, region_size, sum(region_size),
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[pl.x, pl.y]))
 
         raise ConfigurationException(
-            "Too much SDRAM has been used on {}, {}.  Vertices and"
-            " their usage on that chip is as follows:\n{}".format(
-                pl.x, pl.y, memory_usage))
+            f"Too much SDRAM has been used on {pl.x}, {pl.y}.  Vertices and"
+            f" their usage on that chip is as follows:\n{memory_usage}")

@@ -1,19 +1,19 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-""" Utility calls for interpreting bits of the DSG
+"""
+Utility calls for interpreting bits of the DSG
 """
 
 import io
@@ -37,7 +37,8 @@ _lock_condition = threading.Condition()
 
 
 def _mkdir(directory):
-    """ Make a directory if it doesn't exist.
+    """
+    Make a directory if it doesn't exist.
 
     .. note::
         This code is not intended to be secure against malicious third parties
@@ -56,7 +57,8 @@ def _mkdir(directory):
 
 
 def get_region_base_address_offset(app_data_base_address, region):
-    """ Find the address of the of a given region for the DSG
+    """
+    Find the address of the of a given region for the DSG.
 
     :param int app_data_base_address: base address for the core
     :param int region: the region ID we're looking for
@@ -74,7 +76,8 @@ _RPT_DIR = "data_spec_text_files"
 def get_data_spec_and_file_writer_filename(
         processor_chip_x, processor_chip_y, processor_id,
         application_run_time_report_folder="TEMP"):
-    """ Encapsulates the creation of the DSG writer and the file paths.
+    """
+    Encapsulates the creation of the DSG writer and the file paths.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
@@ -83,7 +86,7 @@ def get_data_spec_and_file_writer_filename(
         The folder to contain the resulting specification files; if 'TEMP'
         then a temporary directory is used.
     :return: the filename of the data writer and the data specification object
-    :rtype: tuple(str, DataSpecificationGenerator)
+    :rtype: tuple(str, ~data_specification.DataSpecificationGenerator)
     """
     # pylint: disable=too-many-arguments
     if application_run_time_report_folder == "TEMP":
@@ -106,13 +109,14 @@ def get_data_spec_and_file_writer_filename(
 
 
 def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
-    """ Check if text reports are needed, and if so initialise the report\
-        writer to send down to DSG.
+    """
+    Check if text reports are needed, and if so initialise the report
+    writer to send down to DSG.
 
     :param int processor_chip_x: x-coordinate of the chip
     :param int processor_chip_y: y-coordinate of the chip
     :param int processor_id: The processor ID
-    :return: the report_writer_object, or None if not reporting
+    :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
     # pylint: disable=too-many-arguments
@@ -164,8 +168,9 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
     """
     Make a tag deliver to the given connection.
 
-    :param ~.UDPConnection connection:
-        The connection to deliver to.
+    :param connection: The connection to deliver to.
+    :type connection:
+        ~spinnman.connections.udp_packet_connections.UDPConnection
     :param int x:
         The X coordinate of the ethernet chip we are sending the message to.
     :param int y:

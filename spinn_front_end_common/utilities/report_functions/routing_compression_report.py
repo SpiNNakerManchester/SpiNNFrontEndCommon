@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 import os
@@ -26,14 +25,16 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def generate_routing_compression_checker_report(
         routing_tables, compressed_routing_tables):
-    """ Make a full report of how the compressed covers all routes in the\
-        and uncompressed routing table
+    """
+    Make a full report of how the compressed covers all routes in the
+    and uncompressed routing table.
 
     :param str report_folder: the folder to store the resulting report
-    :param MulticastRoutingTables routing_tables: the original routing tables
-    :param MulticastRoutingTables compressed_routing_tables:
-        the compressed routing tables
-    :rtype: None
+    :param ~pacman.model.routing_tables.MulticastRoutingTables routing_tables:
+        the original routing tables
+    :param compressed_routing_tables: the compressed routing tables
+    :type compressed_routing_tables:
+        ~pacman.model.routing_tables.MulticastRoutingTables
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
@@ -45,7 +46,7 @@ def generate_routing_compression_checker_report(
                 routing_tables.routing_tables,
                 "Generating routing compression checker report")
             f.write("If this table did not raise an exception compression "
-                    "was fully checked. \n\n")
+                    "was fully checked.\n\n")
             f.write("The format is:\n"
                     "Chip x, y\n"
                     "\t Uncompressed Route\n"
@@ -54,14 +55,15 @@ def generate_routing_compression_checker_report(
             for original in progress.over(routing_tables.routing_tables):
                 x = original.x
                 y = original.y
-                f.write("Chip: X:{} Y:{} \n".format(x, y))
+                f.write(f"Chip: X:{x} Y:{y}\n")
 
                 compressed_table = compressed_routing_tables.\
                     get_routing_table_for_chip(x, y)
                 compressed_dict = codify_table(compressed_table)
                 for o_route in original.multicast_routing_entries:
-                    f.write("\t{}\n".format(format_route(o_route)))
+                    f.write(f"\t{format_route(o_route)}\n")
                     compare_route(o_route, compressed_dict, f=f)
     except IOError:
-        logger.exception("Generate_router_comparison_reports: Can't open file"
-                         " {} for writing.", file_name)
+        logger.exception(
+            "Generate router comparison reports: "
+            "Can't open file {} for writing.", file_name)

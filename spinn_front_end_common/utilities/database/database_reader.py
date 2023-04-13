@@ -1,23 +1,23 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 from spinnman.spalloc import SpallocClient
 
 
 class DatabaseReader(SQLiteDB):
-    """ A reader for the database.
+    """
+    A reader for the database.
     """
     __slots__ = ("__job", "__looked_for_job")
 
@@ -54,7 +54,8 @@ class DatabaseReader(SQLiteDB):
         return self.__job
 
     def get_key_to_atom_id_mapping(self, label):
-        """ Get a mapping of event key to atom ID for a given vertex
+        """
+        Get a mapping of event key to atom ID for a given vertex.
 
         :param str label: The label of the vertex
         :return: dictionary of atom IDs indexed by event key
@@ -70,7 +71,8 @@ class DatabaseReader(SQLiteDB):
                     """, (label, ))}
 
     def get_atom_id_to_key_mapping(self, label):
-        """ Get a mapping of atom ID to event key for a given vertex
+        """
+        Get a mapping of atom ID to event key for a given vertex.
 
         :param str label: The label of the vertex
         :return: dictionary of event keys indexed by atom ID
@@ -86,8 +88,9 @@ class DatabaseReader(SQLiteDB):
                     """, (label, ))}
 
     def get_live_output_details(self, label, receiver_label):
-        """ Get the IP address, port and whether the SDP headers are to be\
-            stripped from the output from a vertex
+        """
+        Get the IP address, port and whether the SDP headers are to be
+        stripped from the output from a vertex.
 
         :param str label: The label of the vertex
         :return: tuple of (IP address, port, strip SDP, board address, tag,
@@ -105,7 +108,8 @@ class DatabaseReader(SQLiteDB):
             "chip_x", "chip_y")
 
     def get_configuration_parameter_value(self, parameter_name):
-        """ Get the value of a configuration parameter
+        """
+        Get the value of a configuration parameter.
 
         :param str parameter_name: The name of the parameter
         :return: The value of the parameter
@@ -123,7 +127,8 @@ class DatabaseReader(SQLiteDB):
         return int(row["x"]), int(row["y"]), int(row["p"])
 
     def get_placements(self, label):
-        """ Get the placements of an application vertex with a given label
+        """
+        Get the placements of an application vertex with a given label.
 
         :param str label: The label of the vertex
         :return: A list of x, y, p coordinates of the vertices
@@ -138,7 +143,8 @@ class DatabaseReader(SQLiteDB):
                     """, (label, ))]
 
     def get_ip_address(self, x, y):
-        """ Get an IP address to contact a chip
+        """
+        Get an IP address to contact a chip.
 
         :param int x: The x-coordinate of the chip
         :param int y: The y-coordinate of the chip

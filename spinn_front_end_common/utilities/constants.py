@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2014 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from enum import Enum
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
@@ -80,6 +79,9 @@ DSE_DATA_STRUCT_SIZE = 4 * BYTES_PER_WORD
 
 
 class SDP_RUNNING_MESSAGE_CODES(Enum):
+    """
+    Codes for sending control messages to spin1_api.
+    """
     SDP_STOP_ID_CODE = 6
     SDP_NEW_RUNTIME_ID_CODE = 7
     SDP_UPDATE_PROVENCE_REGION_AND_EXIT = 8
@@ -87,29 +89,36 @@ class SDP_RUNNING_MESSAGE_CODES(Enum):
 
 
 class SDP_PORTS(Enum):
-    """SDP port handling output buffering data streaming"""
+    """
+    SDP port handling output buffering data streaming.
+    """
 
-    # command port for the buffered in functionality
+    #: Command port for the buffered in functionality.
     INPUT_BUFFERING_SDP_PORT = 1
-    # command port for the buffered out functionality
+    #: Command port for the buffered out functionality.
     OUTPUT_BUFFERING_SDP_PORT = 2
-    # command port for resetting runtime etc
+    #: Command port for resetting runtime, etc.
+    #: See :py:class:`SDP_RUNNING_MESSAGE_CODES`
     RUNNING_COMMAND_SDP_PORT = 3
-    # extra monitor core reinjection functionality
+    #: Extra monitor core reinjection control protocol.
+    #: See :py:class:`ReinjectorSCPCommands`
     EXTRA_MONITOR_CORE_REINJECTION = 4
-    # extra monitor core data transfer functionality
+    #: Extra monitor core outbound data transfer protocol
     EXTRA_MONITOR_CORE_DATA_SPEED_UP = 5
-    # extra monitor core data in speed up functionality
+    #: Extra monitor core inbound data transfer protocol
+    #: See :py:class:`SpeedupInSCPCommands`
     EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP = 6
 
 
 # output buffering operations
 class BUFFERING_OPERATIONS(Enum):
-    """A listing of what SpiNNaker specific EIEIO commands there are."""
+    """
+    A listing of what SpiNNaker specific EIEIO commands there are.
+    """
 
-    # Database handshake with external program
+    #: Database handshake with external program
     BUFFER_READ = 0
-    # Host confirming data being read form SpiNNaker memory
+    #: Host confirming data being read form SpiNNaker memory
     BUFFER_WRITE = 1
 
 

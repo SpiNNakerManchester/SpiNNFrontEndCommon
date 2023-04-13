@@ -1,17 +1,16 @@
-# Copyright (c) 2019-2020 The University of Manchester
+# Copyright (c) 2019 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 from collections import defaultdict
@@ -38,9 +37,8 @@ def _write_report(collision_counts, writer):
     for (x, y) in collision_counts:
         for link_id in collision_counts[(x, y)]:
             writer.write(
-                "router {}:{} link {} has potential {} collisions "
-                "\n".format(
-                    x, y, link_id, collision_counts[(x, y)][link_id]))
+                f"router {x}:{y} link {link_id} has potential "
+                f"{collision_counts[(x, y)][link_id]} collisions\n")
 
 
 def _generate_data():
@@ -52,9 +50,8 @@ def _generate_data():
     for (x, y) in router_tables_by_partition.get_routers():
         for partition in \
                 router_tables_by_partition.get_entries_for_router(x, y):
-            entry = \
-                router_tables_by_partition.get_entry_on_coords_for_edge(
-                    partition, x, y)
+            entry = router_tables_by_partition.get_entry_on_coords_for_edge(
+                partition, x, y)
             for link in entry.link_ids:
                 if collisions[(x, y)][link] == 0:
                     chip = FecDataView.get_chip_at(x, y)
@@ -62,10 +59,9 @@ def _generate_data():
                     other_chip_y = chip.router.get_link(link).destination_y
                     collision_route = Router.opposite(link)
 
-                    collision_potential = \
-                        _get_collisions_with_other_router(
-                            other_chip_x, other_chip_y, collision_route,
-                            router_tables_by_partition, n_keys_map)
+                    collision_potential = _get_collisions_with_other_router(
+                        other_chip_x, other_chip_y, collision_route,
+                        router_tables_by_partition, n_keys_map)
 
                     collisions[(x, y)][link] = collision_potential
 
@@ -77,8 +73,7 @@ def _generate_data():
 def _get_collisions_with_other_router(
         x, y, collision_route, router_tables_by_partition, n_key_map):
     total = 0
-    for partition in \
-            router_tables_by_partition.get_entries_for_router(x, y):
+    for partition in router_tables_by_partition.get_entries_for_router(x, y):
         entry = router_tables_by_partition.get_entry_on_coords_for_edge(
             partition, x, y)
         if collision_route in entry.link_ids:

@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import sqlite3
 import time
@@ -28,7 +27,8 @@ def _timestamp():
 
 
 class BufferDatabase(BaseDatabase):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     There should only ever be a single Database Object in use at any time.
     In the case of application_graph_changed the first should closed and
@@ -36,7 +36,6 @@ class BufferDatabase(BaseDatabase):
 
     If 2 database objects where opened with the database_file they hold the
     same data. Unless someone else deletes that file.
-
 
     .. note::
         *Not thread safe on the same database file!*
@@ -46,7 +45,8 @@ class BufferDatabase(BaseDatabase):
     __slots__ = []
 
     def clear_region(self, x, y, p, region):
-        """ Clears the data for a single region.
+        """
+        Clears the data for a single region.
 
         .. note::
             This method *loses information!*
@@ -152,8 +152,9 @@ class BufferDatabase(BaseDatabase):
         return cursor.lastrowid
 
     def store_data_in_region_buffer(self, x, y, p, region, missing, data):
-        """ Store some information in the corresponding buffer for a\
-            specific chip, core and recording region.
+        """
+        Store some information in the corresponding buffer for a
+        specific chip, core and recording region.
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip
@@ -214,14 +215,16 @@ class BufferDatabase(BaseDatabase):
         return False
 
     def get_region_data(self, x, y, p, region):
-        """ Get the data stored for a given region of a given core
+        """
+        Get the data stored for a given region of a given core.
 
         :param int x: x coordinate of the chip
         :param int y: y coordinate of the chip
         :param int p: Core within the specified chip
         :param int region: Region containing the data
-        :return: a buffer containing all the data received during the\
-            simulation, and a flag indicating if any data was missing
+        :return:
+            A buffer containing all the data received during the
+            simulation, and a flag indicating if any data was missing.
 
             .. note::
                 Implementations should not assume that the total buffer is
@@ -239,7 +242,8 @@ class BufferDatabase(BaseDatabase):
             return memoryview(b''), True
 
     def write_session_credentials_to_db(self):
-        """ Write Spalloc session credentials to the database if in use
+        """
+        Write Spalloc session credentials to the database if in use.
         """
         # pylint: disable=protected-access
         if not FecDataView.has_allocation_controller():
@@ -260,7 +264,6 @@ class BufferDatabase(BaseDatabase):
         :param int y:
         :param int p:
         :param str core_name:
-
         """
         try:
             cursor.execute(

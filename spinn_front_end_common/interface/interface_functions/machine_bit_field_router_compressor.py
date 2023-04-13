@@ -1,17 +1,16 @@
-# Copyright (c) 2019-2020 The University of Manchester
+# Copyright (c) 2019 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import functools
 import logging
@@ -65,7 +64,8 @@ SECOND_TO_MICRO_SECOND = 1000000
 
 
 class _MachineBitFieldRouterCompressor(object):
-    """ On-machine bitfield-aware routing table compression.
+    """
+    On-machine bitfield-aware routing table compression.
     """
 
     __slots__ = ["_compressor_aplx", "_compressor_type"]
@@ -105,8 +105,6 @@ class _MachineBitFieldRouterCompressor(object):
     _BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX = \
         "bit_field_sorter_and_searcher.aplx"
 
-    _PROGRESS_BAR_TEXT = \
-        "on chip {} compressor with bitfields"
     _HOST_BAR_TEXT = \
         "on host compressing routing tables and merging in bitfields as " \
         "appropriate"
@@ -122,7 +120,8 @@ class _MachineBitFieldRouterCompressor(object):
         self._compressor_type = compressor_type
 
     def run(self, compress_as_much_as_possible=False):
-        """ entrance for routing table compression with bit field
+        """
+        Entrance for routing table compression with bit field.
 
         :param routing_tables: routing tables
         :param bool write_compressor_iobuf: flag saying if read IOBUF
@@ -141,12 +140,12 @@ class _MachineBitFieldRouterCompressor(object):
         # new app id for this simulation
         routing_table_compressor_app_id = view.get_new_id()
 
-        text = self._PROGRESS_BAR_TEXT.format(self._compressor_type)
+        text = f"on chip {self._compressor_type} compressor with bitfields"
         retry_count = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_retry_count")
         if retry_count is not None:
-            text += " capped at {} retries".format(retry_count)
+            text += f" capped at {retry_count} retries"
         progress_bar = ProgressBar(
             total_number_of_things_to_do=(
                 FecDataView.get_n_vertices() +
@@ -244,14 +243,15 @@ class _MachineBitFieldRouterCompressor(object):
         return compressor_executable_targets
 
     def _generate_core_subsets(self, routing_tables, progress_bar):
-        """ generates the core subsets for the binaries
+        """
+        Generates the core subsets for the binaries.
 
         :param ~.MulticastRoutingTables routing_tables: the routing tables
         :param ~.ProgressBar progress_bar: progress bar
-        :param ExecutableTargets system_executable_targets:
+        :param ~spinnman.model.ExecutableTargets system_executable_targets:
             the executables targets to cores
         :return: (targets, sorter path, and compressor path)
-        :rtype: tuple(ExecutableTargets, str, str)
+        :rtype: tuple(~spinnman.model.ExecutableTargets, str, str)
         """
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
@@ -303,10 +303,11 @@ class _MachineBitFieldRouterCompressor(object):
 
     def _check_bit_field_router_compressor_for_success(
             self, executable_targets, host_chips, sorter_binary_path):
-        """ Goes through the cores checking for cores that have failed to\
-            generate the compressed routing tables with bitfield
+        """
+        Goes through the cores checking for cores that have failed to
+        generate the compressed routing tables with bitfield.
 
-        :param ExecutableTargets executable_targets:
+        :param ~spinnman.model.ExecutableTargets executable_targets:
             cores to load router compressor with bitfield on
         :param list(tuple(int,int)) host_chips:
             the chips which need to be ran on host.
@@ -344,7 +345,8 @@ class _MachineBitFieldRouterCompressor(object):
             matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, retry_count):
-        """ load all data onto the chip
+        """
+        load all data onto the chip.
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in sdram
@@ -356,7 +358,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param ~.ProgressBar progress_bar: progress bar
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param ExecutableTargets cores:
+        :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
         :param dict matrix_addresses_and_size:
             maps chips to regeneration sdram and size for exploitation
@@ -366,7 +368,7 @@ class _MachineBitFieldRouterCompressor(object):
             the path to the sorter binary
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
         :return:
             the list of tuples saying which chips this will need to use
@@ -412,17 +414,18 @@ class _MachineBitFieldRouterCompressor(object):
             self, chip_x, chip_y, transceiver,
             bit_field_compressor_executable_path, cores,
             compress_as_much_as_possible, comms_sdram):
-        """ Updates the user addresses for the compressor cores with the
-            compression settings.
+        """
+        Updates the user addresses for the compressor cores with the
+        compression settings.
 
         :param int chip_x: chip x coord
         :param int chip_y: chip y coord
-        :param ~.Transceiver transceiver: SpiNNMan instance
+        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
         :param bool compress_as_much_as_possible:
             whether to compress as much as possible
-        :param ExecutableTargets cores: the executable targets
+        :param ~spinnman.model.ExecutableTargets cores: the executable targets
         :param int comms_sdram: Address for comms block
         """
         compressor_cores = cores.get_cores_for_binary(
@@ -453,15 +456,18 @@ class _MachineBitFieldRouterCompressor(object):
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores):
-        """ loads the addresses of stealable sdram
+        """
+        loads the addresses of stealable SDRAM.
 
         :param list(tuple(int,int)) matrix_addresses_and_size:
             SDRAM usable and sizes
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~.Transceiver transceiver: the spinnman instance
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
         :param int routing_table_compressor_app_id: system app id.
-        :param ExecutableTargets cores: the cores that compressor will run on
+        :param ~spinnman.model.ExecutableTargets cores:
+            the cores that compressor will run on
         """
         address_data = self._generate_chip_matrix_data(
             matrix_addresses_and_size)
@@ -494,7 +500,8 @@ class _MachineBitFieldRouterCompressor(object):
             chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
-        """ generate the data for the chip matrix data
+        """
+        Generate the data for the chip matrix data.
 
         :param list(tuple(int,int)) list_of_sizes_and_address:
             SDRAM addresses and sizes
@@ -511,15 +518,18 @@ class _MachineBitFieldRouterCompressor(object):
             routing_table_compressor_app_id, cores, matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, comms_sdram, retry_count):
-        """ loads the bitfield addresses space
+        """
+        loads the bitfield addresses space.
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~.Transceiver transceiver: the spinnman instance
+        :param ~spinnman.transceiver.Transceiver transceiver:
+            the spinnman instance
         :param int routing_table_compressor_app_id: system app id.
-        :param ExecutableTargets cores: the cores that compressor will run on
+        :param ~spinnman.model.ExecutableTargets cores:
+            the cores that compressor will run on
         :param str bit_field_compressor_executable_path:
             the path to the compressor binary path
         :param str bit_field_sorter_executable_path:
@@ -527,9 +537,8 @@ class _MachineBitFieldRouterCompressor(object):
         :param int comms_sdram: Address for comms block
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
-        :rtype: None
         """
         # generate address_data
         address_data = self._generate_chip_data(
@@ -570,18 +579,21 @@ class _MachineBitFieldRouterCompressor(object):
             self, table, app_id, transceiver,
             routing_table_compressor_app_id, progress_bar, cores,
             matrix_addresses_and_size):
-        """ loads the routing table data
+        """
+        loads the routing table data.
 
-        :param AbsractMulticastRoutingTable table: the routing table to load
+        :param table: the routing table to load
+        :type table:
+            ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :param int app_id: application app id
-        :param ~.Transceiver transceiver: spinnman instance
-        :param ~.ProgressBar progress_bar: progress bar
+        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance
+        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
+            progress bar
         :param int routing_table_compressor_app_id: system app id
-        :param ExecutableTargets cores:
+        :param ~spinnman.model.ExecutableTargets cores:
             the cores that the compressor going to run on
         :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen
         """
-
         routing_table_data = self._build_routing_table_data(app_id, table)
 
         # go to spinnman and ask for a memory region of that size per chip.
@@ -613,7 +625,8 @@ class _MachineBitFieldRouterCompressor(object):
         progress_bar.update()
 
     def _build_routing_table_data(self, app_id, routing_table):
-        """ builds routing data as needed for the compressor cores
+        """
+        Builds routing data as needed for the compressor cores.
 
         :param int app_id: appid of the application to load entries with
         :param ~.AbsractMulticastRoutingTable routing_table:
@@ -640,7 +653,8 @@ class _MachineBitFieldRouterCompressor(object):
 
     @staticmethod
     def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
-        """ steals memory from synaptic matrix as needed
+        """
+        Steals memory from synaptic matrix as needed.
 
         :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:
             matrix addresses and sizes; updated by this method
@@ -660,7 +674,8 @@ class _MachineBitFieldRouterCompressor(object):
     def _add_to_addresses(
             self, vertex, placement, region_addresses,
             sdram_block_addresses_and_sizes):
-        """ adds data about the API-based vertex.
+        """
+        Adds data about the API-based vertex.
 
         :param AbstractSupportsBitFieldRoutingCompression vertex:
             vertex which utilises the API
@@ -688,7 +703,8 @@ class _MachineBitFieldRouterCompressor(object):
             key=lambda data: data[0])
 
     def _generate_addresses(self, progress_bar):
-        """ generates the bitfield SDRAM addresses
+        """
+        Generates the bitfield SDRAM addresses.
 
         :param ~.ProgressBar progress_bar: the progress bar
         :return: region_addresses and the executable targets to load the
@@ -715,7 +731,7 @@ class _MachineBitFieldRouterCompressor(object):
     def _generate_chip_data(
             self, address_list, cores, comms_sdram, retry_count):
         """
-        Generate the region_addresses_t data
+        Generate the region_addresses_t data.
 
         Minimum percentage of bitfields to be merge in (currently ignored)
 
@@ -733,7 +749,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param int comms_sdram: Address for comms block
         :param retry_count:
             Number of times that the sorters should set of the compressions
-            again. None for as much as needed
+            again. `None` for as much as needed
         :type retry_count: int or None
         :return: the byte array
         :rtype: bytes
@@ -755,12 +771,13 @@ class _MachineBitFieldRouterCompressor(object):
 
 def machine_bit_field_ordered_covering_compressor(
         compress_as_much_as_possible=False):
-    """ compression with bit field and ordered covering
+    """
+    Compression with bit field and ordered covering.
 
-        :param bool compress_as_much_as_possible:
-            whether to compress as much as possible
-        :return: where the compressors ran
-        """
+    :param bool compress_as_much_as_possible:
+        whether to compress as much as possible
+    :return: where the compressors ran
+    """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
     return compressor.run(compress_as_much_as_possible)
@@ -768,12 +785,13 @@ def machine_bit_field_ordered_covering_compressor(
 
 def machine_bit_field_pair_router_compressor(
         compress_as_much_as_possible=False):
-    """ compression with bit field and ordered covering
+    """
+    Compression with bit field pairing.
 
-        :param bool compress_as_much_as_possible:
-            whether to compress as much as possible
-        :return: where the compressors ran
-        """
+    :param bool compress_as_much_as_possible:
+        whether to compress as much as possible
+    :return: where the compressors ran
+    """
     compressor = _MachineBitFieldRouterCompressor(
         "bit_field_pair_compressor.aplx", "Pair")
     return compressor.run(compress_as_much_as_possible)

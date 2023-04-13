@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import logging
 from spinn_utilities.progress_bar import ProgressBar
@@ -30,13 +29,15 @@ def router_provenance_gatherer():
 
 
 class _RouterProvenanceGatherer(object):
-    """ Gathers diagnostics from the routers.
+    """
+    Gathers diagnostics from the routers.
     """
 
     __slots__ = []
 
     def _add_router_provenance_data(self):
-        """ Writes the provenance data of the router diagnostics
+        """
+        Writes the provenance data of the router diagnostics
         """
         progress = ProgressBar(FecDataView.get_machine().n_chips*2,
                                "Getting Router Provenance")
@@ -109,7 +110,8 @@ class _RouterProvenanceGatherer(object):
         return reinjection_data[x, y] if reinjection_data else None
 
     def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
-        """ Describes the router diagnostics for one router.
+        """
+        Describes the router diagnostics for one router.
 
         :param int x: x coordinate of the router in question
         :param int y: y coordinate of the router in question
@@ -272,8 +274,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_link_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_link_dumps} packets were dumped from an "
-                    f"outgoing link of this chip's router. This often occurs "
+                    f"{status.n_link_dumps} packets were dumped from "
+                    f"outgoing links {status.links_dropped_from} of this "
+                    f"chip's router. This often occurs "
                     f"when external devices are used in the script but not "
                     f"connected to the communication fabric correctly. "
                     f"These packets may have been reinjected multiple times "
@@ -285,8 +288,9 @@ class _RouterProvenanceGatherer(object):
             if status.n_processor_dumps > 0:
                 db.insert_report(
                     f"The extra monitor on {x}, {y} has detected that "
-                    f"{status.n_processor_dumps} packets were dumped from a "
-                    "core failing to take the packet. This often occurs when "
+                    f"{status.n_processor_dumps} packets were dumped from "
+                    f"cores {status.processors_dropped_from} failing to take "
+                    "the packet. This often occurs when "
                     "the executable has crashed or has not been given a "
                     "multicast packet callback. It can also result from the "
                     "core taking too long to process each packet. These "

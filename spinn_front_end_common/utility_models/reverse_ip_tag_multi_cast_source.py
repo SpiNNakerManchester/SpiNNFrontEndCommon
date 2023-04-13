@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2015 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import sys
 import numpy
@@ -28,8 +27,9 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, LegacyPartitionerAPI):
-    """ A model which will allow events to be injected into a SpiNNaker\
-        machine and converted into multicast packets.
+    """
+    A model which will allow events to be injected into a SpiNNaker
+    machine and converted into multicast packets.
     """
 
     def __init__(
@@ -101,10 +101,11 @@ class ReverseIpTagMultiCastSource(
         :param bool reserve_reverse_ip_tag:
             Extra flag for input without a reserved port
         :param str injection_partition:
-            If not None, will enable injection and specify the partition to
+            If not `None`, will enable injection and specify the partition to
             send injected keys with
         :param splitter: the splitter object needed for this vertex
-        :type splitter: None or AbstractSplitterCommon
+        :type splitter: None or
+            ~pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon
         """
         # pylint: disable=too-many-arguments
         super().__init__(label, max_atoms_per_core, splitter=splitter)
@@ -140,9 +141,8 @@ class ReverseIpTagMultiCastSource(
         if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
             if len(send_buffer_times) != self._n_atoms:
                 raise ConfigurationException(
-                    "The array or arrays of times {} does not have the "
-                    "expected length of {}".format(
-                        send_buffer_times, self._n_atoms))
+                    f"The array or arrays of times {send_buffer_times} does "
+                    f"not have the expected length of {self._n_atoms}")
             return numpy.array(send_buffer_times, dtype="object")
         return numpy.array(send_buffer_times)
 
@@ -159,7 +159,8 @@ class ReverseIpTagMultiCastSource(
 
     @property
     def send_buffer_times(self):
-        """ When messages will be sent.
+        """
+        When messages will be sent.
 
         :rtype: ~numpy.ndarray(~numpy.ndarray(numpy.int32)) or
             list(~numpy.ndarray(~numpy.int32)) or None

@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import numpy
@@ -33,7 +32,8 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
 
 def reload_dsg_regions():
-    """ Reloads DSG regions where needed
+    """
+    Reloads DSG regions where needed.
     """
     # build file paths for reloaded stuff
     data_dir = get_reload_data_dir()
@@ -49,7 +49,8 @@ def reload_dsg_regions():
 
 
 def get_reload_data_dir():
-    """ Get a path in which reloaded data files can be written
+    """
+    Get a path in which reloaded data files can be written.
 
     :rtype: str
     """
@@ -62,7 +63,8 @@ def get_reload_data_dir():
 
 
 def regenerate_data_spec(placement, data_dir):
-    """ Regenerate a data specification for a placement
+    """
+    Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
     :param str data_dir: A place to use to write data to
@@ -141,13 +143,17 @@ def regenerate_data_spec(placement, data_dir):
 
 
 def _get_ptr_table(txrx, placement, regions_base_address, start_region):
-    """ Read the pointer table
+    """
+    Read the pointer table.
 
-    :param Transceiver txrx: The transceiver to read with
-    :param Placement placement: Where to read the pointer table from
+    :param ~spinnman.transceiver.Transceiver txrx:
+        The transceiver to read with
+    :param ~pacman.model.placements.Placement placement:
+        Where to read the pointer table from
     :param int regions_base_address: The start of memory for the given core
     :param int start_region: The address of the first region address
-    :rtype: numpy.ndarray(DataSpecificationExecutor.TABLE_TYPE)
+    :rtype: ~numpy.ndarray(
+        ~data_specification.DataSpecificationExecutor.TABLE_TYPE)
     """
     # Read the pointer table from the machine
     table_size = get_region_base_address_offset(

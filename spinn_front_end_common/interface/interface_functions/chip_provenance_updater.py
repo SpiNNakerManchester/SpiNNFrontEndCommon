@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import struct
 import logging
@@ -38,7 +37,8 @@ def chip_provenance_updater(all_core_subsets):
 
 
 class _ChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then exit.
+    """
+    Forces all cores to generate provenance data, and then exit.
     """
 
     __slots__ = ["__all_cores", "__app_id", "__txrx"]
@@ -71,10 +71,10 @@ class _ChipProvenanceUpdater(object):
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
-                " idle cores {}".format(
-                    error_cores.values(), watchdog_cores.values(),
-                    idle_cores.values()))
+                "Some cores have crashed. "
+                f"RTE cores {error_cores.values()}, "
+                f"watch-dogged cores {watchdog_cores.values()}, "
+                f"idle cores {idle_cores.values()}")
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating

@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2021 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from contextlib import AbstractContextManager as ACMBase
 import enum
@@ -135,7 +134,8 @@ class SQLiteDB(AbstractContextManager):
         self.close()
 
     def close(self):
-        """ Finalises and closes the database.
+        """
+        Finalises and closes the database.
         """
         try:
             if self.__db is not None:
@@ -169,7 +169,8 @@ class SQLiteDB(AbstractContextManager):
 
     @property
     def connection(self):
-        """ The underlying SQLite database connection.
+        """
+        The underlying SQLite database connection.
 
         .. warning::
             If you're using this a lot, consider contacting the SpiNNaker
@@ -191,16 +192,20 @@ class SQLiteDB(AbstractContextManager):
         return self.__db
 
     def transaction(self, isolation_level=None):
-        """ Get a context manager that manages a transaction on the database.\
-        The value of the context manager is a :py:class:`~sqlite3.Cursor`.\
+        """
+        Get a context manager that manages a transaction on the database.
+        The value of the context manager is a :py:class:`~sqlite3.Cursor`.
         This means you can do this::
 
             with db.transaction() as cursor:
                 cursor.execute(...)
 
         :param Isolation isolation_level:
-            The transaction isolation level; note that this sets it for the
-            connection! Can usually be *not* specified.
+            The transaction isolation level.
+
+            .. note::
+                This sets it for the connection!
+                Can usually be *not* specified.
         :rtype: ~typing.ContextManager(~sqlite3.Cursor)
         """
         if not self.__db:

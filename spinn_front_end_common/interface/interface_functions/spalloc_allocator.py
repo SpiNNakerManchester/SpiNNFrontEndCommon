@@ -1,26 +1,25 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from contextlib import ExitStack
 import logging
 import math
 from typing import Dict, Tuple
-from spinn_utilities.config_holder import get_config_str_list
+from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spalloc import Job
-from spalloc.states import JobState
+from spalloc_client import Job
+from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.config_holder import get_config_int, get_config_str
 from spinn_machine import Machine
@@ -51,16 +50,20 @@ class SpallocJobController(MachineAllocationController):
         # the current job's old state
         "_state",
         "__client",
-        "__closer"
+        "__closer",
+        "__use_proxy"
     )
 
     def __init__(
             self, client: SpallocClient, job: SpallocJob,
-            task: AbstractContextManager):
+            task: AbstractContextManager, use_proxy: bool):
         """
-        :param SpallocClient client:
-        :param SpallocJob job:
-        :param AbstractContextManager task:
+        :param ~spinnman.spalloc.SpallocClient client:
+        :param ~spinnman.spalloc.SpallocJob job:
+        :param task:
+        :type task:
+            ~spinn_utilities.abstract_context_manager.AbstractContextManager
+        :param bool use_proxy:
         """
         if job is None:
             raise TypeError("must have a real job")
@@ -68,6 +71,7 @@ class SpallocJobController(MachineAllocationController):
         self.__closer = task
         self._job = job
         self._state = job.get_state()
+        self.__use_proxy = use_proxy
         super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
@@ -89,7 +93,7 @@ class SpallocJobController(MachineAllocationController):
         :param int chip_y:
         :rtype: tuple(int,int,int)
         """
-        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+        return self._job.where_is_machine(x=chip_x, y=chip_y)
 
     @overrides(MachineAllocationController._wait)
     def _wait(self):
@@ -107,7 +111,7 @@ class SpallocJobController(MachineAllocationController):
     def _teardown(self):
         if not self._exited:
             self.__closer.close()
-            self._job.close()
+            self._job.destroy()
             self.__client.close()
         super()._teardown()
 
@@ -115,21 +119,24 @@ class SpallocJobController(MachineAllocationController):
     def create_transceiver(self):
         """
         .. note::
-
             This allocation controller proxies the transceiver's connections
             via Spalloc. This allows it to work even outside the UNIMAN
             firewall.
+
         """
+        if not self.__use_proxy:
+            return super(SpallocJobController, self).create_transceiver()
         txrx = self._job.create_transceiver()
         txrx.ensure_board_is_ready()
+        return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
         """
         .. note::
-
             This allocation controller proxies connections via Spalloc. This
             allows it to work even outside the UNIMAN firewall.
+
         """
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
@@ -144,7 +151,12 @@ class SpallocJobController(MachineAllocationController):
     @property
     @overrides(AbstractMachineAllocationController.proxying)
     def proxying(self):
-        return True
+        return self.__use_proxy
+
+    @overrides(MachineAllocationController.make_report)
+    def make_report(self, filename):
+        with open(filename, "w", encoding="utf-8") as report:
+            report.write(f"Job: {self._job}")
 
 
 class _OldSpallocJobController(MachineAllocationController):
@@ -192,11 +204,6 @@ class _OldSpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.where_is_machine)
     def where_is_machine(self, chip_x, chip_y):
-        """
-        :param int chip_x:
-        :param int chip_y:
-        :rtype: tuple(int,int,int)
-        """
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
     @overrides(MachineAllocationController._wait)
@@ -225,8 +232,9 @@ def spalloc_allocator(
         bearer_token: str = None) -> Tuple[
             str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
             MachineAllocationController]:
-    """ Request a machine from a SPALLOC server that will fit the given\
-        number of chips.
+    """
+    Request a machine from a SPALLOC server that will fit the given
+    number of chips.
 
     :param bearer_token: The bearer token to use
     :type bearer_token: str or None
@@ -280,6 +288,7 @@ def _allocate_job_new(
     logger.info(f"Requesting job with {n_boards} boards")
     with ExitStack() as stack:
         spalloc_machine = get_config_str("Machine", "spalloc_machine")
+        use_proxy = get_config_bool("Machine", "spalloc_use_proxy")
         client = SpallocClient(spalloc_server, bearer_token=bearer_token)
         stack.enter_context(client)
         job = client.create_job(n_boards, spalloc_machine)
@@ -294,7 +303,8 @@ def _allocate_job_new(
             logger.debug(
                 "boards: {}",
                 str(connections).replace("{", "[").replace("}", "]"))
-        allocation_controller = SpallocJobController(client, job, task)
+        allocation_controller = SpallocJobController(
+            client, job, task, use_proxy)
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()

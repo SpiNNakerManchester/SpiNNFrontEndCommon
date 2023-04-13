@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from collections import defaultdict
 import json
@@ -30,17 +29,19 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
+from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class JavaCaller(object):
-    """ Support class that holds all the stuff for running stuff in Java.
-        This includes the work of preparing data for transmitting to Java and\
-        back.
+    """
+    Support class that holds all the stuff for running stuff in Java.
+    This includes the work of preparing data for transmitting to Java and
+    back.
 
-        This separates the choices of how to call the Java batch vs streaming,\
-        jar locations, parameters, etc from the rest of the python code.
+    This separates the choices of how to call the Java batch vs streaming,
+    jar locations, parameters, etc from the rest of the python code.
     """
 
     __slots__ = [
@@ -66,7 +67,8 @@ class JavaCaller(object):
     ]
 
     def __init__(self):
-        """ Creates a java caller and checks the user/config parameters.
+        """
+        Creates a java caller and checks the user/config parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
@@ -75,9 +77,9 @@ class JavaCaller(object):
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
-                " {} -version failed. "
+                f" {self._java_call} -version failed. "
                 "Please set [Java] java_call to the absolute path "
-                "to start java. (in config file)".format(self._java_call))
+                "to start java. (in config file)")
 
         self._find_java_jar()
 
@@ -94,8 +96,8 @@ class JavaCaller(object):
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
-                        "Java Properties must start with -D found at {}".
-                        format(_property))
+                        "Java Properties must start with -D "
+                        f"found at {_property}")
 
     def _find_java_jar(self):
         java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
@@ -124,7 +126,7 @@ class JavaCaller(object):
                     f"while java_jar_path as set. "
                     f"Please delete on of the two.")
         else:
-            if (java_jar_path is None):
+            if java_jar_path is None:
                 if not os.path.isdir(java_spinnaker_path):
                     raise ConfigurationException(
                         f"No Java code found at {java_spinnaker_path} "
@@ -141,7 +143,7 @@ class JavaCaller(object):
 
     def set_advanced_monitors(self):
         """
-        :rtype: None
+        Create information describing what's going on with the monitor cores.
         """
         tags = FecDataView.get_tags()
         self._monitor_cores = dict()
@@ -165,17 +167,20 @@ class JavaCaller(object):
             self._chipxy_by_ethernet[ethernet].append(chip_xy)
 
     def _machine_json(self):
-        """ Converts the machine in this class to JSON.
+        """
+        Converts the machine in this class to JSON.
 
         :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
-            self._machine_json_path = write_json_machine(progress_bar=False)
+            self._machine_json_path = write_json_machine(
+                progress_bar=False, validate=False)
         return self._machine_json_path
 
     def set_placements(self, used_placements):
-        """ Passes in the placements leaving this class to decide pass it to
-            Java.
+        """
+        Passes in the placements leaving this class to decide pass it to
+        Java.
 
         Currently the extra information extracted is recording region base
         address but this could change if recording region saved in the
@@ -319,8 +324,9 @@ class JavaCaller(object):
         return path
 
     def _run_java(self, *args):
-        """ Does the actual running of JavaSpiNNaker. Arguments are those that
-            will be processed by the `main` method on the Java side.
+        """
+        Does the actual running of JavaSpiNNaker. Arguments are those that
+        will be processed by the `main` method on the Java side.
 
         :rtype: int
         """
@@ -333,8 +339,9 @@ class JavaCaller(object):
         return subprocess.call(params)
 
     def get_all_data(self):
-        """ Gets all the data from the previously set placements
-            and put these in the previously set database.
+        """
+        Gets all the data from the previously set placements
+        and put these in the previously set database.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
@@ -360,13 +367,16 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_data_specification(self):
-        """ Writes all the data specs, uploading the result to the machine.
+        """
+        Writes all the data specs, uploading the result to the machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
@@ -375,14 +385,17 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_system_data_specification(self):
-        """ Writes all the data specs for system cores,
-            uploading the result to the machine.
+        """
+        Writes all the data specs for system cores,
+        uploading the result to the machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
         """
         result = self._run_java(
-            'dse_sys', self._machine_json(), FecDataView.get_run_dir_path())
+            'dse_sys', self._machine_json(),
+            DsSqlliteDatabase.default_database_file(),
+            FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(
                 FecDataView.get_run_dir_path(), "jspin.log")
@@ -391,10 +404,11 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def execute_app_data_specification(self, use_monitors):
-        """ Writes all the data specs for application cores,
-            uploading the result to the machine.
+        """
+        Writes all the data specs for application cores,
+        uploading the result to the machine.
 
-        .. note:
+        .. note::
             May assume that system cores are already loaded and running if
             `use_monitors` is set to `True`.
 
@@ -405,10 +419,12 @@ class JavaCaller(object):
         if use_monitors:
             result = self._run_java(
                 'dse_app_mon', self._placement_json, self._machine_json(),
-                FecDataView.get_run_dir_path(), FecDataView.get_run_dir_path())
+                DsSqlliteDatabase.default_database_file(),
+                FecDataView.get_run_dir_path())
         else:
             result = self._run_java(
                 'dse_app', self._machine_json(),
+                DsSqlliteDatabase.default_database_file(),
                 FecDataView.get_run_dir_path())
         if result != 0:
             log_file = os.path.join(

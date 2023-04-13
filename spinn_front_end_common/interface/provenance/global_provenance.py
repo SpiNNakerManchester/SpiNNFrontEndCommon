@@ -1,17 +1,16 @@
-# Copyright (c) 2017-2022 The University of Manchester
+# Copyright (c) 2017 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from datetime import datetime
 import logging
@@ -30,7 +29,8 @@ _RE = re.compile(r"(\d+)([_,:])(\d+)(?:\2(\d+))?")
 
 
 class GlobalProvenance(SQLiteDB):
-    """ Specific implementation of the Database for SQLite 3.
+    """
+    Specific implementation of the Database for SQLite 3.
 
     .. note::
         *Not thread safe on the same database file.*
@@ -47,7 +47,8 @@ class GlobalProvenance(SQLiteDB):
 
     @classmethod
     def get_global_provenace_path(cls):
-        """ Get the path of the current provenance database of the last run
+        """
+        Get the path of the current provenance database of the last run
 
         .. warning::
             Calling this method between start/reset and run may result in a
@@ -71,7 +72,7 @@ class GlobalProvenance(SQLiteDB):
         :type database_file: str or None
         :param bool memory:
             Flag to say unshared in-memory can be used.
-            Otherwise a None file will mean the default should be used
+            Otherwise a `None` file will mean the default should be used
 
         """
         if database_file is None and not memory:
@@ -144,9 +145,9 @@ class GlobalProvenance(SQLiteDB):
         :param str algorithm: Algorithm name
         :param TimerWork work: Type of work being done
         :param ~datetime.timedelta timedelta: Time to be recorded
-        :param skip_reason: The reason the algorthm was skipped or None if
+        :param skip_reason: The reason the algorithm was skipped or `None` if
             it was not skipped
-        :tpye skip_reason: str or None
+        :type skip_reason: str or None
         """
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +

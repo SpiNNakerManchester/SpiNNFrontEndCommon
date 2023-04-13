@@ -1,23 +1,23 @@
-# Copyright (c) 2017-2019 The University of Manchester
+# Copyright (c) 2016 The University of Manchester
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MultiCastCommand(object):
-    """ A command to be sent to a vertex.
+    """
+    A command to be sent to a vertex.
     """
 
     def __init__(
@@ -60,8 +60,9 @@ class MultiCastCommand(object):
 
     @property
     def time(self):
-        """ The time within the simulation at which to send the\
-            command, or None if this is not a timed command
+        """
+        The time within the simulation at which to send the
+        command, or `None` if this is not a timed command.
 
         :rtype: int or None
         """
@@ -69,7 +70,8 @@ class MultiCastCommand(object):
 
     @property
     def is_timed(self):
-        """ Whether this command is a timed command.
+        """
+        Whether this command is a timed command.
 
         :rtype: bool
         """
@@ -98,7 +100,8 @@ class MultiCastCommand(object):
 
     @property
     def payload(self):
-        """ The payload of the command, or None if there is no payload.
+        """
+        The payload of the command, or `None` if there is no payload.
 
         :rtype: int or None
         """
@@ -110,18 +113,19 @@ class MultiCastCommand(object):
 
     @property
     def is_payload(self):
-        """ Whether this command has a payload. By default, this returns\
-            True if the payload passed in to the constructor is not None, but\
-            this can be overridden to indicate that a payload will be\
-            generated, despite None being passed to the constructor
+        """
+        Whether this command has a payload. By default, this returns
+        True if the payload passed in to the constructor is not `None`, but
+        this can be overridden to indicate that a payload will be
+        generated, despite `None` being passed to the constructor
 
         :rtype: bool
         """
         return self._payload is not None
 
     def __repr__(self):
-        return \
-            "MultiCastCommand(time={}, key={}, payload={},"\
-            " time_between_repeat={}, repeats={})".format(
-                self._time, self._key, self._payload,
-                self._delay_between_repeats, self._repeat)
+        return (
+            f"MultiCastCommand(time={self._time}, key={self._key}, "
+            f"payload={self._payload}, "
+            f"time_between_repeat={self._delay_between_repeats}, "
+            f"repeats={self._repeat})")
