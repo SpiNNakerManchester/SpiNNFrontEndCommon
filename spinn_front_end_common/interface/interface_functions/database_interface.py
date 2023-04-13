@@ -16,11 +16,11 @@ import logging
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.data import FecDataView
-from pacman.model.graphs.application.application_vertex import ApplicationVertex
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
