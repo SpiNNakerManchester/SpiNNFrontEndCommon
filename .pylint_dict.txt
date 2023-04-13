@@ -36,10 +36,13 @@ timestep
 timesteps
 datasheet
 reentrant
+unsets
+subclassing
 
 # Our types
 IPTag
 ReverseIPTag
+IPtagResource
 ApplicationGraph
 MachineGraph
 AbstractVertex
@@ -61,6 +64,7 @@ CoreSubsets
 MultiCastCommand
 ReInjectionStatus
 RouterDiagnostics
+RoutingTableEntry
 MulticastRoutingTable
 AbstractMulticastRoutingTable
 UnCompressedMulticastRoutingTable
@@ -79,7 +83,10 @@ SCAMPConnection
 VariableSDRAM
 EIEIOPrefix
 SpallocClient
+SpallocJob
 BMPConnectionData
+DatabaseReader
+DataWritten
 
 # Python packages
 io
