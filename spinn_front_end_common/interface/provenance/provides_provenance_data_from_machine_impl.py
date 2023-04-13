@@ -149,7 +149,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         :returns:
             A descriptive (human-readable) label and the (x, y, p) coordinates
             for provenance items from the given placement.
-        :rtype: tuple(str, init, int, int)
+        :rtype: tuple(str, int, int, int)
         """
         label = placement.vertex.label
         x = placement.x

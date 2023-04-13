@@ -836,7 +836,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_delay_support_adder(self):
         """
-        Stub to allow spynakker to add delay supports.
+        Stub to allow sPyNNaker to add delay supports.
         """
 
     # Overriden by spynaker to choose a different algorithm
@@ -984,7 +984,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _json_placements(self):
         """
-        Does, times and logs the writing of placements as json if requested.
+        Does, times and logs the writing of placements as JSON if requested.
         """
         with FecTimer("Json placements", TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
@@ -1182,11 +1182,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "routing_info" data
 
-        Which alloactor is run depends on the cfg info_allocator value
+        Which allocator is run depends on the configuration's
+        `routing_table_generator` value.
 
-        This method is the entry point for adding a new Info Allocator
+        This method is the entry point for adding a new routing table
+        generator.
 
-        :raise ConfigurationException: if the cfg info_allocator value is
+        :raise ConfigurationException:
+            if the configuration's `routing_table_generator` value is
             unexpected
         """
         name = get_config_str("Mapping", "routing_table_generator")
@@ -1728,7 +1731,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_load_system_executable_images(self):
         """
-        Runs, times and logs the loading of exectuable images.
+        Runs, times and logs the loading of executable images.
         """
         with FecTimer(
                 "Load executable system Images", TimerWork.LOADING) as timer:
@@ -1738,7 +1741,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_data_specification(self):
         """
-        Runs, times and logs the execute_application_data_specs if required.
+        Runs, times and logs :py:meth:`execute_application_data_specs`
+        if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo

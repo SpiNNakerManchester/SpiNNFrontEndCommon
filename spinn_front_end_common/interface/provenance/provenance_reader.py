@@ -73,7 +73,7 @@ class ProvenanceReader(BaseDatabase):
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection.
 
-        The return type depends on the use_sqlite_rows param.
+        The return type depends on the use_sqlite_rows parameter.
         By default this method returns tuples (lookup by index) but the
         advanced tuple type can be used instead, which supports lookup by name
         used in the query (use ``AS name`` in the query to set).
@@ -131,7 +131,7 @@ class ProvenanceReader(BaseDatabase):
         :param int y:
             The Y coordinate of the chip
         :return:
-            A possibly multiline string with for each row which matches the
+            A possibly multi-line string with for each row which matches the
             like a line ``description_name: value``
         :rtype: str
         """
@@ -187,7 +187,7 @@ class ProvenanceReader(BaseDatabase):
 
         :param str description:
         :return: list of tuples x, y, value)
-        :rtype: lits((int, int float))
+        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
@@ -204,7 +204,7 @@ class ProvenanceReader(BaseDatabase):
         """
         List all the provenance messages.
 
-        :return: all messages logged or not
+        :return: all messages logged or not; order is whatever the DB chooses
         :rtype: list(str)
         """
         query = """
@@ -218,7 +218,7 @@ class ProvenanceReader(BaseDatabase):
         """
         A demonstration of how to use this class.
 
-        See also unittests/interface/provenance/test_provenance_database.py
+        See also `unittests/interface/provenance/test_provenance_database.py`
         """
         # This uses the example file in the same directory as this script
         with ProvenanceReader(os.path.join(

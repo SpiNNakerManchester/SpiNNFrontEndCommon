@@ -25,12 +25,16 @@ malloc
 DSG
 txrx
 PyNN
+HBP
+DDL
 
 # Our special words
 bitfield
 bitfields
 precompiled
 timestep
+timesteps
+datasheet
 
 # Our types
 IPTag
@@ -39,6 +43,9 @@ AbstractVertex
 ApplicationVertex
 MachineVertex
 AbstractEdge
+ApplicationEdge
+MachineEdge
+ExecutableType
 ExecutableTargets
 LivePacketGatherParameters
 LivePacketGatherMachineVertex
@@ -46,6 +53,7 @@ DataSpeedUpPacketGatherMachineVertex
 ExtraMonitorSupportMachineVertex
 AbstractEIEIOMessage
 CPUState
+CoreSubset
 CoreSubsets
 MultiCastCommand
 ReInjectionStatus
@@ -57,6 +65,14 @@ CoreToFill
 AbstractSendsBuffersFromHost
 ProgressBar
 IOBuffer
+ProvenanceDataItem
+MulticastRoutingTables
+PacmanConfigurationException
+SDPMessage
+UDPConnection
+SCAMPConnection
+VariableSDRAM
+EIEIOPrefix
 
 # Python packages
 io
