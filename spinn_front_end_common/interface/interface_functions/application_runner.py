@@ -15,6 +15,7 @@
 import logging
 import time
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -66,7 +67,6 @@ class _ApplicationRunner(object):
         :raises ConfigurationException:
         """
         # pylint: disable=too-many-arguments
-        logger.info("*** Running simulation... *** ")
 
         # wait for all cores to be ready
         self._wait_for_start()
@@ -82,8 +82,12 @@ class _ApplicationRunner(object):
 
         # clear away any router diagnostics that have been set due to all
         # loading applications
-        for chip in FecDataView.get_machine().chips:
+        machine = FecDataView.get_machine()
+        progress = ProgressBar(machine.n_chips, "Resetting router counters")
+        for chip in machine.chips:
             self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
+            progress.update()
+        progress.end()
 
         # wait till external app is ready for us to start if required
         notification_interface.wait_for_confirmation()
@@ -131,9 +135,14 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        for ex_type, cores in FecDataView.get_executable_types().items():
+        exec_types = FecDataView.get_executable_types()
+        n_cores = sum(len(cores) for cores in exec_types.values())
+        progress = ProgressBar(n_cores, "Waiting for cores to be ready to run")
+        for ex_type, cores in exec_types.items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                cores, self.__app_id, ex_type.start_state, timeout=timeout)
+                cores, self.__app_id, ex_type.start_state, timeout=timeout,
+                progress_bar=progress)
+        progress.end()
 
     def _send_sync_signal(self):
         """
