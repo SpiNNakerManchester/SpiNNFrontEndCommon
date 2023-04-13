@@ -20,6 +20,7 @@ from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
 from spinn_front_end_common.data import FecDataView
+from pacman.model.graphs.application.application_vertex import ApplicationVertex
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -78,10 +79,13 @@ def _write_to_db(writer, runtime):
                 and vertex.is_in_injection_mode}
             machine_vertices.update(lpg_source_machine_vertices)
             live_vertices = FecDataView.iterate_live_output_vertices()
-            machine_vertices.update(
-                (m_vertex, part_id)
-                for vertex, part_id in live_vertices
-                for m_vertex in vertex.splitter.get_out_going_vertices(
-                    part_id))
+            for vertex, part_id in live_vertices:
+                if isinstance(vertex, ApplicationVertex):
+                    machine_vertices.update(
+                        (m_vertex, part_id)
+                        for m_vertex in vertex.splitter.get_out_going_vertices(
+                            part_id))
+                else:
+                    machine_vertices.add((vertex, part_id))
             w.create_atom_to_event_id_mapping(machine_vertices)
         p.update()
