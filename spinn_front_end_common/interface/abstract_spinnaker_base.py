@@ -929,7 +929,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_write_metadata(self):
         """
-        Do the various functions to write metadata to the sqlite files.
+        Do the various functions to write metadata to the SQLite files.
         """
         with FecTimer(
                 "Record vertex labels to database", TimerWork.REPORT):

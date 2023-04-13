@@ -117,9 +117,9 @@ class BufferManager(object):
         Uses the extra monitor cores for data extraction.
 
         :param int placement_x:
-            the placement x coord where data is to be extracted from
+            the placement X coordinate where data is to be extracted from
         :param int placement_y:
-            the placement y coord where data is to be extracted from
+            the placement Y coordinate where data is to be extracted from
         :param int address: the memory address to start at
         :param int length: the number of bytes to extract
         :return: data as a byte array
@@ -200,9 +200,9 @@ class BufferManager(object):
         """
         Removes the recorded data stored in memory.
 
-        :param int x: placement x coordinate
-        :param int y: placement y coordinate
-        :param int p: placement p coordinate
+        :param int x: placement X coordinate
+        :param int y: placement Y coordinate
+        :param int p: placement processor ID
         :param int recording_region_id: the recording region ID
         """
         with BufferDatabase() as db:
@@ -401,7 +401,7 @@ class BufferManager(object):
         """
         Retrieve the data for a vertex; must be locked first.
 
-        :param db BufferDatabase: dtabase to store into
+        :param db BufferDatabase: database to store into
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region
@@ -425,8 +425,8 @@ class BufferManager(object):
         Get the recording information from all regions of a core.
 
         :param addr: The recording region base address
-        :param x: The x-coordinate of the chip containing the data
-        :param y: The y-coordinate of the chip containing the data
+        :param x: The X coordinate of the chip containing the data
+        :param y: The Y coordinate of the chip containing the data
         """
         transceiver = FecDataView.get_transceiver()
         n_regions = transceiver.read_word(x, y, addr)

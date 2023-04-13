@@ -275,7 +275,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
-            If `None`, the value is read from the config
+            If `None`, the value is read from the configuration
         :type time_scale_factor: float or None
         """
         if time_scale_factor is None:

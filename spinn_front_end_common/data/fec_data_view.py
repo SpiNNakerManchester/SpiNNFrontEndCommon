@@ -921,7 +921,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             :py:class:`~pacman.model.graphs.machine.MachineVertex`.
 
         :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
+            parameters for an LPG to look for or create
         :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
         :param iterable(str) partition_ids:

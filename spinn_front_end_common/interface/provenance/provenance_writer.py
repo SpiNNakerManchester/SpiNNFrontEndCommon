@@ -144,7 +144,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         Save and if applicable logs a message to the `reports` table.
 
-        Only logs the messages up to the cutoff set by
+        Only logs the messages up to the cut-off set by
         configuration `provenance_report_cutoff`
 
         :param str message:

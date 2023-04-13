@@ -35,6 +35,7 @@ precompiled
 timestep
 timesteps
 datasheet
+reentrant
 
 # Our types
 IPTag
@@ -60,6 +61,7 @@ CoreSubsets
 MultiCastCommand
 ReInjectionStatus
 RouterDiagnostics
+MulticastRoutingTable
 AbstractMulticastRoutingTable
 UnCompressedMulticastRoutingTable
 DataSpecificationExecutor
@@ -76,10 +78,13 @@ UDPConnection
 SCAMPConnection
 VariableSDRAM
 EIEIOPrefix
+SpallocClient
+BMPConnectionData
 
 # Python packages
 io
 
 # PythonTypes
 FileIO
+RawIOBase
 TextIOBase

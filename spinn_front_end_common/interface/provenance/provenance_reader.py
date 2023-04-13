@@ -168,7 +168,7 @@ class ProvenanceReader(BaseDatabase):
 
         :param str description:
         :return: list of tuples x, y, value)
-        :rtype: lits((int, int float))
+        :rtype: list(tuple(int, int, float))
         """
         query = """
             SELECT x, y, the_value
