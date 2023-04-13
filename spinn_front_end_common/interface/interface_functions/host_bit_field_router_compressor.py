@@ -344,7 +344,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param router_table: the original routing table
         :type router_table:
             ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
-        :param int mid_point: cutoff for botfields to use
+        :param int mid_point: cut-off for bitfields to use
         :param dict(int,int) key_to_n_atoms_map:
         :return: routing tables.
         :rtype: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
@@ -403,8 +403,8 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         Read in the bitfields from the cores.
 
-        :param int chip_x: chip x coord
-        :param int chip_y: chip y coord
+        :param int chip_x: chip x coordinate
+        :param int chip_y: chip y coordinate
         :param dict(dict(int)) most_costly_cores:
             Map of chip x, y to processors to count of incoming on processor
         :param dict(int,int) bit_field_chip_base_addresses:
@@ -614,8 +614,8 @@ class _HostBasedBitFieldRouterCompressor(object):
         Goes to SDRAM and removes said merged entries from the cores'
         bitfield region.
 
-        :param int chip_x: the chip x coord from which this happened
-        :param int chip_y: the chip y coord from which this happened
+        :param int chip_x: the chip x coordinate from which this happened
+        :param int chip_y: the chip y coordinate from which this happened
         """
         for entries in self._bit_fields_by_key.values():
             for entry in entries:

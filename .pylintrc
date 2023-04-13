@@ -291,7 +291,7 @@ max-spelling-suggestions=4
 spelling-dict=
 
 # List of comma separated words that should not be checked.
-spelling-ignore-words=
+spelling-ignore-words=pragma
 
 # A path to a file that contains private dictionary; one word per line.
 spelling-private-dict-file=

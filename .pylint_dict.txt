@@ -23,6 +23,8 @@ eieio
 EIEIO
 malloc
 DSG
+txrx
+PyNN
 
 # Our special words
 bitfield
@@ -46,6 +48,15 @@ AbstractEIEIOMessage
 CPUState
 CoreSubsets
 MultiCastCommand
+ReInjectionStatus
+RouterDiagnostics
+AbstractMulticastRoutingTable
+DataSpecificationExecutor
+DataSpecificationGenerator
+CoreToFill
+AbstractSendsBuffersFromHost
+ProgressBar
+IOBuffer
 
 # Python packages
 io
