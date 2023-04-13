@@ -629,7 +629,7 @@ class _MachineBitFieldRouterCompressor(object):
         Builds routing data as needed for the compressor cores.
 
         :param int app_id: appid of the application to load entries with
-        :param ~.AbsractMulticastRoutingTable routing_table:
+        :param ~.AbstractMulticastRoutingTable routing_table:
             the uncompressed routing table
         :return: data array
         :rtype: bytearray

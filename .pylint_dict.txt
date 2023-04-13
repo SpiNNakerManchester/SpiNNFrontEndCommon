@@ -39,6 +39,8 @@ datasheet
 # Our types
 IPTag
 ReverseIPTag
+ApplicationGraph
+MachineGraph
 AbstractVertex
 ApplicationVertex
 MachineVertex
@@ -59,6 +61,7 @@ MultiCastCommand
 ReInjectionStatus
 RouterDiagnostics
 AbstractMulticastRoutingTable
+UnCompressedMulticastRoutingTable
 DataSpecificationExecutor
 DataSpecificationGenerator
 CoreToFill

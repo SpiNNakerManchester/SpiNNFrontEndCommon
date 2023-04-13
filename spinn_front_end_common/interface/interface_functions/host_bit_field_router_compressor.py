@@ -593,7 +593,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         Attempts to covert the mega router tables into 1 router table.
 
-        :param list(~.AbsractMulticastRoutingTable) router_table:
+        :param list(~.AbstractMulticastRoutingTable) router_table:
             the set of router tables that together need to
             be merged into 1 router table
         :return: compressor router table
@@ -629,7 +629,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         """
         Create the report entry.
 
-        :param ~.AbsractMulticastRoutingTable router_table:
+        :param ~.AbstractMulticastRoutingTable router_table:
             the uncompressed router table to process
         :param ~io.TextIOBase report_out: the report writer
         """
