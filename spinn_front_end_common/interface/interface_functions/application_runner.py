@@ -164,9 +164,14 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
+        exec_types = FecDataView.get_executable_types()
+        n_cores = sum(len(cores) for cores in exec_types.values())
+        progress = ProgressBar(n_cores, "Waiting for cores to finish")
         for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                cores, self.__app_id, ex_type.end_state, timeout=timeout)
+                cores, self.__app_id, ex_type.end_state, timeout=timeout,
+                progress_bar=progress)
+        progress.end()
 
     def _determine_simulation_sync_signals(self):
         """
