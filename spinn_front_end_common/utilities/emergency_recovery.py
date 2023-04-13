@@ -14,9 +14,12 @@
 import logging
 
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.interface.interface_functions import (
+    chip_provenance_updater)
 from .iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -79,6 +82,15 @@ def _emergency_iobuf_extract(executable_targets=None):
     extractor.extract_iobuf()
 
 
+def _emergency_exit():
+    """ Tries to get the cores to exit
+    """
+    all_core_subsets = CoreSubsets()
+    for place in FecDataView.iterate_placemements():
+        all_core_subsets.add_processor(place.x, place.y, place.p)
+    chip_provenance_updater(all_core_subsets)
+
+
 def emergency_recover_state_from_failure(vertex, placement):
     """
     Used to get at least *some* information out of a core when something
@@ -109,4 +121,5 @@ def emergency_recover_states_from_failure():
         The what/where mapping
     """
     _emergency_state_check()
+    _emergency_exit()
     _emergency_iobuf_extract()
