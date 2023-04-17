@@ -16,28 +16,16 @@
 pacman
 spinnman
 spalloc
-BMP
-SDP
-SCP
 eieio
-EIEIO
-malloc
-DSG
-txrx
 PyNN
 HBP
 DDL
 
 # Our special words
-bitfield
-bitfields
 precompiled
-timestep
-timesteps
-datasheet
 reentrant
-unsets
-subclassing
+malloc
+txrx
 
 # Our types
 IPTag
@@ -87,9 +75,6 @@ SpallocJob
 BMPConnectionData
 DatabaseReader
 DataWritten
-
-# Python packages
-io
 
 # PythonTypes
 FileIO
