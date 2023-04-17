@@ -28,25 +28,30 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DsSqlliteDatabase(SQLiteDB):
+    """
+    A database for holding data specification details.
+    """
     __slots__ = [
         # The root ethernet id if required
-        "_root_ethernet_id"
+        "__root_ethernet_id"
     ]
 
-    def __init__(self, init=None):
+    def __init__(self, init_file=None):
         """
-        :param init:
-        :type init: bool or None
+        :param bool init_file:
+            Whether to initialise the DB from our DDL file. If not specified,
+            this is guessed from whether we can read the file.
         """
         database_file = self.default_database_file()
 
-        if init is None:
-            init = not os.path.exists(database_file)
+        if init_file is None:
+            init_file = not os.path.exists(database_file)
 
-        super().__init__(database_file, ddl_file=_DDL_FILE if init else None)
-        if init:
+        super().__init__(
+            database_file, ddl_file=_DDL_FILE if init_file else None)
+        if init_file:
             self.__init_db_contents()
-        self._root_ethernet_id = self.__find_root_id()
+        self.__root_ethernet_id = self.__find_root_id()
 
     @classmethod
     def default_database_file(cls):
@@ -89,12 +94,14 @@ class DsSqlliteDatabase(SQLiteDB):
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
 
-    def write_data_spec(self, core_x, core_y, core_p, ds):
+    def write_data_spec(self, core_x, core_y, core_p, spec_bytes):
         """
-        :param int core_x: X coordinate of the core that `ds` applies to
-        :param int core_y: Y coordinate of the core that `ds` applies to
-        :param int p: Processor ID of the core that `ds` applies to
-        :param bytes ds: the data specification byte-code
+        :param int core_x:
+            X coordinate of the core that `spec_bytes` applies to
+        :param int core_y:
+            Y coordinate of the core that `spec_bytes` applies to
+        :param int p: Processor ID of the core that `spec_bytes` applies to
+        :param bytes spec_bytes: the data specification byte-code
         """
         chip = FecDataView().get_chip_at(core_x, core_y)
         with self.transaction() as cursor:
@@ -108,9 +115,9 @@ class DsSqlliteDatabase(SQLiteDB):
                         WHERE ethernet_x = ? AND ethernet_y = ?
                     ), ?)), ?)
                 """, (
-                    core_x, core_y, core_p, sqlite3.Binary(ds),
+                    core_x, core_y, core_p, sqlite3.Binary(spec_bytes),
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-                    self._root_ethernet_id, FecDataView().get_app_id()))
+                    self.__root_ethernet_id, FecDataView().get_app_id()))
 
     def get_ds(self, x, y, p):
         """
@@ -152,7 +159,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def items(self):
         """
-        Yields the keys and values for the DS data.
+        Yields the keys and values for the data specification data.
 
         .. note::
             Do not use the database for anything else while iterating.
@@ -172,7 +179,8 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def system_items(self):
         """
-        Yields the keys and values for the DS data for system cores.
+        Yields the keys and values for the data specification data for system
+        cores.
 
         .. note::
             Do not use the database for anything else while iterating.
@@ -192,7 +200,8 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def app_items(self):
         """
-        Yields the keys and values for the DS data for application cores.
+        Yields the keys and values for the data specification data for
+        application cores.
 
         .. note::
             Do not use the database for anything else while iterating.
@@ -277,7 +286,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 WHERE content IS NOT NULL
                 """, (app_id,))
 
-    def ds_get_app_id(self, x, y, p):
+    def get_app_id(self, x, y, p):
         """
         Gets the `app_id` set for this core.
 
@@ -298,22 +307,10 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def mark_system_cores(self, core_subsets):
         """
+        Flags a set of processors as running system binaries.
+
         :param ~spinn_machine.CoreSubsets core_subsets:
-        """
-        cores_to_mark = []
-        for subset in core_subsets:
-            x = subset.x
-            y = subset.y
-            for p in subset.processor_ids:
-                cores_to_mark.append((x, y, p))
-        self.ds_mark_as_system(cores_to_mark)
-
-    def ds_mark_as_system(self, core_list):
-        """
-        Flags a list of processors as running system binaries.
-
-        :param iterable(tuple(int,int,int)) core_list:
-            list of (core x, core y, core p)
+            Which cores to mark.
         """
         with self.transaction() as cursor:
             cursor.executemany(
@@ -321,7 +318,10 @@ class DsSqlliteDatabase(SQLiteDB):
                 UPDATE core SET
                     is_system = 1
                 WHERE x = ? AND y = ? AND processor = ?
-                """, core_list)
+                """, (
+                    (subset.x, subset.y, p)
+                    for subset in core_subsets
+                    for p in subset.processor_ids))
 
     def get_write_info(self, x, y, p):
         """
@@ -348,7 +348,7 @@ class DsSqlliteDatabase(SQLiteDB):
     def set_write_info(
             self, x, y, p, start, used, written):
         """
-        Sets the provenance returned by the Data Spec executor.
+        Sets the provenance returned by the data specification executor.
 
         :param int x: core X coordinate
         :param int y: core Y coordinate
@@ -380,7 +380,7 @@ class DsSqlliteDatabase(SQLiteDB):
                         ), ?)))
                     """, (
                         x, y, p, start, used, written, chip.nearest_ethernet_x,
-                        chip.nearest_ethernet_y, self._root_ethernet_id))
+                        chip.nearest_ethernet_y, self.__root_ethernet_id))
 
     def set_size_info(self, x, y, p, memory_used):
         with self.transaction() as cursor:
@@ -404,7 +404,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (
                         x, y, p, int(memory_used),
                         chip.nearest_ethernet_x, chip.nearest_ethernet_y,
-                        self._root_ethernet_id))
+                        self.__root_ethernet_id))
 
     def clear_write_info(self):
         """
@@ -463,9 +463,13 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def create_data_spec(self, x, y, p):
         """
-        :param int x:
-        :param int y:
-        :param int p:
+        Get a stream that will write the data specification for a particular
+        core to this database.
+
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :return: the stream; the write only happens when the stream is closed
         :rtype: DataRowWriter
         """
         return DataRowWriter(x, y, p, self)

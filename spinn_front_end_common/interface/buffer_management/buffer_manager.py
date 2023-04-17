@@ -401,7 +401,7 @@ class BufferManager(object):
         """
         Retrieve the data for a vertex; must be locked first.
 
-        :param db BufferDatabase: database to store into
+        :param BufferDatabase db: database to store into
         :param ~pacman.model.placements.Placement placement:
             the placement to get the data from
         :param int recording_region_id: desired recording data region

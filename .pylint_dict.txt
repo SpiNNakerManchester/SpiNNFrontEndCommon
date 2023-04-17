@@ -22,6 +22,7 @@ HBP
 DDL
 
 # Our special words
+borrowable
 precompiled
 reentrant
 malloc
@@ -70,11 +71,13 @@ UDPConnection
 SCAMPConnection
 VariableSDRAM
 EIEIOPrefix
+EIEIOType
 SpallocClient
 SpallocJob
 BMPConnectionData
 DatabaseReader
 DataWritten
+BufferedSendingRegion
 
 # PythonTypes
 FileIO

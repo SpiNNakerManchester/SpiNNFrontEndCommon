@@ -87,7 +87,7 @@ class _MachineBitFieldRouterCompressor(object):
     N_REGIONS_ELEMENT = 1
 
     #: Minimum size a heap object needs in SDRAM. (limit on the size of useful
-    #: SDRAM regions to steal)
+    #: SDRAM regions to borrow)
     _MIN_SIZE_FOR_HEAP = 32
 
     # bit offset for compress only when needed
@@ -458,7 +458,7 @@ class _MachineBitFieldRouterCompressor(object):
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
             routing_table_compressor_app_id, cores):
         """
-        loads the addresses of stealable SDRAM.
+        loads the addresses of borrowable SDRAM.
 
         :param list(tuple(int,int)) matrix_addresses_and_size:
             SDRAM usable and sizes
@@ -481,7 +481,7 @@ class _MachineBitFieldRouterCompressor(object):
                 BIT_FIELD_USABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
-            sdram_address = self._steal_from_matrix_addresses(
+            sdram_address = self._borrow_from_matrix_addresses(
                 matrix_addresses_and_size, len(address_data))
             address_data = self._generate_chip_matrix_data(
                 matrix_addresses_and_size)
@@ -557,7 +557,7 @@ class _MachineBitFieldRouterCompressor(object):
                 BIT_FIELD_ADDRESSES_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
-            sdram_address = self._steal_from_matrix_addresses(
+            sdram_address = self._borrow_from_matrix_addresses(
                 matrix_addresses_and_size, len(address_data))
 
         # write sdram
@@ -594,7 +594,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param int routing_table_compressor_app_id: system app_id
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that the compressor going to run on
-        :raises CantFindSDRAMToUse: when SDRAM is not malloc-ed or stolen
+        :raises CantFindSDRAMToUse: when SDRAM is not malloc'ed or stolen
         """
         routing_table_data = self._build_routing_table_data(app_id, table)
 
@@ -606,7 +606,7 @@ class _MachineBitFieldRouterCompressor(object):
                 BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
-            base_address = self._steal_from_matrix_addresses(
+            base_address = self._borrow_from_matrix_addresses(
                 matrix_addresses_and_size, len(routing_table_data))
 
         # write SDRAM requirements per chip
@@ -654,21 +654,22 @@ class _MachineBitFieldRouterCompressor(object):
         return bytearray(data)
 
     @staticmethod
-    def _steal_from_matrix_addresses(matrix_addresses_and_size, size_to_steal):
+    def _borrow_from_matrix_addresses(
+            matrix_addresses_and_size, size_to_borrow):
         """
-        Steals memory from synaptic matrix as needed.
+        Borrows memory from synaptic matrix as needed.
 
         :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:
             matrix addresses and sizes; updated by this method
-        :param int size_to_steal: size needed to steal from matrices.
-        :return: address to start steal from
+        :param int size_to_borrow: size needed to borrow from matrices.
+        :return: address to start borrow from
         :rtype: int
         :raises CantFindSDRAMToUseException:
-            when no space is big enough to steal from.
+            when no space is big enough to borrow from.
         """
         for pos, (base_address, size) in enumerate(matrix_addresses_and_size):
-            if size >= size_to_steal:
-                new_size = size - size_to_steal
+            if size >= size_to_borrow:
+                new_size = size - size_to_borrow
                 matrix_addresses_and_size[pos] = (base_address, new_size)
                 return base_address
         raise CantFindSDRAMToUseException()
@@ -693,7 +694,7 @@ class _MachineBitFieldRouterCompressor(object):
         region_addresses[placement.x, placement.y].append(
             (bit_field_sdram_address, placement.p))
 
-        # store the available space from the matrix to steal
+        # store the available space from the matrix to borrow
         blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
@@ -739,7 +740,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         * Number of times that the sorters should set of the compressions again
 
-        * Pointer to the area malloc-ed to hold the comms_sdram
+        * Pointer to the area malloc'ed to hold the comms_sdram
 
         * Number of processors in the list
 
