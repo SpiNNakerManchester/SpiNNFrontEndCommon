@@ -27,6 +27,8 @@ precompiled
 reentrant
 malloc
 txrx
+malloc'ed
+params
 
 # Our types
 IPTag
@@ -79,7 +81,11 @@ DatabaseReader
 DataWritten
 BufferedSendingRegion
 
-# PythonTypes
+# Python packages
+struct
+
+# Python types
 FileIO
 RawIOBase
 TextIOBase
+Struct
