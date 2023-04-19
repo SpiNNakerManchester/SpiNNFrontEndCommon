@@ -77,7 +77,7 @@
 <span class="k">class</span> <span class="nc">ProvidesProvenanceDataFromMachineImpl</span><span class="p">(</span>
         <span class="n">AbstractProvidesProvenanceDataFromMachine</span><span class="p">,</span> <span class="n">allow_derivation</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    An implementation that gets provenance data from a region of ints on</span>
+<span class="sd">    An implementation that gets provenance data from a region of integers on</span>
 <span class="sd">    the machine.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -184,9 +184,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">        :returns:</span>
-<span class="sd">            A descriptive (human-readable) label and the x, y, p ocoordiantes</span>
+<span class="sd">            A descriptive (human-readable) label and the (x, y, p) coordinates</span>
 <span class="sd">            for provenance items from the given placement.</span>
-<span class="sd">        :rtype: tuple(str, init, int, int)</span>
+<span class="sd">        :rtype: tuple(str, int, int, int)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">label</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">vertex</span><span class="o">.</span><span class="n">label</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">placement</span><span class="o">.</span><span class="n">x</span>

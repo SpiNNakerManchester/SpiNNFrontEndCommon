@@ -83,7 +83,7 @@
 <div class="viewcode-block" id="ConfigHandler"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler">[docs]</a><span class="k">class</span> <span class="nc">ConfigHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Superclass of AbstractSpinnakerBase that handles function only</span>
-<span class="sd">    dependent of the config and the order its methods are called.</span>
+<span class="sd">    dependent of the configuration and the order its methods are called.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -117,7 +117,8 @@
 
     <span class="k">def</span> <span class="nf">_debug_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adjust and checks config based on mode and reports_enabled.</span>
+<span class="sd">        Adjusts and checks the configuration based on mode and</span>
+<span class="sd">        `reports_enabled`.</span>
 
 <span class="sd">        :raises ConfigurationException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -162,14 +163,12 @@
             <span class="s2">&quot;See https://spinnakermanchester.github.io/common_pages/&quot;</span>
             <span class="s2">&quot;Algorithms.html.&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,):</span>
+    <span class="k">def</span> <span class="nf">_adjust_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">runtime</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adjust and checks config based on runtime</span>
+<span class="sd">        Adjust and checks the configuration based on runtime</span>
 
 <span class="sd">        :param runtime:</span>
 <span class="sd">        :type runtime: int or bool</span>
-<span class="sd">        :param frozenset(str) debug_enable_opts:</span>
-<span class="sd">        :param frozenset(str) report_disable_opts:</span>
 <span class="sd">        :raises ConfigurationException:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">runtime</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -259,8 +258,8 @@
 
 <div class="viewcode-block" id="ConfigHandler.write_errored_file"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_handler.ConfigHandler.write_errored_file">[docs]</a>    <span class="k">def</span> <span class="nf">write_errored_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Writes a errored file that allows file removal to only remove</span>
-<span class="sd">        folders that are errored if requested to do so</span>
+<span class="sd">        Writes an ``errored`` file that allows file removal to only remove</span>
+<span class="sd">        folders that have errors if requested to do so</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__write_named_file</span><span class="p">(</span><span class="n">ERRORED_FILENAME</span><span class="p">)</span></div></div>
 </pre></div>

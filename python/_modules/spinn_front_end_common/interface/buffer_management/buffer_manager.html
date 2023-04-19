@@ -154,9 +154,9 @@
 <span class="sd">        Uses the extra monitor cores for data extraction.</span>
 
 <span class="sd">        :param int placement_x:</span>
-<span class="sd">            the placement x coord where data is to be extracted from</span>
+<span class="sd">            the placement X coordinate where data is to be extracted from</span>
 <span class="sd">        :param int placement_y:</span>
-<span class="sd">            the placement y coord where data is to be extracted from</span>
+<span class="sd">            the placement Y coordinate where data is to be extracted from</span>
 <span class="sd">        :param int address: the memory address to start at</span>
 <span class="sd">        :param int length: the number of bytes to extract</span>
 <span class="sd">        :return: data as a byte array</span>
@@ -237,9 +237,9 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Removes the recorded data stored in memory.</span>
 
-<span class="sd">        :param int x: placement x coordinate</span>
-<span class="sd">        :param int y: placement y coordinate</span>
-<span class="sd">        :param int p: placement p coordinate</span>
+<span class="sd">        :param int x: placement X coordinate</span>
+<span class="sd">        :param int y: placement Y coordinate</span>
+<span class="sd">        :param int p: placement processor ID</span>
 <span class="sd">        :param int recording_region_id: the recording region ID</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">with</span> <span class="n">BufferDatabase</span><span class="p">()</span> <span class="k">as</span> <span class="n">db</span><span class="p">:</span>
@@ -438,7 +438,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Retrieve the data for a vertex; must be locked first.</span>
 
-<span class="sd">        :param db BufferDatabase: dtabase to store into</span>
+<span class="sd">        :param BufferDatabase db: database to store into</span>
 <span class="sd">        :param ~pacman.model.placements.Placement placement:</span>
 <span class="sd">            the placement to get the data from</span>
 <span class="sd">        :param int recording_region_id: desired recording data region</span>
@@ -462,8 +462,8 @@
 <span class="sd">        Get the recording information from all regions of a core.</span>
 
 <span class="sd">        :param addr: The recording region base address</span>
-<span class="sd">        :param x: The x-coordinate of the chip containing the data</span>
-<span class="sd">        :param y: The y-coordinate of the chip containing the data</span>
+<span class="sd">        :param x: The X coordinate of the chip containing the data</span>
+<span class="sd">        :param y: The Y coordinate of the chip containing the data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">transceiver</span> <span class="o">=</span> <span class="n">FecDataView</span><span class="o">.</span><span class="n">get_transceiver</span><span class="p">()</span>
         <span class="n">n_regions</span> <span class="o">=</span> <span class="n">transceiver</span><span class="o">.</span><span class="n">read_word</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">addr</span><span class="p">)</span>

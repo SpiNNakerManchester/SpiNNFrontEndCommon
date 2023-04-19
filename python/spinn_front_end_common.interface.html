@@ -101,11 +101,10 @@
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.clear_write_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.create_data_spec()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.default_database_file"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.default_database_file()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_get_app_id()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_mark_as_system()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_app_cores()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_cores()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_system_cores()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_app_id()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_ds()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_write_info()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.info_iteritems()</span></code></a></li>
@@ -397,12 +396,12 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler">
-<span class="sig-name descname"><span class="pre">exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.exception_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exc_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">traceback_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/abstract_spinnaker_base.html#AbstractSpinnakerBase.exception_handler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.abstract_spinnaker_base.AbstractSpinnakerBase.exception_handler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Handler of exceptions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>exctype</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – the type of exception received</p></li>
+<li><p><strong>exc_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – the type of exception received</p></li>
 <li><p><strong>value</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#Exception" title="(in Python v3.8)"><em>Exception</em></a>) – the value of the exception</p></li>
 <li><p><strong>traceback_obj</strong> (<em>traceback</em>) – the trace back stuff</p></li>
 </ul>
@@ -492,7 +491,7 @@ run call is blocking.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_handler.</span></span><span class="sig-name descname"><span class="pre">ConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_writer_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Superclass of AbstractSpinnakerBase that handles function only
-dependent of the config and the order its methods are called.</p>
+dependent of the configuration and the order its methods are called.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>data_writer</strong> (<a class="reference internal" href="spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter" title="spinn_front_end_common.data.fec_data_writer.FecDataWriter"><em>FecDataWriter</em></a>) – The Global data writer object</p>
@@ -501,8 +500,8 @@ dependent of the config and the order its methods are called.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.config_handler.ConfigHandler.write_errored_file">
 <span class="sig-name descname"><span class="pre">write_errored_file</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_handler.html#ConfigHandler.write_errored_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_handler.ConfigHandler.write_errored_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes a errored file that allows file removal to only remove
-folders that are errored if requested to do so</p>
+<dd><p>Writes an <code class="docutils literal notranslate"><span class="pre">errored</span></code> file that allows file removal to only remove
+folders that have errors if requested to do so</p>
 </dd></dl>
 
 <dl class="py method">
@@ -520,18 +519,19 @@ folders that are finished.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.config_setup.add_spinnaker_cfg">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_setup.</span></span><span class="sig-name descname"><span class="pre">add_spinnaker_cfg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_setup.html#add_spinnaker_cfg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_setup.add_spinnaker_cfg" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add the local cfg and all dependent cfg files.</p>
+<dd><p>Add the local configuration and all dependent configuration files.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.config_setup.unittest_setup">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.config_setup.</span></span><span class="sig-name descname"><span class="pre">unittest_setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/config_setup.html#unittest_setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.config_setup.unittest_setup" title="Permalink to this definition">¶</a></dt>
-<dd><p>Does all the steps that may be required before a unittest</p>
-<p>Resets the configs so only the local default configs are included.</p>
-<p>Unsets any previous simulators and tempdirs</p>
+<dd><p>Does all the steps that may be required before a unit test.</p>
+<p>Resets the configurations so only the local default configurations are
+included.</p>
+<p>Unsets any previous simulators and temporary directories.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This file should only be called from spinn_front_end_common tests</p>
+<p>This file should only be called from <cite>spinn_front_end_common/tests</cite></p>
 </div>
 </dd></dl>
 
@@ -546,8 +546,8 @@ folders that are finished.</p>
 This includes the work of preparing data for transmitting to Java and
 back.</p>
 <p>This separates the choices of how to call the Java batch vs streaming,
-jar locations, parameters, etc from the rest of the python code.</p>
-<p>Creates a java caller and checks the user/config parameters.</p>
+jar locations, parameters, etc. from the rest of the Python code.</p>
+<p>Creates a Java caller and checks the user/configuration parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – if simple parameter checking fails.</p>
@@ -556,7 +556,7 @@ jar locations, parameters, etc from the rest of the python code.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification">
 <span class="sig-name descname"><span class="pre">execute_app_data_specification</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_monitors</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_app_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes all the data specs for application cores,
+<dd><p>Writes all the data specifications for application cores,
 uploading the result to the machine.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -576,7 +576,8 @@ uploading the result to the machine.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification">
 <span class="sig-name descname"><span class="pre">execute_data_specification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes all the data specs, uploading the result to the machine.</p>
+<dd><p>Writes all the data specifications, uploading the result to the
+machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>PacmanExternalAlgorithmFailedToCompleteException</strong> – On failure of the Java code.</p>
@@ -587,7 +588,7 @@ uploading the result to the machine.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification">
 <span class="sig-name descname"><span class="pre">execute_system_data_specification</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/java_caller.html#JavaCaller.execute_system_data_specification"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes all the data specs for system cores,
+<dd><p>Writes all the data specifications for system cores,
 uploading the result to the machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Raises<span class="colon">:</span></dt>

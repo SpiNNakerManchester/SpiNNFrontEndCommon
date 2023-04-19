@@ -294,18 +294,18 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_write_chips_active_cost</span><span class="p">(</span>
-            <span class="n">xy</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+            <span class="n">chip_coord</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">runtime_total_ms</span><span class="p">,</span> <span class="n">power_used</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Figure out the chip active cost during simulation.</span>
 
-<span class="sd">        :param (int, int) xy: the x,y of the chip to consider</span>
-<span class="sd">        :param dict(int, str) labels: vertex labels for the acte cores</span>
+<span class="sd">        :param tuple(int,int) chip_coord: the x,y of the chip to consider</span>
+<span class="sd">        :param dict(int,str) labels: vertex labels for the active cores</span>
 <span class="sd">        :param float runtime_total_ms:</span>
 <span class="sd">        :param PowerUsed power_used:</span>
 <span class="sd">        :param ~io.TextIOBase f: file writer</span>
 <span class="sd">        :return: energy cost</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">xy</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">chip_coord</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># detailed report print out</span>

@@ -62,15 +62,15 @@
 
 <div class="viewcode-block" id="unittest_setup"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_setup.unittest_setup">[docs]</a><span class="k">def</span> <span class="nf">unittest_setup</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Does all the steps that may be required before a unittest</span>
+<span class="sd">    Does all the steps that may be required before a unit test.</span>
 
-<span class="sd">    Resets the configs so only the local default configs are included.</span>
+<span class="sd">    Resets the configurations so only the local default configurations are</span>
+<span class="sd">    included.</span>
 
-<span class="sd">    Unsets any previous simulators and tempdirs</span>
+<span class="sd">    Unsets any previous simulators and temporary directories.</span>
 
 <span class="sd">    .. note::</span>
-<span class="sd">        This file should only be called from spinn_front_end_common tests</span>
-
+<span class="sd">        This file should only be called from `spinn_front_end_common/tests`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">clear_cfg_files</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">add_spinnaker_cfg</span><span class="p">()</span>
@@ -79,7 +79,7 @@
 
 <div class="viewcode-block" id="add_spinnaker_cfg"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.config_setup.add_spinnaker_cfg">[docs]</a><span class="k">def</span> <span class="nf">add_spinnaker_cfg</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Add the local cfg and all dependent cfg files.</span>
+<span class="sd">    Add the local configuration and all dependent configuration files.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">add_pacman_cfg</span><span class="p">()</span>  <span class="c1"># This add its dependencies too</span>
     <span class="n">add_spinnman_cfg</span><span class="p">()</span>  <span class="c1"># double adds of dependencies ignored</span>

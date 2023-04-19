@@ -105,24 +105,27 @@ position as reported by tell().  Returns the new size.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.ds.</span></span><span class="sig-name descname"><span class="pre">DsSqlliteDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.ds.</span></span><span class="sig-name descname"><span class="pre">DsSqlliteDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="spinn_front_end_common.utilities.html#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a></p>
+<p>A database for holding data specification details.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>init</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a><em> or </em><em>None</em>) – </p>
+<dd class="field-odd"><p><strong>init_file</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether to initialise the DB from our DDL file. If not specified,
+this is guessed from whether we can read the file.</p>
 </dd>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items">
 <span class="sig-name descname"><span class="pre">app_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.app_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.app_items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields the keys and values for the DS data for application cores.</p>
+<dd><p>Yields the keys and values for the data specification data for
+application cores.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Do not use the database for anything else while iterating.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Yields the (x, y, p) and saved ds pairs</p>
+<dd class="field-odd"><p>Yields the (x, y, p) and saved data specification byte-code pairs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/io.html#io.RawIOBase" title="(in Python v3.8)"><em>RawIOBase</em></a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
@@ -139,16 +142,21 @@ position as reported by tell().  Returns the new size.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec">
 <span class="sig-name descname"><span class="pre">create_data_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.create_data_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Get a stream that will write the data specification for a particular
+core to this database.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the core</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the core</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Processor ID of the core</p></li>
 </ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter" title="spinn_front_end_common.interface.ds.DataRowWriter">DataRowWriter</a></p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the stream; the write only happens when the stream is closed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#spinn_front_end_common.interface.ds.DataRowWriter" title="spinn_front_end_common.interface.ds.DataRowWriter">DataRowWriter</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -159,38 +167,10 @@ position as reported by tell().  Returns the new size.</p>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id">
-<span class="sig-name descname"><span class="pre">ds_get_app_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.ds_get_app_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the app_id set for this core.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core x</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core y</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system">
-<span class="sig-name descname"><span class="pre">ds_mark_as_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.ds_mark_as_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system" title="Permalink to this definition">¶</a></dt>
-<dd><p>Flags a list of processors as running system binaries.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>core_list</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>)</em>) – list of (core x, core y, core p)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores">
 <span class="sig-name descname"><span class="pre">ds_n_app_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.ds_n_app_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number for application cores there is a ds saved for.</p>
+<dd><p>Returns the number for application cores there is a data specification
+saved for.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -204,7 +184,7 @@ position as reported by tell().  Returns the new size.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores">
 <span class="sig-name descname"><span class="pre">ds_n_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.ds_n_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number for cores there is a ds saved for.</p>
+<dd><p>Returns the number for cores there is a data specification saved for.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -218,7 +198,8 @@ position as reported by tell().  Returns the new size.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores">
 <span class="sig-name descname"><span class="pre">ds_n_system_cores</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.ds_n_system_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the number for system cores there is a ds saved for.</p>
+<dd><p>Returns the number for system cores there is a data specification
+saved for.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -230,22 +211,40 @@ position as reported by tell().  Returns the new size.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds">
-<span class="sig-name descname"><span class="pre">get_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.get_ds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retrieves the data spec as byte code for this core.</p>
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_app_id">
+<span class="sig-name descname"><span class="pre">get_app_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.get_app_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_app_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the <cite>app_id</cite> set for this core.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core x</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core y</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core p</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core X coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core Y coordinate</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core processor ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds">
+<span class="sig-name descname"><span class="pre">get_ds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.get_ds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the data specification as byte-code for this core.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core X coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core Y coordinate</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core processor ID</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>data spec as byte code</p>
+<dd class="field-even"><p>data specification as byte code</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)">bytearray</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytes" title="(in Python v3.8)">bytes</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -253,13 +252,13 @@ position as reported by tell().  Returns the new size.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info">
 <span class="sig-name descname"><span class="pre">get_write_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.get_write_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the provenance returned by the Data Spec executor.</p>
+<dd><p>Gets the provenance returned by the data specification executor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core x</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core y</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core p</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core X coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core Y coordinate</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core processor ID</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -308,14 +307,14 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.items">
 <span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields the keys and values for the DS data.</p>
+<dd><p>Yields the keys and values for the data specification data.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Do not use the database for anything else while iterating.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Yields the (x, y, p) and saved ds pairs</p>
+<dd class="field-odd"><p>Yields the (x, y, p) and saved data specification byte-code pairs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/io.html#io.RawIOBase" title="(in Python v3.8)"><em>RawIOBase</em></a>))</p>
@@ -344,9 +343,10 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.mark_system_cores">
 <span class="sig-name descname"><span class="pre">mark_system_cores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_subsets</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.mark_system_cores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.mark_system_cores" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Flags a set of processors as running system binaries.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a>) – </p>
+<dd class="field-odd"><p><strong>core_subsets</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a>) – Which cores to mark.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -354,7 +354,7 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id">
 <span class="sig-name descname"><span class="pre">set_app_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">app_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.set_app_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_app_id" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the same app_id for all rows that have ds content.</p>
+<dd><p>Sets the same app_id for all rows that have data specification content.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – value to set</p>
@@ -370,16 +370,16 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_write_info">
 <span class="sig-name descname"><span class="pre">set_write_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">used</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">written</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.set_write_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.set_write_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the provenance returned by the Data Spec executor.</p>
+<dd><p>Sets the provenance returned by the data specification executor.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core x</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core y</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core p</p></li>
-<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – base_address:</p></li>
-<li><p><strong>used</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – size_allocated:</p></li>
-<li><p><strong>written</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – bytes_written:</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core X coordinate</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core Y coordinate</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – core processor ID</p></li>
+<li><p><strong>start</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – base address</p></li>
+<li><p><strong>used</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – size allocated</p></li>
+<li><p><strong>written</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – bytes written</p></li>
 </ul>
 </dd>
 </dl>
@@ -388,14 +388,16 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.system_items">
 <span class="sig-name descname"><span class="pre">system_items</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.system_items"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.system_items" title="Permalink to this definition">¶</a></dt>
-<dd><p>Yields the keys and values for the DS data for system cores.</p>
+<dd><p>Yields the keys and values for the data specification data for system
+cores.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Do not use the database for anything else while iterating.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Yields the (x, y, p), saved ds and region_size triples</p>
+<dd class="field-odd"><p>Yields the (x, y, p), saved data specification byte-code, and
+region_size triples</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>iterable(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/io.html#io.RawIOBase" title="(in Python v3.8)"><em>RawIOBase</em></a>, <a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
@@ -405,14 +407,14 @@ and memory_written</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec">
-<span class="sig-name descname"><span class="pre">write_data_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.write_data_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_data_spec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spec_bytes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.write_data_spec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_data_spec" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>core_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x of the core ds applies to</p></li>
-<li><p><strong>core_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y of the core ds applies to</p></li>
-<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – p of the core ds applies to</p></li>
-<li><p><strong>ds</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytearray" title="(in Python v3.8)"><em>bytearray</em></a>) – the data spec as byte code</p></li>
+<li><p><strong>core_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the core that <cite>spec_bytes</cite> applies to</p></li>
+<li><p><strong>core_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the core that <cite>spec_bytes</cite> applies to</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Processor ID of the core that <cite>spec_bytes</cite> applies to</p></li>
+<li><p><strong>spec_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#bytes" title="(in Python v3.8)"><em>bytes</em></a>) – the data specification byte-code</p></li>
 </ul>
 </dd>
 </dl>
@@ -421,7 +423,7 @@ and memory_written</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_session_credentials_to_db">
 <span class="sig-name descname"><span class="pre">write_session_credentials_to_db</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/interface/ds/ds_sqllite_database.html#DsSqlliteDatabase.write_session_credentials_to_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.write_session_credentials_to_db" title="Permalink to this definition">¶</a></dt>
-<dd><p>Write Spalloc session credentials to the database if in use</p>
+<dd><p>Write Spalloc session credentials to the database, if in use.</p>
 </dd></dl>
 
 </dd></dl>
@@ -456,11 +458,10 @@ and memory_written</p>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.clear_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.clear_write_info()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.create_data_spec"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.create_data_spec()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.default_database_file"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.default_database_file()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_get_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_get_app_id()</span></code></a></li>
-<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_mark_as_system"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_mark_as_system()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_app_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_app_cores()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_cores()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.ds_n_system_cores"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.ds_n_system_cores()</span></code></a></li>
+<li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_app_id"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_app_id()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_ds"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_ds()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.get_write_info"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.get_write_info()</span></code></a></li>
 <li><a class="reference internal" href="#spinn_front_end_common.interface.ds.DsSqlliteDatabase.info_iteritems"><code class="docutils literal notranslate"><span class="pre">DsSqlliteDatabase.info_iteritems()</span></code></a></li>

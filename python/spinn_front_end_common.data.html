@@ -62,7 +62,7 @@ and within the Non-PyNN repositories unit tests as all methods are
 available to subclasses.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>state</strong> (<em>Data_Status</em>) – State writer should be in</p>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities.data/#spinn_utilities.data.DataStatus" title="(in SpiNNUtils v6.0)"><em>DataStatus</em></a>) – State writer should be in</p>
 </dd>
 </dl>
 <dl class="py method">
@@ -79,8 +79,8 @@ available to subclasses.</p>
 <li><p><strong>PacmanConfigurationException</strong> – when both graphs contain vertices</p></li>
 <li><p><strong>PacmanConfigurationException</strong> – If there is an attempt to add the same vertex more than once</p></li>
 <li><p><a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.exceptions.SpiNNUtilsException" title="(in SpiNNUtils v6.0)"><strong>SpiNNUtilsException</strong></a> – If the graph is currently unavailable</p></li>
-<li><p><strong>SimulatorNotSetupException</strong> – If called before sim.setup</p></li>
-<li><p><strong>SimulatorShutdownException</strong> – If called after sim.end</p></li>
+<li><p><strong>SimulatorNotSetupException</strong> – If called before <cite>sim.setup</cite></p></li>
+<li><p><strong>SimulatorShutdownException</strong> – If called after <cite>sim.end</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -231,10 +231,10 @@ available to subclasses.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress">
-<span class="sig-name descname"><span class="pre">set_ipaddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ipaddress</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_ipaddress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_ipaddress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_writer.html#FecDataWriter.set_ipaddress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ipaddress</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
+<dd class="field-odd"><p><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -336,12 +336,13 @@ available to subclasses.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>simulation_time_step_us</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em> or </em><em>None</em>) – An explicitly specified time step for the simulation in .
-If <cite>None</cite>, the value is read from the config</p></li>
+If <cite>None</cite>, the value is read from the configuration</p></li>
 <li><p><strong>time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><em>None</em>) – An explicitly specified time scale factor for the simulation.
-If <cite>None</cite>, the value is read from the config</p></li>
+If <cite>None</cite>, the value is read from the configuration</p></li>
 <li><p><strong>default_time_scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><em>None</em>) – A back up time scale factor for the simulation.
-Only used if time_scale_factor param and cfg are both <cite>None</cite>
-If <cite>None</cite>, the value is based on simulation_time_step</p></li>
+Only used if time_scale_factor parameter and configuration are
+both <cite>None</cite>.
+If <cite>None</cite>, the value is based on <cite>simulation_time_step</cite></p></li>
 </ul>
 </dd>
 </dl>
@@ -421,7 +422,7 @@ If not, it must be a
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) – params to look for a LPG</p></li>
+<li><p><strong>live_packet_gatherer_params</strong> (<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters" title="spinn_front_end_common.utilities.utility_objs.LivePacketGatherParameters"><em>LivePacketGatherParameters</em></a>) – parameters for an LPG to look for or create</p></li>
 <li><p><strong>vertex_to_record_from</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – the vertex that needs to send to a given LPG</p></li>
 <li><p><strong>partition_ids</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – the IDs of the partitions to connect from the vertex</p></li>
 </ul>
@@ -446,12 +447,13 @@ If not, it must be a
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_app_provenance_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_app_provenance_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all app provenance files.</p>
+<dd><p>Returns the path to the directory that holds all application provenance
+files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In unittest mode this returns a tempdir
+<p>In unit-test mode this returns a temporary directory
 shared by all path methods.</p>
 </div>
 <dl class="field-list simple">
@@ -522,7 +524,7 @@ shared by all path methods.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_data_in_multicast_routing_tables">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_data_in_multicast_routing_tables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_data_in_multicast_routing_tables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_data_in_multicast_routing_tables" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retreive the data_in_multicast_routing_tables if known</p>
+<dd><p>Retrieve the data_in_multicast_routing_tables if known</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
@@ -704,7 +706,7 @@ or set to <cite>None</cite></p>
 the next run if it has not yet been called.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In unittest mode this returns a tempdir
+<p>In unit-test mode this returns a temporary directory
 shared by all path methods.</p>
 </div>
 <dl class="field-list simple">
@@ -890,7 +892,7 @@ this will be what the partitioner requested.</p>
 the next run if it has not yet been called.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In unittest mode this returns a tempdir
+<p>In unit-test mode this returns a temporary directory
 shared by all path methods.</p>
 </div>
 <dl class="field-list simple">
@@ -1064,12 +1066,12 @@ unavailable</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_system_provenance_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_system_provenance_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the path to the directory that holds all provenance files.</p>
+<dd><p>Returns the path to the directory that holds system provenance files.</p>
 <p>This will be the path used by the last run call or to be used by
 the next run if it has not yet been called.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In unittest mode this returns a tempdir
+<p>In unit-test mode this returns a temporary directory
 shared by all path methods.</p>
 </div>
 <dl class="field-list simple">
@@ -1101,11 +1103,12 @@ shared by all path methods.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.data.FecDataView.get_timestamp_dir_path">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_timestamp_dir_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/data/fec_data_view.html#FecDataView.get_timestamp_dir_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.data.FecDataView.get_timestamp_dir_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns path to existing timestamped director in the reports directory.</p>
+<dd><p>Returns path to existing time-stamped directory in the reports
+directory.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>In unittest mode this returns a tempdir
-shared by all path methods</p>
+<p>In unit-test mode this returns a temporary directory
+shared by all path methods.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>

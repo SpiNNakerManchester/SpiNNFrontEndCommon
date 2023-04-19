@@ -638,11 +638,12 @@
 <div class="viewcode-block" id="FecDataView.get_timestamp_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_timestamp_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_timestamp_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns path to existing timestamped director in the reports directory.</span>
+<span class="sd">        Returns path to existing time-stamped directory in the reports</span>
+<span class="sd">        directory.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            In unittest mode this returns a tempdir</span>
-<span class="sd">            shared by all path methods</span>
+<span class="sd">            In unit-test mode this returns a temporary directory</span>
+<span class="sd">            shared by all path methods.</span>
 
 <span class="sd">        :rtype: str</span>
 <span class="sd">        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:</span>
@@ -672,7 +673,7 @@
 <div class="viewcode-block" id="FecDataView.get_data_in_multicast_routing_tables"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_data_in_multicast_routing_tables">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_data_in_multicast_routing_tables</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Retreive the data_in_multicast_routing_tables if known</span>
+<span class="sd">        Retrieve the data_in_multicast_routing_tables if known</span>
 
 <span class="sd">        :rtype: ~pacman.model.routing_tables.MulticastRoutingTables</span>
 <span class="sd">        :raises SpiNNUtilsException:</span>
@@ -774,7 +775,7 @@
 <span class="sd">        the next run if it has not yet been called.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            In unittest mode this returns a tempdir</span>
+<span class="sd">            In unit-test mode this returns a temporary directory</span>
 <span class="sd">            shared by all path methods.</span>
 
 <span class="sd">        :rtype: str</span>
@@ -795,7 +796,7 @@
 <span class="sd">        the next run if it has not yet been called.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            In unittest mode this returns a tempdir</span>
+<span class="sd">            In unit-test mode this returns a temporary directory</span>
 <span class="sd">            shared by all path methods.</span>
 
 <span class="sd">        :rtype: str</span>
@@ -809,13 +810,14 @@
 <div class="viewcode-block" id="FecDataView.get_app_provenance_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_app_provenance_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_app_provenance_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the path to the directory that holds all app provenance files.</span>
+<span class="sd">        Returns the path to the directory that holds all application provenance</span>
+<span class="sd">        files.</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
 <span class="sd">        the next run if it has not yet been called.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            In unittest mode this returns a tempdir</span>
+<span class="sd">            In unit-test mode this returns a temporary directory</span>
 <span class="sd">            shared by all path methods.</span>
 
 <span class="sd">        :rtype: str</span>
@@ -831,13 +833,13 @@
 <div class="viewcode-block" id="FecDataView.get_system_provenance_dir_path"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.FecDataView.get_system_provenance_dir_path">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_system_provenance_dir_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns the path to the directory that holds all provenance files.</span>
+<span class="sd">        Returns the path to the directory that holds system provenance files.</span>
 
 <span class="sd">        This will be the path used by the last run call or to be used by</span>
 <span class="sd">        the next run if it has not yet been called.</span>
 
 <span class="sd">        .. note::</span>
-<span class="sd">            In unittest mode this returns a tempdir</span>
+<span class="sd">            In unit-test mode this returns a temporary directory</span>
 <span class="sd">            shared by all path methods.</span>
 
 <span class="sd">        :rtype: str</span>
@@ -956,7 +958,7 @@
 <span class="sd">            :py:class:`~pacman.model.graphs.machine.MachineVertex`.</span>
 
 <span class="sd">        :param LivePacketGatherParameters live_packet_gatherer_params:</span>
-<span class="sd">            params to look for a LPG</span>
+<span class="sd">            parameters for an LPG to look for or create</span>
 <span class="sd">        :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:</span>
 <span class="sd">            the vertex that needs to send to a given LPG</span>
 <span class="sd">        :param iterable(str) partition_ids:</span>

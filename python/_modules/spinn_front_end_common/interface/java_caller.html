@@ -78,7 +78,7 @@
 <span class="sd">    back.</span>
 
 <span class="sd">    This separates the choices of how to call the Java batch vs streaming,</span>
-<span class="sd">    jar locations, parameters, etc from the rest of the python code.</span>
+<span class="sd">    jar locations, parameters, etc. from the rest of the Python code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
@@ -105,7 +105,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Creates a java caller and checks the user/config parameters.</span>
+<span class="sd">        Creates a Java caller and checks the user/configuration parameters.</span>
 
 <span class="sd">        :raise ConfigurationException: if simple parameter checking fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -160,18 +160,18 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;Found a jar file at </span><span class="si">{</span><span class="n">auto_jar_file</span><span class="si">}</span><span class="s2"> &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;while java_jar_path as set. &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Please delete on of the two.&quot;</span><span class="p">)</span>
+                    <span class="s2">&quot;while java_jar_path as set. &quot;</span>
+                    <span class="s2">&quot;Please delete on of the two.&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">java_jar_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">java_spinnaker_path</span><span class="p">):</span>
                     <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;No Java code found at </span><span class="si">{</span><span class="n">java_spinnaker_path</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Nor is java_jar_path set.&quot;</span><span class="p">)</span>
+                        <span class="s2">&quot;nor is java_jar_path set.&quot;</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="n">ConfigurationException</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;No jar file at </span><span class="si">{</span><span class="n">auto_jar_file</span><span class="si">}</span><span class="s2"> &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Nor is java_jar_path set.&quot;</span><span class="p">)</span>
+                        <span class="s2">&quot;nor is java_jar_path set.&quot;</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">java_jar_path</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_jar_file</span> <span class="o">=</span> <span class="n">auto_jar_file</span>
             <span class="k">else</span><span class="p">:</span>
@@ -301,7 +301,7 @@
     <span class="k">def</span> <span class="nf">_write_gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">used_placements</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param ~pacman.model.placements.Placements used_placements:</span>
-<span class="sd">            placements that are being used. May not eb all placements</span>
+<span class="sd">            placements that are being used. May not be all placements</span>
 <span class="sd">        :param str path:</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -362,9 +362,10 @@
 
     <span class="k">def</span> <span class="nf">_run_java</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Does the actual running of JavaSpiNNaker. Arguments are those that</span>
+<span class="sd">        Does the actual running of `JavaSpiNNaker`. Arguments are those that</span>
 <span class="sd">        will be processed by the `main` method on the Java side.</span>
 
+<span class="sd">        :type list(str) args:</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_java_properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -405,7 +406,8 @@
 
 <div class="viewcode-block" id="JavaCaller.execute_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Writes all the data specs, uploading the result to the machine.</span>
+<span class="sd">        Writes all the data specifications, uploading the result to the</span>
+<span class="sd">        machine.</span>
 
 <span class="sd">        :raises PacmanExternalAlgorithmFailedToCompleteException:</span>
 <span class="sd">            On failure of the Java code.</span>
@@ -423,7 +425,7 @@
 
 <div class="viewcode-block" id="JavaCaller.execute_system_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_system_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_system_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Writes all the data specs for system cores,</span>
+<span class="sd">        Writes all the data specifications for system cores,</span>
 <span class="sd">        uploading the result to the machine.</span>
 
 <span class="sd">        :raises PacmanExternalAlgorithmFailedToCompleteException:</span>
@@ -442,7 +444,7 @@
 
 <div class="viewcode-block" id="JavaCaller.execute_app_data_specification"><a class="viewcode-back" href="../../../spinn_front_end_common.interface.html#spinn_front_end_common.interface.java_caller.JavaCaller.execute_app_data_specification">[docs]</a>    <span class="k">def</span> <span class="nf">execute_app_data_specification</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_monitors</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Writes all the data specs for application cores,</span>
+<span class="sd">        Writes all the data specifications for application cores,</span>
 <span class="sd">        uploading the result to the machine.</span>
 
 <span class="sd">        .. note::</span>

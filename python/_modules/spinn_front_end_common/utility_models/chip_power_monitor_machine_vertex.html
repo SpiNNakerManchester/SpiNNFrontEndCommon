@@ -190,7 +190,7 @@
 <span class="sd">        Write the data needed by the C code to configure itself.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
-<span class="sd">            spec object</span>
+<span class="sd">            specification writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">CONFIG</span><span class="p">)</span>
         <span class="n">n_samples_per_recording</span> <span class="o">=</span> <span class="n">get_config_int</span><span class="p">(</span>
@@ -203,7 +203,7 @@
 <span class="sd">        Writes the system data as required.</span>
 
 <span class="sd">        :param ~data_specification.DataSpecificationGenerator spec:</span>
-<span class="sd">            the DSG spec writer</span>
+<span class="sd">            the DSG specification writer</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">switch_write_focus</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_REGIONS</span><span class="o">.</span><span class="n">SYSTEM</span><span class="p">)</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">write_array</span><span class="p">(</span><span class="n">get_simulation_header_array</span><span class="p">(</span>
@@ -247,7 +247,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The type of binary that implements this vertex.</span>
 
-<span class="sd">        :return: starttype enum</span>
+<span class="sd">        :return: start-type</span>
 <span class="sd">        :rtype: ExecutableType</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">ExecutableType</span><span class="o">.</span><span class="n">USES_SIMULATION_INTERFACE</span></div>

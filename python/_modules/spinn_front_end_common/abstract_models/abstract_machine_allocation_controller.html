@@ -101,11 +101,14 @@
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_sdp_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_sdp_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_sdp_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">udp_port</span><span class="o">=</span><span class="n">SCP_SCAMP_PORT</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Open a connection to a specific ethernet chip. Caller will have to</span>
-<span class="sd">        arrange for SpiNNaker to pay attention to the connection.</span>
+<span class="sd">        Open a connection to a specific Ethernet-enabled SpiNNaker chip.</span>
+<span class="sd">        Caller will have to arrange for SpiNNaker to pay attention to the</span>
+<span class="sd">        connection.</span>
 
-<span class="sd">        :param int chip_x: ethernet chip x location</span>
-<span class="sd">        :param int chip_y: ethernet chip y location</span>
+<span class="sd">        The coordinates will be job-relative.</span>
+
+<span class="sd">        :param int chip_x: Ethernet-enabled chip X coordinate</span>
+<span class="sd">        :param int chip_y: Ethernet-enabled chip Y coordinate</span>
 <span class="sd">        :param int udp_port:</span>
 <span class="sd">            the UDP port on the chip to connect to; connecting to a non-SCP</span>
 <span class="sd">            port will result in a connection that can&#39;t easily be configured.</span>
@@ -115,19 +118,22 @@
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_connection"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_connection">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_eieio_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Open a connection to a specific ethernet chip for EIEIO. Caller will</span>
-<span class="sd">        have to arrange for SpiNNaker to pay attention to the connection.</span>
+<span class="sd">        Open a connection to a specific Ethernet-enabled chip for EIEIO.</span>
+<span class="sd">        Caller will have to arrange for SpiNNaker to pay attention to the</span>
+<span class="sd">        connection.</span>
 
-<span class="sd">        :param int chip_x: ethernet chip x location</span>
-<span class="sd">        :param int chip_y: ethernet chip y location</span>
+<span class="sd">        The coordinates will be job-relative.</span>
 
+<span class="sd">        :param int chip_x: Ethernet-enabled chip X coordinate</span>
+<span class="sd">        :param int chip_y: Ethernet-enabled chip Y coordinate</span>
 <span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
 
 <div class="viewcode-block" id="AbstractMachineAllocationController.open_eieio_listener"><a class="viewcode-back" href="../../../spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractMachineAllocationController.open_eieio_listener">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">open_eieio_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Open an unbound EIEIO connection.</span>
+<span class="sd">        Open an unbound EIEIO connection. This may be used to communicate with</span>
+<span class="sd">        any board of the job.</span>
 
 <span class="sd">        :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>

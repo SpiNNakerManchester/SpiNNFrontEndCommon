@@ -67,7 +67,7 @@
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices">
 <span class="sig-name descname"><span class="pre">create_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">system_placements</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter.create_vertices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Special way of making LPG machine vertices, where one is placed
-on each Ethernet chip.</p>
+on each Ethernet-enabled chip.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This adds to system placements.</p>
@@ -178,7 +178,7 @@ machine or application vertices that should hit the target)</p>
 <dd><p>Gets the machine vertices which are recording this variable.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>variable_to_record</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the variable to get machine verts for.</p>
+<dd class="field-odd"><p><strong>variable_to_record</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the variable to get machine vertices for.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>list of machine vertices</p>
@@ -202,7 +202,7 @@ machine or application vertices that should hit the target)</p>
 and partition.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A set of (lpg machine vertex, source machine vertex, partition_id)</p>
+<dd class="field-odd"><p>A set of (LPG machine vertex, source machine vertex, partition_id)</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)">set</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">LivePacketGatherMachineVertex</a>,
@@ -252,7 +252,7 @@ application vertex.</p>
 <dd><p>The type of binary that implements this vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>starttype enum</p>
+<dd class="field-odd"><p>start-type</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a></p>
@@ -759,7 +759,7 @@ application vertex.</p>
 <dd><p>Deduce the max sequence number expected to be received.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>the biggest sequence num expected</p>
+<dd class="field-odd"><p>the biggest sequence number expected</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a></p>
@@ -853,7 +853,8 @@ application vertex.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The IPtags used by this vertex if any.</p>
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
+if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a>)</p>
@@ -1391,7 +1392,8 @@ with a working Ethernet connection.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The IPtags used by this vertex if any.</p>
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
+if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a>)</p>
@@ -1554,7 +1556,7 @@ converted in to multicast packets.</p>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The label of this vertex</p></li>
 <li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a><em> or </em><em>None</em>) – The slice served via this multicast source</p></li>
 <li><p><strong>app_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a><em> or </em><em>None</em>) – The associated application vertex</p></li>
-<li><p><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of keys to be sent via this mulitcast source
+<li><p><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of keys to be sent via this multicast source
 (can’t be <cite>None</cite> if vertex_slice is also <cite>None</cite>)</p></li>
 <li><p><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The IP address of the board on which to place this vertex if receiving
 data, either buffered or live (by default, any board is chosen)</p></li>
@@ -1814,7 +1816,8 @@ position) to be used for provenance error reporting to the user.</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reverse_iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The reverse IPtags used by this vertex if any.</p>
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReverseIPTag</span></code></a>s used by this
+vertex, if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ReverseIPtagResource" title="(in PACMAN v6.0)"><em>ReverseIPtagResource</em></a>)</p>

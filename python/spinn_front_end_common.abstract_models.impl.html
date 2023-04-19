@@ -82,13 +82,15 @@ connections if needed).</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_connection">
 <span class="sig-name descname"><span class="pre">open_eieio_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_allocation_controller.html#MachineAllocationController.open_eieio_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open a connection to a specific ethernet chip for EIEIO. Caller will
-have to arrange for SpiNNaker to pay attention to the connection.</p>
+<dd><p>Open a connection to a specific Ethernet-enabled chip for EIEIO.
+Caller will have to arrange for SpiNNaker to pay attention to the
+connection.</p>
+<p>The coordinates will be job-relative.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip x location</p></li>
-<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip y location</p></li>
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Ethernet-enabled chip X coordinate</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Ethernet-enabled chip Y coordinate</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -100,7 +102,8 @@ have to arrange for SpiNNaker to pay attention to the connection.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_listener">
 <span class="sig-name descname"><span class="pre">open_eieio_listener</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_allocation_controller.html#MachineAllocationController.open_eieio_listener"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_eieio_listener" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open an unbound EIEIO connection.</p>
+<dd><p>Open an unbound EIEIO connection. This may be used to communicate with
+any board of the job.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.EIEIOConnection" title="(in SpiNNMan v6.0)"><em>EIEIOConnection</em></a></p>
@@ -111,13 +114,15 @@ have to arrange for SpiNNaker to pay attention to the connection.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_sdp_connection">
 <span class="sig-name descname"><span class="pre">open_sdp_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">udp_port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17893</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/abstract_models/impl/machine_allocation_controller.html#MachineAllocationController.open_sdp_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.abstract_models.impl.MachineAllocationController.open_sdp_connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open a connection to a specific ethernet chip. Caller will have to
-arrange for SpiNNaker to pay attention to the connection.</p>
+<dd><p>Open a connection to a specific Ethernet-enabled SpiNNaker chip.
+Caller will have to arrange for SpiNNaker to pay attention to the
+connection.</p>
+<p>The coordinates will be job-relative.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip x location</p></li>
-<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – ethernet chip y location</p></li>
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Ethernet-enabled chip X coordinate</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Ethernet-enabled chip Y coordinate</p></li>
 <li><p><strong>udp_port</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the UDP port on the chip to connect to; connecting to a non-SCP
 port will result in a connection that can’t easily be configured.</p></li>
 </ul>

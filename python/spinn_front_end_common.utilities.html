@@ -611,7 +611,7 @@ too small to contain any packet at all.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.CantFindSDRAMToUseException">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">CantFindSDRAMToUseException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#CantFindSDRAMToUseException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.CantFindSDRAMToUseException" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpinnFrontEndException</span></code></a></p>
-<p>Raised when malloc and sdram stealing cannot occur.</p>
+<p>Raised when malloc and SDRAM stealing cannot occur.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -625,7 +625,7 @@ too small to contain any packet at all.</p>
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.exceptions.DsDatabaseException">
 <em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.exceptions.</span></span><span class="sig-name descname"><span class="pre">DsDatabaseException</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/exceptions.html#DsDatabaseException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.exceptions.DsDatabaseException" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.SpinnFrontEndException" title="spinn_front_end_common.utilities.exceptions.SpinnFrontEndException"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpinnFrontEndException</span></code></a></p>
-<p>Raise when a query in the DataSpec database failed.</p>
+<p>Raise when a query in the Data Specification database failed.</p>
 </dd></dl>
 
 <dl class="py exception">
@@ -854,7 +854,8 @@ particular chip. This will be on the same board.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.helpful_functions.n_word_struct">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.helpful_functions.</span></span><span class="sig-name descname"><span class="pre">n_word_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_words</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/helpful_functions.html#n_word_struct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.helpful_functions.n_word_struct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manages a precompiled cache of structs for parsing blocks of words.
+<dd><p>Manages a precompiled cache of :py:class`~struct.Struct`s for
+parsing blocks of words.
 Thus, this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span> <span class="o">=</span> <span class="n">n_word_struct</span><span class="p">(</span><span class="n">n_words</span><span class="p">)</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">data_blob</span><span class="p">)</span>
 </pre></div>
@@ -1161,10 +1162,10 @@ forever</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>processor_chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x-coordinate of the chip</p></li>
-<li><p><strong>processor_chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y-coordinate of the chip</p></li>
+<li><p><strong>processor_chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the chip</p></li>
+<li><p><strong>processor_chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the chip</p></li>
 <li><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The processor ID</p></li>
-<li><p><strong>application_run_time_report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The folder to contain the resulting specification files; if ‘TEMP’
+<li><p><strong>application_run_time_report_folder</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The folder to contain the resulting specification files; if <code class="docutils literal notranslate"><span class="pre">TEMP</span></code>
 then a temporary directory is used.</p></li>
 </ul>
 </dd>
@@ -1199,8 +1200,8 @@ writer to send down to DSG.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>processor_chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – x-coordinate of the chip</p></li>
-<li><p><strong>processor_chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – y-coordinate of the chip</p></li>
+<li><p><strong>processor_chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the chip</p></li>
+<li><p><strong>processor_chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the chip</p></li>
 <li><p><strong>processor_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The processor ID</p></li>
 </ul>
 </dd>
@@ -1216,15 +1217,15 @@ writer to send down to DSG.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.utility_calls.open_scp_connection">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.utility_calls.</span></span><span class="sig-name descname"><span class="pre">open_scp_connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chip_ip_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/utility_calls.html#open_scp_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.utility_calls.open_scp_connection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create an SCP connection to the given ethernet chip. SpiNNaker will
+<dd><p>Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
 not be configured to map that connection to a tag; that is the
 caller’s responsibility.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the ethernet chip to connect to.</p></li>
-<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the ethernet chip to connect to.</p></li>
-<li><p><strong>chip_ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – IP address of the ethernet chip to connect to.</p></li>
+<li><p><strong>chip_x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – X coordinate of the Ethernet-enabled chip to connect to.</p></li>
+<li><p><strong>chip_y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Y coordinate of the Ethernet-enabled chip to connect to.</p></li>
+<li><p><strong>chip_ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – IP address of the Ethernet-enabled chip to connect to.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
@@ -1270,8 +1271,10 @@ arguments are used (or default defaults).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>connection</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.UDPConnection" title="(in SpiNNMan v6.0)"><em>UDPConnection</em></a>) – The connection to deliver to.</p></li>
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The X coordinate of the ethernet chip we are sending the message to.</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The Y coordinate of the ethernet chip we are sending the message to.</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The X coordinate of the Ethernet-enabled chip we are sending the
+message to.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The Y coordinate of the Ethernet-enabled chip we are sending the
+message to.</p></li>
 <li><p><strong>tag</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The ID of the tag to retarget.</p></li>
 <li><p><strong>ip_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – What IP address to send the message to. If <code class="docutils literal notranslate"><span class="pre">None</span></code>, the connection is
 assumed to be connected to a specific board already.</p></li>

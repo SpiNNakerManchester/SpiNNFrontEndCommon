@@ -91,7 +91,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">FormatAdapter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">))</span>
 
-<span class="c1">#: sdram allocation for addresses</span>
+<span class="c1">#: Size of SDRAM allocation for addresses</span>
 <span class="n">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span> <span class="o">=</span> <span class="p">(</span><span class="mi">17</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
 
 <span class="c1"># 7 pointers or int for each core. 4 Bytes for each  18 cores max</span>
@@ -107,10 +107,10 @@
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_compressor_aplx&quot;</span><span class="p">,</span> <span class="s2">&quot;_compressor_type&quot;</span><span class="p">]</span>
 
-    <span class="c1">#: sdram tag the router compressor expects to find there routing tables in</span>
+    <span class="c1">#: SDRAM tag the router compressor expects to find there routing tables in</span>
     <span class="n">ROUTING_TABLE_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1">#: sdram tag for the addresses the router compressor expects to find the</span>
+    <span class="c1">#: SDRAM tag for the addresses the router compressor expects to find the</span>
     <span class="c1">#: bitfield addresses for the chip.</span>
     <span class="n">BIT_FIELD_ADDRESSES_SDRAM_TAG</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -120,11 +120,11 @@
     <span class="c1">#: the successful identifier</span>
     <span class="n">SUCCESS</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="c1">#: how many header elements are in the region addresses (1, n addresses)</span>
+    <span class="c1">#: How many header elements are in the region addresses (1, n addresses)</span>
     <span class="n">N_REGIONS_ELEMENT</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1">#: min size a heap object needs in sdram. (limit on the size of useful</span>
-    <span class="c1">#: sdram regions to steal)</span>
+    <span class="c1">#: Minimum size a heap object needs in SDRAM. (limit on the size of useful</span>
+    <span class="c1">#: SDRAM regions to borrow)</span>
     <span class="n">_MIN_SIZE_FOR_HEAP</span> <span class="o">=</span> <span class="mi">32</span>
 
     <span class="c1"># bit offset for compress only when needed</span>
@@ -386,19 +386,20 @@
 <span class="sd">        load all data onto the chip.</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) addresses:</span>
-<span class="sd">            the addresses for bitfields in sdram</span>
+<span class="sd">            the addresses for bitfields in SDRAM</span>
 <span class="sd">        :param ~.Transceiver transceiver: the spinnMan instance</span>
-<span class="sd">        :param routing_table_compressor_app_id: the app id for the system app</span>
+<span class="sd">        :param routing_table_compressor_app_id:</span>
+<span class="sd">            the app_id for the system application</span>
 <span class="sd">        :param ~.MulticastRoutingTables routing_tables:</span>
 <span class="sd">            the routing tables</span>
-<span class="sd">        :param int app_id: the appid of the application</span>
+<span class="sd">        :param int app_id: the app_id of the application</span>
 <span class="sd">        :param ~.ProgressBar progress_bar: progress bar</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
 <span class="sd">            whether to compress as much as possible</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        :param dict matrix_addresses_and_size:</span>
-<span class="sd">            maps chips to regeneration sdram and size for exploitation</span>
+<span class="sd">            maps chips to regeneration SDRAM and size for exploitation</span>
 <span class="sd">        :param str bit_field_compressor_executable_path:</span>
 <span class="sd">            the path to the compressor binary path</span>
 <span class="sd">        :param str bit_field_sorter_executable_path:</span>
@@ -455,15 +456,15 @@
 <span class="sd">        Updates the user addresses for the compressor cores with the</span>
 <span class="sd">        compression settings.</span>
 
-<span class="sd">        :param int chip_x: chip x coord</span>
-<span class="sd">        :param int chip_y: chip y coord</span>
+<span class="sd">        :param int chip_x: chip X coordinate</span>
+<span class="sd">        :param int chip_y: chip Y coordinate</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance</span>
 <span class="sd">        :param str bit_field_compressor_executable_path:</span>
 <span class="sd">            path for the compressor binary</span>
 <span class="sd">        :param bool compress_as_much_as_possible:</span>
 <span class="sd">            whether to compress as much as possible</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets cores: the executable targets</span>
-<span class="sd">        :param int comms_sdram: Address for comms block</span>
+<span class="sd">        :param int comms_sdram: Address for communications block</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">compressor_cores</span> <span class="o">=</span> <span class="n">cores</span><span class="o">.</span><span class="n">get_cores_for_binary</span><span class="p">(</span>
             <span class="n">bit_field_compressor_executable_path</span><span class="p">)</span>
@@ -494,15 +495,15 @@
             <span class="bp">self</span><span class="p">,</span> <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">chip_x</span><span class="p">,</span> <span class="n">chip_y</span><span class="p">,</span> <span class="n">transceiver</span><span class="p">,</span>
             <span class="n">routing_table_compressor_app_id</span><span class="p">,</span> <span class="n">cores</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        loads the addresses of stealable SDRAM.</span>
+<span class="sd">        loads the addresses of borrowable SDRAM.</span>
 
 <span class="sd">        :param list(tuple(int,int)) matrix_addresses_and_size:</span>
 <span class="sd">            SDRAM usable and sizes</span>
-<span class="sd">        :param int chip_x: the chip x to consider here</span>
-<span class="sd">        :param int chip_y: the chip y to consider here</span>
+<span class="sd">        :param int chip_x: X coordinate of the chip to consider here</span>
+<span class="sd">        :param int chip_y: Y coordinate of the chip to consider here</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
 <span class="sd">            the spinnman instance</span>
-<span class="sd">        :param int routing_table_compressor_app_id: system app id.</span>
+<span class="sd">        :param int routing_table_compressor_app_id: system app_id.</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -517,7 +518,7 @@
                 <span class="n">BIT_FIELD_USABLE_SDRAM_TAG</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">SpinnmanInvalidParameterException</span><span class="p">,</span>
                 <span class="n">SpinnmanUnexpectedResponseCodeException</span><span class="p">):</span>
-            <span class="n">sdram_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steal_from_matrix_addresses</span><span class="p">(</span>
+            <span class="n">sdram_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_borrow_from_matrix_addresses</span><span class="p">(</span>
                 <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">address_data</span><span class="p">))</span>
             <span class="n">address_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_chip_matrix_data</span><span class="p">(</span>
                 <span class="n">matrix_addresses_and_size</span><span class="p">)</span>
@@ -563,15 +564,15 @@
 <span class="sd">        :param int chip_x: the chip x to consider here</span>
 <span class="sd">        :param int chip_y: the chip y to consider here</span>
 <span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
-<span class="sd">            the spinnman instance</span>
-<span class="sd">        :param int routing_table_compressor_app_id: system app id.</span>
+<span class="sd">            the transceiver instance</span>
+<span class="sd">        :param int routing_table_compressor_app_id: system app_id.</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that compressor will run on</span>
 <span class="sd">        :param str bit_field_compressor_executable_path:</span>
 <span class="sd">            the path to the compressor binary path</span>
 <span class="sd">        :param str bit_field_sorter_executable_path:</span>
 <span class="sd">            the path to the sorter binary</span>
-<span class="sd">        :param int comms_sdram: Address for comms block</span>
+<span class="sd">        :param int comms_sdram: Address for communications block</span>
 <span class="sd">        :param retry_count:</span>
 <span class="sd">            Number of times that the sorters should set of the compressions</span>
 <span class="sd">            again. `None` for as much as needed</span>
@@ -593,7 +594,7 @@
                 <span class="n">BIT_FIELD_ADDRESSES_SDRAM_TAG</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">SpinnmanInvalidParameterException</span><span class="p">,</span>
                 <span class="n">SpinnmanUnexpectedResponseCodeException</span><span class="p">):</span>
-            <span class="n">sdram_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steal_from_matrix_addresses</span><span class="p">(</span>
+            <span class="n">sdram_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_borrow_from_matrix_addresses</span><span class="p">(</span>
                 <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">address_data</span><span class="p">))</span>
 
         <span class="c1"># write sdram</span>
@@ -622,14 +623,15 @@
 <span class="sd">        :param table: the routing table to load</span>
 <span class="sd">        :type table:</span>
 <span class="sd">            ~pacman.model.routing_tables.AbstractMulticastRoutingTable</span>
-<span class="sd">        :param int app_id: application app id</span>
-<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver: spinnman instance</span>
+<span class="sd">        :param int app_id: application app_id</span>
+<span class="sd">        :param ~spinnman.transceiver.Transceiver transceiver:</span>
+<span class="sd">            transceiver instance</span>
 <span class="sd">        :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:</span>
 <span class="sd">            progress bar</span>
-<span class="sd">        :param int routing_table_compressor_app_id: system app id</span>
+<span class="sd">        :param int routing_table_compressor_app_id: system app_id</span>
 <span class="sd">        :param ~spinnman.model.ExecutableTargets cores:</span>
 <span class="sd">            the cores that the compressor going to run on</span>
-<span class="sd">        :raises CantFindSDRAMToUse: when sdram is not malloc-ed or stolen</span>
+<span class="sd">        :raises CantFindSDRAMToUse: when SDRAM is not malloc&#39;ed or stolen</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">routing_table_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_routing_table_data</span><span class="p">(</span><span class="n">app_id</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span>
 
@@ -641,7 +643,7 @@
                 <span class="n">BIT_FIELD_ROUTING_TABLE_SDRAM_TAG</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">SpinnmanInvalidParameterException</span><span class="p">,</span>
                 <span class="n">SpinnmanUnexpectedResponseCodeException</span><span class="p">):</span>
-            <span class="n">base_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_steal_from_matrix_addresses</span><span class="p">(</span>
+            <span class="n">base_address</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_borrow_from_matrix_addresses</span><span class="p">(</span>
                 <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">routing_table_data</span><span class="p">))</span>
 
         <span class="c1"># write SDRAM requirements per chip</span>
@@ -665,8 +667,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Builds routing data as needed for the compressor cores.</span>
 
-<span class="sd">        :param int app_id: appid of the application to load entries with</span>
-<span class="sd">        :param ~.AbsractMulticastRoutingTable routing_table:</span>
+<span class="sd">        :param int app_id: app_id of the application to load entries with</span>
+<span class="sd">        :param ~.AbstractMulticastRoutingTable routing_table:</span>
 <span class="sd">            the uncompressed routing table</span>
 <span class="sd">        :return: data array</span>
 <span class="sd">        :rtype: bytearray</span>
@@ -689,21 +691,22 @@
         <span class="k">return</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_steal_from_matrix_addresses</span><span class="p">(</span><span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">size_to_steal</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_borrow_from_matrix_addresses</span><span class="p">(</span>
+            <span class="n">matrix_addresses_and_size</span><span class="p">,</span> <span class="n">size_to_borrow</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Steals memory from synaptic matrix as needed.</span>
+<span class="sd">        Borrows memory from synaptic matrix as needed.</span>
 
 <span class="sd">        :param dict(tuple(int,int),tuple(int,int)) matrix_addresses_and_size:</span>
 <span class="sd">            matrix addresses and sizes; updated by this method</span>
-<span class="sd">        :param int size_to_steal: size needed to steal from matrix&#39;s.</span>
-<span class="sd">        :return: address to start steal from</span>
+<span class="sd">        :param int size_to_borrow: size needed to borrow from matrices.</span>
+<span class="sd">        :return: address to start borrow from</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        :raises CantFindSDRAMToUseException:</span>
-<span class="sd">            when no space is big enough to steal from.</span>
+<span class="sd">            when no space is big enough to borrow from.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="p">(</span><span class="n">base_address</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">matrix_addresses_and_size</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;=</span> <span class="n">size_to_steal</span><span class="p">:</span>
-                <span class="n">new_size</span> <span class="o">=</span> <span class="n">size</span> <span class="o">-</span> <span class="n">size_to_steal</span>
+            <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;=</span> <span class="n">size_to_borrow</span><span class="p">:</span>
+                <span class="n">new_size</span> <span class="o">=</span> <span class="n">size</span> <span class="o">-</span> <span class="n">size_to_borrow</span>
                 <span class="n">matrix_addresses_and_size</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_address</span><span class="p">,</span> <span class="n">new_size</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">base_address</span>
         <span class="k">raise</span> <span class="n">CantFindSDRAMToUseException</span><span class="p">()</span>
@@ -728,7 +731,7 @@
         <span class="n">region_addresses</span><span class="p">[</span><span class="n">placement</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">(</span><span class="n">bit_field_sdram_address</span><span class="p">,</span> <span class="n">placement</span><span class="o">.</span><span class="n">p</span><span class="p">))</span>
 
-        <span class="c1"># store the available space from the matrix to steal</span>
+        <span class="c1"># store the available space from the matrix to borrow</span>
         <span class="n">blocks</span> <span class="o">=</span> <span class="n">vertex</span><span class="o">.</span><span class="n">regeneratable_sdram_blocks_and_sizes</span><span class="p">(</span><span class="n">placement</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
@@ -770,20 +773,20 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate the region_addresses_t data.</span>
 
-<span class="sd">        Minimum percentage of bitfields to be merge in (currently ignored)</span>
+<span class="sd">        * Minimum percentage of bitfields to be merge in (currently ignored)</span>
 
-<span class="sd">        Number of times that the sorters should set of the compressions again</span>
+<span class="sd">        * Number of times that the sorters should set of the compressions again</span>
 
-<span class="sd">        Pointer to the area malloced to hold the comms_sdram</span>
+<span class="sd">        * Pointer to the area malloc&#39;ed to hold the comms_sdram</span>
 
-<span class="sd">        Number of processors in the list</span>
+<span class="sd">        * Number of processors in the list</span>
 
-<span class="sd">        The data for the processors</span>
+<span class="sd">        * The data for the processors</span>
 
 <span class="sd">        :param list(tuple(int,int)) address_list:</span>
 <span class="sd">            the list of SDRAM addresses</span>
 <span class="sd">        :param ~.CoreSubset cores: compressor cores on this chip.</span>
-<span class="sd">        :param int comms_sdram: Address for comms block</span>
+<span class="sd">        :param int comms_sdram: Address for communications block</span>
 <span class="sd">        :param retry_count:</span>
 <span class="sd">            Number of times that the sorters should set of the compressions</span>
 <span class="sd">            again. `None` for as much as needed</span>

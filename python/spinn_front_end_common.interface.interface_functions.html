@@ -114,7 +114,7 @@ the exact same algorithm implemented in Python.</p>
 <dl class="py data">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.SIZE_OF_SDRAM_ADDRESS_IN_BYTES">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.</span></span><span class="sig-name descname"><span class="pre">SIZE_OF_SDRAM_ADDRESS_IN_BYTES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">148</span></em><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.machine_bit_field_router_compressor.SIZE_OF_SDRAM_ADDRESS_IN_BYTES" title="Permalink to this definition">¶</a></dt>
-<dd><p>sdram allocation for addresses</p>
+<dd><p>Size of SDRAM allocation for addresses</p>
 </dd></dl>
 
 <dl class="py function">
@@ -462,14 +462,14 @@ Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
 </div>
 <p>Constants etc just to get into head:</p>
 <ul class="simple">
-<li><p>clock cycles = 200 Mhz = 200 = sv-&gt;cpu_clk</p></li>
+<li><p>clock cycles = 200 MHz = 200 = sv-&gt;cpu_clk</p></li>
 <li><p>1ms = 200000 for timer 1. = clock cycles</p></li>
 <li><p>200 per microsecond</p></li>
 <li><p>machine time step = microseconds already.</p></li>
 <li><p><cite>__time_between_cores</cite> = microseconds.</p></li>
 </ul>
 <p><em>Figure 2:</em> initial offset (used to try to interleave packets from other
-app verts into the TDMA without extending the overall time, and
+application vertices into the TDMA without extending the overall time, and
 trying to stop multiple packets in flight at same time).</p>
 <p><em>Figure 3:</em> bits needed to figure out time between spikes.
 Cores 0-4 have 2 atoms, core 5 has 1 atom:</p>
@@ -635,12 +635,12 @@ auto-detect BMP flag, board address map, allocation controller</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator">
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">system_multicast_routing_generator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.system_multicast_routing_generator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates routing table entries used by the data in processes with the
+<dd><p>Generates routing table entries used by the data-in processes with the
 extra monitor cores.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>routing tables, destination-to-key map,
-board-locn-to-timeout-key map</p>
+board-location-to-timeout-key map</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>,

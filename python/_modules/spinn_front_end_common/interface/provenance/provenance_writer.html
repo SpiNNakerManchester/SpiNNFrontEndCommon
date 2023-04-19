@@ -88,7 +88,7 @@
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_power"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_power">[docs]</a>    <span class="k">def</span> <span class="nf">insert_power</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts a general power value into the power_provenane table</span>
+<span class="sd">        Inserts a general power value into the `power_provenance` table.</span>
 
 <span class="sd">        :param str description: Type of value</span>
 <span class="sd">        :param float the_value: data</span>
@@ -104,11 +104,11 @@
 <div class="viewcode-block" id="ProvenanceWriter.insert_gatherer"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_gatherer">[docs]</a>    <span class="k">def</span> <span class="nf">insert_gatherer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bytes_read</span><span class="p">,</span> <span class="n">run</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
                         <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Records provenance into the gatherer_provenance</span>
+<span class="sd">        Records provenance into the `gatherer_provenance` table.</span>
 
 <span class="sd">        :param int x: X coordinate of the chip</span>
 <span class="sd">        :param int y: Y coordinate of the chip</span>
-<span class="sd">        :param int address: sdram address read from</span>
+<span class="sd">        :param int address: SDRAM address read from</span>
 <span class="sd">        :param int bytes_read: number of bytes read</span>
 <span class="sd">        :param int run: run number</span>
 <span class="sd">        :param str description: type of value</span>
@@ -124,7 +124,7 @@
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_monitor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">insert_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts data into the monitor_provenance table</span>
+<span class="sd">        Inserts data into the `monitor_provenance` table.</span>
 
 <span class="sd">        :param int x: X coordinate of the chip</span>
 <span class="sd">        :param int y: Y coordinate of the chip</span>
@@ -142,7 +142,7 @@
 <div class="viewcode-block" id="ProvenanceWriter.insert_router"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_router">[docs]</a>    <span class="k">def</span> <span class="nf">insert_router</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts data into the router provenance table</span>
+<span class="sd">        Inserts data into the `router_provenance` table.</span>
 
 <span class="sd">        :param int x: X coordinate of the chip</span>
 <span class="sd">        :param int y: Y coordinate of the chip</span>
@@ -160,11 +160,11 @@
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_core"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_core">[docs]</a>    <span class="k">def</span> <span class="nf">insert_core</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts data for a specific core into the core_provenance table</span>
+<span class="sd">        Inserts data for a specific core into the `core_provenance` table.</span>
 
 <span class="sd">        :param int x: X coordinate of the chip</span>
 <span class="sd">        :param int y: Y coordinate of the chip</span>
-<span class="sd">        :param int p: id of the core</span>
+<span class="sd">        :param int p: ID of the core</span>
 <span class="sd">        :param str description: type of value</span>
 <span class="sd">        :param int the_value: data</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -179,10 +179,10 @@
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_report"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_report">[docs]</a>    <span class="k">def</span> <span class="nf">insert_report</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Save and if applicable logs a message to the report_table</span>
+<span class="sd">        Save and if applicable logs a message to the `reports` table.</span>
 
-<span class="sd">        Only logs the messages up to the cutoff set by</span>
-<span class="sd">        cfg provenance_report_cutoff</span>
+<span class="sd">        Only logs the messages up to the cut-off set by</span>
+<span class="sd">        configuration `provenance_report_cutoff`</span>
 
 <span class="sd">        :param str message:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -197,17 +197,17 @@
         <span class="k">if</span> <span class="n">cutoff</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">recorded</span> <span class="o">&lt;</span> <span class="n">cutoff</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">recorded</span> <span class="o">==</span> <span class="n">cutoff</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Additional interesting provenace items in &quot;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Additional interesting provenance items in &quot;</span>
                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_database_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_connector"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_connector">[docs]</a>    <span class="k">def</span> <span class="nf">insert_connector</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">pre_population</span><span class="p">,</span> <span class="n">post_population</span><span class="p">,</span> <span class="n">the_type</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
             <span class="n">the_value</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Inserts edge data into the connector_provenance</span>
+<span class="sd">        Inserts edge data into the `connector_provenance`</span>
 
-<span class="sd">        :param str pre_population: Name of the pre population / vertex</span>
-<span class="sd">        :param str post_population:  Name of the post population / vertex</span>
+<span class="sd">        :param str pre_population: Name of the pre-population / vertex</span>
+<span class="sd">        :param str post_population: Name of the post-population / vertex</span>
 <span class="sd">        :param str the_type: Class of the connector</span>
 <span class="sd">        :param str description: type of value</span>
 <span class="sd">        :param int the_value: data</span>
@@ -225,7 +225,8 @@
 
 <div class="viewcode-block" id="ProvenanceWriter.insert_board_provenance"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.ProvenanceWriter.insert_board_provenance">[docs]</a>    <span class="k">def</span> <span class="nf">insert_board_provenance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connections</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Write the conection treived from spalloc_client job</span>
+<span class="sd">        Write the connection details retrieved from spalloc_client job to the</span>
+<span class="sd">        `boards_provenance` table.</span>
 
 <span class="sd">        :param connections: {(x, y): hostname, ...} or None</span>
 <span class="sd">        :type connections: dict((int, int): str) or None</span>

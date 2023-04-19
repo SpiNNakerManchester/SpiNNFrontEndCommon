@@ -110,7 +110,6 @@
 <span class="sd">        :param bool memory:</span>
 <span class="sd">            Flag to say unshared in-memory can be used.</span>
 <span class="sd">            Otherwise a `None` file will mean the default should be used</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">database_file</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">memory</span><span class="p">:</span>
             <span class="n">database_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_global_provenace_path</span><span class="p">()</span>
@@ -238,7 +237,7 @@
 <span class="sd">        Opens a connection to the database, runs a query, extracts the results</span>
 <span class="sd">        and closes the connection</span>
 
-<span class="sd">        The return type depends on the use_sqlite_rows param.</span>
+<span class="sd">        The return type depends on the use_sqlite_rows parameter.</span>
 <span class="sd">        By default this method returns tuples (lookup by index) but the</span>
 <span class="sd">        advanced tuple type can be used instead, which supports lookup by name</span>
 <span class="sd">        used in the query (use ``AS name`` in the query to set).</span>
@@ -313,11 +312,11 @@
 
 <div class="viewcode-block" id="GlobalProvenance.get_run_time_of_BufferExtractor"><a class="viewcode-back" href="../../../../spinn_front_end_common.interface.provenance.html#spinn_front_end_common.interface.provenance.GlobalProvenance.get_run_time_of_BufferExtractor">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_time_of_BufferExtractor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gets the BufferExtractor provenance item(s) from the last run</span>
+<span class="sd">        Gets the buffer extractor provenance item(s) from the last run</span>
 
 <span class="sd">        :return:</span>
 <span class="sd">            A possibly multiline string with for each row which matches the</span>
-<span class="sd">            like %BufferExtractor description_name: value</span>
+<span class="sd">            ``LIKE %BufferExtractor``</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timer_provenance</span><span class="p">(</span><span class="s2">&quot;%BufferExtractor&quot;</span><span class="p">)</span></div>
@@ -326,8 +325,8 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the total runtime for one category of algorithms</span>
 
-<span class="sd">        :param  TimerCategory category:</span>
-<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :param TimerCategory category:</span>
+<span class="sd">        :return: total off all run times with this category</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -376,7 +375,7 @@
 <span class="sd">        Get the total runtime for one category of algorithms</span>
 
 <span class="sd">        :param TimerCategory category:</span>
-<span class="sd">        :return: total off all runtimes with this category</span>
+<span class="sd">        :return: total off all run times with this category</span>
 <span class="sd">        :rtype: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>

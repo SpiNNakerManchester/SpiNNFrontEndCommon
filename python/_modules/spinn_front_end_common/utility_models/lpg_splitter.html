@@ -78,7 +78,7 @@
 <div class="viewcode-block" id="LPGSplitter.create_vertices"><a class="viewcode-back" href="../../../spinn_front_end_common.utility_models.html#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">create_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_placements</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Special way of making LPG machine vertices, where one is placed</span>
-<span class="sd">        on each Ethernet chip.</span>
+<span class="sd">        on each Ethernet-enabled chip.</span>
 
 <span class="sd">        .. note::</span>
 <span class="sd">            This adds to system placements.</span>
@@ -142,7 +142,7 @@
 <span class="sd">        and partition.</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">             A set of (lpg machine vertex, source machine vertex, partition_id)</span>
+<span class="sd">             A set of (LPG machine vertex, source machine vertex, partition_id)</span>
 <span class="sd">        :rtype: set(tuple(LivePacketGatherMachineVertex,</span>
 <span class="sd">            ~pacman.model.graphs.machine.MachineVertex, str))</span>
 <span class="sd">        &quot;&quot;&quot;</span>

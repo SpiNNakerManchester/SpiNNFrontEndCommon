@@ -110,7 +110,7 @@
 <span class="sd">        Opens a connection to the database, runs a query, extracts the results</span>
 <span class="sd">        and closes the connection.</span>
 
-<span class="sd">        The return type depends on the use_sqlite_rows param.</span>
+<span class="sd">        The return type depends on the use_sqlite_rows parameter.</span>
 <span class="sd">        By default this method returns tuples (lookup by index) but the</span>
 <span class="sd">        advanced tuple type can be used instead, which supports lookup by name</span>
 <span class="sd">        used in the query (use ``AS name`` in the query to set).</span>
@@ -168,7 +168,7 @@
 <span class="sd">        :param int y:</span>
 <span class="sd">            The Y coordinate of the chip</span>
 <span class="sd">        :return:</span>
-<span class="sd">            A possibly multiline string with for each row which matches the</span>
+<span class="sd">            A possibly multi-line string with for each row which matches the</span>
 <span class="sd">            like a line ``description_name: value``</span>
 <span class="sd">        :rtype: str</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -205,7 +205,7 @@
 
 <span class="sd">        :param str description:</span>
 <span class="sd">        :return: list of tuples x, y, value)</span>
-<span class="sd">        :rtype: lits((int, int float))</span>
+<span class="sd">        :rtype: list(tuple(int, int, float))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT x, y, the_value</span>
@@ -224,7 +224,7 @@
 
 <span class="sd">        :param str description:</span>
 <span class="sd">        :return: list of tuples x, y, value)</span>
-<span class="sd">        :rtype: lits((int, int float))</span>
+<span class="sd">        :rtype: list(tuple(int, int, float))</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">            SELECT x, y, the_value</span>
@@ -241,7 +241,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        List all the provenance messages.</span>
 
-<span class="sd">        :return: all messages logged or not</span>
+<span class="sd">        :return: all messages logged or not; order is whatever the DB chooses</span>
 <span class="sd">        :rtype: list(str)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
@@ -255,7 +255,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A demonstration of how to use this class.</span>
 
-<span class="sd">        See also unittests/interface/provenance/test_provenance_database.py</span>
+<span class="sd">        See also `unittests/interface/provenance/test_provenance_database.py`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># This uses the example file in the same directory as this script</span>
         <span class="k">with</span> <span class="n">ProvenanceReader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>

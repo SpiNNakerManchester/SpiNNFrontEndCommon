@@ -239,16 +239,17 @@
 
 <span class="sd">        :param simulation_time_step_us:</span>
 <span class="sd">            An explicitly specified time step for the simulation in .</span>
-<span class="sd">            If `None`, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the configuration</span>
 <span class="sd">        :type simulation_time_step_us: int or None</span>
 <span class="sd">        :param time_scale_factor:</span>
 <span class="sd">            An explicitly specified time scale factor for the simulation.</span>
-<span class="sd">            If `None`, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the configuration</span>
 <span class="sd">        :type time_scale_factor: float or None</span>
 <span class="sd">        :param default_time_scale_factor:</span>
 <span class="sd">            A back up time scale factor for the simulation.</span>
-<span class="sd">            Only used if time_scale_factor param and cfg are both `None`</span>
-<span class="sd">            If `None`, the value is based on simulation_time_step</span>
+<span class="sd">            Only used if time_scale_factor parameter and configuration are</span>
+<span class="sd">            both `None`.</span>
+<span class="sd">            If `None`, the value is based on `simulation_time_step`</span>
 <span class="sd">        :type default_time_scale_factor: float or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
@@ -271,7 +272,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param simulation_time_step_us:</span>
 <span class="sd">            An explicitly specified time step for the simulation.  If `None`,</span>
-<span class="sd">            the value is read from the config</span>
+<span class="sd">            the value is read from the configuration</span>
 <span class="sd">        :type simulation_time_step: int or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">simulation_time_step_us</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -303,7 +304,7 @@
 
 <span class="sd">        If time_scale_factor is provide that is used</span>
 
-<span class="sd">        Then if cfg is not `None` that is used</span>
+<span class="sd">        Then if configuration is not `None` that is used</span>
 
 <span class="sd">        Then if default is provided that is used</span>
 
@@ -311,7 +312,7 @@
 
 <span class="sd">        :param time_scale_factor:</span>
 <span class="sd">            An explicitly specified time scale factor for the simulation.</span>
-<span class="sd">            If `None`, the value is read from the config</span>
+<span class="sd">            If `None`, the value is read from the configuration</span>
 <span class="sd">        :type time_scale_factor: float or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">time_scale_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -442,13 +443,13 @@
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n_chips_in_graph</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_n_chips_in_graph</span> <span class="o">=</span> <span class="n">n_chips_in_graph</span></div>
 
-<div class="viewcode-block" id="FecDataWriter.set_ipaddress"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress">[docs]</a>    <span class="k">def</span> <span class="nf">set_ipaddress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ipaddress</span><span class="p">):</span>
+<div class="viewcode-block" id="FecDataWriter.set_ipaddress"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_ipaddress">[docs]</a>    <span class="k">def</span> <span class="nf">set_ipaddress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ip_address</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param str ipaddress:</span>
+<span class="sd">        :param str ip_address:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ipaddress</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ip_address</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;ipaddress must be a str&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_ipaddress</span> <span class="o">=</span> <span class="n">ipaddress</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fec_data</span><span class="o">.</span><span class="n">_ipaddress</span> <span class="o">=</span> <span class="n">ip_address</span></div>
 
 <div class="viewcode-block" id="FecDataWriter.set_fixed_routes"><a class="viewcode-back" href="../../../spinn_front_end_common.data.html#spinn_front_end_common.data.fec_data_writer.FecDataWriter.set_fixed_routes">[docs]</a>    <span class="k">def</span> <span class="nf">set_fixed_routes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fixed_routes</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
