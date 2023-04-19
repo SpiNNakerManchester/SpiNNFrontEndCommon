@@ -17,6 +17,9 @@
 
 name: Python Actions
 on: [push]
+env:
+  BASE_PKG: spinn_front_end_common
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,7 +35,6 @@ jobs:
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
-        ref: spell-chucking
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -59,7 +61,7 @@ jobs:
       with:
         tests: unittests fec_integration_tests
         coverage: ${{ matrix.python-version == 3.8 }}
-        cover-packages: spinn_front_end_common
+        cover-packages: ${{ env.BASE_PKG }}
         coveralls-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Lint with flake8
@@ -67,9 +69,7 @@ jobs:
     - name: Lint with pylint
       uses: ./support/actions/pylint
       with:
-        package: spinn_front_end_common
-        exitcheck: 39
-        # Enable spell checking
+        package: ${{ env.BASE_PKG }}
         language: en_GB
 
   validate:
@@ -86,7 +86,6 @@ jobs:
       with:
         repository: SpiNNakerManchester/SupportScripts
         path: support
-        ref: spell-chucking
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
@@ -112,7 +111,7 @@ jobs:
       if: false
       uses: ./support/actions/validate-xml
       with:
-        base-path: spinn_front_end_common
+        base-path: ${{ env.BASE_PKG }}
     - name: Build documentation with sphinx
       uses: ./support/actions/sphinx
       with:
