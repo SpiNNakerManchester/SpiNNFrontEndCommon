@@ -201,8 +201,6 @@ def _calculate_chips_active_energy(placement, runtime_total_ms, power_used):
     :param PowerUsed power_used:
     :return: energy cost
     """
-    # pylint: disable=too-many-arguments
-
     # locate chip power monitor
     chip_power_monitor = placement.vertex
 
@@ -244,8 +242,6 @@ def _calculate_fpga_energy(
     :param float runtime_total_ms:
     :param PowerUsed power_used:
     """
-    # pylint: disable=too-many-arguments
-
     total_fpgas = 0
     # if not spalloc, then could be any type of board
     if (not get_config_str("Machine", "spalloc_server") and
@@ -283,10 +279,10 @@ def __board_n_operational_fpgas(ethernet_chip):
     """
     Figures out how many FPGAs were switched on for a particular SpiNN-5 board.
 
-    :param ~.Chip ethernet_chip: the ethernet chip to look from
+    :param ~.Chip ethernet_chip: the Ethernet-enabled chip to look from
     :return: number of FPGAs on, on this board
+    :rtype: int
     """
-
     # TODO: should be possible to get this info from Machine
 
     # As the Chips can be None use the machine call and not the View call
@@ -352,8 +348,6 @@ def _calculate_loading_energy(machine, load_time_ms, n_monitors, n_frames):
     :param int n_frames:
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # find time in milliseconds
     with GlobalProvenance() as db:
         total_time_ms = db.get_timer_sum_by_category(TimerCategory.LOADING)
@@ -394,11 +388,9 @@ def _calculate_data_extraction_energy(machine, n_monitors, n_frames):
     :param ~.Machine machine: machine description
     :param int n_monitors:
     :param int n_frames:
-    :return: cost of data extraction in Joules
+    :return: cost of data extraction, in Joules
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # find time
     # TODO is this what was desired
     total_time_ms = 0
@@ -437,7 +429,7 @@ def _calculate_idle_cost(time, machine):
 
     :param float time: time machine was idle, in milliseconds
     :param ~.Machine machine: machine description
-    :return: cost in joules
+    :return: cost, in joules
     :rtype: float
     """
     return (time * machine.total_available_user_cores *
@@ -455,8 +447,6 @@ def _calculate_power_down_energy(time, machine, n_frames):
     :return: energy in joules
     :rtype: float
     """
-    # pylint: disable=too-many-arguments
-
     # if spalloc or hbp
     if FecDataView.has_allocation_controller():
         return time * n_frames * MILLIWATTS_FOR_FRAME_IDLE_COST
@@ -477,7 +467,6 @@ def _calculate_n_frames(machine):
     :return: number of frames
     :rtype: int
     """
-
     # if not spalloc, then could be any type of board, but unknown cooling
     if not FecDataView.has_allocation_controller():
         return 0
