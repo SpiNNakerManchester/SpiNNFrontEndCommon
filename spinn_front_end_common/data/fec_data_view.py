@@ -868,7 +868,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         Gets the _executable_types if they have been created.
 
         :rtype: dict(
-            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+            ~spinn_machine.model.enum.ExecutableType,
             ~spinn_machine.CoreSubsets)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the executable_types is currently unavailable
