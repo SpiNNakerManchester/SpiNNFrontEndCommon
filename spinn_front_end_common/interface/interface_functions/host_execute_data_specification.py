@@ -95,7 +95,7 @@ class _ExecutionContext(object):
         Execute the data spec for a core.
 
         :param tuple(int,int,int) core:
-        :param ~.AbstractDataReader reader:
+        :param ~io.RawIOBase reader:
         :param int base_address:
         :param int size_allocated:
         :return: base_address, size_allocated, bytes_written
