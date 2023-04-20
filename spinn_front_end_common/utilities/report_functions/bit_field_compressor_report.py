@@ -17,12 +17,12 @@ import os
 import sys
 from collections import defaultdict
 from spinn_utilities.log import FormatAdapter
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvenanceReader, ProvenanceWriter)
 from .bit_field_summary import BitFieldSummary
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _FILE_NAME = "bit_field_compressed_summary.rpt"

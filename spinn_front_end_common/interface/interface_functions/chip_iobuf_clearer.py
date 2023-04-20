@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 def chip_io_buf_clearer():

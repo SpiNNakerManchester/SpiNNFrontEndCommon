@@ -18,13 +18,13 @@ import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM
 from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes import (
         ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
