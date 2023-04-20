@@ -35,8 +35,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
