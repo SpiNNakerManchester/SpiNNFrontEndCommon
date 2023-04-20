@@ -80,7 +80,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :param app_vertex:
         The associated application vertex
     :type app_vertex: ReverseIpTagMultiCastSource or None
-    :param int n_keys: The number of keys to be sent via this mulitcast source
+    :param int n_keys: The number of keys to be sent via this multicast source
         (can't be `None` if vertex_slice is also `None`)
     :param str board_address:
         The IP address of the board on which to place this vertex if receiving

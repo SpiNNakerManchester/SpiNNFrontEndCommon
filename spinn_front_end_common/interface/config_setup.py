@@ -25,15 +25,15 @@ BASE_CONFIG_FILE = "spinnaker.cfg"
 
 def unittest_setup():
     """
-    Does all the steps that may be required before a unittest
+    Does all the steps that may be required before a unit test.
 
-    Resets the configs so only the local default configs are included.
+    Resets the configurations so only the local default configurations are
+    included.
 
-    Unsets any previous simulators and tempdirs
+    Unsets any previous simulators and temporary directories.
 
     .. note::
-        This file should only be called from spinn_front_end_common tests
-
+        This file should only be called from `spinn_front_end_common/tests`
     """
     clear_cfg_files(True)
     add_spinnaker_cfg()
@@ -42,7 +42,7 @@ def unittest_setup():
 
 def add_spinnaker_cfg():
     """
-    Add the local cfg and all dependent cfg files.
+    Add the local configuration and all dependent configuration files.
     """
     add_pacman_cfg()  # This add its dependencies too
     add_spinnman_cfg()  # double adds of dependencies ignored

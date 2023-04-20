@@ -53,13 +53,13 @@ def load_sys_images():
         raise e
 
 
-def __load_images(filt, label):
+def __load_images(filter_predicate, label):
     """
-    :param callable(ExecutableType,bool) filt:
+    :param callable(ExecutableType,bool) filter_predicate:
     :param str label
     """
     # Compute what work is to be done here
-    binaries, cores = filter_targets(filt)
+    binaries, cores = filter_targets(filter_predicate)
 
     try:
         # ISSUE: Loading order may be non-constant on older Python
@@ -80,17 +80,16 @@ def __load_images(filt, label):
         raise e
 
 
-def filter_targets(filt):
+def filter_targets(filter_predicate):
     """
-    :param ~spinnman.model.ExecutableTargets executable_targets:
-    :param callable(ExecutableType,bool) filt:
+    :param callable(ExecutableType,bool) filter_predicate:
     :rtype: tuple(list(str), ~spinnman.model.ExecutableTargets)
     """
     binaries = []
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
-        if filt(exe_type):
+        if filter_predicate(exe_type):
             for aplx in targets.get_binaries_of_executable_type(exe_type):
                 binaries.append(aplx)
                 cores.add_subsets(
