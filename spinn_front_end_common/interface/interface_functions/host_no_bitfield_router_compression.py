@@ -220,7 +220,7 @@ class Compression(object):
         Convert the router table into the data needed by the router
         compressor C code.
 
-        :param table: the pacman router table instance
+        :param table: the PACMAN router table instance
         :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
         :rtype: bytearray

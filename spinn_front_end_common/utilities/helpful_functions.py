@@ -255,7 +255,8 @@ def convert_vertices_to_core_subset(vertices):
 
 def n_word_struct(n_words):
     """
-    Manages a precompiled cache of structs for parsing blocks of words.
+    Manages a precompiled cache of :py:class`~struct.Struct`\\s for
+    parsing blocks of words.
     Thus, this::
 
         data = n_word_struct(n_words).unpack(data_blob)

@@ -66,11 +66,11 @@ class BufferedRegionNotPresent(SpinnFrontEndException):
 
 class CantFindSDRAMToUseException(SpinnFrontEndException):
     """
-    Raised when malloc and sdram stealing cannot occur.
+    Raised when malloc and SDRAM stealing cannot occur.
     """
 
 
 class DsDatabaseException(SpinnFrontEndException):
     """
-    Raise when a query in the DataSpec database failed.
+    Raise when a query in the Data Specification database failed.
     """

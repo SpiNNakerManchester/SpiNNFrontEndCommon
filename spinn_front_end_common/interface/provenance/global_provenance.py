@@ -73,7 +73,6 @@ class GlobalProvenance(SQLiteDB):
         :param bool memory:
             Flag to say unshared in-memory can be used.
             Otherwise a `None` file will mean the default should be used
-
         """
         if database_file is None and not memory:
             database_file = self.get_global_provenace_path()
@@ -202,7 +201,7 @@ class GlobalProvenance(SQLiteDB):
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection
 
-        The return type depends on the use_sqlite_rows param.
+        The return type depends on the use_sqlite_rows parameter.
         By default this method returns tuples (lookup by index) but the
         advanced tuple type can be used instead, which supports lookup by name
         used in the query (use ``AS name`` in the query to set).
@@ -277,11 +276,11 @@ class GlobalProvenance(SQLiteDB):
 
     def get_run_time_of_BufferExtractor(self):
         """
-        Gets the BufferExtractor provenance item(s) from the last run
+        Gets the buffer extractor provenance item(s) from the last run
 
         :return:
             A possibly multiline string with for each row which matches the
-            like %BufferExtractor description_name: value
+            ``LIKE %BufferExtractor``
         :rtype: str
         """
         return self.get_timer_provenance("%BufferExtractor")
@@ -290,8 +289,8 @@ class GlobalProvenance(SQLiteDB):
         """
         Get the total runtime for one category of algorithms
 
-        :param  TimerCategory category:
-        :return: total off all runtimes with this category
+        :param TimerCategory category:
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """
@@ -340,7 +339,7 @@ class GlobalProvenance(SQLiteDB):
         Get the total runtime for one category of algorithms
 
         :param TimerCategory category:
-        :return: total off all runtimes with this category
+        :return: total off all run times with this category
         :rtype: int
         """
         query = """

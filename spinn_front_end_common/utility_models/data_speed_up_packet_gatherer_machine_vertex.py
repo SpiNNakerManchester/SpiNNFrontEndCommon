@@ -94,7 +94,7 @@ WORDS_PER_FULL_PACKET_WITH_SEQUENCE_NUM = (
     TRANSACTION_ID_SIZE_IN_ITEMS)
 
 #: offset where data in starts on commands
-#: (command, transaction_id, seq num)
+#: (command, transaction_id, sequence number)
 WORDS_FOR_COMMAND_AND_KEY = 3
 BYTES_FOR_COMMAND_AND_ADDRESS_HEADER = (
     WORDS_FOR_COMMAND_AND_KEY * BYTES_PER_WORD)
@@ -708,7 +708,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         Handles a missing sequence number packet from SpiNNaker.
 
-        :param data: the data to translate into missing seq nums
+        :param data: the data to translate into missing sequence numbers
         :type data: bytearray or bytes
         :param int position: the position in the data to write.
         :param set(int) seq_nums: a set of sequence numbers to add to
@@ -780,9 +780,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param bytearray data_to_write:
             the data to write to the SpiNNaker machine
-        :param int seq_num: the seq num to get the data for
+        :param int seq_num: the sequence number to get the data for
         :param int command_id:
-        :param position: the position in the data to write to spinnaker
+        :param position: the position in the data to write to SpiNNaker
         :type position: int or None
         :return: SDP message and how much data has been written
         :rtype: tuple(~.SDPMessage, int)
@@ -1402,7 +1402,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         Deduce the max sequence number expected to be received.
 
-        :return: the biggest sequence num expected
+        :return: the biggest sequence number expected
         :rtype: int
         """
         return ceildiv(

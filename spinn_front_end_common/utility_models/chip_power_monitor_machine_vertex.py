@@ -152,7 +152,7 @@ class ChipPowerMonitorMachineVertex(
         Write the data needed by the C code to configure itself.
 
         :param ~data_specification.DataSpecificationGenerator spec:
-            spec object
+            specification writer
         """
         spec.switch_write_focus(region=self._REGIONS.CONFIG)
         n_samples_per_recording = get_config_int(
@@ -165,7 +165,7 @@ class ChipPowerMonitorMachineVertex(
         Writes the system data as required.
 
         :param ~data_specification.DataSpecificationGenerator spec:
-            the DSG spec writer
+            the DSG specification writer
         """
         spec.switch_write_focus(region=self._REGIONS.SYSTEM)
         spec.write_array(get_simulation_header_array(
@@ -209,7 +209,7 @@ class ChipPowerMonitorMachineVertex(
         """
         The type of binary that implements this vertex.
 
-        :return: starttype enum
+        :return: start-type
         :rtype: ExecutableType
         """
         return ExecutableType.USES_SIMULATION_INTERFACE
