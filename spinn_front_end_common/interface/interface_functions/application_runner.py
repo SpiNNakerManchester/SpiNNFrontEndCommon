@@ -121,20 +121,26 @@ class _ApplicationRunner(object):
                       MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
+            steps = ceil(time_to_wait)
             progress = ProgressBar(
-                ceil(time_to_wait),
+                steps,
                 f"Application started; waiting {time_to_wait}s for it to stop")
             time_now = time.time()
+            start_time = time_now
+            last_progress = 0
             end_time = time_now + time_to_wait
             while time_now < end_time:
-                time.sleep(max(1.0, end_time - time_now))
+                time.sleep(min(1.0, end_time - time_now))
                 for state in [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG]:
                     if self.__txrx.get_core_state_count(self.__app_id, state):
                         raise ExecutableFailedToStopException(
                             "Some cores have reached an error state during"
                             " simulation; stopping early!")
                 time_now = time.time()
-                progress.update(ceil(end_time - time_now))
+                total_progress = min(ceil(time_now - start_time), steps)
+                progress_update = total_progress - last_progress
+                progress.update(progress_update)
+                last_progress = total_progress
             progress.end()
             self._wait_for_end(timeout=time_threshold)
         else:
