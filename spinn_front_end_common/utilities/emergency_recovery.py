@@ -84,10 +84,25 @@ def _emergency_iobuf_extract(executable_targets=None):
 def _emergency_exit():
     """ Tries to get the cores to exit
     """
+    # pylint: disable=broad-except
     all_core_subsets = CoreSubsets()
     for place in FecDataView.iterate_placemements():
         all_core_subsets.add_processor(place.x, place.y, place.p)
-    chip_provenance_updater(all_core_subsets)
+    try:
+        chip_provenance_updater(all_core_subsets)
+    except Exception:
+        logger.error("Could not exit - going to individual chips")
+        errors = list()
+        for chip_subset in all_core_subsets:
+            try:
+                chip_subsets = CoreSubsets([chip_subset])
+                chip_provenance_updater(chip_subsets)
+            except Exception:
+                errors.append((chip_subset.x, chip_subset.y))
+        if len(errors) > 10:
+            logger.error(f"Could not stop cores on {len(errors)} chips")
+        elif errors:
+            logger.error(f"Could not stop cores on {errors}")
 
 
 def emergency_recover_state_from_failure(vertex, placement):
