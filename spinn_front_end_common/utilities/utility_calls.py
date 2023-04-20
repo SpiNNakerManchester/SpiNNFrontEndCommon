@@ -79,11 +79,11 @@ def get_data_spec_and_file_writer_filename(
     """
     Encapsulates the creation of the DSG writer and the file paths.
 
-    :param int processor_chip_x: x-coordinate of the chip
-    :param int processor_chip_y: y-coordinate of the chip
+    :param int processor_chip_x: X coordinate of the chip
+    :param int processor_chip_y: Y coordinate of the chip
     :param int processor_id: The processor ID
     :param str application_run_time_report_folder:
-        The folder to contain the resulting specification files; if 'TEMP'
+        The folder to contain the resulting specification files; if ``TEMP``
         then a temporary directory is used.
     :return: the filename of the data writer and the data specification object
     :rtype: tuple(str, ~data_specification.DataSpecificationGenerator)
@@ -113,8 +113,8 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
 
-    :param int processor_chip_x: x-coordinate of the chip
-    :param int processor_chip_y: y-coordinate of the chip
+    :param int processor_chip_x: X coordinate of the chip
+    :param int processor_chip_y: Y coordinate of the chip
     :param int processor_id: The processor ID
     :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
@@ -172,9 +172,11 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
     :type connection:
         ~spinnman.connections.udp_packet_connections.UDPConnection
     :param int x:
-        The X coordinate of the ethernet chip we are sending the message to.
+        The X coordinate of the Ethernet-enabled chip we are sending the
+        message to.
     :param int y:
-        The Y coordinate of the ethernet chip we are sending the message to.
+        The Y coordinate of the Ethernet-enabled chip we are sending the
+        message to.
     :param int tag:
         The ID of the tag to retarget.
     :param str ip_address:
@@ -197,16 +199,16 @@ def retarget_tag(connection, x, y, tag, ip_address=None, strip=True):
 
 def open_scp_connection(chip_x, chip_y, chip_ip_address):
     """
-    Create an SCP connection to the given ethernet chip. SpiNNaker will
+    Create an SCP connection to the given Ethernet-enabled chip. SpiNNaker will
     not be configured to map that connection to a tag; that is the
     caller's responsibility.
 
     :param int chip_x:
-        X coordinate of the ethernet chip to connect to.
+        X coordinate of the Ethernet-enabled chip to connect to.
     :param int chip_y:
-        Y coordinate of the ethernet chip to connect to.
+        Y coordinate of the Ethernet-enabled chip to connect to.
     :param str chip_ip_address:
-        IP address of the ethernet chip to connect to.
+        IP address of the Ethernet-enabled chip to connect to.
     :rtype: ~spinnman.connections.udp_packet_connections.SCAMPConnection
     """
     if FecDataView.has_allocation_controller():

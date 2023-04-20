@@ -64,11 +64,14 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
     @abstractmethod
     def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
         """
-        Open a connection to a specific ethernet chip. Caller will have to
-        arrange for SpiNNaker to pay attention to the connection.
+        Open a connection to a specific Ethernet-enabled SpiNNaker chip.
+        Caller will have to arrange for SpiNNaker to pay attention to the
+        connection.
 
-        :param int chip_x: ethernet chip x location
-        :param int chip_y: ethernet chip y location
+        The coordinates will be job-relative.
+
+        :param int chip_x: Ethernet-enabled chip X coordinate
+        :param int chip_y: Ethernet-enabled chip Y coordinate
         :param int udp_port:
             the UDP port on the chip to connect to; connecting to a non-SCP
             port will result in a connection that can't easily be configured.
@@ -78,19 +81,22 @@ class AbstractMachineAllocationController(object, metaclass=AbstractBase):
     @abstractmethod
     def open_eieio_connection(self, chip_x, chip_y):
         """
-        Open a connection to a specific ethernet chip for EIEIO. Caller will
-        have to arrange for SpiNNaker to pay attention to the connection.
+        Open a connection to a specific Ethernet-enabled chip for EIEIO.
+        Caller will have to arrange for SpiNNaker to pay attention to the
+        connection.
 
-        :param int chip_x: ethernet chip x location
-        :param int chip_y: ethernet chip y location
+        The coordinates will be job-relative.
 
+        :param int chip_x: Ethernet-enabled chip X coordinate
+        :param int chip_y: Ethernet-enabled chip Y coordinate
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """
 
     @abstractmethod
     def open_eieio_listener(self):
         """
-        Open an unbound EIEIO connection.
+        Open an unbound EIEIO connection. This may be used to communicate with
+        any board of the job.
 
         :rtype: ~spinnman.connections.udp_packet_connections.EIEIOConnection
         """

@@ -160,7 +160,7 @@ class DatabaseWriter(SQLiteDB):
 
     def add_system_params(self, runtime):
         """
-        Write system params into the database.
+        Write system parameters into the database.
 
         :param int runtime: the amount of time the application is to run for
         """

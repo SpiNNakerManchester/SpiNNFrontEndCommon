@@ -68,7 +68,7 @@ class MachineAllocationController(
 
     def _teardown(self):
         """
-        Perform any extra teardown that the thread requires. Does not
+        Perform any extra tear-down that the thread requires. Does not
         need to be overridden if no action is desired.
         """
 
