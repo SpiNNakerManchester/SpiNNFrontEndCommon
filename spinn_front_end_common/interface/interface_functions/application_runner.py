@@ -14,14 +14,17 @@
 
 import logging
 import time
+from math import ceil
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, ExecutableFailedToStopException)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
+from spinnman.model.enums.cpu_state import CPUState
 
 SAFETY_FINISH_TIME = 0.1
 
@@ -67,6 +70,7 @@ class _ApplicationRunner(object):
         :raises ConfigurationException:
         """
         # pylint: disable=too-many-arguments
+        logger.info("*** Running simulation... *** ")
 
         # wait for all cores to be ready
         self._wait_for_start()
@@ -82,12 +86,8 @@ class _ApplicationRunner(object):
 
         # clear away any router diagnostics that have been set due to all
         # loading applications
-        machine = FecDataView.get_machine()
-        progress = ProgressBar(machine.n_chips, "Resetting router counters")
-        for chip in machine.chips:
+        for chip in FecDataView.get_machine().chips:
             self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
-            progress.update()
-        progress.end()
 
         # wait till external app is ready for us to start if required
         notification_interface.wait_for_confirmation()
@@ -121,10 +121,21 @@ class _ApplicationRunner(object):
                       MICRO_TO_MILLISECOND_CONVERSION)
             scaled_runtime = runtime * factor
             time_to_wait = scaled_runtime + SAFETY_FINISH_TIME
-            logger.info(
-                "Application started; waiting {}s for it to stop",
-                time_to_wait)
-            time.sleep(time_to_wait)
+            progress = ProgressBar(
+                ceil(time_to_wait),
+                f"Application started; waiting {time_to_wait}s for it to stop")
+            time_now = time.time()
+            end_time = time_now + time_to_wait
+            while time_now < end_time:
+                time.sleep(max(1.0, end_time - time_now))
+                time_now = time.time()
+                progress.update(ceil(end_time - time_now))
+                for state in [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG]:
+                    if self.__txrx.get_core_state_count(self.__app_id, state):
+                        raise ExecutableFailedToStopException(
+                            "Some cores have reached an error state during"
+                            " simulation; stopping early!")
+            progress.end()
             self._wait_for_end(timeout=time_threshold)
         else:
             logger.info("Application started; waiting until finished")
@@ -135,14 +146,9 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
-        exec_types = FecDataView.get_executable_types()
-        n_cores = sum(len(cores) for cores in exec_types.values())
-        progress = ProgressBar(n_cores, "Waiting for cores to be ready to run")
-        for ex_type, cores in exec_types.items():
+        for ex_type, cores in FecDataView.get_executable_types().items():
             self.__txrx.wait_for_cores_to_be_in_state(
-                cores, self.__app_id, ex_type.start_state, timeout=timeout,
-                progress_bar=progress)
-        progress.end()
+                cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
         """
@@ -164,6 +170,8 @@ class _ApplicationRunner(object):
         :param timeout:
         :type timeout: float or None
         """
+        # Do progress here as if any cores overrun, it is nice to know
+        # that the wait has finished at least
         exec_types = FecDataView.get_executable_types()
         n_cores = sum(len(cores) for cores in exec_types.values())
         progress = ProgressBar(n_cores, "Waiting for cores to finish")
