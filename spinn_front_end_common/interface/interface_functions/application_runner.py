@@ -128,13 +128,13 @@ class _ApplicationRunner(object):
             end_time = time_now + time_to_wait
             while time_now < end_time:
                 time.sleep(max(1.0, end_time - time_now))
-                time_now = time.time()
-                progress.update(ceil(end_time - time_now))
                 for state in [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG]:
                     if self.__txrx.get_core_state_count(self.__app_id, state):
                         raise ExecutableFailedToStopException(
                             "Some cores have reached an error state during"
                             " simulation; stopping early!")
+                time_now = time.time()
+                progress.update(ceil(end_time - time_now))
             progress.end()
             self._wait_for_end(timeout=time_threshold)
         else:
