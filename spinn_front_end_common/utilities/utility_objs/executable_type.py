@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
-from spinn_utilities.log import FormatAdapter
 from spinnman.model.enums import ExecutableType as _ExecutableType
-
-logger = FormatAdapter(logging.getLogger(__name__))
-
-logger.warning("Class ExecutableType has been moved to spinnman.model.enums")
 
 
 class ExecutableType(object):
