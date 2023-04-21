@@ -47,7 +47,7 @@ def chip_provenance_updater(all_core_subsets, limit=10):
             all_core_subsets, CPUState.RUNNING)
 
         for (c_x, c_y, proc) in running_cores.keys():
-            _send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)
+            send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)
         sleep(0.5)
 
         n_running_cores_now = txrx.get_core_state_count(
@@ -65,7 +65,7 @@ def chip_provenance_updater(all_core_subsets, limit=10):
                      "Board may be left in an unstable state!")
 
 
-def _send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc):
+def send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc):
     """
     :param int c_x:
     :param int c_y:
