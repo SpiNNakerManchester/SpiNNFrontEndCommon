@@ -58,14 +58,14 @@ def local_tdma_builder():
 
     Constants etc just to get into head:
 
-    * clock cycles = 200 Mhz = 200 = sv->cpu_clk
+    * clock cycles = 200 MHz = 200 = sv->cpu_clk
     * 1ms = 200000 for timer 1. = clock cycles
     * 200 per microsecond
     * machine time step = microseconds already.
     * `__time_between_cores` = microseconds.
 
     *Figure 2:* initial offset (used to try to interleave packets from other
-    app verts into the TDMA without extending the overall time, and
+    application vertices into the TDMA without extending the overall time, and
     trying to stop multiple packets in flight at same time).
 
     *Figure 3:* bits needed to figure out time between spikes.
@@ -271,7 +271,7 @@ def __check_only_one(name_1, value_1, name_2, value_2):
 
 def __config_values(clocks_per_cycle):
     """
-    Read the config for the right parameters and combinations.
+    Read the configuration for the right parameters and combinations.
 
     :param int clocks_per_cycle: The number of clock cycles per time step
     :return: (app_machine_quantity, clocks_between_cores,

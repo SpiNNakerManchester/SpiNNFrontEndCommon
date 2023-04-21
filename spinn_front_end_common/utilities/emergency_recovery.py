@@ -18,7 +18,8 @@ from spinn_machine import CoreSubsets
 from spinnman.model import ExecutableTargets, CPUInfos
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
-from .chip_provenance_updater import chip_provenance_updater
+from .chip_provenance_updater import (
+    chip_provenance_updater, send_chip_update_provenance_and_exit)
 from .iobuf_extractor import IOBufExtractor
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -93,10 +94,17 @@ def _emergency_exit():
     except Exception:
         logger.error("Could not exit - going to individual chips")
         errors = list()
+        txrx = FecDataView.get_transceiver()
         for chip_subset in all_core_subsets:
             try:
                 chip_subsets = CoreSubsets([chip_subset])
-                chip_provenance_updater(chip_subsets)
+                running_cores = txrx.get_cores_in_state(
+                    chip_subsets, CPUState.RUNNING)
+                for (c_x, c_y, proc) in running_cores.keys():
+                    send_chip_update_provenance_and_exit(txrx, c_x, c_y, proc)
+                # Don't even bother to check; with luck this happens and all
+                # is well, but at this point we can't do much more than send
+                # the request and hope!
             except Exception:
                 errors.append((chip_subset.x, chip_subset.y))
         if len(errors) > 10:

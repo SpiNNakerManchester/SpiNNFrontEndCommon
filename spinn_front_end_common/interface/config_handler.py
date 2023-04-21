@@ -46,7 +46,7 @@ _REPORT_DISABLE_OPTS = frozenset([
 class ConfigHandler(object):
     """
     Superclass of AbstractSpinnakerBase that handles function only
-    dependent of the config and the order its methods are called.
+    dependent of the configuration and the order its methods are called.
     """
 
     __slots__ = [
@@ -80,7 +80,8 @@ class ConfigHandler(object):
 
     def _debug_configs(self):
         """
-        Adjust and checks config based on mode and reports_enabled.
+        Adjusts and checks the configuration based on mode and
+        `reports_enabled`.
 
         :raises ConfigurationException:
         """
@@ -125,14 +126,12 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _adjust_config(self, runtime,):
+    def _adjust_config(self, runtime):
         """
-        Adjust and checks config based on runtime
+        Adjust and checks the configuration based on runtime
 
         :param runtime:
         :type runtime: int or bool
-        :param frozenset(str) debug_enable_opts:
-        :param frozenset(str) report_disable_opts:
         :raises ConfigurationException:
         """
         if runtime is None:
@@ -222,7 +221,7 @@ class ConfigHandler(object):
 
     def write_errored_file(self):
         """
-        Writes a errored file that allows file removal to only remove
-        folders that are errored if requested to do so
+        Writes an ``errored`` file that allows file removal to only remove
+        folders that have errors if requested to do so
         """
         self.__write_named_file(ERRORED_FILENAME)

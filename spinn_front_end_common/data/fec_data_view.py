@@ -601,11 +601,12 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_timestamp_dir_path(cls):
         """
-        Returns path to existing timestamped director in the reports directory.
+        Returns path to existing time-stamped directory in the reports
+        directory.
 
         .. note::
-            In unittest mode this returns a tempdir
-            shared by all path methods
+            In unit-test mode this returns a temporary directory
+            shared by all path methods.
 
         :rtype: str
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
@@ -635,7 +636,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_data_in_multicast_routing_tables(cls):
         """
-        Retreive the data_in_multicast_routing_tables if known
+        Retrieve the data_in_multicast_routing_tables if known
 
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         :raises SpiNNUtilsException:
@@ -737,7 +738,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         the next run if it has not yet been called.
 
         .. note::
-            In unittest mode this returns a tempdir
+            In unit-test mode this returns a temporary directory
             shared by all path methods.
 
         :rtype: str
@@ -758,7 +759,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         the next run if it has not yet been called.
 
         .. note::
-            In unittest mode this returns a tempdir
+            In unit-test mode this returns a temporary directory
             shared by all path methods.
 
         :rtype: str
@@ -772,13 +773,14 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_app_provenance_dir_path(cls):
         """
-        Returns the path to the directory that holds all app provenance files.
+        Returns the path to the directory that holds all application provenance
+        files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
         .. note::
-            In unittest mode this returns a tempdir
+            In unit-test mode this returns a temporary directory
             shared by all path methods.
 
         :rtype: str
@@ -794,13 +796,13 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_system_provenance_dir_path(cls):
         """
-        Returns the path to the directory that holds all provenance files.
+        Returns the path to the directory that holds system provenance files.
 
         This will be the path used by the last run call or to be used by
         the next run if it has not yet been called.
 
         .. note::
-            In unittest mode this returns a tempdir
+            In unit-test mode this returns a temporary directory
             shared by all path methods.
 
         :rtype: str
@@ -919,7 +921,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             :py:class:`~pacman.model.graphs.machine.MachineVertex`.
 
         :param LivePacketGatherParameters live_packet_gatherer_params:
-            params to look for a LPG
+            parameters for an LPG to look for or create
         :param ~pacman.model.graphs.AbstractVertex vertex_to_record_from:
             the vertex that needs to send to a given LPG
         :param iterable(str) partition_ids:
