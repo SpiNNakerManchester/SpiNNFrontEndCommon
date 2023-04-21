@@ -41,7 +41,7 @@ class JavaCaller(object):
     back.
 
     This separates the choices of how to call the Java batch vs streaming,
-    jar locations, parameters, etc from the rest of the python code.
+    jar locations, parameters, etc. from the rest of the Python code.
     """
 
     __slots__ = [
@@ -68,7 +68,7 @@ class JavaCaller(object):
 
     def __init__(self):
         """
-        Creates a java caller and checks the user/config parameters.
+        Creates a Java caller and checks the user/configuration parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
@@ -123,18 +123,18 @@ class JavaCaller(object):
             else:
                 raise ConfigurationException(
                     f"Found a jar file at {auto_jar_file} "
-                    f"while java_jar_path as set. "
-                    f"Please delete on of the two.")
+                    "while java_jar_path as set. "
+                    "Please delete on of the two.")
         else:
             if java_jar_path is None:
                 if not os.path.isdir(java_spinnaker_path):
                     raise ConfigurationException(
                         f"No Java code found at {java_spinnaker_path} "
-                        f"Nor is java_jar_path set.")
+                        "nor is java_jar_path set.")
                 else:
                     raise ConfigurationException(
                         f"No jar file at {auto_jar_file} "
-                        f"Nor is java_jar_path set.")
+                        "nor is java_jar_path set.")
             elif os.path.exists(java_jar_path):
                 self._jar_file = auto_jar_file
             else:
@@ -264,7 +264,7 @@ class JavaCaller(object):
     def _write_gather(self, used_placements, path):
         """
         :param ~pacman.model.placements.Placements used_placements:
-            placements that are being used. May not eb all placements
+            placements that are being used. May not be all placements
         :param str path:
         :rtype: str
         """
@@ -325,9 +325,10 @@ class JavaCaller(object):
 
     def _run_java(self, *args):
         """
-        Does the actual running of JavaSpiNNaker. Arguments are those that
+        Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.
 
+        :type list(str) args:
         :rtype: int
         """
         if self._java_properties is None:
@@ -368,7 +369,8 @@ class JavaCaller(object):
 
     def execute_data_specification(self):
         """
-        Writes all the data specs, uploading the result to the machine.
+        Writes all the data specifications, uploading the result to the
+        machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
             On failure of the Java code.
@@ -386,7 +388,7 @@ class JavaCaller(object):
 
     def execute_system_data_specification(self):
         """
-        Writes all the data specs for system cores,
+        Writes all the data specifications for system cores,
         uploading the result to the machine.
 
         :raises PacmanExternalAlgorithmFailedToCompleteException:
@@ -405,7 +407,7 @@ class JavaCaller(object):
 
     def execute_app_data_specification(self, use_monitors):
         """
-        Writes all the data specs for application cores,
+        Writes all the data specifications for application cores,
         uploading the result to the machine.
 
         .. note::
