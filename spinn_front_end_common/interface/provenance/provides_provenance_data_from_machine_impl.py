@@ -40,7 +40,7 @@ def add_name(names, name):
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine, allow_derivation=True):
     """
-    An implementation that gets provenance data from a region of ints on
+    An implementation that gets provenance data from a region of integers on
     the machine.
     """
 
@@ -147,9 +147,9 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         :param ~pacman.model.placements.Placement placement:
         :returns:
-            A descriptive (human-readable) label and the x, y, p ocoordiantes
+            A descriptive (human-readable) label and the (x, y, p) coordinates
             for provenance items from the given placement.
-        :rtype: tuple(str, init, int, int)
+        :rtype: tuple(str, int, int, int)
         """
         label = placement.vertex.label
         x = placement.x

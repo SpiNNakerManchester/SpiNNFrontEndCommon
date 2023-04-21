@@ -33,11 +33,11 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def system_multicast_routing_generator():
     """
-    Generates routing table entries used by the data in processes with the
+    Generates routing table entries used by the data-in processes with the
     extra monitor cores.
 
     :return: routing tables, destination-to-key map,
-        board-locn-to-timeout-key map
+        board-location-to-timeout-key map
     :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
@@ -67,7 +67,7 @@ class _SystemMulticastRoutingGenerator(object):
     def _run(self):
         """
         :return: routing tables, destination-to-key map,
-            board-locn-to-timeout-key map
+            board-location-to-timeout-key map
         :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
             dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
@@ -91,7 +91,7 @@ class _SystemMulticastRoutingGenerator(object):
         Generates a map for each chip to over which link it gets its data.
 
         :param ~spinn_machine.Chip ethernet_chip:
-        :return: Map of chip.x, chip.y tp (source.x, source.y, source.link)
+        :return: Map of chip.x, chip.y to (source.x, source.y, source.link)
         :rtype: dict(tuple(int, int), tuple(int, int, int))
         """
         eth_x = ethernet_chip.x
@@ -195,15 +195,15 @@ class _SystemMulticastRoutingGenerator(object):
 
     def _add_routing_entries(self, ethernet_chip, tree):
         """
-        Adds the routing entires based on the tree.
+        Adds the routing entries based on the tree.
 
-        For every chip with this ethernet:
+        For every chip with this Ethernet-enabled chip on the board:
             - A key is generated (and saved) for this chip.
             - A local route to the monitor core is added.
             - The tree is walked adding a route on each source to get here
 
         :param ~spinn_machine.Chip ethernet_chip:
-            the ethernet chip to make entries for
+            the Ethernet-enabled chip to make entries for
         :param dict(tuple(int,int),tuple(int,int,int)) tree:
             map of chips and links
         """
