@@ -1,4 +1,4 @@
-# Copyright (c) 2017 The University of Manchester
+# Copyright (c) 2021 The University of Manchester
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from spinnman.model.enums import ExecutableType as _ExecutableType
-
-
-class ExecutableType(object):
-    """
-    This class is deprecated. Please use spinnman.model.enums.ExecutableType
-    """
-    RUNNING = _ExecutableType.RUNNING
-
-    SYNC = _ExecutableType.SYNC
-
-    USES_SIMULATION_INTERFACE = _ExecutableType.USES_SIMULATION_INTERFACE
-
-    NO_APPLICATION = _ExecutableType.NO_APPLICATION
-
-    SYSTEM = _ExecutableType.SYSTEM
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "dkfellows"
+    reviewers:
+      - "rowleya"

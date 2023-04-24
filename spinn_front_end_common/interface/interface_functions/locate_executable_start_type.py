@@ -13,9 +13,9 @@
 # limitations under the License.
 
 from spinn_machine import CoreSubsets
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 def locate_executable_start_type():

@@ -18,10 +18,10 @@ from math import ceil
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, ExecutableFailedToStopException)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
 from spinnman.model.enums.cpu_state import CPUState

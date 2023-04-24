@@ -33,6 +33,7 @@ from spinn_machine import __version__ as spinn_machine_version
 from spinn_machine import Machine
 
 from spinnman import __version__ as spinnman_version
+from spinnman.model.enums import ExecutableType
 
 from data_specification import __version__ as data_spec_version
 
@@ -114,7 +115,6 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
