@@ -18,6 +18,7 @@ from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
+from spinnman.model.enums import ExecutableType
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.data_specification_generator import (
@@ -27,7 +28,6 @@ from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     execute_application_data_specs)
 from spinn_front_end_common.interface.config_setup import unittest_setup
-from spinn_front_end_common.utilities.utility_objs import (ExecutableType)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 
