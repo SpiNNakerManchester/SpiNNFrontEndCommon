@@ -442,7 +442,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         :param executable_types:
         :type executable_types: dict(
-            ~spinn_machine.model.enum.ExecutableType,
+            ~spinnman.model.enum.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
         """
         if not isinstance(executable_types, dict):

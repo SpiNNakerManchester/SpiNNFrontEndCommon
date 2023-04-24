@@ -38,5 +38,5 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
         """
         Get the start type of the binary to be run.
 
-        :rtype: ~spinn_machine.model.enum.ExecutableType
+        :rtype: ~spinnman.model.enum.ExecutableType
         """
