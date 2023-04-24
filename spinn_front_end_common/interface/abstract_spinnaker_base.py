@@ -35,7 +35,7 @@ from spinn_machine import CoreSubsets, Machine
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 
 from data_specification import __version__ as data_spec_version
 
@@ -116,7 +116,6 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_machine, write_json_placements,
     write_json_routing_tables, write_timer_report, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (

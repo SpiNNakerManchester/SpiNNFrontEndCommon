@@ -24,7 +24,7 @@ from spinnman.exceptions import (
     SpinnmanInvalidParameterException,
     SpinnmanUnexpectedResponseCodeException, SpiNNManCoresNotInStateException)
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (
@@ -43,7 +43,6 @@ from spinn_front_end_common.utilities.helpful_functions import (
     get_defaultable_source_id, n_word_struct)
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     BIT_FIELD_COMMS_SDRAM_TAG, BIT_FIELD_USABLE_SDRAM_TAG,
     BIT_FIELD_ADDRESSES_SDRAM_TAG, BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)

@@ -22,7 +22,7 @@ from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM, IPtagResource
 from spinn_front_end_common.data import FecDataView
@@ -35,8 +35,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine)
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BYTES_PER_WORD, BYTES_PER_KB)
 from spinn_front_end_common.utilities.utility_calls import (
