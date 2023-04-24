@@ -14,7 +14,7 @@
 
 from spinn_utilities.overrides import overrides
 from spinn_machine import CoreSubsets
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinnman.model.enums import ExecutableType
 from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.config_setup import unittest_setup

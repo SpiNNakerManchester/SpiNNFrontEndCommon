@@ -17,6 +17,7 @@ import struct
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ConstantSDRAM
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import (
     ProvidesProvenanceDataFromMachineImpl, ProvenanceWriter)
@@ -24,7 +25,6 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
