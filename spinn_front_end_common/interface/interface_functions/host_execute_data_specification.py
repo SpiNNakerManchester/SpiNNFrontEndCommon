@@ -19,6 +19,7 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
+from spinnman.model.enums import ExecutableType
 from data_specification import DataSpecificationExecutor, MemoryRegionReal
 from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
@@ -26,7 +27,6 @@ from data_specification.exceptions import DataSpecificationException
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG

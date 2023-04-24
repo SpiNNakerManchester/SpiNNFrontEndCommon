@@ -14,7 +14,7 @@
 
 from collections import defaultdict
 import sys
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinnman.model.enums import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 

@@ -14,11 +14,10 @@
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)

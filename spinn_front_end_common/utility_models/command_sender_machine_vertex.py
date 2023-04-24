@@ -14,6 +14,7 @@
 
 from enum import IntEnum
 from spinn_utilities.overrides import overrides
+from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import MachineVertex, MachineEdge
 from pacman.model.resources import ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
@@ -27,8 +28,6 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import (
-    ExecutableType)
 
 
 class CommandSenderMachineVertex(
