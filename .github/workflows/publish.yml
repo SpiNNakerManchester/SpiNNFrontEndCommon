@@ -51,33 +51,33 @@ jobs:
       - name: Checkout SpiNNaker Dependencies
         uses: ./support/actions/install-spinn-deps
         with:
-          # Need spinnaker_tools so we can run the makefiles
+          # Need spinnaker_tools and SpiNNUtils so we can run the makefiles
+          # sphinx needs SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
           repositories: >
-            SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
-            spinnaker_tools
+            SpiNNUtils spinnaker_tools
           install: true
 
       - name: Read tags
         run: make doxysetup
         working-directory: c_common
 
-      - name: Install Python code
-        uses: ./support/actions/run-install
+      # - name: Install Python code
+      #  uses: ./support/actions/run-install
 
-      - name: Build Python documentation
-        uses: ./support/actions/sphinx
-        with:
-          directory: doc/source
+      # - name: Build Python documentation
+      #  uses: ./support/actions/sphinx
+      #  with:
+      #    directory: doc/source
       - name: Build C documentation
         uses: mattnotmitt/doxygen-action@v1.9.5
         with:
           working-directory: c_common
 
+      # sphinx needs cp -vaT $PY_DOC_DIR $DEPLOY_DIR/python
       - name: Merge documentation trees
         run: |
           cp -vaT $ROOT_DOC_DIR $DEPLOY_DIR
           cp -vaT $C_DOC_DIR $DEPLOY_DIR/c
-          cp -vaT $PY_DOC_DIR $DEPLOY_DIR/python
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
