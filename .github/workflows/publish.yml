@@ -38,10 +38,6 @@ jobs:
       - name: Set dynamic environment variables
         run: |
           echo "SPINN_DIRS=$PWD/spinnaker_tools" >> $GITHUB_ENV
-      - name: Install pip, etc
-        uses: ./support/actions/python-tools
-        with:
-          coverage: false
 
       - name: Checkout SpiNNaker Dependencies
         uses: ./support/actions/install-spinn-deps
