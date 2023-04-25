@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>spinn_front_end_common.interface.interface_functions package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <title>spinn_front_end_common.interface.interface_functions package &#8212; SpiNNFrontEndCommon 1!7.0.0-a1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" accesskey="U">spinn_front_end_common.interface package</a> &#187;</li>
@@ -62,7 +62,7 @@ compressor in order to parallelise.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>binary_path</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – What binary to run</p></li>
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – The machine model</p></li>
+<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v1!7.0)"><em>Machine</em></a>) – The machine model</p></li>
 <li><p><strong>progress_text</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Text to use in progress bar</p></li>
 <li><p><strong>result_register</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – number of the user register to check for the result code</p></li>
 </ul>
@@ -159,7 +159,7 @@ the exact same algorithm implemented in Python.</p>
 <dd><p>Finds how many application chips there were and the cost on each chip</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – placements</p>
+<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v1!7.0)"><em>Placements</em></a>) – placements</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>a tuple with 4 elements.</p>
@@ -317,7 +317,7 @@ simulation (or other application) running on SpiNNaker.</p>
 <dd><p>Extracts binaries to be executed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v1!7.0)"><em>ExecutableTargets</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -327,7 +327,7 @@ simulation (or other application) running on SpiNNaker.</p>
 <span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.interface.interface_functions.</span></span><span class="sig-name descname"><span class="pre">graph_data_specification_writer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">placement_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#spinn_front_end_common.interface.interface_functions.graph_data_specification_writer" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – the optional order in which placements should be examined</p>
+<dd class="field-odd"><p><strong>placement_order</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a><em>)</em>) – the optional order in which placements should be examined</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="spinn_front_end_common.interface.ds.html#spinn_front_end_common.interface.ds.DsSqlliteDatabase" title="spinn_front_end_common.interface.ds.DsSqlliteDatabase">DsSqlliteDatabase</a></p>
@@ -363,7 +363,7 @@ boot port, allocation controller</p>
 <a class="reference internal" href="spinn_front_end_common.abstract_models.impl.html#spinn_front_end_common.abstract_models.impl.MachineAllocationController" title="spinn_front_end_common.abstract_models.impl.MachineAllocationController">MachineAllocationController</a>)</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman/#pacman.exceptions.PacmanConfigurationException" title="(in PACMAN v6.0)"><strong>PacmanConfigurationException</strong></a> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman/#pacman.exceptions.PacmanConfigurationException" title="(in PACMAN v1!7.0)"><strong>PacmanConfigurationException</strong></a> – If neither <cite>n_chips</cite> or <cite>n_boards</cite> provided</p>
 </dd>
 </dl>
 </dd></dl>
@@ -377,7 +377,7 @@ boot port, allocation controller</p>
 <dd class="field-odd"><p>compressed routing table entries</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v1!7.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -422,7 +422,7 @@ and then send a start request to the cores that actually use it.</p>
 <dd><p>Load a set of fixed routes onto a SpiNNaker machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p>
+<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -517,8 +517,8 @@ the transceiver to it.</p></li>
 <dd class="field-even"><p>Transceiver, and description of machine it is connected to</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>,
-<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v1!7.0)"><em>Machine</em></a>,
+<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -531,7 +531,7 @@ the transceiver to it.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>n_placements</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of placements to gather</p></li>
-<li><p><strong>placements</strong> (<em>iterator</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a><em>)</em>) – The placements of the vertices to gather data form.
+<li><p><strong>placements</strong> (<em>iterator</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a><em>)</em>) – The placements of the vertices to gather data form.
 May not be all placements so don’t use View</p></li>
 </ul>
 </dd>
@@ -550,7 +550,7 @@ May not be all placements so don’t use View</p></li>
 <dd><p>Reads compressed routing tables from a SpiNNaker machine.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v1!7.0)"><em>MulticastRoutingTables</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -576,7 +576,7 @@ May not be all placements so don’t use View</p></li>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – </p>
+<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -587,7 +587,7 @@ May not be all placements so don’t use View</p></li>
 <dd><p>Loads routes into initialised routers.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>) – </p>
+<dd class="field-odd"><p><strong>router_tables</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v1!7.0)"><em>MulticastRoutingTables</em></a>) – </p>
 </dd>
 </dl>
 </dd></dl>
@@ -624,9 +624,9 @@ auto-detect BMP flag, board address map, allocation controller</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>app_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v6.0)"><em>ApplicationGraph</em></a>) – The application graph</p></li>
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
-<li><p><strong>system_placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – existing placements to be added to</p></li>
+<li><p><strong>app_graph</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationGraph" title="(in PACMAN v1!7.0)"><em>ApplicationGraph</em></a>) – The application graph</p></li>
+<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v1!7.0)"><em>Machine</em></a>) – the SpiNNaker machine as discovered</p></li>
+<li><p><strong>system_placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v1!7.0)"><em>Placements</em></a>) – existing placements to be added to</p></li>
 </ul>
 </dd>
 </dl>
@@ -643,7 +643,7 @@ extra monitor cores.</p>
 board-location-to-timeout-key map</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v6.0)"><em>MulticastRoutingTables</em></a>,
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_tables/#pacman.model.routing_tables.MulticastRoutingTables" title="(in PACMAN v1!7.0)"><em>MulticastRoutingTables</em></a>,
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>,<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>),<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
 </dd>
 </dl>
@@ -664,7 +664,7 @@ board-location-to-timeout-key map</p>
 <dd class="field-odd"><p>The virtual machine.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v1!7.0)"><em>Machine</em></a></p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/exceptions.html#Exception" title="(in Python v3.8)"><strong>Exception</strong></a> – If given bad arguments</p>
@@ -799,7 +799,7 @@ board-location-to-timeout-key map</p>
         <li class="right" >
           <a href="spinn_front_end_common.interface.ds.html" title="spinn_front_end_common.interface.ds package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="spinn_front_end_common.interface.html" >spinn_front_end_common.interface package</a> &#187;</li>

@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>spinn_front_end_common.utilities package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <title>spinn_front_end_common.utilities package &#8212; SpiNNFrontEndCommon 1!7.0.0-a1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="spinn_front_end_common.interface.splitter_selectors.html" title="spinn_front_end_common.interface.splitter_selectors package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" accesskey="U">spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities package</a></li> 
@@ -320,7 +320,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.base_database.BaseDatabase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.base_database.</span></span><span class="sig-name descname"><span class="pre">BaseDatabase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_factory=&lt;class</span> <span class="pre">'sqlite3.Row'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_factory=&lt;class</span> <span class="pre">'memoryview'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/base_database.html#BaseDatabase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.base_database.BaseDatabase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="spinn_front_end_common.utilities.sqlite_db.SQLiteDB"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLiteDB</span></code></a>, <a class="reference external" href="https://spinnutils.readthedocs.io/en/7.0.0-a1/spinn_utilities/#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
 <p>Specific implementation of the Database for SQLite 3.</p>
 <p>There should only ever be a single Database Object in use at any time.
 In the case of application_graph_changed the first should closed and
@@ -569,9 +569,9 @@ goes badly wrong. Not a replacement for what abstract spinnaker base does.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – The transceiver.</p></li>
+<li><p><strong>txrx</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – The transceiver.</p></li>
 <li><p><strong>vertex</strong> (<a class="reference internal" href="spinn_front_end_common.abstract_models.html#spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary" title="spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary"><em>AbstractHasAssociatedBinary</em></a>) – The vertex to retrieve the IOBUF from if it is suspected as being dead</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – Where the vertex is located.</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – Where the vertex is located.</p></li>
 </ul>
 </dd>
 </dl>
@@ -584,7 +584,7 @@ goes badly wrong. Not a replacement for what abstract spinnaker base does.</p>
 goes badly wrong. Not a replacement for what abstract spinnaker base does.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – The what/where mapping</p>
+<dd class="field-odd"><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v1!7.0)"><em>ExecutableTargets</em></a>) – The what/where mapping</p>
 </dd>
 </dl>
 </dd></dl>
@@ -677,7 +677,7 @@ execution.</p>
 <dd class="field-odd"><p><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – string representing down cores formatted as x,y,p[:x,y,p]*</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v1!7.0)"><em>CoreSubsets</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -688,13 +688,13 @@ execution.</p>
 <dd><p>Converts vertices into core subsets.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertices</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a><em>)</em>) – the vertices to convert to core subsets</p>
+<dd class="field-odd"><p><strong>vertices</strong> (<em>iterable</em><em>(</em><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a><em>)</em>) – the vertices to convert to core subsets</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the CoreSubSets of the vertices</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v6.0)"><em>CoreSubsets</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.CoreSubsets" title="(in SpiNNMachine v1!7.0)"><em>CoreSubsets</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -714,8 +714,8 @@ execution.</p>
 <dd class="field-even"><p>dict of executable type to states.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v6.0)"><em>CPUState</em></a>),
-<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v6.0)"><em>CPUState</em></a>))</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v1!7.0)"><em>CPUState</em></a>),
+<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)">dict</a>(<a class="reference internal" href="spinn_front_end_common.utilities.utility_objs.html#spinn_front_end_common.utilities.utility_objs.ExecutableType" title="spinn_front_end_common.utilities.utility_objs.ExecutableType">ExecutableType</a>,<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v1!7.0)"><em>CPUState</em></a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -764,7 +764,7 @@ execution.</p>
 <dd><p>Hack to support the source requirement for the router compressor on chip.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>entry</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.MulticastRoutingEntry" title="(in SpiNNMachine v6.0)"><em>MulticastRoutingEntry</em></a>) – the multicast router table entry.</p>
+<dd class="field-odd"><p><strong>entry</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.MulticastRoutingEntry" title="(in SpiNNMachine v1!7.0)"><em>MulticastRoutingEntry</em></a>) – the multicast router table entry.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>return the source value</p>
@@ -782,7 +782,7 @@ execution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v6.0)"><em>Machine</em></a>) – the SpiNNaker machine</p></li>
+<li><p><strong>machine</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Machine" title="(in SpiNNMachine v1!7.0)"><em>Machine</em></a>) – the SpiNNaker machine</p></li>
 <li><p><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the board address to locate the chip of.</p></li>
 </ul>
 </dd>
@@ -790,7 +790,7 @@ execution.</p>
 <dd class="field-even"><p>The chip that supports that board address</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine/#spinn_machine.Chip" title="(in SpiNNMachine v6.0)"><em>Chip</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine/#spinn_machine.Chip" title="(in SpiNNMachine v1!7.0)"><em>Chip</em></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#spinn_front_end_common.utilities.exceptions.ConfigurationException" title="spinn_front_end_common.utilities.exceptions.ConfigurationException"><strong>ConfigurationException</strong></a> – when that board address has no chip associated with it</p>
@@ -838,8 +838,8 @@ particular chip. This will be on the same board.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the region to locate the base address of</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement object to get the region address of</p></li>
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the python interface to the SpiNNaker machine</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the placement object to get the region address of</p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – the python interface to the SpiNNaker machine</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -949,7 +949,7 @@ lines based on their prefix.</p>
 <li><p><strong>recovery_mode</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
 <li><p><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
 <li><p><strong>suppress_progress</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – </p></li>
-<li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a><em> or </em><em>None</em>) – Which Binaries and core to extract from.
+<li><p><strong>executable_targets</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v1!7.0)"><em>ExecutableTargets</em></a><em> or </em><em>None</em>) – Which Binaries and core to extract from.
 <cite>None</cite> to extract from all.</p></li>
 <li><p><strong>from_cores</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
 <li><p><strong>binary_types</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – </p></li>
@@ -1007,7 +1007,7 @@ lines based on their prefix.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utilities.sqlite_db.SQLiteDB">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utilities.sqlite_db.</span></span><span class="sig-name descname"><span class="pre">SQLiteDB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_only=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ddl_file=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_factory=&lt;class</span> <span class="pre">'sqlite3.Row'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_factory=&lt;class</span> <span class="pre">'memoryview'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_insensitive_like=True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spinn_front_end_common/utilities/sqlite_db.html#SQLiteDB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utilities.sqlite_db.SQLiteDB" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://spinnutils.readthedocs.io/en/7.0.0-a1/spinn_utilities/#spinn_utilities.abstract_context_manager.AbstractContextManager" title="(in SpiNNUtils v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractContextManager</span></code></a></p>
 <p>General support class for SQLite databases. This handles a lot of the
 low-level detail of setting up a connection.</p>
 <p>Basic usage (with the default row type):</p>
@@ -1127,17 +1127,17 @@ Used for on-chip expanders, compressors, etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>executable_cores</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v6.0)"><em>ExecutableTargets</em></a>) – the cores to run the executable on.</p></li>
+<li><p><strong>executable_cores</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model/#spinnman.model.ExecutableTargets" title="(in SpiNNMan v1!7.0)"><em>ExecutableTargets</em></a>) – the cores to run the executable on.</p></li>
 <li><p><strong>app_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the app-id for the executable</p></li>
 <li><p><strong>read_algorithm_iobuf</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether to report IOBUFs</p></li>
 <li><p><strong>check_for_success_function</strong> (<em>callable</em>) – function used to check success;
 expects <cite>executable_cores</cite>, <cite>transceiver</cite> as inputs</p></li>
-<li><p><strong>cpu_end_states</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)"><em>set</em></a><em>(</em><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v6.0)"><em>CPUState</em></a><em>)</em>) – the states that a successful run is expected to terminate in</p></li>
+<li><p><strong>cpu_end_states</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)"><em>set</em></a><em>(</em><a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.model.enums/#spinnman.model.enums.CPUState" title="(in SpiNNMan v1!7.0)"><em>CPUState</em></a><em>)</em>) – the states that a successful run is expected to terminate in</p></li>
 <li><p><strong>needs_sync_barrier</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – whether a sync barrier is needed</p></li>
 <li><p><strong>filename_template</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the IOBUF filename template.</p></li>
 <li><p><strong>binaries_to_track</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>)</em>) – A list of binary names to check for exit state.
 Or <cite>None</cite> for all binaries</p></li>
-<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/latest/spinn_utilities/#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v6.0)"><em>ProgressBar</em></a><em> or </em><em>None</em>) – Possible progress bar to update.
+<li><p><strong>progress_bar</strong> (<a class="reference external" href="https://spinnutils.readthedocs.io/en/7.0.0-a1/spinn_utilities/#spinn_utilities.progress_bar.ProgressBar" title="(in SpiNNUtils v1!7.0)"><em>ProgressBar</em></a><em> or </em><em>None</em>) – Possible progress bar to update.
 end() will be called after state checked</p></li>
 <li><p><strong>logger</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/logging.html#logging.Logger" title="(in Python v3.8)"><em>Logger</em></a>) – If provided and IOBUF is extracted, will be used to log errors and
 warnings</p></li>
@@ -1173,7 +1173,7 @@ then a temporary directory is used.</p></li>
 <dd class="field-even"><p>the filename of the data writer and the data specification object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>)</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>, <a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1229,7 +1229,7 @@ caller’s responsibility.</p>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.SCAMPConnection" title="(in SpiNNMan v6.0)"><em>SCAMPConnection</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.SCAMPConnection" title="(in SpiNNMan v1!7.0)"><em>SCAMPConnection</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1270,7 +1270,7 @@ arguments are used (or default defaults).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>connection</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.UDPConnection" title="(in SpiNNMan v6.0)"><em>UDPConnection</em></a>) – The connection to deliver to.</p></li>
+<li><p><strong>connection</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.connections.udp_packet_connections/#spinnman.connections.udp_packet_connections.UDPConnection" title="(in SpiNNMan v1!7.0)"><em>UDPConnection</em></a>) – The connection to deliver to.</p></li>
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The X coordinate of the Ethernet-enabled chip we are sending the
 message to.</p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The Y coordinate of the Ethernet-enabled chip we are sending the
@@ -1477,7 +1477,7 @@ connection.</p></li>
         <li class="right" >
           <a href="spinn_front_end_common.interface.splitter_selectors.html" title="spinn_front_end_common.interface.splitter_selectors package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utilities package</a></li> 

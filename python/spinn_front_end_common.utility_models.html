@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>spinn_front_end_common.utility_models package &#8212; SpiNNFrontEndCommon 6.0.1 documentation</title>
+    <title>spinn_front_end_common.utility_models package &#8212; SpiNNFrontEndCommon 1!7.0.0-a1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinxdoc.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
@@ -28,7 +28,7 @@
         <li class="right" >
           <a href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html" title="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" accesskey="U">spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models package</a></li> 
@@ -50,7 +50,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">spinn_front_end_common.utility_models.lpg_splitter.</span></span><span class="sig-name descname"><span class="pre">LPGSplitter</span></span><a class="reference internal" href="_modules/spinn_front_end_common/utility_models/lpg_splitter.html#LPGSplitter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.partitioner_splitters.abstract_splitters/#pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSplitterCommon</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.partitioner_splitters.abstract_splitters/#pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon" title="(in PACMAN v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractSplitterCommon</span></code></a></p>
 <p>Splitter for the <code class="xref py py-class docutils literal notranslate"><span class="pre">LivePacketGather</span></code> vertex.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.lpg_splitter.LPGSplitter.create_machine_vertices">
@@ -58,7 +58,7 @@
 <dd><p>Method for specific splitter objects to override.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>chip_counter</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.utilities.utility_objs/#pacman.utilities.utility_objs.ChipCounter" title="(in PACMAN v6.0)"><em>ChipCounter</em></a>) – counter of used chips</p>
+<dd class="field-odd"><p><strong>chip_counter</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.utilities.utility_objs/#pacman.utilities.utility_objs.ChipCounter" title="(in PACMAN v1!7.0)"><em>ChipCounter</em></a>) – counter of used chips</p>
 </dd>
 </dl>
 </dd></dl>
@@ -83,7 +83,7 @@ on each Ethernet-enabled chip.</p>
 <dd class="field-odd"><p>list of Slices</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v1!7.0)"><em>Slice</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -104,7 +104,7 @@ for any source machine vertex in the given partition.</p>
 <dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the incoming partition</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -118,7 +118,7 @@ for any source machine vertex in the given partition.</p>
 <dd class="field-odd"><p>list of Slices</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v1!7.0)"><em>Slice</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -134,7 +134,7 @@ for external edges.</p>
 <dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the outgoing partition</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>)</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -156,7 +156,7 @@ any given source vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>) – The source to get incoming vertices for</p></li>
+<li><p><strong>source_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v1!7.0)"><em>ApplicationVertex</em></a>) – The source to get incoming vertices for</p></li>
 <li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the incoming partition</p></li>
 </ul>
 </dd>
@@ -165,9 +165,9 @@ any given source vertex.</p>
 machine or application vertices that should hit the target)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>,
-<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a> or
-<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a>)))</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>,
+<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a> or
+<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v1!7.0)"><em>ApplicationVertex</em></a>)))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -184,7 +184,7 @@ machine or application vertices that should hit the target)</p>
 <dd class="field-even"><p>list of machine vertices</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>)</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -206,7 +206,7 @@ and partition.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#set" title="(in Python v3.8)">set</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex" title="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex">LivePacketGatherMachineVertex</a>,
-<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>, <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -267,8 +267,8 @@ application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -303,7 +303,7 @@ application vertex.</p>
 Also arranges for provenance data to be available.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the location on machine to get data from</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the location on machine to get data from</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>results, an array with 1 dimension of uint32 values</p>
@@ -334,7 +334,7 @@ Also arranges for provenance data to be available.</p>
 <dd><p>Get the recording region base address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement object of the core to find the address of</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the placement object of the core to find the address of</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the base address of the recording region</p>
@@ -354,7 +354,7 @@ Also arranges for provenance data to be available.</p>
 <dd class="field-odd"><p><strong>sampling_frequency</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v6.0)"><em>VariableSDRAM</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v1!7.0)"><em>VariableSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -376,7 +376,7 @@ Also arranges for provenance data to be available.</p>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -407,7 +407,7 @@ pause</p></li>
 <li><p><strong>pause_stop_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em>) – The commands to send when the simulation stops or pauses after
 running</p></li>
 <li><p><strong>timed_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em>) – The commands to send at specific times</p></li>
-<li><p><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – The vertex these commands are to be sent to</p></li>
+<li><p><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v1!7.0)"><em>AbstractVertex</em></a>) – The vertex these commands are to be sent to</p></li>
 </ul>
 </dd>
 </dl>
@@ -423,7 +423,7 @@ that this vertex knows how to target (and has keys allocated for).</p>
 <dd class="field-odd"><p>edges, partition IDs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v6.0)"><em>ApplicationEdge</em></a>),
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationEdge" title="(in PACMAN v1!7.0)"><em>ApplicationEdge</em></a>),
 <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
@@ -440,7 +440,7 @@ the conditions.</p>
 <dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the partition to get the key for</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v6.0)"><em>BaseKeyAndMask</em></a> or None</p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v1!7.0)"><em>BaseKeyAndMask</em></a> or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -510,7 +510,7 @@ pause</p></li>
 <li><p><strong>pause_stop_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em>) – the commands to send when the simulation stops or pauses after
 running</p></li>
 <li><p><strong>timed_commands</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.MultiCastCommand" title="spinn_front_end_common.utility_models.MultiCastCommand"><em>MultiCastCommand</em></a><em>)</em>) – The commands to send at specific times</p></li>
-<li><p><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><em>AbstractVertex</em></a>) – The vertex these commands are to be sent to</p></li>
+<li><p><strong>vertex_to_send_to</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v1!7.0)"><em>AbstractVertex</em></a>) – The vertex these commands are to be sent to</p></li>
 </ul>
 </dd>
 </dl>
@@ -526,7 +526,7 @@ that this vertex knows how to target (and has keys allocated for).</p>
 <dd class="field-odd"><p>edges, partition IDs</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v6.0)"><em>MachineEdge</em></a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineEdge" title="(in PACMAN v1!7.0)"><em>MachineEdge</em></a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -538,8 +538,8 @@ that this vertex knows how to target (and has keys allocated for).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -582,15 +582,15 @@ knows how to target (and has keys allocated for).</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>pre_vertex</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSender" title="spinn_front_end_common.utility_models.CommandSender"><em>CommandSender</em></a><em> or </em><a class="reference internal" href="#spinn_front_end_common.utility_models.CommandSenderMachineVertex" title="spinn_front_end_common.utility_models.CommandSenderMachineVertex"><em>CommandSenderMachineVertex</em></a>) – </p></li>
-<li><p><strong>vertex_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – subclass of <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractVertex</span></code></a></p></li>
-<li><p><strong>edge_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – subclass of <a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractEdge" title="(in PACMAN v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEdge</span></code></a></p></li>
+<li><p><strong>vertex_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – subclass of <a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs/#pacman.model.graphs.AbstractVertex" title="(in PACMAN v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractVertex</span></code></a></p></li>
+<li><p><strong>edge_type</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#type" title="(in Python v3.8)"><em>type</em></a>) – subclass of <a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs/#pacman.model.graphs.AbstractEdge" title="(in PACMAN v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEdge</span></code></a></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>edges, partition IDs</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs/#pacman.model.graphs.AbstractEdge" title="(in PACMAN v6.0)"><em>AbstractEdge</em></a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs/#pacman.model.graphs.AbstractEdge" title="(in PACMAN v1!7.0)"><em>AbstractEdge</em></a>), <a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)">str</a>))</p>
 </dd>
 </dl>
 </dd></dl>
@@ -604,7 +604,7 @@ knows how to target (and has keys allocated for).</p>
 <dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The partition to get the key for</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v6.0)"><em>BaseKeyAndMask</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v1!7.0)"><em>BaseKeyAndMask</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -659,7 +659,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -773,7 +773,7 @@ application vertex.</p>
 <dd><p>Clears the queues for reinjection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – the placements object</p>
+<dd class="field-odd"><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v1!7.0)"><em>Placements</em></a>) – the placements object</p>
 </dd>
 </dl>
 </dd></dl>
@@ -785,8 +785,8 @@ application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -822,7 +822,7 @@ application vertex.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>extra_monitor</strong> (<a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a>) – the extra monitor used for this data</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – placement object for where to get data from</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – placement object for where to get data from</p></li>
 <li><p><strong>memory_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the address in SDRAM to start reading from</p></li>
 <li><p><strong>length_in_bytes</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the length of data to read in bytes</p></li>
 </ul>
@@ -842,7 +842,7 @@ application vertex.</p>
 <dd><p>Get an iterable of provenance data items.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the placement of the object</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>iterable</p>
@@ -853,11 +853,11 @@ application vertex.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
 if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a>)</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v1!7.0)"><em>IPtagResource</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -885,7 +885,7 @@ to call for writing data onto SpiNNaker.</p>
 <li><p><strong>uses_advanced_monitors</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether the system is using advanced monitors</p></li>
 <li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the chip x coordinate to write data to</p></li>
 <li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – the chip y coordinate to write data to</p></li>
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the SpiNNMan instance</p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – the SpiNNMan instance</p></li>
 <li><p><strong>extra_monitor_cores_to_ethernet_connection_map</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em><em>, </em><a class="reference internal" href="#spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex" title="spinn_front_end_common.utility_models.DataSpeedUpPacketGatherMachineVertex"><em>DataSpeedUpPacketGatherMachineVertex</em></a><em>)</em>) – mapping between cores and connections</p></li>
 </ul>
 </dd>
@@ -904,7 +904,7 @@ to call for writing data onto SpiNNaker.</p>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -945,7 +945,7 @@ for data streaming.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>timeout</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#tuple" title="(in Python v3.8)"><em>tuple</em></a><em>(</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>,</em><a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – </p></li>
-<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v6.0)"><em>Placements</em></a>) – </p></li>
+<li><p><strong>placements</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placements" title="(in PACMAN v1!7.0)"><em>Placements</em></a>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -1017,8 +1017,8 @@ application vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -1052,7 +1052,7 @@ application vertex.</p>
 <dd><p>Get an iterable of provenance data items.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement of the object</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the placement of the object</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>iterable</p>
@@ -1099,7 +1099,7 @@ multicast routes (used by the Data In protocol).</p>
 multicast routes (used by the Data In protocol).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the spinnMan interface</p>
+<dd class="field-odd"><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – the spinnMan interface</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1109,7 +1109,7 @@ multicast routes (used by the Data In protocol).</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">placement</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex.placement" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1161,7 +1161,7 @@ multicast routes (used by the Data In protocol).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v6.0)"><em>Transceiver</em></a>) – the spinnMan interface</p></li>
+<li><p><strong>transceiver</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman/#spinnman.transceiver.Transceiver" title="(in SpiNNMan v1!7.0)"><em>Transceiver</em></a>) – the spinnMan interface</p></li>
 <li><p><strong>extra_monitor_cores_to_set</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="#spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex" title="spinn_front_end_common.utility_models.ExtraMonitorSupportMachineVertex"><em>ExtraMonitorSupportMachineVertex</em></a><em>)</em>) – which monitors control the routers to reset the counters of</p></li>
 </ul>
 </dd>
@@ -1174,7 +1174,7 @@ multicast routes (used by the Data In protocol).</p>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1335,7 +1335,7 @@ with a working Ethernet connection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>m_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a>) – The source machine vertex</p></li>
+<li><p><strong>m_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a>) – The source machine vertex</p></li>
 <li><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The incoming partition id</p></li>
 </ul>
 </dd>
@@ -1349,8 +1349,8 @@ with a working Ethernet connection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -1392,11 +1392,11 @@ with a working Ethernet connection.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.LivePacketGatherMachineVertex.iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">IPTag</span></code></a>s used by this vertex,
 if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v6.0)"><em>IPtagResource</em></a>)</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.IPtagResource" title="(in PACMAN v1!7.0)"><em>IPtagResource</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1433,7 +1433,7 @@ position) to be used for provenance error reporting to the user.</p></li>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1554,8 +1554,8 @@ converted in to multicast packets.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – The label of this vertex</p></li>
-<li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a><em> or </em><em>None</em>) – The slice served via this multicast source</p></li>
-<li><p><strong>app_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v6.0)"><em>ApplicationVertex</em></a><em> or </em><em>None</em>) – The associated application vertex</p></li>
+<li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v1!7.0)"><em>Slice</em></a><em> or </em><em>None</em>) – The slice served via this multicast source</p></li>
+<li><p><strong>app_vertex</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.application/#pacman.model.graphs.application.ApplicationVertex" title="(in PACMAN v1!7.0)"><em>ApplicationVertex</em></a><em> or </em><em>None</em>) – The associated application vertex</p></li>
 <li><p><strong>n_keys</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The number of keys to be sent via this multicast source
 (can’t be <cite>None</cite> if vertex_slice is also <cite>None</cite>)</p></li>
 <li><p><strong>board_address</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The IP address of the board on which to place this vertex if receiving
@@ -1570,7 +1570,7 @@ be used)</p></li>
 <li><p><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The base multicast key to send received events with (assigned
 automatically by default)</p></li>
 <li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The prefix to “or” with generated multicast keys (default is no prefix)</p></li>
-<li><p><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v6.0)"><em>EIEIOPrefix</em></a>) – Whether the prefix should apply to the upper or lower half of the
+<li><p><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v1!7.0)"><em>EIEIOPrefix</em></a>) – Whether the prefix should apply to the upper or lower half of the
 multicast keys (default is upper half)</p></li>
 <li><p><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – True if the keys of received events should be verified before sending
 (default False)</p></li>
@@ -1640,8 +1640,8 @@ implements.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/latest/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v6.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
-<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
+<li><p><strong>spec</strong> (<a class="reference external" href="https://dataspecification.readthedocs.io/en/7.0.0-a1/data_specification/#data_specification.DataSpecificationGenerator" title="(in DataSpecification v1!7.0)"><em>DataSpecificationGenerator</em></a>) – The data specification to write to</p></li>
+<li><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – The placement the vertex is located at</p></li>
 </ul>
 </dd>
 </dl>
@@ -1689,7 +1689,7 @@ implements.</p></li>
 <dd><p>Get the recording region base address.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v6.0)"><em>Placement</em></a>) – the placement object of the core to find the address of</p>
+<dd class="field-odd"><p><strong>placement</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.placements/#pacman.model.placements.Placement" title="(in PACMAN v1!7.0)"><em>Placement</em></a>) – the placement object of the core to find the address of</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>the base address of the recording region</p>
@@ -1744,7 +1744,7 @@ implements.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v6.0)"><em>VariableSDRAM</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.VariableSDRAM" title="(in PACMAN v1!7.0)"><em>VariableSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1816,11 +1816,11 @@ position) to be used for provenance error reporting to the user.</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reverse_iptags</span></span><a class="headerlink" href="#spinn_front_end_common.utility_models.ReverseIPTagMulticastSourceMachineVertex.reverse_iptags" title="Permalink to this definition">¶</a></dt>
-<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReverseIPTag</span></code></a>s used by this
+<dd><p>The <a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine.tags/#spinn_machine.tags.ReverseIPTag" title="(in SpiNNMachine v1!7.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReverseIPTag</span></code></a>s used by this
 vertex, if any.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.ReverseIPtagResource" title="(in PACMAN v6.0)"><em>ReverseIPtagResource</em></a>)</p>
+<dd class="field-odd"><p>iterable(<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.ReverseIPtagResource" title="(in PACMAN v1!7.0)"><em>ReverseIPtagResource</em></a>)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1842,7 +1842,7 @@ vertex, if any.</p>
 <dd><p>The SDRAM space required by the vertex.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1896,14 +1896,14 @@ incoming event packets (default is to disable this feature; set a
 value to enable it)</p></li>
 <li><p><strong>receive_sdp_port</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The SDP port to listen on for incoming event packets
 (defaults to 1)</p></li>
-<li><p><strong>receive_tag</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/latest/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v6.0)"><em>IPTag</em></a>) – The IP tag to use for receiving live events
+<li><p><strong>receive_tag</strong> (<a class="reference external" href="https://spinnmachine.readthedocs.io/en/7.0.0-a1/spinn_machine.tags/#spinn_machine.tags.IPTag" title="(in SpiNNMachine v1!7.0)"><em>IPTag</em></a>) – The IP tag to use for receiving live events
 (uses any by default)</p></li>
 <li><p><strong>receive_rate</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – The estimated rate of packets that will be sent by this source</p></li>
 <li><p><strong>virtual_key</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The base multicast key to send received events with
 (assigned automatically by default)</p></li>
 <li><p><strong>prefix</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The prefix to “or” with generated multicast keys
 (default is no prefix)</p></li>
-<li><p><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/latest/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v6.0)"><em>EIEIOPrefix</em></a>) – Whether the prefix should apply to the upper or lower half of the
+<li><p><strong>prefix_type</strong> (<a class="reference external" href="https://spinnman.readthedocs.io/en/7.0.0-a1/spinnman.messages.eieio/#spinnman.messages.eieio.EIEIOPrefix" title="(in SpiNNMan v1!7.0)"><em>EIEIOPrefix</em></a>) – Whether the prefix should apply to the upper or lower half of the
 multicast keys (default is upper half)</p></li>
 <li><p><strong>check_keys</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – True if the keys of received events should be verified before
 sending (default False)</p></li>
@@ -1916,7 +1916,7 @@ the edges down which the events are to be sent</p></li>
 <li><p><strong>injection_partition</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – If not <cite>None</cite>, will enable injection and specify the partition to
 send injected keys with</p></li>
 <li><p><strong>splitter</strong> (<em>None</em><em> or
-</em><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.partitioner_splitters.abstract_splitters/#pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon" title="(in PACMAN v6.0)"><em>AbstractSplitterCommon</em></a>) – the splitter object needed for this vertex</p></li>
+</em><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.partitioner_splitters.abstract_splitters/#pacman.model.partitioner_splitters.abstract_splitters.AbstractSplitterCommon" title="(in PACMAN v1!7.0)"><em>AbstractSplitterCommon</em></a>) – the splitter object needed for this vertex</p></li>
 </ul>
 </dd>
 </dl>
@@ -1927,8 +1927,8 @@ send injected keys with</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – The slice of atoms that the machine vertex will cover.</p></li>
-<li><p><strong>sdram</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a>) – The SDRAM used by the machine vertex.</p></li>
+<li><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v1!7.0)"><em>Slice</em></a>) – The slice of atoms that the machine vertex will cover.</p></li>
+<li><p><strong>sdram</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a>) – The SDRAM used by the machine vertex.</p></li>
 <li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>None</em>) – human readable label for the machine vertex</p></li>
 </ul>
 </dd>
@@ -1936,7 +1936,7 @@ send injected keys with</p></li>
 <dd class="field-even"><p>The created machine vertex</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v6.0)"><em>MachineVertex</em></a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.machine/#pacman.model.graphs.machine.MachineVertex" title="(in PACMAN v1!7.0)"><em>MachineVertex</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1957,7 +1957,7 @@ the conditions.</p>
 <dd class="field-odd"><p><strong>partition_id</strong> (<a class="reference external" href="https://docs.python.org/3.8/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The identifier of the partition to get the key for</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v6.0)"><em>BaseKeyAndMask</em></a> or None</p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.routing_info/#pacman.model.routing_info.BaseKeyAndMask" title="(in PACMAN v1!7.0)"><em>BaseKeyAndMask</em></a> or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1968,10 +1968,10 @@ the conditions.</p>
 <dd><p>Get the separate SDRAM requirements for a range of atoms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v6.0)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
+<dd class="field-odd"><p><strong>vertex_slice</strong> (<a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.graphs.common/#pacman.model.graphs.common.Slice" title="(in PACMAN v1!7.0)"><em>Slice</em></a>) – the low value of atoms to calculate resources from</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/latest/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v6.0)"><em>AbstractSDRAM</em></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://pacman.readthedocs.io/en/7.0.0-a1/pacman.model.resources/#pacman.model.resources.AbstractSDRAM" title="(in PACMAN v1!7.0)"><em>AbstractSDRAM</em></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2259,7 +2259,7 @@ configuration control.</p>
         <li class="right" >
           <a href="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.html" title="spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 6.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">SpiNNFrontEndCommon 1!7.0.0-a1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="modules.html" >spinn_front_end_common</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="spinn_front_end_common.html" >spinn_front_end_common package</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">spinn_front_end_common.utility_models package</a></li> 
