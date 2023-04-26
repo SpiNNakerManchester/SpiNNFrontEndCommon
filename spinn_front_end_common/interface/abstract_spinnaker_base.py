@@ -617,7 +617,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the minimum number of machine timesteps to assign
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
-            size = self._data_writer.get_chip_at(x, y).sdram.size
+            size = self._data_writer.get_chip_at(x, y).sdram
             if sdram.fixed > size:
                 raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
@@ -859,7 +859,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            insert_chip_power_monitors_to_graphs(system_placements)
+            a_monitor = insert_chip_power_monitors_to_graphs(system_placements)
+            self._data_writer.add_monitor_all_chips(a_monitor)
 
     def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
@@ -876,6 +877,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
+        self._data_writer.add_monitor_all_chips(monitor_map[(0, 0)])
 
     def _report_partitioner(self):
         """
