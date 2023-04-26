@@ -35,7 +35,7 @@ from spinn_machine import CoreSubsets, Machine
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 
 from data_specification import __version__ as data_spec_version
 
@@ -116,7 +116,6 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
@@ -270,17 +269,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         # Try a simple environment variable, or None if that doesn't exist
         return os.getenv("OIDC_BEARER_TOKEN")
 
-    def exception_handler(self, exctype, value, traceback_obj):
+    def exception_handler(self, exc_type, value, traceback_obj):
         """
         Handler of exceptions.
 
-        :param type exctype: the type of exception received
+        :param type exc_type: the type of exception received
         :param Exception value: the value of the exception
         :param traceback traceback_obj: the trace back stuff
         """
         logger.error("Shutdown on exception")
         self._shutdown()
-        return self._last_except_hook(exctype, value, traceback_obj)
+        return self._last_except_hook(exc_type, value, traceback_obj)
 
     def _should_run(self):
         """
@@ -296,7 +295,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             return True
         logger.warning(
             "Your graph has no vertices in it. "
-            "Therefor the run call will exit immediately.")
+            "Therefore the run call will exit immediately.")
         return False
 
     def run_until_complete(self, n_steps=None):
@@ -404,7 +403,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param int run_time: the run duration in milliseconds.
         :param int sync_time:
-            the time in ms between synchronisations, or 0 to disable.
+            the time in milliseconds between synchronisations, or 0 to disable.
         """
         if not self._should_run():
             return
@@ -598,6 +597,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         and breaks simulation into chunks of that long.
 
         :return: max time a simulation can run.
+        :rtype: int
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
@@ -621,7 +621,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if sdram.fixed > size:
                 raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
-                    f" {sdram.fixed} of {size}")
+                    f"{sdram.fixed} of {size}")
             if sdram.per_timestep:
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
@@ -726,7 +726,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _get_known_machine(self, total_run_time=0.0):
         """
-        The python machine description object.
+        The Python machine description object.
 
         :param float total_run_time: The total run time to request
         :rtype: ~spinn_machine.Machine
@@ -836,7 +836,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_delay_support_adder(self):
         """
-        Stub to allow spynakker to add delay supports.
+        Stub to allow sPyNNaker to add delay supports.
         """
 
     # Overriden by spynaker to choose a different algorithm
@@ -899,8 +899,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "placements" data
 
         .. note::
-            Calling of this method is based on the cfg placer value
-
+            Calling of this method is based on the configuration placer value
         """
         with FecTimer("Application Placer", TimerWork.OTHER):
             self._data_writer.set_placements(place_application_graph(
@@ -912,11 +911,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "placements" data
 
-        Which placer is run depends on the cfg placer value
+        Which placer is run depends on the configuration placer value
 
         This method is the entry point for adding a new Placer
 
-        :raise ConfigurationException: if the cfg place value is unexpected
+        :raise ConfigurationException:
+            if the configuration place value is unexpected
         """
         name = get_config_str("Mapping", "placer")
         if name == "ApplicationPlacer":
@@ -929,7 +929,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _do_write_metadata(self):
         """
-        Do the various functions to write metadata to the sqlite files.
+        Do the various functions to write metadata to the SQLite files.
         """
         with FecTimer(
                 "Record vertex labels to database", TimerWork.REPORT):
@@ -984,7 +984,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _json_placements(self):
         """
-        Does, times and logs the writing of placements as json if requested.
+        Does, times and logs the writing of placements as JSON if requested.
         """
         with FecTimer("Json placements", TimerWork.REPORT) as timer:
             if timer.skip_if_cfg_false(
@@ -1000,7 +1000,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "routing_table_by_partition" data if called
 
         .. note::
-            Calling of this method is based on the cfg router value
+            Calling of this method is based on the configuration router value
         """
         with FecTimer("Ner route traffic aware", TimerWork.OTHER):
             self._data_writer.set_routing_table_by_partition(
@@ -1013,7 +1013,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "routing_table_by_partition" data
 
         .. note::
-            Calling of this method is based on the cfg router value
+            Calling of this method is based on the configuration router value
         """
         with FecTimer("Ner route", TimerWork.OTHER):
             self._data_writer.set_routing_table_by_partition(ner_route())
@@ -1025,7 +1025,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "routing_table_by_partition" data if called
 
         .. note::
-            Calling of this method is based on the cfg router value
+            Calling of this method is based on the configuration router value
         """
         with FecTimer("Basic dijkstra routing", TimerWork.OTHER):
             self._data_writer.set_routing_table_by_partition(
@@ -1038,7 +1038,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets the "routing_table_by_partition" data if called
 
         .. note::
-            Calling of this method is based on the cfg router value
+            Calling of this method is based on the configuration router value
         """
         with FecTimer("Application Router", TimerWork.RUNNING):
             self._data_writer.set_routing_table_by_partition(
@@ -1050,11 +1050,12 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "routing_table_by_partition" data
 
-        Which router is run depends on the cfg router value
+        Which router is run depends on the configuration router value
 
         This method is the entry point for adding a new Router
 
-        :raise ConfigurationException: if the cfg router value is unexpected
+        :raise ConfigurationException:
+            if the configuration router value is unexpected
         """
         name = get_config_str("Mapping", "router")
         if name == "BasicDijkstraRouting":
@@ -1098,7 +1099,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets "routing_info" is called
 
         .. note::
-            Calling of this method is based on the cfg info_allocator value
+            Calling of this method is based on the configuration
+            info_allocator value
         """
         with FecTimer("Global allocate", TimerWork.OTHER):
             self._data_writer.set_routing_infos(
@@ -1111,7 +1113,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Sets "routing_info" is called
 
         .. note::
-            Calling of this method is based on the cfg info_allocator value
+            Calling of this method is based on the configuration
+            info_allocator value
         """
         with FecTimer("Zoned routing info allocator", TimerWork.OTHER):
             self._data_writer.set_routing_infos(
@@ -1123,12 +1126,13 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "routing_info" data
 
-        Which allocator is run depends on the cfg info_allocator value
+        Which allocator is run depends on the configuration info_allocator
+        value.
 
         This method is the entry point for adding a new Info Allocator
 
         :raise ConfigurationException:
-            if the cfg info_allocator value is unexpected
+            if the configuration info_allocator value is unexpected
         """
         name = get_config_str("Mapping", "info_allocator")
         if name == "GlobalZonedRoutingInfoAllocator":
@@ -1182,11 +1186,14 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         Sets the "routing_info" data
 
-        Which alloactor is run depends on the cfg info_allocator value
+        Which allocator is run depends on the configuration's
+        `routing_table_generator` value.
 
-        This method is the entry point for adding a new Info Allocator
+        This method is the entry point for adding a new routing table
+        generator.
 
-        :raise ConfigurationException: if the cfg info_allocator value is
+        :raise ConfigurationException:
+            if the configuration's `routing_table_generator` value is
             unexpected
         """
         name = get_config_str("Mapping", "routing_table_generator")
@@ -1409,7 +1416,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the HostBasedBitFieldRouterCompressor
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
 
         :return: Compressed routing tables
@@ -1429,7 +1436,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the MachineBitFieldOrderedCoveringCompressor.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
         """
         with FecTimer(
@@ -1446,7 +1453,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the MachineBitFieldPairRouterCompressor.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
          """
         with FecTimer(
@@ -1463,7 +1470,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the OrderedCoveringCompressor.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
 
         :return: Compressed routing tables
@@ -1483,7 +1490,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the ordered covering compressor on machine.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
         """
         with FecTimer(
@@ -1504,7 +1511,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the PairCompressor.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
 
         :return: Compressed routing table
@@ -1524,7 +1531,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the pair compressor on machine.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
         """
         with FecTimer("Pair on chip router compression",
@@ -1545,7 +1552,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the CheckedUnorderedPairCompressor.
 
         .. note::
-            Calling of this method is based on the cfg compressor or
+            Calling of this method is based on the configuration compressor or
             virtual_compressor value
 
         :return: compressed routing tables
@@ -1728,7 +1735,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_load_system_executable_images(self):
         """
-        Runs, times and logs the loading of exectuable images.
+        Runs, times and logs the loading of executable images.
         """
         with FecTimer(
                 "Load executable system Images", TimerWork.LOADING) as timer:
@@ -1738,7 +1745,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
     def _execute_application_data_specification(self):
         """
-        Runs, times and logs the execute_application_data_specs if required.
+        Runs, times and logs :py:meth:`execute_application_data_specs`
+        if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo

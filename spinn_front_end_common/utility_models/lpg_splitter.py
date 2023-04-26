@@ -40,7 +40,7 @@ class LPGSplitter(AbstractSplitterCommon):
     def create_vertices(self, system_placements):
         """
         Special way of making LPG machine vertices, where one is placed
-        on each Ethernet chip.
+        on each Ethernet-enabled chip.
 
         .. note::
             This adds to system placements.
@@ -104,7 +104,7 @@ class LPGSplitter(AbstractSplitterCommon):
         and partition.
 
         :return:
-             A set of (lpg machine vertex, source machine vertex, partition_id)
+             A set of (LPG machine vertex, source machine vertex, partition_id)
         :rtype: set(tuple(LivePacketGatherMachineVertex,
             ~pacman.model.graphs.machine.MachineVertex, str))
         """

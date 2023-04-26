@@ -618,7 +618,8 @@ class LiveEventConnection(DatabaseConnection):
         :param int x: Destination chip X coordinate
         :param int y: Destination chip Y coordinate
         :param int p: Destination core number
-        :param str ip_address: What ethernet chip to send via
+        :param str ip_address:
+            What Ethernet-enabled chip to send via (or rather its IP address)
         """
         # Create an SDP message - no reply so source is unimportant
         # SDP port can be anything except 0 as the target doesn't care

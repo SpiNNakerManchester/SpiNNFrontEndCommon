@@ -15,17 +15,16 @@
 from collections import defaultdict
 import logging
 
-from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from data_specification import DataSpecificationGenerator
+from data_specification import DataSpecificationGenerator, ReferenceContext
+from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
+from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
-from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
-from data_specification.reference_context import ReferenceContext
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -40,8 +39,7 @@ def graph_data_specification_writer(placement_order=None):
         If the DSG asks to use more SDRAM than is available.
     """
     writer = _GraphDataSpecificationWriter()
-    # pylint: disable=protected-access
-    return writer._run(placement_order)
+    return writer.run(placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
@@ -59,7 +57,7 @@ class _GraphDataSpecificationWriter(object):
         self._sdram_usage = defaultdict(lambda: 0)
         self._vertices_by_chip = defaultdict(list)
 
-    def _run(self, placement_order=None):
+    def run(self, placement_order=None):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
@@ -160,14 +158,13 @@ class _GraphDataSpecificationWriter(object):
                 return True
 
         # creating the error message which contains the memory usage of
-        #  what each core within the chip uses and its original
-        # estimate.
-        memory_usage = "\n".join((
+        # what each core within the chip uses and its original estimate.
+        memory_usage = "\n".join(
             "    {}: {} (total={}, estimated={})".format(
                 vert, region_size, sum(region_size),
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
-            for vert in self._vertices_by_chip[pl.x, pl.y]))
+            for vert in self._vertices_by_chip[pl.x, pl.y])
 
         raise ConfigurationException(
             f"Too much SDRAM has been used on {pl.x}, {pl.y}.  Vertices and"
