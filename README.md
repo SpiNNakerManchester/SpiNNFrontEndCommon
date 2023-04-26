@@ -57,7 +57,7 @@ deactivated.
 
 Documentation
 =============
-[SpiNNFrontEndCommon Python documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/python/)
+[SpiNNFrontEndCommon python documentation](https://spinnfrontendcommon.readthedocs.io)
 <br>
 [SpiNNFrontEndCommon C documentation](http://spinnakermanchester.github.io/SpiNNFrontEndCommon/c/)
 
