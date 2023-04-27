@@ -281,23 +281,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._shutdown()
         return self._last_except_hook(exc_type, value, traceback_obj)
 
-    def _should_run(self):
-        """
-        Checks if the simulation should run.
-
-        Will warn the user if there is no need to run
-
-        :return: True if and only if one of the graphs has vertices in it
-        :raises ConfigurationException: If the current state does not
-            support a new run call
-        """
-        if self._data_writer.get_n_vertices() > 0:
-            return True
-        logger.warning(
-            "Your graph has no vertices in it. "
-            "Therefore the run call will exit immediately.")
-        return False
-
     def run_until_complete(self, n_steps=None):
         """
         Run a simulation until it completes.
@@ -382,6 +365,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
+        if self._data_writer.get_n_vertices() == 0:
+            logger.warning(
+                "Your graph has no vertices in it. "
+                "Therefore the run call will exit immediately.")
+            return
+
         self._data_writer.start_run()
 
         try:
@@ -405,9 +394,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int sync_time:
             the time in milliseconds between synchronisations, or 0 to disable.
         """
-        if not self._should_run():
-            return
-
         # verify that we can keep doing auto pause and resume
         if self._data_writer.is_ran_ever():
             can_keep_running = all(
