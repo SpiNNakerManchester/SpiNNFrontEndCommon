@@ -290,13 +290,37 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: True if and only if one of the graphs has vertices in it
         :raises ConfigurationException: If the current state does not
             support a new run call
+        :raises NotImplementedError:
+            On an attempt to rerun binaries that can not.
+            Or to run when a reset is required
         """
-        if self._data_writer.get_n_vertices() > 0:
-            return True
-        logger.warning(
-            "Your graph has no vertices in it. "
-            "Therefore the run call will exit immediately.")
-        return False
+        if self._data_writer.get_n_vertices() == 0:
+            logger.warning(
+                "Your graph has no vertices in it. "
+                "Therefore the run call will exit immediately.")
+            return False
+
+        # If already run check everything can run again
+        if self._data_writer.is_ran_ever():
+            can_keep_running = all(
+                executable_type.supports_auto_pause_and_resume
+                for executable_type in
+                self._data_writer.get_executable_types())
+            if not can_keep_running:
+                raise NotImplementedError(
+                    "Only binaries that use the simulation interface can be"
+                    " run more than once")
+
+        # If we require mapping check we have not run since last reset
+        if (self._data_writer.get_requires_mapping() and
+                self._data_writer.is_ran_last()):
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
+
+        # Ok we should run
+        return True
 
     def run_until_complete(self, n_steps=None):
         """
@@ -408,16 +432,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._should_run():
             return
 
-        # verify that we can keep doing auto pause and resume
-        if self._data_writer.is_ran_ever():
-            can_keep_running = all(
-                executable_type.supports_auto_pause_and_resume
-                for executable_type in
-                self._data_writer.get_executable_types())
-            if not can_keep_running:
-                raise NotImplementedError(
-                    "Only binaries that use the simulation interface can be"
-                    " run more than once")
 
         self._adjust_config(run_time)
 
@@ -436,15 +450,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 total_run_time)
 
         n_sync_steps = self.__timesteps(sync_time)
-
-        # If we have never run before, or the graph has changed,
-        # start by performing mapping
-        if (self._data_writer.get_requires_mapping() and
-                self._data_writer.is_ran_last()):
-            self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
 
         # If we have reset and the graph has changed, stop any running
         # application
