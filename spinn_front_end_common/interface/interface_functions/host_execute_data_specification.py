@@ -106,7 +106,7 @@ class _ExecutionContext(object):
         # Maximum available memory.
         # However, system updates the memory available independently, so the
         # space available check actually happens when memory is allocated.
-        memory_available = FecDataView().get_chip_at(x, y).sdram.size
+        memory_available = FecDataView().get_chip_at(x, y).sdram
 
         # generate data spec executor
         executor = DataSpecificationExecutor(reader, memory_available)
