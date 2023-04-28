@@ -405,7 +405,7 @@ def _write_one_chip_application_placement(f, chip):
 
     if total_sdram is not None:
         f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
-                .format(chip.sdram.size, total_sdram.fixed,
+                .format(chip, total_sdram.fixed,
                         total_sdram.per_timestep))
 
 
@@ -480,7 +480,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
                     "{} KB ({} bytes)\n\n".format(
                         chip.x, chip.y,
                         int(used_sdram / 1024.0), used_sdram,
-                        int(chip.sdram.size / 1024.0), chip.sdram.size))
+                        int(chip.sdram / 1024.0), chip.sdram))
         except KeyError:
             # Do Nothing
             pass
