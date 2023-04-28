@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.overrides import overrides
-from pacman.model.partitioner_splitters.abstract_splitters import (
-    AbstractSplitterCommon)
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.placements import Placement
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_xy)
@@ -40,7 +39,7 @@ class LPGSplitter(AbstractSplitterCommon):
     def create_vertices(self, system_placements):
         """
         Special way of making LPG machine vertices, where one is placed
-        on each Ethernet chip.
+        on each Ethernet-enabled chip.
 
         .. note::
             This adds to system placements.
@@ -104,7 +103,7 @@ class LPGSplitter(AbstractSplitterCommon):
         and partition.
 
         :return:
-             A set of (lpg machine vertex, source machine vertex, partition_id)
+             A set of (LPG machine vertex, source machine vertex, partition_id)
         :rtype: set(tuple(LivePacketGatherMachineVertex,
             ~pacman.model.graphs.machine.MachineVertex, str))
         """

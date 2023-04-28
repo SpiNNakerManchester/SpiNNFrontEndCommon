@@ -257,18 +257,18 @@ class EnergyReport(object):
 
     @staticmethod
     def _write_chips_active_cost(
-            xy, labels, runtime_total_ms, power_used, f):
+            chip_coord, labels, runtime_total_ms, power_used, f):
         """
         Figure out the chip active cost during simulation.
 
-        :param (int, int) xy: the x,y of the chip to consider
-        :param dict(int, str) labels: vertex labels for the acte cores
+        :param tuple(int,int) chip_coord: the x,y of the chip to consider
+        :param dict(int,str) labels: vertex labels for the active cores
         :param float runtime_total_ms:
         :param PowerUsed power_used:
         :param ~io.TextIOBase f: file writer
         :return: energy cost
         """
-        (x, y) = xy
+        (x, y) = chip_coord
         f.write("\n")
 
         # detailed report print out

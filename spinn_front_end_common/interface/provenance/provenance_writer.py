@@ -51,7 +51,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_power(self, description, the_value):
         """
-        Inserts a general power value into the power_provenane table
+        Inserts a general power value into the `power_provenance` table.
 
         :param str description: Type of value
         :param float the_value: data
@@ -67,11 +67,11 @@ class ProvenanceWriter(BaseDatabase):
     def insert_gatherer(self, x, y, address, bytes_read, run, description,
                         the_value):
         """
-        Records provenance into the gatherer_provenance
+        Records provenance into the `gatherer_provenance` table.
 
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
-        :param int address: sdram address read from
+        :param int address: SDRAM address read from
         :param int bytes_read: number of bytes read
         :param int run: run number
         :param str description: type of value
@@ -87,7 +87,7 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_monitor(self, x, y, description, the_value):
         """
-        Inserts data into the monitor_provenance table
+        Inserts data into the `monitor_provenance` table.
 
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
@@ -105,7 +105,7 @@ class ProvenanceWriter(BaseDatabase):
     def insert_router(
             self, x, y, description, the_value, expected=True):
         """
-        Inserts data into the router provenance table
+        Inserts data into the `router_provenance` table.
 
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
@@ -123,11 +123,11 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_core(self, x, y, p, description, the_value):
         """
-        Inserts data for a specific core into the core_provenance table
+        Inserts data for a specific core into the `core_provenance` table.
 
         :param int x: X coordinate of the chip
         :param int y: Y coordinate of the chip
-        :param int p: id of the core
+        :param int p: ID of the core
         :param str description: type of value
         :param int the_value: data
         """
@@ -142,10 +142,10 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_report(self, message):
         """
-        Save and if applicable logs a message to the report_table
+        Save and if applicable logs a message to the `reports` table.
 
-        Only logs the messages up to the cutoff set by
-        cfg provenance_report_cutoff
+        Only logs the messages up to the cut-off set by
+        configuration `provenance_report_cutoff`
 
         :param str message:
         """
@@ -160,17 +160,17 @@ class ProvenanceWriter(BaseDatabase):
         if cutoff is None or recorded < cutoff:
             logger.warning(message)
         elif recorded == cutoff:
-            logger.warning(f"Additional interesting provenace items in "
+            logger.warning(f"Additional interesting provenance items in "
                            f"{self._database_file}")
 
     def insert_connector(
             self, pre_population, post_population, the_type, description,
             the_value):
         """
-        Inserts edge data into the connector_provenance
+        Inserts edge data into the `connector_provenance`
 
-        :param str pre_population: Name of the pre population / vertex
-        :param str post_population:  Name of the post population / vertex
+        :param str pre_population: Name of the pre-population / vertex
+        :param str post_population: Name of the post-population / vertex
         :param str the_type: Class of the connector
         :param str description: type of value
         :param int the_value: data
@@ -188,7 +188,8 @@ class ProvenanceWriter(BaseDatabase):
 
     def insert_board_provenance(self, connections):
         """
-        Write the conection treived from spalloc job
+        Write the connection details retrieved from spalloc_client job to the
+        `boards_provenance` table.
 
         :param connections: {(x, y): hostname, ...} or None
         :type connections: dict((int, int): str) or None

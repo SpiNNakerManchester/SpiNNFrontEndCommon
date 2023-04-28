@@ -18,7 +18,7 @@ import os
 import sys
 import unittest
 from spinn_utilities.config_holder import set_config
-from spalloc.job import JobDestroyedError
+from spalloc_client.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 from spinnman.exceptions import SpinnmanIOException
 import spinnman.transceiver as transceiver

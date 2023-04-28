@@ -19,10 +19,10 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
+from spinnman.model.enums import ExecutableType
 from spinnman.model.io_buffer import IOBuffer
 from spinn_utilities.config_holder import get_config_str
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_string_into_chip_and_core_subset)
 
@@ -266,7 +266,7 @@ class IOBufExtractor(object):
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
                         "failed to retrieve iobufs from "
-                        f"{core_subset.x},{core_subset.y},{core_subset.p}; "
+                        f"{core_subset.x},{core_subset.y},{p}; "
                         f"{str(e)}"))
         return io_buffers
 
