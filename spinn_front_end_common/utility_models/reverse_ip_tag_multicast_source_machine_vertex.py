@@ -21,6 +21,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.messages.eieio import EIEIOPrefix, EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
+from spinnman.model.enums import ExecutableType
 from pacman.model.resources import ReverseIPtagResource, VariableSDRAM
 from pacman.model.graphs.common import Slice
 from pacman.model.graphs.machine import MachineVertex
@@ -50,7 +51,6 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -80,7 +80,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :param app_vertex:
         The associated application vertex
     :type app_vertex: ReverseIpTagMultiCastSource or None
-    :param int n_keys: The number of keys to be sent via this mulitcast source
+    :param int n_keys: The number of keys to be sent via this multicast source
         (can't be `None` if vertex_slice is also `None`)
     :param str board_address:
         The IP address of the board on which to place this vertex if receiving

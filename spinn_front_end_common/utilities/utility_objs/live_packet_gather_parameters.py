@@ -254,8 +254,8 @@ class LivePacketGatherParameters(object):
 
     def get_iptag_resource(self):
         """
-        Get a description of the IPtag that the LPG for these parameters
-        will require.
+        Get a description of the :py:class:`~spinn_machine.tags.IPTag`
+        that the LPG for these parameters will require.
 
         :rtype: ~pacman.model.resources.IPtagResource
         """

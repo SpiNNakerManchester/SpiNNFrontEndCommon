@@ -202,16 +202,17 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         :param simulation_time_step_us:
             An explicitly specified time step for the simulation in .
-            If `None`, the value is read from the config
+            If `None`, the value is read from the configuration
         :type simulation_time_step_us: int or None
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
-            If `None`, the value is read from the config
+            If `None`, the value is read from the configuration
         :type time_scale_factor: float or None
         :param default_time_scale_factor:
             A back up time scale factor for the simulation.
-            Only used if time_scale_factor param and cfg are both `None`
-            If `None`, the value is based on simulation_time_step
+            Only used if time_scale_factor parameter and configuration are
+            both `None`.
+            If `None`, the value is based on `simulation_time_step`
         :type default_time_scale_factor: float or None
         """
         try:
@@ -234,7 +235,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         :param simulation_time_step_us:
             An explicitly specified time step for the simulation.  If `None`,
-            the value is read from the config
+            the value is read from the configuration
         :type simulation_time_step: int or None
         """
         if simulation_time_step_us is None:
@@ -266,7 +267,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         If time_scale_factor is provide that is used
 
-        Then if cfg is not `None` that is used
+        Then if configuration is not `None` that is used
 
         Then if default is provided that is used
 
@@ -274,7 +275,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         :param time_scale_factor:
             An explicitly specified time scale factor for the simulation.
-            If `None`, the value is read from the config
+            If `None`, the value is read from the configuration
         :type time_scale_factor: float or None
         """
         if time_scale_factor is None:
@@ -405,13 +406,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 f"{n_chips_in_graph}")
         self.__fec_data._n_chips_in_graph = n_chips_in_graph
 
-    def set_ipaddress(self, ipaddress):
+    def set_ipaddress(self, ip_address):
         """
-        :param str ipaddress:
+        :param str ip_address:
         """
-        if not isinstance(ipaddress, str):
+        if not isinstance(ip_address, str):
             raise TypeError("ipaddress must be a str")
-        self.__fec_data._ipaddress = ipaddress
+        self.__fec_data._ipaddress = ip_address
 
     def set_fixed_routes(self, fixed_routes):
         """
@@ -441,7 +442,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         :param executable_types:
         :type executable_types: dict(
-            ~spinn_front_end_common.utilities.utility_objs.ExecutableType,
+            ~spinnman.model.enum.ExecutableType,
             ~spinn_machine.CoreSubsets or None)
         """
         if not isinstance(executable_types, dict):

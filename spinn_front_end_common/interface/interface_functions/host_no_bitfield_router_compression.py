@@ -19,12 +19,11 @@ from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
     run_system_application)
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     get_defaultable_source_id)
 from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
@@ -220,7 +219,7 @@ class Compression(object):
         Convert the router table into the data needed by the router
         compressor C code.
 
-        :param table: the pacman router table instance
+        :param table: the PACMAN router table instance
         :type table: ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :return: The byte array of data
         :rtype: bytearray
