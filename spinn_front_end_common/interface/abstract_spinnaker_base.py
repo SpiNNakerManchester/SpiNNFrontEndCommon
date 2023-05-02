@@ -158,8 +158,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         # A dict of live packet gather params to Application LGP vertices
         "_lpg_vertices",
 
+        # Original sys.exceptthook function
         # Used in exception handling and control c
-        "_last_except_hook",
+        "__original_sys_excepthook",
 
         # All beyond this point new for no extractor
         # The data is not new but now it is held direct and not via inputs
@@ -206,7 +207,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._create_version_provenance()
 
-        self._last_except_hook = sys.excepthook
+        self.__original_sys_excepthook = sys.excepthook
 
         FecTimer.setup(self)
 
@@ -279,7 +280,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         logger.error("Shutdown on exception")
         self._shutdown()
-        return self._last_except_hook(exc_type, value, traceback_obj)
+        return self.__original_sys_excepthook(exc_type, value, traceback_obj)
 
     def _should_run(self):
         """
@@ -406,6 +407,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
+        if not self._should_run():
+            return
+
         self._data_writer.start_run()
 
         try:
@@ -429,10 +433,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int sync_time:
             the time in milliseconds between synchronisations, or 0 to disable.
         """
-        if not self._should_run():
-            return
-
-
         self._adjust_config(run_time)
 
         # Install the Control-C handler
@@ -440,7 +440,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         if isinstance(threading.current_thread(), threading._MainThread):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
-            sys.excepthook = self._last_except_hook
+            sys.excepthook = self.__original_sys_excepthook
 
         logger.info("Starting execution process")
 
@@ -554,7 +554,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
-            self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
 
     def _is_per_timestep_sdram(self):
