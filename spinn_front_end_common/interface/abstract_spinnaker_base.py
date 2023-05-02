@@ -407,10 +407,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
-        if not self._should_run():
-            return
-
-        self._data_writer.start_run()
+       self._data_writer.start_run()
 
         try:
             self.__run(run_time, sync_time)
@@ -433,6 +430,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int sync_time:
             the time in milliseconds between synchronisations, or 0 to disable.
         """
+        if not self._should_run():
+            return
+
         self._adjust_config(run_time)
 
         # Install the Control-C handler
