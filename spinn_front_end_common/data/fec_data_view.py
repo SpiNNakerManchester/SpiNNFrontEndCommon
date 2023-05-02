@@ -298,15 +298,6 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
         return cls.__fec_data._max_run_time_steps
 
-    @classmethod
-    def has_max_run_time_steps(cls):
-        """
-        Indicates if max_run_time_steps is currently available.
-
-        :rtype: bool
-        """
-        return cls.__fec_data._max_run_time_steps is not None
-
     # simulation_time_step_methods
 
     @classmethod

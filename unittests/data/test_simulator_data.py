@@ -139,11 +139,9 @@ class TestSimulatorData(unittest.TestCase):
         writer = FecDataWriter.setup()
         with self.assertRaises(DataNotYetAvialable):
             FecDataView.get_max_run_time_steps()
-        self.assertFalse(FecDataView.has_max_run_time_steps())
         writer.set_max_run_time_steps(13455)
         self.assertEqual(13455, writer.get_max_run_time_steps())
         self.assertEqual(13455, FecDataView.get_max_run_time_steps())
-        self.assertTrue(FecDataView.has_max_run_time_steps)
 
         with self.assertRaises(TypeError):
             writer.set_max_run_time_steps(45.0)

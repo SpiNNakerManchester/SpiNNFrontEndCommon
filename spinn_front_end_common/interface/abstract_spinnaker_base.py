@@ -459,11 +459,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     set_config(
                         "Buffers", "use_auto_pause_and_resume", "False")
 
-        # Work out the maximum run duration given all recordings
-        if not self._data_writer.has_max_run_time_steps():
-            self._data_writer.set_max_run_time_steps(
-                self._deduce_data_n_timesteps())
-
         # Work out an array of timesteps to perform
         steps = None
         if (not get_config_bool("Buffers", "use_auto_pause_and_resume")
@@ -601,7 +596,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                 max_this_chip = int((size - sdram.fixed) // sdram.per_timestep)
                 max_time_steps = min(max_time_steps, max_this_chip)
 
-        return max_time_steps
+        self._data_writer.set_max_run_time_steps(max_time_steps)
 
     def _generate_steps(self, n_steps):
         """
@@ -1318,6 +1313,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
+
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
         self._json_machine()
@@ -1334,6 +1330,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         self._json_placements()
+        self._deduce_data_n_timesteps()
 
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
