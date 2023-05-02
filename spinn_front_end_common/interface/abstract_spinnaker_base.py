@@ -312,14 +312,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     "Only binaries that use the simulation interface can be"
                     " run more than once")
 
-        # If we require mapping check we have not run since last reset
-        if (self._data_writer.get_requires_mapping() and
-                self._data_writer.is_ran_last()):
-            self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
-
         # Ok we should run
         return True
 
@@ -407,8 +399,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
-       self._data_writer.start_run()
-
+        self._data_writer.start_run()
         try:
             self.__run(run_time, sync_time)
             self._data_writer.finish_run()
@@ -451,13 +442,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         n_sync_steps = self.__timesteps(sync_time)
 
-        # If we have reset and the graph has changed, stop any running
-        # application
-        if (self._data_writer.get_requires_data_generation() and
-                self._data_writer.has_transceiver()):
-            self._data_writer.get_transceiver().stop_application(
-                self._data_writer.get_app_id())
-            self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
             if self._data_writer.is_soft_reset():
@@ -1872,6 +1856,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the load algorithms.
         """
         FecTimer.start_category(TimerCategory.LOADING)
+
+        # if run and not reset that is a problem
+        if self._data_writer.is_ran_last():
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
+
+        # stop the application if reset
+        if self._data_writer.is_reset_last():
+            self._data_writer.get_transceiver().stop_application(
+                self._data_writer.get_app_id())
+            self._data_writer.reset_sync_signal()
 
         if self._data_writer.get_requires_mapping():
             self._execute_routing_setup()
