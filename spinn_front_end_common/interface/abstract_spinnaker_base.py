@@ -399,6 +399,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         return n_machine_time_steps, total_run_time
 
     def _run(self, run_time, sync_time):
+        """
+
+        :param int run_time: the run duration in milliseconds.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
+        """
         self._data_writer.start_run()
         try:
             self.__run(run_time, sync_time)
@@ -418,8 +426,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         The main internal run function.
 
         :param int run_time: the run duration in milliseconds.
-        :param int sync_time:
-            the time in milliseconds between synchronisations, or 0 to disable.
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
         """
         if not self._should_run():
             return
@@ -440,17 +450,12 @@ class AbstractSpinnakerBase(ConfigHandler):
             FecDataView.get_allocation_controller().extend_allocation(
                 total_run_time)
 
-        n_sync_steps = self.__timesteps(sync_time)
-
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
             self._do_mapping(total_run_time, n_machine_time_steps)
 
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
-
-        # Check if anything has per-timestep SDRAM usage
-        is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
         if not get_config_bool("Machine", "virtual_board"):
@@ -459,74 +464,21 @@ class AbstractSpinnakerBase(ConfigHandler):
                     set_config(
                         "Buffers", "use_auto_pause_and_resume", "False")
 
-        # Work out an array of timesteps to perform
-        steps = None
-        if (not get_config_bool("Buffers", "use_auto_pause_and_resume")
-                or not is_per_timestep_sdram):
-
-            # Runs should only be in units of max_run_time_steps at most
-            if (is_per_timestep_sdram and
-                    (self._data_writer.get_max_run_time_steps()
-                        < n_machine_time_steps or
-                        n_machine_time_steps is None)):
-                raise ConfigurationException(
-                    "The SDRAM required by one or more vertices is based on "
-                    "the run time, so the run time is limited to "
-                    f"{self._data_writer.get_max_run_time_steps()} time steps")
-
-            steps = [n_machine_time_steps]
-        elif run_time is not None:
-
-            # With auto pause and resume, any time step is possible but run
-            # time more than the first will guarantee that run will be called
-            # more than once
-            steps = self._generate_steps(n_machine_time_steps)
-
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
             self._do_load()
 
-        # Run for each of the given steps
-        if run_time is not None:
-            logger.info("Running for {} steps for a total of {}ms",
-                        len(steps), run_time)
-            for step in steps:
-                run_step = self._data_writer.next_run_step()
-                logger.info(f"Run {run_step} of {len(steps)}")
-                self._do_run(step, n_sync_steps)
-            self._data_writer.clear_run_steps()
-        elif run_time is None and self._run_until_complete:
-            logger.info("Running until complete")
-            self._do_run(None, n_sync_steps)
-        elif (not get_config_bool(
-                "Buffers", "use_auto_pause_and_resume") or
-                not is_per_timestep_sdram):
-            logger.info("Running forever")
-            self._do_run(None, n_sync_steps)
-            logger.info("Waiting for stop request")
-            with self._state_condition:
-                while self._data_writer.is_no_stop_requested():
-                    self._state_condition.wait()
+        if run_time is None:
+            self._do_run_no_runtime()
         else:
-            logger.info("Running forever in steps of {}ms",
-                        self._data_writer.get_max_run_time_steps())
-            while self._data_writer.is_no_stop_requested():
-                logger.info(f"Run {self._data_writer.next_run_step()}")
-                self._do_run(
-                    self._data_writer.get_max_run_time_steps(), n_sync_steps)
-            self._data_writer.clear_run_steps()
+            self._do_run_with_runtime(
+                run_time, n_machine_time_steps, sync_time)
 
         # Indicate that the signal handler needs to act
         # pylint: disable=protected-access
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
             sys.excepthook = self.exception_handler
-
-    def _is_per_timestep_sdram(self):
-        for placement in self._data_writer.iterate_placemements():
-            if placement.vertex.sdram_required.per_timestep:
-                return True
-        return False
 
     def _add_commands_to_command_sender(self, system_placements):
         """
@@ -607,9 +559,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         :return: list of time step lengths
         :rtype: list(int)
         """
-        if n_steps == 0:
-            return [0]
         n_steps_per_segment = self._data_writer.get_max_run_time_steps()
+        if n_steps <= n_steps_per_segment:
+            return [n_steps]
+
+        if (not get_config_bool("Buffers", "use_auto_pause_and_resume")):
+            raise ConfigurationException(
+                "The SDRAM required by one or more vertices is based on "
+                "the run time, so the run time is limited to "
+                f"{self._data_writer.get_max_run_time_steps()} time steps")
+
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
         steps = [int(n_steps_per_segment)] * n_full_iterations
@@ -2126,15 +2085,65 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_energy()
         self._do_provenance_reports()
 
-    def __do_run(self, n_machine_time_steps, n_sync_steps):
+    def _do_run_with_runtime(self, run_time, n_machine_time_steps, sync_time):
+        n_sync_steps = self.__timesteps(sync_time)
+
+        steps = self._generate_steps(n_machine_time_steps)
+        logger.info("Running for {} steps for a total of {}ms",
+                    len(steps), run_time)
+        for step in steps:
+            run_step = self._data_writer.next_run_step()
+            logger.info(f"Run {run_step} of {len(steps)}")
+            self._do_run(step, n_sync_steps)
+        self._data_writer.clear_run_steps()
+
+    def _do_run_no_runtime(self, sync_time):
+        """
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
+        :return:
+        """
+
+        # Run for each of the given steps
+        if self._run_until_complete:
+            logger.info("Running until complete")
+            self._do_run(None, sync_time)
+        elif get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            logger.info("Running forever in steps of {}ms",
+                        self._data_writer.get_max_run_time_steps())
+            while self._data_writer.is_no_stop_requested():
+                logger.info(f"Run {self._data_writer.next_run_step()}")
+                self._do_run(
+                    self._data_writer.get_max_run_time_steps(), sync_time)
+            self._data_writer.clear_run_steps()
+        elif self._data_writer.get_max_run_time_steps() < sys.maxsize:
+            raise ConfigurationException(
+                "One or more vertices has Variable SDRAM. "
+                "This is not supported with Runtime None "
+                "unless using auto pause resume")
+        else:
+            logger.info("Running forever")
+            self._do_run(None, sync_time)
+            logger.info("Waiting for stop request")
+            with self._state_condition:
+                while self._data_writer.is_no_stop_requested():
+                    self._state_condition.wait()
+
+    def __do_run(self, n_machine_time_steps, sync_time):
         """
         Runs, times and logs the do run steps.
 
         :param n_machine_time_steps: Number of timesteps run
         :type n_machine_time_steps: int or None
-        :param int n_sync_steps:
-            The number of timesteps between synchronisations
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
         """
+        n_sync_steps = self.__timesteps(sync_time)
+
         # TODO virtual board
         FecTimer.start_category(TimerCategory.RUN_LOOP)
         run_time = None
@@ -2162,17 +2171,19 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_control_sync(True)
         FecTimer.end_category(TimerCategory.RUN_LOOP)
 
-    def _do_run(self, n_machine_time_steps, n_sync_steps):
+    def _do_run(self, n_machine_time_steps, sync_time):
         """
         Runs, times and logs the do run steps.
 
         :param n_machine_time_steps: Number of timesteps run
         :type n_machine_time_steps: int or None
-        :param int n_sync_steps:
-            The number of timesteps between synchronisations
+        :param float sync_time:
+            If not 0, this specifies that the simulation should pause after
+            this duration.  The continue_simulation() method must then be
+            called for the simulation to continue.
         """
         try:
-            self.__do_run(n_machine_time_steps, n_sync_steps)
+            self.__do_run(n_machine_time_steps, sync_time)
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
             self._shutdown()
