@@ -444,20 +444,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
-            if self._data_writer.is_soft_reset():
-                # wipe out stuff associated with past mapping
-                self._hard_reset()
-            FecTimer.setup(self)
-
-            self._add_dependent_verts_and_edges_for_application_graph()
-
-            if get_config_bool("Buffers", "use_auto_pause_and_resume"):
-                self._data_writer.set_plan_n_timesteps(get_config_int(
-                    "Buffers", "minimum_auto_time_steps"))
-            else:
-                self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
-
-            self._do_mapping(total_run_time)
+            self._do_mapping(total_run_time, n_machine_time_steps)
 
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
@@ -1300,13 +1287,27 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.get_transceiver().control_sync(do_sync)
 
-    def _do_mapping(self, total_run_time):
+    def _do_mapping(self, total_run_time, n_machine_time_steps):
         """
         Runs, times and logs all the algorithms in the mapping stage.
 
         :param float total_run_time:
+        :param int n_machine_time_steps:
         """
         FecTimer.start_category(TimerCategory.MAPPING)
+
+        if self._data_writer.is_soft_reset():
+            # wipe out stuff associated with past mapping
+            self._hard_reset()
+        FecTimer.setup(self)
+
+        self._add_dependent_verts_and_edges_for_application_graph()
+
+        if get_config_bool("Buffers", "use_auto_pause_and_resume"):
+            self._data_writer.set_plan_n_timesteps(get_config_int(
+                "Buffers", "minimum_auto_time_steps"))
+        else:
+            self._data_writer.set_plan_n_timesteps(n_machine_time_steps)
 
         self._setup_java_caller()
         self._do_extra_mapping_algorithms()
