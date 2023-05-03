@@ -16,6 +16,7 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
+from spinn_machine import CoreSubsets
 from spinnman.data import SpiNNManDataView
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
@@ -25,9 +26,11 @@ from pacman.model.graphs.application import ApplicationEdge
 # from spinn_front_end_common.utility_models import CommandSender
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_EMPTY_CORE_SUBSETS = CoreSubsets()
+hash(_EMPTY_CORE_SUBSETS)
+
+
 # pylint: disable=protected-access
-
-
 class _FecDataModel(object):
     """
     Singleton data model.
@@ -624,8 +627,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_data_in_multicast_key_to_chip_map(cls):
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
+        Keys are the coordinates of chips.
+        Values are the base keys for multicast comms received by the Data In
+        streaming module of the extra monitor running on those chips.
 
-        :rtype: dict
+        :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the data_in_multicast_key_to_chip_map is currently unavailable
         """
@@ -636,7 +642,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_data_in_multicast_routing_tables(cls):
         """
-        Retrieve the data_in_multicast_routing_tables if known
+        Retrieve the data_in_multicast_routing_tables if known.
+        These are the routing tables used to handle Data In streaming.
 
         :rtype: ~pacman.model.routing_tables.MulticastRoutingTables
         :raises SpiNNUtilsException:
@@ -650,8 +657,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     def get_system_multicast_router_timeout_keys(cls):
         """
         Retrieve the system_multicast_router_timeout_keys if known.
+        Keys are the coordinates of chips.
+        Values are the base keys for multicast comms received by the reinjector
+        module of the extra monitor running on those chips.
 
-        :rtype: dict
+        :rtype: dict(tuple(int,int), int)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the system_multicast_router_timeout_keys is currently
             unavailable
@@ -865,7 +875,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def get_executable_types(cls):
         """
-        Gets the _executable_types if they have been created.
+        Gets the executable_types if they have been created.
 
         :rtype: dict(
             ~spinnman.model.enum.ExecutableType,
@@ -876,6 +886,20 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._executable_types is None:
             raise cls._exception("executable_types")
         return cls.__fec_data._executable_types
+
+    @classmethod
+    def get_cores_for_type(cls, executable_type):
+        """
+        Get the subset of cores running executables of the given type.
+
+        :param ~spinnman.model.enum.ExecutableType executable_type:
+        :rtype: ~spinn_machine.CoreSubsets
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the executable_types is currently unavailable
+        """
+        # pylint: disable=unsubscriptable-object
+        return cls.get_executable_types().get(
+            executable_type, _EMPTY_CORE_SUBSETS)
 
     @classmethod
     def has_live_packet_recorder_params(cls):
@@ -909,8 +933,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls, live_packet_gatherer_params, vertex_to_record_from,
             partition_ids):
         """
-        Adds parameters for a new LPG if needed, or adds to the tracker
-        for parameters.
+        Adds parameters for a new live packet gatherer (LPG) if needed, or
+        adds to the tracker for parameters.
 
         .. note::
             If the

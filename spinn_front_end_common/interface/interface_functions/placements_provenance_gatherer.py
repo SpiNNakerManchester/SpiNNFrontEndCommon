@@ -24,7 +24,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 def placements_provenance_gatherer(n_placements, placements):
     """
-    Gets provenance information from placements.
+    Gets provenance information from the specified placements.
 
     :param int n_placements: Number of placements to gather
     :param iterator(~pacman.model.placements.Placement) placements:
@@ -55,6 +55,5 @@ def _add_placement_provenance(placement, errors):
         # get data
         try:
             placement.vertex.get_provenance_data_from_machine(placement)
-
         except Exception:  # pylint: disable=broad-except
             errors.append(traceback.format_exc())

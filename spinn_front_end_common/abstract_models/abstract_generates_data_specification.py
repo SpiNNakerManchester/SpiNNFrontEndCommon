@@ -19,7 +19,10 @@ from pacman.model.graphs.machine import MachineVertex
 
 @require_subclass(MachineVertex)
 class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
-
+    """
+    A machine vertex that generates a data specification that describes what
+    its binary's initialisation data is.
+    """
     __slots__ = ()
 
     @abstractmethod

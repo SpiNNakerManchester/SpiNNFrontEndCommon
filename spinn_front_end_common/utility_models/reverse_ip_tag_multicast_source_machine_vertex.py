@@ -636,7 +636,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write send buffer data
         if self._send_buffer_times is not None:
-
             spec.write_value(data=self._send_buffer_size)
             # The following disable the buffer notifications
             spec.write_value(data=self._send_buffer_size + 256)

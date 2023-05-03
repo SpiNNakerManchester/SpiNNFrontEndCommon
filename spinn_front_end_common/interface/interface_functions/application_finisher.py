@@ -36,50 +36,60 @@ def application_finisher():
     """
     app_id = FecDataView.get_app_id()
     txrx = FecDataView.get_transceiver()
-    all_core_subsets = FecDataView.get_executable_types()[
-        ExecutableType.USES_SIMULATION_INTERFACE]
+    all_core_subsets = FecDataView.get_cores_for_type(
+        ExecutableType.USES_SIMULATION_INTERFACE)
     total_processors = len(all_core_subsets)
 
-    progress = ProgressBar(
-        total_processors,
-        "Turning off all the cores within the simulation")
-
-    # check that the right number of processors are finished
-    processors_finished = txrx.get_core_state_count(
-        app_id, CPUState.FINISHED)
-    finished_cores = processors_finished
-
-    while processors_finished != total_processors:
-        if processors_finished > finished_cores:
-            progress.update(processors_finished - finished_cores)
-            finished_cores = processors_finished
-
-        processors_rte = txrx.get_core_state_count(
-            app_id, CPUState.RUN_TIME_EXCEPTION)
-        processors_watchdogged = txrx.get_core_state_count(
-            app_id, CPUState.WATCHDOG)
-
-        if processors_rte > 0 or processors_watchdogged > 0:
-            raise ExecutableFailedToStopException(
-                f"{processors_rte + processors_watchdogged} of "
-                f"{total_processors} processors went into an error state "
-                "when shutting down")
-
-        successful_cores_finished = txrx.get_cores_in_state(
-            all_core_subsets, CPUState.FINISHED)
-
-        for core_subset in all_core_subsets:
-            for processor in core_subset.processor_ids:
-                if not successful_cores_finished.is_core(
-                        core_subset.x, core_subset.y, processor):
-                    _update_provenance_and_exit(
-                        txrx, app_id, processor, core_subset)
-        time.sleep(0.5)
-
+    with ProgressBar(
+            total_processors,
+            "Turning off all the cores within the simulation") as progress:
+        # check that the right number of processors are finished
         processors_finished = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)
+        finished_cores = 0
 
-    progress.end()
+        while processors_finished != total_processors:
+            if processors_finished > finished_cores:
+                progress.update(processors_finished - finished_cores)
+                finished_cores = processors_finished
+
+            _detect_fails(txrx, app_id, total_processors)
+            _detect_finished(txrx, app_id, all_core_subsets)
+            time.sleep(0.5)
+            processors_finished = txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)
+
+
+def _detect_fails(txrx, app_id, n_cores):
+    """
+    :param ~spinnman.transceiver.Transceiver txrx:
+    :param int app_id:
+    :param int n_cores:
+    """
+    cores_rte = txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+    cores_watchdogged = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+
+    if cores_rte > 0 or cores_watchdogged > 0:
+        raise ExecutableFailedToStopException(
+            f"{cores_rte + cores_watchdogged} of {n_cores} processors went "
+            "into an error state when shutting down")
+
+
+def _detect_finished(txrx, app_id, all_cores):
+    """
+    :param ~spinnman.transceiver.Transceiver txrx:
+    :param int app_id:
+    :param ~.CoreSubsets all_cores:
+    """
+    successful_cores_finished = txrx.get_cores_in_state(
+        all_cores, CPUState.FINISHED)
+
+    for core_subset in all_cores:
+        for processor in core_subset.processor_ids:
+            if not successful_cores_finished.is_core(
+                    core_subset.x, core_subset.y, processor):
+                _update_provenance_and_exit(
+                    txrx, app_id, processor, core_subset)
 
 
 def _update_provenance_and_exit(txrx, app_id, processor, core_subset):

@@ -27,35 +27,34 @@ logger = FormatAdapter(logging.getLogger(__name__))
 def database_interface(runtime):
     """
     :param int runtime:
-    :return: where the database is located
-    :rtype: str
+    :return: where the database is located, if one is made
+    :rtype: str or None
     """
     # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
     user_create_database = get_config_bool("Database", "create_database")
     if user_create_database is not None:
         if user_create_database != needs_db:
-            logger.warning(f"Database creating changed to "
-                           f"{user_create_database} due to cfg settings")
+            logger.warning(
+                "Database creating changed to {} due to cfg settings",
+                user_create_database)
             needs_db = user_create_database
+    if not needs_db:
+        return None
 
-    if needs_db:
-        writer = DatabaseWriter()
+    with DatabaseWriter() as writer:
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
         _write_to_db(writer, runtime)
-        writer.close()
         return writer.database_path
-    return None
 
 
-def _write_to_db(writer, runtime):
+def _write_to_db(w, runtime):
     """
-    :param DatabaseWriter writer:
+    :param DatabaseWriter w:
     :param int runtime:
     """
-    with writer as w, ProgressBar(
-            6, "Creating graph description database") as p:
+    with ProgressBar(6, "Creating graph description database") as p:
         w.add_system_params(runtime)
         w.add_proxy_configuration()
         p.update()

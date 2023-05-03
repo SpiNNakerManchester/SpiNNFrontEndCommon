@@ -36,11 +36,11 @@ def insert_extra_monitor_vertices_to_graphs(placements):
     chip_to_gatherer_map = dict()
     vertex_to_chip_map = dict()
     machine = FecDataView.get_machine()
-    ethernet_chips = list(machine.ethernet_connected_chips)
+    ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(
         len(ethernet_chips), "Inserting extra monitors into graphs")
 
-    for eth in progress.over(machine.ethernet_connected_chips):
+    for eth in progress.over(ethernet_chips):
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
         chip_to_gatherer_map[eth.x, eth.y] = gatherer

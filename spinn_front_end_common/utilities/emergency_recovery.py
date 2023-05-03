@@ -72,7 +72,6 @@ def _emergency_iobuf_extract(executable_targets=None):
         The specific targets to extract, or `None` for all
     :type executable_targets: ExecutableTargets or None
     """
-    # pylint: disable=protected-access
     extractor = IOBufExtractor(
         executable_targets,
         recovery_mode=True, filename_template="emergency_iobuf_{}_{}_{}.txt")
@@ -90,7 +89,6 @@ def emergency_recover_state_from_failure(vertex, placement):
     :param ~pacman.model.placements.Placement placement:
         Where the vertex is located.
     """
-    # pylint: disable=protected-access
     _emergency_state_check()
     target = ExecutableTargets()
     path = FecDataView.get_executable_path(vertex.get_binary_file_name())

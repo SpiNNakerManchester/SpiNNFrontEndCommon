@@ -84,8 +84,7 @@ def _merged_component(to_merge_per_chip, writer):
 
     found = False
     with ProvenanceReader() as db:
-        for (x, y, merged) in db.get_router_by_chip(
-                MERGED_NAME):
+        for (x, y, merged) in db.get_router_by_chip(MERGED_NAME):
             if (x, y) not in to_merge_per_chip:
                 continue
             to_merge = to_merge_per_chip[x, y]

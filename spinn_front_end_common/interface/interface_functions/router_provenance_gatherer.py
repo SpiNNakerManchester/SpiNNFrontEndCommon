@@ -23,9 +23,7 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def router_provenance_gatherer():
-    gather = _RouterProvenanceGatherer()
-    # pylint: disable=protected-access
-    gather._add_router_provenance_data()
+    _RouterProvenanceGatherer().add_router_provenance_data()
 
 
 class _RouterProvenanceGatherer(object):
@@ -33,14 +31,18 @@ class _RouterProvenanceGatherer(object):
     Gathers diagnostics from the routers.
     """
 
-    __slots__ = []
+    __slots__ = ["__txrx"]
 
-    def _add_router_provenance_data(self):
+    def __init__(self):
+        self.__txrx = FecDataView.get_transceiver()
+
+    def add_router_provenance_data(self):
         """
         Writes the provenance data of the router diagnostics
         """
-        progress = ProgressBar(FecDataView.get_machine().n_chips*2,
-                               "Getting Router Provenance")
+        count = len(FecDataView.get_uncompressed().routing_tables) \
+            + FecDataView.get_machine().n_chips + 1
+        progress = ProgressBar(count, "Getting Router Provenance")
 
         seen_chips = set()
 
@@ -49,6 +51,7 @@ class _RouterProvenanceGatherer(object):
         if FecDataView.has_monitors():
             monitor = FecDataView.get_monitor_by_xy(0, 0)
             reinjection_data = monitor.get_reinjection_status_for_vertices()
+        progress.update()
 
         for router_table in progress.over(
                 FecDataView.get_uncompressed().routing_tables, False):
@@ -66,17 +69,17 @@ class _RouterProvenanceGatherer(object):
         """
         :param ~.MulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :rtype: tuple(int,int)
         """
         x = table.x
         y = table.y
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(x, y)
+            diagnostics = self.__txrx.get_router_diagnostics(x, y)
         except SpinnmanException:
             logger.warning(
                 "Could not read routing diagnostics from {}, {}",
                 x, y, exc_info=True)
-            return
+            return (-1, -1)  # Not a chip location
         status = self.__get_status(reinjection_data, x, y)
         self.__router_diagnostics(x, y, diagnostics, status, True, table)
         return x, y
@@ -87,8 +90,7 @@ class _RouterProvenanceGatherer(object):
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)
+            diagnostics = self.__txrx.get_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return

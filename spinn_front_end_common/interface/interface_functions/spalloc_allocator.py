@@ -228,10 +228,9 @@ class _OldSpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(
-        bearer_token: str = None) -> Tuple[
-            str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
-            MachineAllocationController]:
+def spalloc_allocator(bearer_token: str = None) -> Tuple[
+        str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
+        MachineAllocationController]:
     """
     Request a machine from a SPALLOC server that will fit the given
     number of chips.
@@ -244,7 +243,6 @@ def spalloc_allocator(
     :rtype: tuple(str, int, object, bool, bool, dict(tuple(int,int),str),
         MachineAllocationController)
     """
-
     spalloc_server = get_config_str("Machine", "spalloc_server")
 
     # Work out how many boards are needed

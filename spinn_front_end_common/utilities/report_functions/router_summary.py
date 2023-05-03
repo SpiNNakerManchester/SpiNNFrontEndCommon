@@ -14,6 +14,9 @@
 
 
 class RouterSummary(object):
+    """
+    Summary of information about a router.
+    """
 
     __slots__ = [
         "_total_entries",
@@ -25,7 +28,6 @@ class RouterSummary(object):
 
     def __init__(self, total_entries, max_per_chip, max_defaultable, max_link,
                  unqiue_routes):
-
         self._total_entries = total_entries
         self._max_per_chip = max_per_chip
         self._max_defaultable = max_defaultable

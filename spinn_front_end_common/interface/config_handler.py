@@ -147,7 +147,6 @@ class ConfigHandler(object):
 
             # while there's more than the valid max, remove the oldest one
             if len(files_in_report_folder) > max_kept:
-
                 # sort files into time frame
                 files_in_report_folder.sort(
                     key=lambda temp_file: os.path.getmtime(

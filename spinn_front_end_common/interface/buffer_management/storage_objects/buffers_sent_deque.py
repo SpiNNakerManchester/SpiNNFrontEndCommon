@@ -105,7 +105,6 @@ class BuffersSentDeque(object):
         :type message:
             ~spinnman.messages.eieio.abstract_messages.AbstractEIEIOMessage
         """
-
         # If full, raise an exception
         if self.is_full:
             raise SpinnFrontEndException("The buffer is full")
@@ -143,7 +142,6 @@ class BuffersSentDeque(object):
         :return: True if update went ahead, False if it was ignored
         :rtype: bool
         """
-
         # The sequence number window is between the last received and
         # the last received + window size, taking account that the end
         # of the window might wrap
@@ -154,18 +152,15 @@ class BuffersSentDeque(object):
 
         if (min_seq_no_acceptable <= last_received_sequence_no <=
                 max_seq_no_acceptable):
-
             # The sequence hasn't wrapped and the sequence is valid
             self._last_received_sequence_number = last_received_sequence_no
             self._remove_messages()
             return True
         elif max_seq_no_acceptable < min_seq_no_acceptable:
-
             # The sequence has wrapped
             if (0 <= last_received_sequence_no <= max_seq_no_acceptable or
                     min_seq_no_acceptable <= last_received_sequence_no <=
                     _N_SEQUENCES):
-
                 # The sequence is in the valid range
                 self._last_received_sequence_number = last_received_sequence_no
                 self._remove_messages()

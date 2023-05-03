@@ -47,8 +47,7 @@ def _write(p, profile_data, directory):
     :param str directory:
     """
     max_tag_len = max(len(tag) for tag in profile_data.tags)
-    file_name = os.path.join(
-        directory, f"{p.x}_{p.y}_{ p.p}_profile.txt")
+    file_name = os.path.join(directory, f"{p.x}_{p.y}_{ p.p}_profile.txt")
 
     # write profile data to file, creating if necessary
     with open(file_name, "a", encoding="utf-8") as f:

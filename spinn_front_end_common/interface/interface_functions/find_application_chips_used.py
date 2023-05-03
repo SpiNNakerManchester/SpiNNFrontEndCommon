@@ -37,6 +37,27 @@ class FindApplicationChipsUsed(object):
 
         :rtype: tuple(int,int,int,float)
         """
+        chips_used = self._get_chips_used(placements)
+
+        low = sys.maxsize
+        high = 0
+        total = 0
+        n_chips_used = len(chips_used)
+
+        for count in chips_used.values():
+            if count < low:
+                low = count
+            if count > high:
+                high = count
+            total += count
+        average = total / n_chips_used
+        return n_chips_used, high, low, average
+
+    def _get_chips_used(self, placements):
+        """
+        :param ~.Placements placements:
+        :rtype: dict(tuple(int,int), int)
+        """
         chips_used = defaultdict(int)
         for placement in placements:
             # find binary type if applicable
@@ -45,17 +66,4 @@ class FindApplicationChipsUsed(object):
                 binary_start_type = placement.vertex.get_binary_start_type()
             if binary_start_type != ExecutableType.SYSTEM:
                 chips_used[placement.x, placement.y] += 1
-
-        low = sys.maxsize
-        high = 0
-        total = 0
-        n_chips_used = len(chips_used)
-
-        for key in chips_used:
-            if chips_used[key] < low:
-                low = chips_used[key]
-            if chips_used[key] > high:
-                high = chips_used[key]
-            total += chips_used[key]
-        average = total / n_chips_used
-        return n_chips_used, high, low, average
+        return chips_used

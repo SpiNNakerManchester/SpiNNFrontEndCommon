@@ -31,9 +31,7 @@ _LIMIT = 10
 
 
 def chip_provenance_updater(all_core_subsets):
-    updater = _ChipProvenanceUpdater(all_core_subsets)
-    # pylint: disable=protected-access
-    updater._run()
+    _ChipProvenanceUpdater(all_core_subsets).update_all_provenance()
 
 
 class _ChipProvenanceUpdater(object):
@@ -51,36 +49,34 @@ class _ChipProvenanceUpdater(object):
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
 
-    def _run(self):
+    def update_all_provenance(self):
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
         total_processors = len(self.__all_cores)
         left_to_do_cores = total_processors - processors_completed
 
-        progress = ProgressBar(
-            left_to_do_cores,
-            "Forcing error cores to generate provenance data")
+        with ProgressBar(
+                left_to_do_cores,
+                "Forcing error cores to generate provenance data") as progress:
+            error_cores = self.__txrx.get_cores_in_state(
+                self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
+            watchdog_cores = self.__txrx.get_cores_in_state(
+                self.__all_cores, CPUState.WATCHDOG)
+            idle_cores = self.__txrx.get_cores_in_state(
+                self.__all_cores, CPUState.IDLE)
 
-        error_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.IDLE)
+            if error_cores or watchdog_cores or idle_cores:
+                raise ConfigurationException(
+                    "Some cores have crashed. "
+                    f"RTE cores {error_cores.values()}, "
+                    f"watch-dogged cores {watchdog_cores.values()}, "
+                    f"idle cores {idle_cores.values()}")
 
-        if error_cores or watchdog_cores or idle_cores:
-            raise ConfigurationException(
-                "Some cores have crashed. "
-                f"RTE cores {error_cores.values()}, "
-                f"watch-dogged cores {watchdog_cores.values()}, "
-                f"idle cores {idle_cores.values()}")
-
-        # check that all cores are in the state FINISHED which shows that
-        # the core has received the message and done provenance updating
-        self._update_provenance(
-            total_processors, processors_completed, progress)
-        progress.end()
+            # check that all cores are in the state FINISHED which shows that
+            # the core has received the message and done provenance updating
+            self._update_provenance(
+                total_processors, processors_completed, progress)
 
     def _update_provenance(
             self, total_processors, processors_completed, progress):

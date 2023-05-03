@@ -31,9 +31,7 @@ def graph_binary_gatherer():
 
     :rtype: ~spinnman.model.ExecutableTargets
     """
-    gatherer = _GraphBinaryGatherer()
-    # pylint: disable=protected-access
-    return gatherer._run()
+    return _GraphBinaryGatherer().gather_binaries()
 
 
 class _GraphBinaryGatherer(object):
@@ -46,9 +44,8 @@ class _GraphBinaryGatherer(object):
     def __init__(self):
         self._exe_targets = ExecutableTargets()
 
-    def _run(self):
+    def gather_binaries(self):
         """
-        :param ~pacman.model.placements.Placements placements:
         :rtype: ~spinnman.model.ExecutableTargets
         """
         progress = ProgressBar(
@@ -61,7 +58,6 @@ class _GraphBinaryGatherer(object):
     def __get_binary(self, placement):
         """
         :param ~pacman.model.placements.Placement placement:
-        :param ~pacman.model.graphs.AbstractVertex vertex:
         """
         # if the vertex cannot be executed, ignore it
         vertex = placement.vertex

@@ -41,9 +41,7 @@ def system_multicast_routing_generator():
     :rtype: tuple(~pacman.model.routing_tables.MulticastRoutingTables,
         dict(tuple(int,int),int), dict(tuple(int,int),int))
     """
-    generator = _SystemMulticastRoutingGenerator()
-    # pylint: disable=protected-access
-    return generator._run()
+    return _SystemMulticastRoutingGenerator().generate_system_routes()
 
 
 class _SystemMulticastRoutingGenerator(object):
@@ -56,7 +54,6 @@ class _SystemMulticastRoutingGenerator(object):
 
     def __init__(self):
         """
-
         :param ~pacman.model.placements.Placements placements:
         """
         self._machine = FecDataView.get_machine()
@@ -64,7 +61,7 @@ class _SystemMulticastRoutingGenerator(object):
         self._key_to_destination_map = dict()
         self._time_out_keys_by_board = dict()
 
-    def _run(self):
+    def generate_system_routes(self):
         """
         :return: routing tables, destination-to-key map,
             board-location-to-timeout-key map

@@ -21,13 +21,13 @@ from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.notification_protocol import (
-    NotificationProtocol)
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
 from pacman.data.pacman_data_writer import PacmanDataWriter
 from pacman.model.routing_tables import MulticastRoutingTables
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol)
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.interface.java_caller import JavaCaller
@@ -40,12 +40,10 @@ from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from .fec_data_view import FecDataView, _FecDataModel
 
-
 logger = FormatAdapter(logging.getLogger(__name__))
 __temp_dir = None
 
 REPORTS_DIRNAME = "reports"
-# pylint: disable=protected-access
 
 
 class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
@@ -59,6 +57,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     """
     __fec_data = _FecDataModel()
     __slots__ = []
+    # pylint: disable=protected-access
 
     @overrides(PacmanDataWriter._mock)
     def _mock(self):
@@ -113,13 +112,11 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         # determine common report folder
         if default_report_file_path == "DEFAULT":
             directory = os.getcwd()
-
-            # global reports folder
-            self.set_report_dir_path(
-                self._child_folder(directory, REPORTS_DIRNAME))
         else:
-            self.set_report_dir_path(
-                self._child_folder(default_report_file_path, REPORTS_DIRNAME))
+            directory = default_report_file_path
+        # global reports folder
+        self.set_report_dir_path(
+            self._child_folder(directory, REPORTS_DIRNAME))
 
     def __create_timestamp_directory(self):
         while True:
@@ -169,17 +166,19 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
             if self.__fec_data._current_run_timesteps != 0:
                 raise NotImplementedError("Run forever after another run")
             self.__fec_data._current_run_timesteps = None
-        else:
-            if not isinstance(increment, int):
-                raise TypeError("increment should be an int (or None")
-            if increment < 0:
-                raise ConfigurationException(
-                    f"increment {increment} must not be negative")
-            if self.__fec_data._current_run_timesteps is None:
-                raise NotImplementedError("Run after run forever")
-            self.__fec_data._first_machine_time_step = \
-                self.__fec_data._current_run_timesteps
-            self.__fec_data._current_run_timesteps += increment
+            return
+
+        if not isinstance(increment, int):
+            raise TypeError("increment should be an int (or None")
+        if increment < 0:
+            raise ConfigurationException(
+                f"increment {increment} must not be negative")
+
+        if self.__fec_data._current_run_timesteps is None:
+            raise NotImplementedError("Run after run forever")
+        self.__fec_data._first_machine_time_step = \
+            self.__fec_data._current_run_timesteps
+        self.__fec_data._current_run_timesteps += increment
 
     def set_max_run_time_steps(self, max_run_time_steps):
         """
@@ -291,8 +290,8 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 1.0, math.ceil(self.get_simulation_time_step_per_ms()))
             if time_scale_factor > 1.0:
                 logger.warning(
-                    f"A timestep was entered that has forced spinnaker to "
-                    f"automatically slow the simulation down from real time "
+                    "A timestep was entered that has forced SpiNNaker to "
+                    "automatically slow the simulation down from real time "
                     f"by a factor of {time_scale_factor}.")
 
         if not isinstance(time_scale_factor, (int, float)):
@@ -316,13 +315,14 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
                 f": {self.get_time_scale_factor()} produced a non integer "
                 f"hardware time step of {raw}")
 
-        logger.info(f"Setting hardware timestep as {rounded} microseconds "
-                    f"based on simulation time step of "
-                    f"{self.get_simulation_time_step_us()} and "
-                    f"timescale factor of {self.get_time_scale_factor()}")
+        logger.info(
+            "Setting hardware timestep as {} microseconds based on "
+            "simulation time step of {} and timescale factor of {}",
+            rounded, self.get_simulation_time_step_us(),
+            self.get_time_scale_factor())
         self.__fec_data._hardware_time_step_us = rounded
         self.__fec_data._hardware_time_step_ms = (
-                rounded / MICRO_TO_MILLISECOND_CONVERSION)
+            rounded / MICRO_TO_MILLISECOND_CONVERSION)
 
     def set_system_multicast_routing_data(self, data):
         """
@@ -335,24 +335,18 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         :param data: new value
         :type data:
             tuple(~pacman.model.routing_tables.MulticastRoutingTables,
-            dict, dict)
+            dict(tuple(int,int),int), dict(tuple(int,int),int))
         """
-        (data_in_multicast_routing_tables,
-         data_in_multicast_key_to_chip_map,
-         system_multicast_router_timeout_keys) = data
-        if not isinstance(data_in_multicast_routing_tables,
-                          MulticastRoutingTables):
+        routing_tables, key_to_chip_map, timeout_keys = data
+        if not isinstance(routing_tables, MulticastRoutingTables):
             raise TypeError("First element must be a MulticastRoutingTables")
-        if not isinstance(data_in_multicast_key_to_chip_map, dict):
+        if not isinstance(key_to_chip_map, dict):
             raise TypeError("Second element must be dict")
-        if not isinstance(system_multicast_router_timeout_keys, dict):
+        if not isinstance(timeout_keys, dict):
             raise TypeError("Third element must be a dict")
-        self.__fec_data._data_in_multicast_key_to_chip_map = \
-            data_in_multicast_key_to_chip_map
-        self.__fec_data._data_in_multicast_routing_tables = \
-            data_in_multicast_routing_tables
-        self.__fec_data._system_multicast_router_timeout_keys = \
-            system_multicast_router_timeout_keys
+        self.__fec_data._data_in_multicast_key_to_chip_map = key_to_chip_map
+        self.__fec_data._data_in_multicast_routing_tables = routing_tables
+        self.__fec_data._system_multicast_router_timeout_keys = timeout_keys
 
     def set_n_required(self, n_boards_required, n_chips_required):
         """

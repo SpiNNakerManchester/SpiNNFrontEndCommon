@@ -90,7 +90,6 @@ class BufferManager(object):
     ]
 
     def __init__(self):
-
         # Set of vertices with buffers to be sent
         self._sender_vertices = set()
 
@@ -219,7 +218,6 @@ class BufferManager(object):
         :return: A new message, or `None` if no keys can be added
         :rtype: None or ~spinnman.messages.eieio.data_messages.EIEIODataMessage
         """
-
         # If there are no more messages to send, return None
         if not vertex.is_next_timestamp(region):
             return None
@@ -237,7 +235,6 @@ class BufferManager(object):
         bytes_to_go = size - message.size
         while (bytes_to_go >= _N_BYTES_PER_KEY and
                 vertex.is_next_key(region, next_timestamp)):
-
             key = vertex.get_next_key(region)
             message.add_key(key)
             bytes_to_go -= _N_BYTES_PER_KEY
@@ -254,7 +251,6 @@ class BufferManager(object):
         :return: A list of messages
         :rtype: list(~spinnman.messages.eieio.data_messages.EIEIODataMessage)
         """
-
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
         placement = FecDataView.get_placement_of_vertex(vertex)

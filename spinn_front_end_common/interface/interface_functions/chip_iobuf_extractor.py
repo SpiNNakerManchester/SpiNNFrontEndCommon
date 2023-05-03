@@ -23,5 +23,4 @@ def chip_io_buf_extractor():
     :return: error_entries, warn_entries
     :rtype: tuple(list(str),list(str))
     """
-    extractor = IOBufExtractor()
-    return extractor.extract_iobuf()
+    return IOBufExtractor().extract_iobuf()

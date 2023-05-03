@@ -24,18 +24,19 @@ def chip_runtime_updater(n_sync_steps):
     :param n_sync_steps:
     :type n_sync_steps: int or None
     """
-    core_subsets = FecDataView.get_executable_types()[
-        ExecutableType.USES_SIMULATION_INTERFACE]
+    core_subsets = FecDataView.get_cores_for_type(
+        ExecutableType.USES_SIMULATION_INTERFACE)
     n_cores = len(core_subsets)
-    ready_progress = ProgressBar(
-        n_cores, "Waiting for cores to be either in PAUSED or READY state")
-    FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
-        core_subsets, FecDataView.get_app_id(),
-        [CPUState.PAUSED, CPUState.READY],
-        error_states=frozenset({
-            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
-            CPUState.FINISHED}), progress_bar=ready_progress, timeout=n_cores)
-    ready_progress.end()
+    with ProgressBar(
+            n_cores, "Waiting for cores to be either in "
+            "PAUSED or READY state") as progress:
+        FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
+            core_subsets, FecDataView.get_app_id(),
+            [CPUState.PAUSED, CPUState.READY],
+            error_states=frozenset({
+                CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG,
+                CPUState.FINISHED}), progress_bar=progress,
+            timeout=n_cores)
 
     run_until_timesteps = FecDataView.get_current_run_timesteps()
     if run_until_timesteps is None:

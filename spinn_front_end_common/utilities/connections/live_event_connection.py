@@ -424,7 +424,6 @@ class LiveEventConnection(DatabaseConnection):
 
     def __handle_scp_packet(self, data):
         with self.__expect_scp_response_lock:
-
             # SCP unexpected
             if not self.__expect_scp_response:
                 return False

@@ -42,11 +42,8 @@ def pair_compression():
 
     :raises SpinnFrontEndException: If compression fails
      """
-    # pylint: disable=too-many-arguments
-    binary_path = FecDataView.get_executable_path(
-        "simple_pair_compressor.aplx")
     compression = Compression(
-        binary_path,
+        FecDataView.get_executable_path("simple_pair_compressor.aplx"),
         "Running pair routing table compression on chip", result_register=1)
     compression.compress()
 
@@ -61,11 +58,8 @@ def ordered_covering_compression():
 
     :raises SpinnFrontEndException: If compression fails
     """
-    # pylint: disable=too-many-arguments
-    binary_path = FecDataView.get_executable_path(
-        "simple_unordered_compressor.aplx")
     compression = Compression(
-        binary_path,
+        FecDataView.get_executable_path("simple_unordered_compressor.aplx"),
         "Running unordered routing table compression on chip",
         result_register=1)
     compression.compress()
@@ -87,8 +81,7 @@ class Compression(object):
         "_routing_tables",
         "__failures"]
 
-    def __init__(
-            self, binary_path,  progress_text, result_register):
+    def __init__(self, binary_path, progress_text, result_register):
         """
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model
@@ -147,7 +140,7 @@ class Compression(object):
     def _load_routing_table(self, table):
         """
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
-            the pacman router table instance
+            the router table to load
         """
         transceiver = FecDataView.get_transceiver()
         data = self._build_data(table)
@@ -198,7 +191,7 @@ class Compression(object):
         """
         # build core subsets
         core_subsets = CoreSubsets()
-        for routing_table in self._routing_tables:
+        for routing_table in self._routing_tables.routing_tables:
             # get the first none monitor core
             chip = FecDataView.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()

@@ -397,6 +397,14 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.shut_down()
             raise
 
+    @staticmethod
+    def __is_main_thread():
+        """
+        :return: Whether this is the main thread.
+        :rtype: bool
+        """
+        return threading.get_ident() == threading.main_thread().ident
+
     def __run(self, run_time, sync_time):
         """
         The main internal run function.
@@ -422,8 +430,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._adjust_config(run_time)
 
         # Install the Control-C handler
-        # pylint: disable=protected-access
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if self.__is_main_thread():
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self._last_except_hook
@@ -492,7 +499,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         steps = None
         if (not get_config_bool("Buffers", "use_auto_pause_and_resume")
                 or not is_per_timestep_sdram):
-
             # Runs should only be in units of max_run_time_steps at most
             if (is_per_timestep_sdram and
                     (self._data_writer.get_max_run_time_steps()
@@ -505,7 +511,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             steps = [n_machine_time_steps]
         elif run_time is not None:
-
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
@@ -546,8 +551,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.clear_run_steps()
 
         # Indicate that the signal handler needs to act
-        # pylint: disable=protected-access
-        if isinstance(threading.current_thread(), threading._MainThread):
+        if self.__is_main_thread():
             self._raise_keyboard_interrupt = False
             self._last_except_hook = sys.excepthook
             sys.excepthook = self.exception_handler
@@ -2332,7 +2336,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             return "general front end instance no machine set"
 
     def _shutdown(self):
-
         # if stopping on machine, clear IP tags and routing table
         self.__clear()
 

@@ -310,7 +310,7 @@ def _write_one_vertex_application_placement(f, vertex):
     f.write(f"**** Vertex: '{vertex_name}'\n")
     f.write(f"Model: {vertex_model}\n")
     f.write(f"Pop size: {num_atoms}\n")
-    f.write("Machine Vertices: \n")
+    f.write("Machine Vertices:\n")
 
     # Sort by slice and then by label
     machine_vertices = sorted(vertex.machine_vertices,
@@ -331,7 +331,7 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p})\n")
     f.write("\n")
 
 

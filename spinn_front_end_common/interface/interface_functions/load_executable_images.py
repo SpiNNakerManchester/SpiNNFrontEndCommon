@@ -62,13 +62,12 @@ def __load_images(filter_predicate, label):
 
     try:
         # ISSUE: Loading order may be non-constant on older Python
-        progress = ProgressBar(cores.total_processors + 1, label)
-        for binary in binaries:
-            progress.update(flood_fill_binary_to_spinnaker(binary))
+        with ProgressBar(cores.total_processors + 1, label) as progress:
+            for binary in binaries:
+                progress.update(flood_fill_binary_to_spinnaker(binary))
 
-        __start_simulation(cores, FecDataView.get_app_id())
-        progress.update()
-        progress.end()
+            __start_simulation(cores, FecDataView.get_app_id())
+            progress.update()
     except Exception as e:
         try:
             FecDataView.get_transceiver().stop_application(

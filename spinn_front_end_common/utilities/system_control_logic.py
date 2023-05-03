@@ -62,7 +62,6 @@ def run_system_application(
     transceiver.execute_application(executable_cores, app_id)
 
     if needs_sync_barrier:
-
         # fire all signals as required
         transceiver.send_signal(app_id, Signal.SYNC0)
 

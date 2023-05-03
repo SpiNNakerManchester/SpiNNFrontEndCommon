@@ -30,9 +30,8 @@ from pacman.operations.router_compressors.ordered_covering_router_compressor\
     import (
         get_generality as
         ordered_covering_generality)
-from spinn_front_end_common.abstract_models.\
-    abstract_supports_bit_field_routing_compression import (
-        AbstractSupportsBitFieldRoutingCompression)
+from spinn_front_end_common.abstract_models import (
+    AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
@@ -67,7 +66,9 @@ class _MachineBitFieldRouterCompressor(object):
     On-machine bitfield-aware routing table compression.
     """
 
-    __slots__ = ["_compressor_aplx", "_compressor_type"]
+    __slots__ = (
+        "_compressor_aplx", "_compressor_type", "__txrx", "__app_id",
+        "__compress_max")
 
     #: SDRAM tag the router compressor expects to find there routing tables in
     ROUTING_TABLE_SDRAM_TAG = 1
@@ -114,35 +115,39 @@ class _MachineBitFieldRouterCompressor(object):
         "Will be executing compression for {} chips on the host, as they " \
         "failed to complete when running on chip"
 
-    def __init__(self, compressor_aplx, compressor_type):
+    def __init__(
+            self, compressor_aplx, compressor_type,
+            compress_as_much_as_possible=False):
+        """
+        :param str compressor_aplx:
+        :param str compressor_type:
+        :param bool compress_as_much_as_possible:
+            whether to compress as much as possible
+        """
         self._compressor_aplx = compressor_aplx
         self._compressor_type = compressor_type
+        self.__txrx = FecDataView.get_transceiver()
+        self.__app_id = FecDataView.get_app_id()
+        self.__compress_max = compress_as_much_as_possible
 
-    def run(self, compress_as_much_as_possible=False):
+    def compress(self):
         """
         Entrance for routing table compression with bit field.
 
-        :param routing_tables: routing tables
-        :param bool write_compressor_iobuf: flag saying if read IOBUF
-        :param bool produce_report:
-        :param bool compress_as_much_as_possible:
-            whether to compress as much as possible
         :return: where the compressors ran
+        :rtype: ~spinnman.model.ExecutableTargets
         """
         view = FecDataView()
-        app_id = FecDataView.get_app_id()
         routing_tables = FecDataView.get_uncompressed()
-        transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
         # new app id for this simulation
-        routing_table_compressor_app_id = view.get_new_id()
+        compressor_app_id = view.get_new_id()
 
-        text = f"on chip {self._compressor_type} compressor with bitfields"
+        text = f"On chip {self._compressor_type} compressor with bitfields"
         retry_count = get_config_int(
-            "Mapping",
-            "router_table_compression_with_bit_field_retry_count")
+            "Mapping", "router_table_compression_with_bit_field_retry_count")
         if retry_count is not None:
             text += f" capped at {retry_count} retries"
         progress_bar = ProgressBar(
@@ -157,89 +162,87 @@ class _MachineBitFieldRouterCompressor(object):
             progress_bar)
 
         # create executable targets
-        (compressor_executable_targets, bit_field_sorter_executable_path,
-         bit_field_compressor_executable_path) = self._generate_core_subsets(
+        (compressor_executable_targets, sorter_executable_path,
+         compressor_executable_path) = self._generate_core_subsets(
             routing_tables, progress_bar)
 
         # load data into sdram
         on_host_chips = self._load_data(
-            addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id,
-            compress_as_much_as_possible, progress_bar,
+            addresses, compressor_app_id, routing_tables, progress_bar,
             compressor_executable_targets,
-            matrix_addresses_and_size, bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, retry_count)
+            matrix_addresses_and_size, compressor_executable_path,
+            sorter_executable_path, retry_count)
 
         # load and run binaries
         try:
             run_system_application(
-                compressor_executable_targets,
-                routing_table_compressor_app_id,
+                compressor_executable_targets, compressor_app_id,
                 get_config_bool("Reports", "write_compressor_iobuf"),
                 functools.partial(
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
-                    sorter_binary_path=bit_field_sorter_executable_path),
+                    sorter_binary_path=sorter_executable_path),
                 [CPUState.FINISHED], True,
                 "bit_field_compressor_on_{}_{}_{}.txt",
-                [bit_field_sorter_executable_path], progress_bar,
+                [sorter_executable_path], progress_bar,
                 logger=logger)
         except SpiNNManCoresNotInStateException as e:
-            logger.exception(transceiver.get_core_status_string(
+            logger.exception(self.__txrx.get_core_status_string(
                 e.failed_core_states()))
             try:
-                transceiver.stop_application(routing_table_compressor_app_id)
+                self.__txrx.stop_application(compressor_app_id)
             except Exception:  # pylint: disable=broad-except
                 logger.warning("Could not stop compressor!")
             raise e
 
         # start the host side compressions if needed
-        if len(on_host_chips) != 0:
-            most_costly_cores = defaultdict(lambda: defaultdict(int))
-            for partition in FecDataView.iterate_partitions():
-                for edge in partition.edges:
-                    sttr = edge.pre_vertex.splitter
-                    for vertex in sttr.get_source_specific_in_coming_vertices(
-                            partition.pre_vertex, partition.identifier):
-                        place = FecDataView.get_placement_of_vertex(vertex)
-                        if place.chip in on_host_chips:
-                            most_costly_cores[place.chip][place.p] += 1
-            logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
-            progress_bar = ProgressBar(
-                total_number_of_things_to_do=len(on_host_chips),
-                string_describing_what_being_progressed=self._HOST_BAR_TEXT)
-            compressed_pacman_router_tables = MulticastRoutingTables()
+        if on_host_chips:
+            self._on_host_compress(on_host_chips, routing_tables)
 
+        return compressor_executable_targets
+
+    def _on_host_compress(self, on_host_chips, routing_tables):
+        """
+        :param iterable(tuple(int,int)) on_host_chips:
+        :param MulticastRoutingTables routing_tables:
+        """
+        if get_config_bool(
+                "Reports", "write_router_compression_with_bitfield_report"):
+            report_folder_path = generate_report_path()
+        else:
+            report_folder_path = None
+
+        most_costly_cores = defaultdict(lambda: defaultdict(int))
+        for partition in FecDataView.iterate_partitions():
+            for edge in partition.edges:
+                sttr = edge.pre_vertex.splitter
+                for vertex in sttr.get_source_specific_in_coming_vertices(
+                        partition.pre_vertex, partition.identifier):
+                    place = FecDataView.get_placement_of_vertex(vertex)
+                    if place.chip in on_host_chips:
+                        most_costly_cores[place.chip][place.p] += 1
+        logger.warning(self._ON_HOST_WARNING_MESSAGE, len(on_host_chips))
+
+        with ProgressBar(len(on_host_chips), self._HOST_BAR_TEXT) as progress:
+            compressed_tables = MulticastRoutingTables()
             key_atom_map = generate_key_to_atom_map()
 
-            for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
-                if get_config_bool(
-                        "Reports",
-                        "write_router_compression_with_bitfield_report"):
-                    report_folder_path = generate_report_path()
-                else:
-                    report_folder_path = None
-
+            for (chip_x, chip_y) in progress.over(on_host_chips, False):
                 start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
                         chip_x, chip_y),
                     report_folder_path=report_folder_path,
                     most_costly_cores=most_costly_cores,
-                    compressed_pacman_router_tables=(
-                        compressed_pacman_router_tables),
+                    compressed_pacman_router_tables=compressed_tables,
                     key_atom_map=key_atom_map)
 
             # load host compressed routing tables
-            for table in compressed_pacman_router_tables.routing_tables:
+            for table in compressed_tables.routing_tables:
                 if table.multicast_routing_entries:
-                    transceiver.clear_multicast_routes(table.x, table.y)
-                    transceiver.load_multicast_routes(
+                    self.__txrx.clear_multicast_routes(table.x, table.y)
+                    self.__txrx.load_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
-                        app_id=app_id)
-
-            progress_bar.end()
-
-        return compressor_executable_targets
+                        app_id=self.__app_id)
 
     def _generate_core_subsets(self, routing_tables, progress_bar):
         """
@@ -280,25 +283,24 @@ class _MachineBitFieldRouterCompressor(object):
         executable_targets = ExecutableTargets()
 
         # bit field executable paths
-        bit_field_sorter_executable_path = \
-            FecDataView.get_executable_path(
-                self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
+        sorter_executable_path = FecDataView.get_executable_path(
+            self._BIT_FIELD_SORTER_AND_SEARCH_EXECUTOR_APLX)
 
-        bit_field_compressor_executable_path = \
-            FecDataView.get_executable_path(self._compressor_aplx)
+        compressor_executable_path = FecDataView.get_executable_path(
+            self._compressor_aplx)
 
         # add the sets
         executable_targets.add_subsets(
-            binary=bit_field_sorter_executable_path,
+            binary=sorter_executable_path,
             subsets=bit_field_sorter_cores,
             executable_type=ExecutableType.SYSTEM)
         executable_targets.add_subsets(
-            binary=bit_field_compressor_executable_path,
+            binary=compressor_executable_path,
             subsets=bit_field_compressor_cores,
             executable_type=ExecutableType.SYSTEM)
 
-        return (executable_targets, bit_field_sorter_executable_path,
-                bit_field_compressor_executable_path)
+        return (executable_targets, sorter_executable_path,
+                compressor_executable_path)
 
     def _check_bit_field_router_compressor_for_success(
             self, executable_targets, host_chips, sorter_binary_path):
@@ -338,33 +340,27 @@ class _MachineBitFieldRouterCompressor(object):
         return result
 
     def _load_data(
-            self, addresses, transceiver, routing_table_compressor_app_id,
-            routing_tables, app_id,
-            compress_as_much_as_possible, progress_bar, cores,
-            matrix_addresses_and_size,
-            bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, retry_count):
+            self, addresses, compressor_app_id, routing_tables,
+            progress_bar, cores,
+            matrix_addresses_and_size, compressor_executable_path,
+            sorter_executable_path, retry_count):
         """
         load all data onto the chip.
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in SDRAM
-        :param ~.Transceiver transceiver: the spinnMan instance
-        :param routing_table_compressor_app_id:
+        :param compressor_app_id:
             the app_id for the system application
         :param ~.MulticastRoutingTables routing_tables:
             the routing tables
-        :param int app_id: the app_id of the application
         :param ~.ProgressBar progress_bar: progress bar
-        :param bool compress_as_much_as_possible:
-            whether to compress as much as possible
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
         :param dict matrix_addresses_and_size:
             maps chips to regeneration SDRAM and size for exploitation
-        :param str bit_field_compressor_executable_path:
+        :param str compressor_executable_path:
             the path to the compressor binary path
-        :param str bit_field_sorter_executable_path:
+        :param str sorter_executable_path:
             the path to the sorter binary
         :param retry_count:
             Number of times that the sorters should set of the compressions
@@ -379,83 +375,72 @@ class _MachineBitFieldRouterCompressor(object):
         for table in routing_tables.routing_tables:
             try:
                 self._load_routing_table_data(
-                    table, app_id, transceiver,
-                    routing_table_compressor_app_id, progress_bar, cores,
-                    matrix_addresses_and_size[(table.x, table.y)])
+                    table, compressor_app_id, progress_bar,
+                    cores, matrix_addresses_and_size[(table.x, table.y)])
 
-                comms_sdram = transceiver.malloc_sdram(
-                    table.x, table.y, SIZE_OF_COMMS_SDRAM,
-                    routing_table_compressor_app_id,
+                comms_sdram = self.__txrx.malloc_sdram(
+                    table.x, table.y, SIZE_OF_COMMS_SDRAM, compressor_app_id,
                     BIT_FIELD_COMMS_SDRAM_TAG)
 
                 self._load_address_data(
-                    addresses, table.x, table.y, transceiver,
-                    routing_table_compressor_app_id,
+                    addresses, table.x, table.y, compressor_app_id,
                     cores, matrix_addresses_and_size[(table.x, table.y)],
-                    bit_field_compressor_executable_path,
-                    bit_field_sorter_executable_path, comms_sdram,
-                    retry_count)
+                    compressor_executable_path, sorter_executable_path,
+                    comms_sdram, retry_count)
 
                 self._load_usable_sdram(
                     matrix_addresses_and_size[(table.x, table.y)], table.x,
-                    table.y, transceiver, routing_table_compressor_app_id,
-                    cores)
+                    table.y, compressor_app_id, cores)
 
                 self._load_compressor_data(
-                    table.x, table.y, transceiver,
-                    bit_field_compressor_executable_path, cores,
-                    compress_as_much_as_possible, comms_sdram)
+                    table.x, table.y, compressor_executable_path, cores,
+                    comms_sdram)
             except CantFindSDRAMToUseException:
                 run_by_host.append((table.x, table.y))
 
         return run_by_host
 
     def _load_compressor_data(
-            self, chip_x, chip_y, transceiver,
-            bit_field_compressor_executable_path, cores,
-            compress_as_much_as_possible, comms_sdram):
+            self, chip_x, chip_y, compressor_executable_path, cores,
+            comms_sdram):
         """
         Updates the user addresses for the compressor cores with the
         compression settings.
 
         :param int chip_x: chip X coordinate
         :param int chip_y: chip Y coordinate
-        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
-        :param str bit_field_compressor_executable_path:
+        :param str compressor_executable_path:
             path for the compressor binary
-        :param bool compress_as_much_as_possible:
-            whether to compress as much as possible
         :param ~spinnman.model.ExecutableTargets cores: the executable targets
         :param int comms_sdram: Address for communications block
         """
         compressor_cores = cores.get_cores_for_binary(
-            bit_field_compressor_executable_path)
+            compressor_executable_path)
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
             user1_address = \
-                transceiver.get_user_1_register_address_from_core(processor_id)
+                self.__txrx.get_user_1_register_address_from_core(processor_id)
             user2_address = \
-                transceiver.get_user_2_register_address_from_core(processor_id)
+                self.__txrx.get_user_2_register_address_from_core(processor_id)
             user3_address = \
-                transceiver.get_user_3_register_address_from_core(processor_id)
+                self.__txrx.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
             time_per_iteration = get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
-            transceiver.write_memory(
+            self.__txrx.write_memory(
                 chip_x, chip_y, user1_address,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            transceiver.write_memory(
-                chip_x, chip_y, user2_address,
-                int(compress_as_much_as_possible))
+            self.__txrx.write_memory(
+                chip_x, chip_y, user2_address, int(self.__compress_max))
             # user 3 the comms_sdram area
-            transceiver.write_memory(
+            self.__txrx.write_memory(
                 chip_x, chip_y, user3_address, comms_sdram)
 
     def _load_usable_sdram(
-            self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
-            routing_table_compressor_app_id, cores):
+            self, matrix_addresses_and_size, chip_x, chip_y,
+            compressor_app_id, cores):
         """
         loads the addresses of borrowable SDRAM.
 
@@ -463,9 +448,7 @@ class _MachineBitFieldRouterCompressor(object):
             SDRAM usable and sizes
         :param int chip_x: X coordinate of the chip to consider here
         :param int chip_y: Y coordinate of the chip to consider here
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman instance
-        :param int routing_table_compressor_app_id: system app_id.
+        :param int compressor_app_id: system app_id
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
         """
@@ -474,9 +457,8 @@ class _MachineBitFieldRouterCompressor(object):
 
         # get sdram address on chip
         try:
-            sdram_address = transceiver.malloc_sdram(
-                chip_x, chip_y, len(address_data),
-                routing_table_compressor_app_id,
+            sdram_address = self.__txrx.malloc_sdram(
+                chip_x, chip_y, len(address_data), compressor_app_id,
                 BIT_FIELD_USABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
@@ -486,7 +468,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size)
 
         # write sdram
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
         # get the only processor on the chip
@@ -494,9 +476,9 @@ class _MachineBitFieldRouterCompressor(object):
             chip_x, chip_y).processor_ids)[0]
 
         # update user 2 with location
-        user3_address = transceiver.get_user_3_register_address_from_core(
+        user3_address = self.__txrx.get_user_3_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
@@ -514,10 +496,9 @@ class _MachineBitFieldRouterCompressor(object):
         return data
 
     def _load_address_data(
-            self, addresses, chip_x, chip_y, transceiver,
-            routing_table_compressor_app_id, cores, matrix_addresses_and_size,
-            bit_field_compressor_executable_path,
-            bit_field_sorter_executable_path, comms_sdram, retry_count):
+            self, addresses, chip_x, chip_y, compressor_app_id, cores,
+            matrix_addresses_and_size, compressor_executable_path,
+            sorter_executable_path, comms_sdram, retry_count):
         """
         loads the bitfield addresses space.
 
@@ -525,14 +506,12 @@ class _MachineBitFieldRouterCompressor(object):
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the transceiver instance
-        :param int routing_table_compressor_app_id: system app_id.
+        :param int compressor_app_id: system app_id.
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
-        :param str bit_field_compressor_executable_path:
+        :param str compressor_executable_path:
             the path to the compressor binary path
-        :param str bit_field_sorter_executable_path:
+        :param str sorter_executable_path:
             the path to the sorter binary
         :param int comms_sdram: Address for communications block
         :param retry_count:
@@ -544,15 +523,15 @@ class _MachineBitFieldRouterCompressor(object):
         address_data = self._generate_chip_data(
             addresses[(chip_x, chip_y)],
             cores.get_cores_for_binary(
-                bit_field_compressor_executable_path).get_core_subset_for_chip(
+                compressor_executable_path).get_core_subset_for_chip(
                     chip_x, chip_y),
             comms_sdram, retry_count)
 
         # get sdram address on chip
         try:
-            sdram_address = transceiver.malloc_sdram(
+            sdram_address = self.__txrx.malloc_sdram(
                 chip_x, chip_y, len(address_data),
-                routing_table_compressor_app_id,
+                compressor_app_id,
                 BIT_FIELD_ADDRESSES_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
@@ -560,24 +539,22 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(address_data))
 
         # write sdram
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
         # get the only processor on the chip
-        sorter_cores = cores.get_cores_for_binary(
-            bit_field_sorter_executable_path)
+        sorter_cores = cores.get_cores_for_binary(sorter_executable_path)
         processor_id = list(sorter_cores.get_core_subset_for_chip(
             chip_x, chip_y).processor_ids)[0]
 
         # update user 2 with location
-        user2_address = transceiver.get_user_2_register_address_from_core(
+        user2_address = self.__txrx.get_user_2_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             chip_x, chip_y, user2_address, sdram_address)
 
     def _load_routing_table_data(
-            self, table, app_id, transceiver,
-            routing_table_compressor_app_id, progress_bar, cores,
+            self, table, compressor_app_id, progress_bar, cores,
             matrix_addresses_and_size):
         """
         loads the routing table data.
@@ -585,23 +562,20 @@ class _MachineBitFieldRouterCompressor(object):
         :param table: the routing table to load
         :type table:
             ~pacman.model.routing_tables.AbstractMulticastRoutingTable
-        :param int app_id: application app_id
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            transceiver instance
         :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
             progress bar
-        :param int routing_table_compressor_app_id: system app_id
+        :param int compressor_app_id: system app_id
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that the compressor going to run on
         :raises CantFindSDRAMToUse: when SDRAM is not malloc'ed or stolen
         """
-        routing_table_data = self._build_routing_table_data(app_id, table)
+        routing_table_data = self._build_routing_table_data(
+            self.__app_id, table)
 
         # go to spinnman and ask for a memory region of that size per chip.
         try:
-            base_address = transceiver.malloc_sdram(
-                table.x, table.y, len(routing_table_data),
-                routing_table_compressor_app_id,
+            base_address = self.__txrx.malloc_sdram(
+                table.x, table.y, len(routing_table_data), compressor_app_id,
                 BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
@@ -609,7 +583,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(routing_table_data))
 
         # write SDRAM requirements per chip
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             table.x, table.y, base_address, routing_table_data)
 
         # get the only processor on the chip
@@ -617,9 +591,9 @@ class _MachineBitFieldRouterCompressor(object):
             table.x, table.y).processor_ids)[0]
 
         # update user 1 with location
-        user1_address = transceiver.get_user_1_register_address_from_core(
+        user1_address = self.__txrx.get_user_1_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        self.__txrx.write_memory(
             table.x, table.y, user1_address, base_address)
 
         # update progress bar
@@ -779,10 +753,12 @@ def machine_bit_field_ordered_covering_compressor(
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :return: where the compressors ran
+    :rtype: ~spinnman.model.ExecutableTargets
     """
     compressor = _MachineBitFieldRouterCompressor(
-        "bit_field_ordered_covering_compressor.aplx", "OrderedCovering")
-    return compressor.run(compress_as_much_as_possible)
+        "bit_field_ordered_covering_compressor.aplx", "OrderedCovering",
+        compress_as_much_as_possible)
+    return compressor.compress()
 
 
 def machine_bit_field_pair_router_compressor(
@@ -793,7 +769,8 @@ def machine_bit_field_pair_router_compressor(
     :param bool compress_as_much_as_possible:
         whether to compress as much as possible
     :return: where the compressors ran
+    :rtype: ~spinnman.model.ExecutableTargets
     """
     compressor = _MachineBitFieldRouterCompressor(
-        "bit_field_pair_compressor.aplx", "Pair")
-    return compressor.run(compress_as_much_as_possible)
+        "bit_field_pair_compressor.aplx", "Pair", compress_as_much_as_possible)
+    return compressor.compress()

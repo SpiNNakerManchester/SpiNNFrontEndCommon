@@ -31,8 +31,7 @@ def drift_report():
     """
     A report on the clock drift as reported by each chip
     """
-    ethernet_only = get_config_bool(
-            "Reports", "drift_report_ethernet_only")
+    ethernet_only = get_config_bool("Reports", "drift_report_ethernet_only")
     machine = FecDataView.get_machine()
     eth_chips = machine.ethernet_connected_chips
     n_chips = machine.n_chips
@@ -56,16 +55,16 @@ def drift_report():
             writer.write("\n")
 
     # create the progress bar for end users
-    progress = ProgressBar(n_chips, "Writing clock drift report")
+    with ProgressBar(n_chips, "Writing clock drift report") as progress:
+        # iterate over ethernet chips and then the chips on that board
+        txrx = FecDataView.get_transceiver()
+        with open(directory_name, "a", encoding="utf-8") as writer:
+            for eth_chip in eth_chips:
+                if ethernet_only:
+                    __write_drift(txrx, eth_chip, writer)
+                    progress.update()
+                    continue
 
-    # iterate over ethernet chips and then the chips on that board
-    txrx = FecDataView.get_transceiver()
-    with open(directory_name, "a", encoding="utf-8") as writer:
-        for eth_chip in eth_chips:
-            if ethernet_only:
-                __write_drift(txrx, eth_chip, writer)
-                progress.update()
-            else:
                 last_drift = None
                 for chip in machine.get_chips_by_ethernet(
                         eth_chip.x, eth_chip.y):
@@ -79,7 +78,7 @@ def drift_report():
                             eth_chip.ip_address, chip.x, chip.y,
                             drift, last_drift)
                     progress.update()
-        writer.write("\n")
+            writer.write("\n")
 
 
 def __write_drift(txrx, chip, writer):

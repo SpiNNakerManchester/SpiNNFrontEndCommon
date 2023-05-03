@@ -208,7 +208,6 @@ def determine_flow_states(executable_types, no_sync_changes):
     expected_start_states = dict()
     expected_end_states = dict()
     for start_type in executable_types.keys():
-
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:
             expected_start_states[ExecutableType.RUNNING] = [

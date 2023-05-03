@@ -17,6 +17,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 from spinn_machine import Machine, Router
 
+#: The name of the report that :py:func:`board_chip_report` writes.
 AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
 

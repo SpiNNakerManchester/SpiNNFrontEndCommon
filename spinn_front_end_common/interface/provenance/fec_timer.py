@@ -52,6 +52,9 @@ else:
 
 
 class FecTimer(object):
+    """
+    Timer.
+    """
 
     _simulator = None
     _provenance_path = None

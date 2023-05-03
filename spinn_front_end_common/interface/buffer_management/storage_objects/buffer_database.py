@@ -166,7 +166,6 @@ class BufferDatabase(BaseDatabase):
             .. note::
                     Must be shorter than 1GB
         """
-
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = sqlite3.Binary(data)

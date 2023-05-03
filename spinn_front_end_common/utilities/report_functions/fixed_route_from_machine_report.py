@@ -56,22 +56,16 @@ def _expand_route_value(processors_ids, link_ids):
     Convert a 32-bit route word into a string which lists the target
     cores and links.
     """
+    route_string = "["
 
     # Convert processor targets to readable values:
-    route_string = "["
-    separator = ""
-    for processor in processors_ids:
-        route_string += separator + str(processor)
-        separator = ", "
+    route_string += ", ".join(str(processor) for processor in processors_ids)
 
     route_string += "] ["
 
     # Convert link targets to readable values:
     link_labels = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
+    route_string += ", ".join(link_labels[link] for link in link_ids)
 
-    separator = ""
-    for link in link_ids:
-        route_string += separator + link_labels[link]
-        separator = ", "
     route_string += "]"
     return route_string

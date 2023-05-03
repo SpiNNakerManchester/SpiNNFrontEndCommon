@@ -287,7 +287,6 @@ class _HostExecuteDataSpecification(object):
         """
         Execute the data specs for all non-system targets.
         """
-
         uses_advanced_monitors = get_config_bool(
             "Machine", "enable_advanced_monitor_support")
         # Allow config to override
@@ -399,7 +398,6 @@ class _HostExecuteDataSpecification(object):
         """
         Does the Data Specification Execution and loading using Python.
         """
-
         # create a progress bar for end users
         dsg_targets = FecDataView.get_dsg_targets()
         progress = ProgressBar(

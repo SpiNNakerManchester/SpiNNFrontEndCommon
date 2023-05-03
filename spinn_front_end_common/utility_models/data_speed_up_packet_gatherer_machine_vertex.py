@@ -390,8 +390,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         router_timeout_key = (
             FecDataView.get_system_multicast_router_timeout_keys())
         # pylint: disable=unsubscriptable-object
-        reinjection_base_key = router_timeout_key[(placement.x, placement.y)]
-        spec.write_value(reinjection_base_key)
+        spec.write_value(router_timeout_key[placement.x, placement.y])
 
         mc_data_chips_to_keys = (
             FecDataView.get_data_in_multicast_key_to_chip_map())
@@ -632,7 +631,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             # verify completed
             received_confirmation = False
             while not received_confirmation:
-
                 # send initial attempt at sending all the data
                 self._send_all_data_based_packets(data_to_write, start_address)
 
@@ -744,7 +742,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param bytearray data_to_write: the data to write.
         :param set(int) missing: a set of missing sequence numbers
         """
-
         missing_seqs_as_list = list(missing)
         missing_seqs_as_list.sort()
 
@@ -785,7 +782,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: SDP message and how much data has been written
         :rtype: tuple(~.SDPMessage, int)
         """
-
         # check for last packet
         packet_data_length = BYTES_IN_FULL_PACKET_WITH_KEY
 
@@ -1225,7 +1221,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # if first, add n packets to list
             if first:
-
                 # get left over space / data size
                 size_of_data_left_to_transmit = min(
                     length_left_in_packet -

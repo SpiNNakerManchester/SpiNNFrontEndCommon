@@ -24,7 +24,6 @@ from spinn_front_end_common.utilities.constants import (
 
 class _ClearIOBUFRequest(AbstractSCPRequest):
     def __init__(self, x, y, p):
-
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,

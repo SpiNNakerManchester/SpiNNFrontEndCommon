@@ -37,10 +37,8 @@ def sdram_outgoing_partition_allocator():
     # Keep track of SDRAM tags used
     next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
-    for vertex in FecDataView.iterate_vertices():
-        sdram_partitions = vertex.splitter.get_internal_sdram_partitions()
-        for sdram_partition in sdram_partitions:
-
+    for vertex in progress_bar.over(FecDataView.iterate_vertices()):
+        for sdram_partition in vertex.splitter.get_internal_sdram_partitions():
             # get placement, ones where the src is multiple,
             # you need to ask for the first pre vertex
             if isinstance(
@@ -52,7 +50,7 @@ def sdram_outgoing_partition_allocator():
                     sdram_partition.pre_vertex)
 
             # total sdram
-            total_sdram = (sdram_partition.total_sdram_requirements())
+            total_sdram = sdram_partition.total_sdram_requirements()
 
             # if bust, throw exception
             if total_sdram == 0:
@@ -68,12 +66,8 @@ def sdram_outgoing_partition_allocator():
                     placement.x, placement.y, total_sdram,
                     FecDataView.get_app_id(), tag)
             else:
-                sdram_base_address = virtual_usage[
-                    placement.x, placement.y]
+                sdram_base_address = virtual_usage[placement.x, placement.y]
                 virtual_usage[placement.x, placement.y] += total_sdram
 
             # update
             sdram_partition.sdram_base_address = sdram_base_address
-
-        progress_bar.update()
-    progress_bar.end()

@@ -43,8 +43,8 @@ def virtual_machine_generator():
                 width = 2
             else:
                 assert width == 2
-            logger.warning("For virtual Machines version is deprecated."
-                           "use width=2, height=2 instead")
+            logger.warning("For virtual Machines version is deprecated. "
+                           "Use width=2, height=2 instead.")
         elif version in [4, 5]:
             if height is None:
                 height = 8
@@ -54,8 +54,8 @@ def virtual_machine_generator():
                 width = 8
             else:
                 assert width == 8
-            logger.warning("For virtual Machines version is deprecated."
-                           "use width=8, height=8 instead")
+            logger.warning("For virtual Machines version is deprecated. "
+                           "Use width=8, height=8 instead.")
         else:
             raise ValueError(f"Unknown version {version}")
 
@@ -70,8 +70,8 @@ def virtual_machine_generator():
                 get_config_str("Machine", "down_chips") is not None or
                 get_config_str("Machine", "down_cores") is not None or
                 get_config_str("Machine", "down_links") is not None):
-            logger.warning("As json_path specified all other virtual "
-                           "machine settings ignored.")
+            logger.warning("As json_path specified, all other virtual "
+                           "machine settings are ignored.")
         machine = json_machine.machine_from_json(json_path)
 
     # Work out and add the SpiNNaker links and FPGA links

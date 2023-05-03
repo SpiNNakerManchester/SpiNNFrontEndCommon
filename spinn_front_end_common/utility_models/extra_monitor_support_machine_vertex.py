@@ -289,11 +289,10 @@ class ExtraMonitorSupportMachineVertex(
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
         chip = FecDataView().get_chip_at(placement.x, placement.y)
+        # Write the base key for multicast comms
         # pylint: disable=unsubscriptable-object
-        reinjector_base_mc_key = (
-            router_timeout_keys[
-                (chip.nearest_ethernet_x, chip.nearest_ethernet_y)])
-        spec.write_value(reinjector_base_mc_key)
+        spec.write_value(router_timeout_keys[
+            chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
     def _generate_data_speed_up_in_config(self, spec, chip):
         """

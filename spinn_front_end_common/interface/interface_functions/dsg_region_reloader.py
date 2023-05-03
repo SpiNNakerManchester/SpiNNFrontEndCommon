@@ -168,10 +168,8 @@ def _get_ptr_table(txrx, placement, regions_base_address, start_region):
     fixed_ptr_table[:] = ptr_table[:]
     last_no_size_region = None
     for i in range(0, MAX_MEM_REGIONS):
-
         # If this region is a valid region
         if ptr_table[i]["pointer"] != 0:
-
             # If there is a previous region with no size, use this region
             # pointer to find the size of the last one
             if last_no_size_region is not None:

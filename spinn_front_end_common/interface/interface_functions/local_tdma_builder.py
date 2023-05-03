@@ -95,12 +95,10 @@ def local_tdma_builder():
      clocks_waiting, clocks_initial) = __config_values(clocks_per_cycle)
 
     # calculate for each app vertex if the time needed fits
-    app_verts = list()
-    max_fraction_of_sending = 0
-    for app_vertex in FecDataView.get_vertices_by_type(
-            TDMAAwareApplicationVertex):
-        app_verts.append(app_vertex)
-
+    app_verts = list(FecDataView.get_vertices_by_type(
+        TDMAAwareApplicationVertex))
+    max_fraction_of_sending = 0.0
+    for app_vertex in app_verts:
         # get timings
 
         # check config params for better performance
@@ -116,32 +114,26 @@ def local_tdma_builder():
             n_phases, clocks_per_cycle)
 
         # test timings
-        fraction_of_sending = __get_fraction_of_sending(
-            n_phases, clocks_between_phases, clocks_for_sending)
-        if fraction_of_sending is not None:
-            max_fraction_of_sending = max(
-                max_fraction_of_sending, fraction_of_sending)
+        max_fraction_of_sending = max(
+            max_fraction_of_sending, __get_fraction_of_sending(
+                n_phases, clocks_between_phases, clocks_for_sending))
 
     time_scale_factor_needed = (
-            FecDataView.get_time_scale_factor() * max_fraction_of_sending)
-    if max_fraction_of_sending > 1:
+        FecDataView.get_time_scale_factor() * max_fraction_of_sending)
+    if max_fraction_of_sending > 1.0:
         logger.warning(
             "A time scale factor of {} may be needed to run correctly",
             time_scale_factor_needed)
 
     # get initial offset for each app vertex.
-    for app_vertex in FecDataView.get_vertices_by_type(
-            TDMAAwareApplicationVertex):
-        initial_offset = __generate_initial_offset(
-            app_vertex, app_verts, clocks_initial,
-            clocks_waiting)
-        app_vertex.set_initial_offset(initial_offset)
+    for index, app_vertex in enumerate(app_verts):
+        app_vertex.set_initial_offset(__generate_initial_offset(
+            index, len(app_verts), clocks_initial, clocks_waiting))
 
 
 def __auto_config_times(
         app_machine_quantity, clocks_between_cores, clocks_for_sending,
         app_vertex, clocks_waiting):
-
     n_cores = app_vertex.get_n_cores()
     n_phases = app_vertex.get_n_phases()
 
@@ -160,19 +152,15 @@ def __auto_config_times(
     # Adjust time between cores to fit time scale
     if not core_set and app_set:
         n_slots = int(math.ceil(n_cores / app_machine_quantity))
-        clocks_per_phase = (
-            int(math.ceil(overall_clocks_available / n_phases)))
+        clocks_per_phase = int(math.ceil(overall_clocks_available / n_phases))
         clocks_between_cores = clocks_per_phase / n_slots
         logger.debug(
             "adjusted clocks between cores is {}",
             clocks_between_cores)
-
     # Adjust cores at same time to fit time between cores.
-    if core_set and not app_set:
-        clocks_per_phase = (
-            int(math.ceil(overall_clocks_available / n_phases)))
-        max_slots = int(math.floor(
-            clocks_per_phase / clocks_between_cores))
+    elif core_set and not app_set:
+        clocks_per_phase = int(math.ceil(overall_clocks_available / n_phases))
+        max_slots = int(clocks_per_phase // clocks_between_cores)
         app_machine_quantity = int(math.ceil(n_cores / max_slots))
         logger.debug(
             "Adjusted the number of cores of a app vertex that "
@@ -183,16 +171,15 @@ def __auto_config_times(
 
 
 def __generate_initial_offset(
-        app_vertex, app_verts, clocks_between_cores, clocks_waiting):
+        index, length, clocks_between_cores, clocks_waiting):
     """
     Calculates from the app vertex index the initial offset for the
     TDMA between all cores.
 
-    :param ~pacman.model.graphs.application.ApplicationVertex app_vertex:
-        the app vertex in question.
-    :param app_verts: the list of app vertices.
-    :type app_verts:
-        list(~pacman.model.graphs.application.ApplicationVertex)
+    :param int index:
+        the index of the app vertex in question.
+    :param int length:
+        the total number of of app vertices.
     :param int clocks_between_cores: the clock cycles between cores.
     :param int clocks_waiting: the clock cycles to wait for.
     :return: the initial offset for this app vertex including wait time.
@@ -200,8 +187,7 @@ def __generate_initial_offset(
     """
     # This is an offset between cores
     initial_offset_clocks = int(math.ceil(
-        (app_verts.index(app_vertex) * clocks_between_cores) /
-        len(app_verts)))
+        (index * clocks_between_cores) / length))
     # add the offset the clocks to wait for before sending anything at all
     initial_offset_clocks += clocks_waiting
     return initial_offset_clocks
@@ -220,7 +206,6 @@ def __generate_times(
     :return: (n_phases, n_slots, time_between_phases) for this app vertex
     :rtype: tuple(int, int, int)
     """
-
     # Figure total T2s
     n_phases = app_vertex.get_n_phases()
 

@@ -19,6 +19,9 @@ from .global_provenance import GlobalProvenance
 
 
 class LogStoreDB(LogStore):
+    """
+    Log message storage mechanism that uses a database.
+    """
 
     @overrides(LogStore.store_log)
     def store_log(self, level, message, timestamp=None):

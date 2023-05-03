@@ -217,7 +217,7 @@ class EnergyReport(object):
             if version in (2, 3):
                 f.write(
                     f"A SpiNN-{version} board does not contain any FPGA's, "
-                    f"and so its energy cost is 0 \n")
+                    f"and so its energy cost is 0\n")
                 return
             elif version not in (4, 5):
                 # no idea where we are; version unrecognised

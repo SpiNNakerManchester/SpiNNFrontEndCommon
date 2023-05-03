@@ -37,9 +37,7 @@ def application_runner(runtime, time_threshold, run_until_complete):
     :param bool run_until_complete:
     :raises ConfigurationException:
     """
-    runner = _ApplicationRunner()
-    # pylint: disable=protected-access
-    runner._run(runtime, time_threshold, run_until_complete)
+    _ApplicationRunner().run_app(runtime, time_threshold, run_until_complete)
 
 
 class _ApplicationRunner(object):
@@ -54,9 +52,7 @@ class _ApplicationRunner(object):
         self.__txrx = FecDataView.get_transceiver()
         self.__app_id = FecDataView.get_app_id()
 
-    # Wraps up as a PACMAN algorithm
-    def _run(
-            self, runtime, time_threshold, run_until_complete=False):
+    def run_app(self, runtime, time_threshold, run_until_complete=False):
         """
         :param int runtime:
         :param int time_threshold:
@@ -141,7 +137,7 @@ class _ApplicationRunner(object):
         running their main processing loops. This is done with a very fast
         synchronisation barrier and a signal.
         """
-        executable_types = FecDataView.get_executable_types()
+        executable_types = FecDataView.get_executable_types().keys()
         if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
                 or ExecutableType.SYNC in executable_types):
             # locate all signals needed to set off executables
@@ -170,7 +166,7 @@ class _ApplicationRunner(object):
         """
         sync_signal = None
 
-        executable_types = FecDataView.get_executable_types()
+        executable_types = FecDataView.get_executable_types().keys()
         if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             sync_signal = FecDataView.get_next_sync_signal()
 
@@ -181,7 +177,7 @@ class _ApplicationRunner(object):
                 raise ConfigurationException(
                     "There can only be one SYNC signal per run. This is "
                     "because we cannot ensure the cores have not reached the "
-                    "next SYNC state before we send the next SYNC. Resulting "
+                    "next SYNC state before we send the next SYNC, resulting "
                     "in uncontrolled behaviour")
             sync_signal = Signal.SYNC0
 

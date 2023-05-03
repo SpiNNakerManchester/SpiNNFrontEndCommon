@@ -38,8 +38,7 @@ def graph_data_specification_writer(placement_order=None):
     :raises ConfigurationException:
         If the DSG asks to use more SDRAM than is available.
     """
-    writer = _GraphDataSpecificationWriter()
-    return writer.run(placement_order)
+    return _GraphDataSpecificationWriter().run(placement_order)
 
 
 class _GraphDataSpecificationWriter(object):
