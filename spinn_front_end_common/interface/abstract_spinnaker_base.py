@@ -457,13 +457,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
 
-        # Disable auto pause and resume if the binary can't do it
-        if not get_config_bool("Machine", "virtual_board"):
-            for executable_type in self._data_writer.get_executable_types():
-                if not executable_type.supports_auto_pause_and_resume:
-                    set_config(
-                        "Buffers", "use_auto_pause_and_resume", "False")
-
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
             self._do_load()
@@ -1206,8 +1199,13 @@ class AbstractSpinnakerBase(ConfigHandler):
         May set the executable_types data.
         """
         with FecTimer("Locate executable start type", TimerWork.OTHER):
-            self._data_writer.set_executable_types(
-                locate_executable_start_type())
+            executable_types = locate_executable_start_type()
+            self._data_writer.set_executable_types(executable_types)
+            for executable_type in executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    set_config(
+                        "Buffers", "use_auto_pause_and_resume", "False")
+
 
     def _execute_buffer_manager_creator(self):
         """
