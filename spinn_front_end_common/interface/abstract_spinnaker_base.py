@@ -446,13 +446,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "The network cannot be changed between runs without"
                 " resetting")
 
-        # If we have reset and the graph has changed, stop any running
-        # application
-        if (self._data_writer.get_requires_data_generation() and
-                self._data_writer.has_transceiver()):
-            self._data_writer.get_transceiver().stop_application(
-                self._data_writer.get_app_id())
-            self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
             if self._data_writer.is_soft_reset():
@@ -512,7 +505,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             steps = self._generate_steps(n_machine_time_steps)
 
         # requires data_generation includes never run and requires_mapping
-        if self._data_writer.get_requires_data_generation():
+        if self._data_writer.get_requires_mapping():
             self._do_load()
 
         # Run for each of the given steps
@@ -2151,8 +2144,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if (self._data_writer.is_ran_ever() and
-                not self._data_writer.get_requires_mapping() and
-                not self._data_writer.get_requires_data_generation()):
+                not self._data_writer.get_requires_mapping()):
             self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
