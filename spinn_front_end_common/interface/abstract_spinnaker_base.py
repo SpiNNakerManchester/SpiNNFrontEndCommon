@@ -434,6 +434,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._should_run():
             return
 
+        self._do_reset_checks()
+
+        FecTimer.setup(self)
+
+        logger.info("Starting execution process")
+
         self._adjust_config(run_time)
 
         # Install the Control-C handler
@@ -442,8 +448,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             signal.signal(signal.SIGINT, self.__signal_handler)
             self._raise_keyboard_interrupt = True
             sys.excepthook = self.__original_sys_excepthook
-
-        logger.info("Starting execution process")
 
         n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
         if FecDataView.has_allocation_controller():
@@ -1239,6 +1243,42 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             self._data_writer.get_transceiver().control_sync(do_sync)
 
+    def _do_reset_checks(self):
+        # Nothing to do here on first run
+        if not self._data_writer.is_ran_ever():
+            return
+
+        # If already run check everything can run again
+        can_keep_running = all(
+            executable_type.supports_auto_pause_and_resume
+            for executable_type in
+            self._data_writer.get_executable_types())
+        if not can_keep_running:
+            raise NotImplementedError(
+                "Only binaries that use the simulation interface can be"
+                " run more than once")
+
+        # If no mapping or data generation no reset check needed
+        if not self._data_writer.get_requires_data_generation():
+            return
+
+        # if run and not reset that is a problem
+        if self._data_writer.is_ran_last():
+            self.stop()
+            raise NotImplementedError(
+                "The network cannot be changed between runs without"
+                " resetting")
+
+        if self._data_writer.is_soft_reset():
+            if self._data_writer.get_requires_mapping():
+                # wipe out stuff associated with past mapping
+                self._hard_reset()
+            else:
+                self._data_writer.get_transceiver().stop_application(
+                    self._data_writer.get_app_id())
+                self._data_writer.reset_sync_signal()
+        # hard reset has already stopped application
+
     def _do_mapping(self, total_run_time, n_machine_time_steps):
         """
         Runs, times and logs all the algorithms in the mapping stage.
@@ -1247,11 +1287,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int n_machine_time_steps:
         """
         FecTimer.start_category(TimerCategory.MAPPING)
-
-        if self._data_writer.is_soft_reset():
-            # wipe out stuff associated with past mapping
-            self._hard_reset()
-        FecTimer.setup(self)
 
         self._add_dependent_verts_and_edges_for_application_graph()
 
@@ -1811,19 +1846,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the load algorithms.
         """
         FecTimer.start_category(TimerCategory.LOADING)
-
-        # if run and not reset that is a problem
-        if self._data_writer.is_ran_last():
-            self.stop()
-            raise NotImplementedError(
-                "The network cannot be changed between runs without"
-                " resetting")
-
-        # stop the application if reset
-        if self._data_writer.is_reset_last():
-            self._data_writer.get_transceiver().stop_application(
-                self._data_writer.get_app_id())
-            self._data_writer.reset_sync_signal()
 
         if self._data_writer.get_requires_mapping():
             self._execute_routing_setup()
