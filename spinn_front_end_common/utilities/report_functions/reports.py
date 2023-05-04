@@ -561,7 +561,8 @@ def router_report_from_compressed_router_tables(routing_tables):
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
-                           "Generating compressed router table report")
+                           "Generating compressed router table report" +
+                           FecDataView.get_reset_number())
     for routing_table in progress.over(routing_tables.routing_tables):
         if routing_table.number_of_entries:
             generate_routing_table(routing_table, top_level_folder)
