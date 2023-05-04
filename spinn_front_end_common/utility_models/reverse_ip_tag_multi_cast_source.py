@@ -206,7 +206,7 @@ class ReverseIpTagMultiCastSource(
         return machine_vertex
 
     def _filtered_send_buffer_times(self, vertex_slice):
-        ids = vertex_slice.get_raster_ids(self.atoms_shape)
+        ids = vertex_slice.get_raster_ids()
         send_buffer_times = self._send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:
