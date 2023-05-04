@@ -1350,6 +1350,9 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
 
+        self._execute_routing_setup()
+        self._execute_graph_binary_gatherer()
+
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
@@ -1854,9 +1857,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         FecTimer.start_category(TimerCategory.LOADING)
 
-        if self._data_writer.get_requires_mapping():
-            self._execute_routing_setup()
-            self._execute_graph_binary_gatherer()
         # loading_algorithms
         compressor, pre_compress = self._compressor_name()
         self._execute_pre_compression(pre_compress)
@@ -1865,8 +1865,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._do_data_generation()
 
         self._execute_control_sync(False)
-        if self._data_writer.get_requires_mapping():
-            self._execute_load_fixed_routes()
+        self._execute_load_fixed_routes()
+        self._report_fixed_routes()
         self._execute_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
@@ -1879,11 +1879,9 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # TODO Was master correct to run the report first?
         self._execute_tags_from_machine_report()
-        if self._data_writer.get_requires_mapping():
-            self._report_memory_on_host()
-            self._report_memory_on_chip()
-            self._report_compressed(compressed)
-            self._report_fixed_routes()
+        self._report_memory_on_host()
+        self._report_memory_on_chip()
+        self._report_compressed(compressed)
         self._execute_application_load_executables()
 
         FecTimer.end_category(TimerCategory.LOADING)

@@ -25,7 +25,6 @@ from spinn_front_end_common.interface.provenance import (
 from .bit_field_summary import BitFieldSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_FILE_NAME = "bit_field_compressed_summary.rpt"
 # provenance data item names
 
 MERGED_NAME = "bit_fields_merged"
@@ -44,6 +43,10 @@ def generate_provenance_item(x, y, bit_fields_merged):
         db.insert_router(x, y, MERGED_NAME, bit_fields_merged)
 
 
+def file_name(reset_str):
+    return "bit_field_compressed_summary" + reset_str + ".rpt"
+
+
 def bitfield_compressor_report():
     """
     Generates a report that shows the impact of the compression of
@@ -52,13 +55,14 @@ def bitfield_compressor_report():
     :return: a summary, or `None` if the report file can't be written
     :rtype: BitFieldSummary
     """
-    file_name = os.path.join(FecDataView.get_run_dir_path(), _FILE_NAME)
+    file_path = os.path.join(FecDataView.get_run_dir_path(),
+                             file_name(FecDataView.get_reset_str()))
     try:
-        with open(file_name, "w", encoding="utf-8") as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             _write_report(f)
     except IOError:
         logger.exception("Generate_placement_reports: Can't open file"
-                         " {} for writing.", _FILE_NAME)
+                         " {} for writing.", file_path)
 
 
 def _merged_component(to_merge_per_chip, writer):

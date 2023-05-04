@@ -22,7 +22,8 @@ def fixed_route_from_machine_report():
     Writes the fixed routes from the machine.
     """
     file_name = os.path.join(
-        FecDataView.get_run_dir_path(), "fixed_route_routers")
+        FecDataView.get_run_dir_path(),
+        "fixed_route_routers"+FecDataView.get_reset_str())
     transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 
