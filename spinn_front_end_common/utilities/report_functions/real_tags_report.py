@@ -15,16 +15,19 @@
 import os
 from spinn_front_end_common.data import FecDataView
 
-_REPORT_FILENAME = "tags_on_machine.txt"
+
+def file_name(reset_str):
+    return "tags_on_machine" + reset_str + ".txt"
 
 
 def tags_from_machine_report():
     """
     Describes what the tags actually present on the machine are.
     """
-    filename = os.path.join(FecDataView.get_run_dir_path(), _REPORT_FILENAME)
+    filepath = os.path.join(FecDataView.get_run_dir_path(),
+                            file_name(FecDataView.get_reset_str()))
     tags = _get_tags()
-    with open(filename, "w", encoding="utf-8") as f:
+    with open(filepath, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")
         f.write("==================================\n")
         for tag in tags:
