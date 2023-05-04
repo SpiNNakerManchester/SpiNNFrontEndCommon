@@ -1356,7 +1356,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
-        self._execute_sdram_outgoing_partition_allocator()
 
         FecTimer.end_category(TimerCategory.MAPPING)
 
@@ -1375,7 +1374,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, Times and logs the data generation.
         """
-        # set up timing
+        self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
     def _execute_routing_setup(self,):
