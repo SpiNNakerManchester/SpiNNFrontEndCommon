@@ -233,7 +233,7 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         """
         try:
-            with self.transaction(Isolation.DEFERRED) as cursor:
+            with self.transaction() as cursor:
                 region_id = self._get_region_id(cursor, x, y, p, region)
                 data = self._read_contents(cursor, region_id)
                 # TODO missing data
@@ -291,7 +291,7 @@ class BufferDatabase(BaseDatabase):
                             f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x, y, p):
-        with self.transaction(Isolation.DEFERRED) as cursor:
+        with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT core_name

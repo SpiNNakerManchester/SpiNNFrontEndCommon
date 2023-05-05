@@ -30,7 +30,7 @@ class DatabaseReader(SQLiteDB):
         self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
-        with self.transaction(Isolation.DEFERRED) as cur:
+        with self.transaction() as cur:
             cur.execute(query + " LIMIT 1", args)
             return cur.fetchone()
 
@@ -48,7 +48,7 @@ class DatabaseReader(SQLiteDB):
         """
         # This is maintaining an object we only make once
         if not self.__looked_for_job:
-            with self.transaction(Isolation.DEFERRED) as cur:
+            with self.transaction() as cur:
                 self.__job = SpallocClient.open_job_from_database(cur)
             self.__looked_for_job = True
         return self.__job
@@ -61,7 +61,7 @@ class DatabaseReader(SQLiteDB):
         :return: dictionary of atom IDs indexed by event key
         :rtype: dict(int, int)
         """
-        with self.transaction(Isolation.DEFERRED) as cur:
+        with self.transaction() as cur:
             return {
                 row["event"]: row["atom"]
                 for row in cur.execute(
@@ -78,7 +78,7 @@ class DatabaseReader(SQLiteDB):
         :return: dictionary of event keys indexed by atom ID
         :rtype: dict(int, int)
         """
-        with self.transaction(Isolation.DEFERRED) as cur:
+        with self.transaction() as cur:
             return {
                 row["atom"]: row["event"]
                 for row in cur.execute(
@@ -134,7 +134,7 @@ class DatabaseReader(SQLiteDB):
         :return: A list of x, y, p coordinates of the vertices
         :rtype: list(tuple(int, int, int))
         """
-        with self.transaction(Isolation.DEFERRED) as cur:
+        with self.transaction() as cur:
             return [
                 self.__xyp(row) for row in cur.execute(
                     """

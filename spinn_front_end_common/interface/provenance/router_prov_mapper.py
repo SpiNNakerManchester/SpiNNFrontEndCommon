@@ -16,7 +16,7 @@ import argparse
 import os
 import sqlite3
 import numpy
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 # import matplotlib.pyplot as plot
 # import seaborn
 
@@ -66,7 +66,7 @@ class Plotter(object):
 
     def __do_chip_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction(Isolation.DEFERRED) as cur:
+        with self._db.transaction() as cur:
             if self.__have_insertion_order:
                 try:
                     return cur.execute("""
@@ -97,7 +97,7 @@ class Plotter(object):
             FROM provenance_view
             WHERE x IS NOT NULL AND p IS NULL AND "description" IS NOT NULL
             """
-        with self._db.transaction(Isolation.DEFERRED) as cur:
+        with self._db.transaction() as cur:
             return frozenset(row["description"] for row in cur.execute(query))
 
     def get_per_chip_prov_details(self, info):
@@ -122,7 +122,7 @@ class Plotter(object):
 
     def __do_sum_query(self, description):
         # Does the query in one of two ways, depending on schema version
-        with self._db.transaction(Isolation.DEFERRED) as cur:
+        with self._db.transaction() as cur:
             if self.__have_insertion_order:
                 try:
                     return cur.execute("""
@@ -162,7 +162,7 @@ class Plotter(object):
             WHERE x IS NOT NULL AND p IS NOT NULL
                 AND "description" IS NOT NULL
             """
-        with self._db.transaction(Isolation.DEFERRED) as cur:
+        with self._db.transaction() as cur:
             return frozenset(row["description"] for row in cur.execute(query))
 
     def get_sum_chip_prov_details(self, info):

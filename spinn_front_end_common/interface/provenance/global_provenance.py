@@ -20,7 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     MICRO_TO_MILLISECOND_CONVERSION)
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -87,7 +87,7 @@ class GlobalProvenance(SQLiteDB):
         :param str description: The package for which the version applies
         :param str the_value: The version to be recorded
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO version_provenance(
@@ -103,7 +103,7 @@ class GlobalProvenance(SQLiteDB):
         :param bool machine_on: If the machine was done during all
             or some of the time
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO category_timer_provenance(
@@ -126,7 +126,7 @@ class GlobalProvenance(SQLiteDB):
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
 
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 UPDATE category_timer_provenance
@@ -151,7 +151,7 @@ class GlobalProvenance(SQLiteDB):
         time_taken = (
                 (timedelta.seconds * MICRO_TO_MILLISECOND_CONVERSION) +
                 (timedelta.microseconds / MICRO_TO_MILLISECOND_CONVERSION))
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO timer_provenance(
@@ -169,7 +169,7 @@ class GlobalProvenance(SQLiteDB):
         """
         if timestamp is None:
             timestamp = datetime.now()
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO p_log_provenance(
@@ -184,7 +184,7 @@ class GlobalProvenance(SQLiteDB):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             # lock the database
             cur.execute(
                 """

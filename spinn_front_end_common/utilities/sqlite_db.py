@@ -106,6 +106,9 @@ class SQLiteDB(AbstractContextManager):
         else:
             self.__db = sqlite3.connect(database_file)
 
+        # We want to assume control over transactions ourselves
+        self.__db.isolation_level = None
+
         if row_factory:
             self.__db.row_factory = row_factory
         if text_factory:
@@ -191,7 +194,7 @@ class SQLiteDB(AbstractContextManager):
             raise AttributeError("database has been closed")
         return self.__db
 
-    def transaction(self, isolation_level=None):
+    def transaction(self, isolation_level=Isolation.DEFERRED):
         """
         Get a context manager that manages a transaction on the database.
         The value of the context manager is a :py:class:`~sqlite3.Cursor`.
@@ -210,22 +213,46 @@ class SQLiteDB(AbstractContextManager):
         """
         if not self.__db:
             raise AttributeError("database has been closed")
-        db = self.__db
-        if isolation_level:
-            db.isolation_level = isolation_level.value
-        return _DbWrapper(db)
+        return _DbWrapper(self.__db, isolation_level)
 
 
 class _DbWrapper(ACMBase):
-    def __init__(self, db):
+    """
+    Transaction handling wrapper.
+
+    Based on code in
+    https://github.com/python/cpython/issues/61162#issuecomment-1185463221
+    except this code is also careful about nesting.
+    """
+
+    def __init__(self, db, isolation_level):
         """
         :param sqlite3.Connection db:
         """
         self.__d = db
+        self.__isolation_level = isolation_level.value
+        self.__cursor = None
 
     def __enter__(self):
-        self.__d.__enter__()
-        return self.__d.cursor()
+        c = self.__d.cursor()
+        if not self.__d.in_transaction:
+            self.__cursor = c
+            # Actually begin the transaction now
+            c.execute("BEGIN " + self.__isolation_level)
+            assert self.__d.in_transaction
+        else:
+            # If we didn't start it, we don't finish it
+            self.__cursor = None
+        return c
 
     def __exit__(self, exc_type, exc_value, traceback):
-        return self.__d.__exit__(exc_type, exc_value, traceback)
+        if self.__cursor:
+            if exc_type is None:
+                self.__d.commit()
+            else:
+                self.__d.rollback()
+            assert not self.__d.in_transaction
+            self.__cursor.close()
+            self.__cursor = None
+        # This code never stops the exception flowing
+        return False
