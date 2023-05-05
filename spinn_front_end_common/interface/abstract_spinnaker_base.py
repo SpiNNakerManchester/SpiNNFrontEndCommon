@@ -1323,6 +1323,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_placements_with_application_graph()
         self._json_placements()
         self._deduce_data_n_timesteps()
+        self._report_sdram_usage_per_chip()
 
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
@@ -2170,7 +2171,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.increment_current_run_timesteps(
             n_machine_time_steps)
 
-        self._report_sdram_usage_per_chip()
         self._report_drift(start=True)
         if self._data_writer.get_requires_mapping():
             self._execute_create_database_interface(run_time)
