@@ -74,7 +74,7 @@ class DatabaseWriter(SQLiteDB):
         :return: whether the database is needed for the application
         :rtype: bool
         """
-        if FecDataView.get_vertices_by_type(LivePacketGather):
+        if next(FecDataView.get_vertices_by_type(LivePacketGather), False):
             return True
         for vertex in FecDataView.get_vertices_by_type(
                 AbstractSupportsDatabaseInjection):
@@ -157,27 +157,6 @@ class DatabaseWriter(SQLiteDB):
             str(m_vertex.label))
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
-
-    def add_system_params(self, runtime):
-        """
-        Write system parameters into the database.
-
-        :param int runtime: the amount of time the application is to run for
-        """
-        with self.transaction() as cur:
-            cur.executemany(
-                """
-                INSERT INTO configuration_parameters (
-                    parameter_id, value)
-                VALUES (?, ?)
-                """, [
-                    ("machine_time_step",
-                     FecDataView.get_simulation_time_step_us()),
-                    ("time_scale_factor",
-                     FecDataView.get_time_scale_factor()),
-                    ("infinite_run", str(runtime is None)),
-                    ("runtime", -1 if runtime is None else runtime),
-                    ("app_id", FecDataView.get_app_id())])
 
     def add_proxy_configuration(self):
         """

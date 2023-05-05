@@ -145,7 +145,7 @@ def test_database_interface():
     tags.add_ip_tag(tag, next(iter(lpg_vertex.machine_vertices)))
     writer.set_tags(tags)
 
-    db_path = database_interface(1000)
+    db_path = database_interface()
     print(db_path)
 
     reader = DatabaseReader(db_path)

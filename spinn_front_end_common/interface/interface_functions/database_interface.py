@@ -24,9 +24,8 @@ from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime):
+def database_interface():
     """
-    :param int runtime:
     :return: where the database is located
     :rtype: str
     """
@@ -43,20 +42,18 @@ def database_interface(runtime):
         writer = DatabaseWriter()
         logger.info("Creating live event connection database in {}",
                     writer.database_path)
-        _write_to_db(writer, runtime)
+        _write_to_db(writer)
         writer.close()
         return writer.database_path
     return None
 
 
-def _write_to_db(writer, runtime):
+def _write_to_db(writer):
     """
     :param DatabaseWriter writer:
-    :param int runtime:
     """
     with writer as w, ProgressBar(
             6, "Creating graph description database") as p:
-        w.add_system_params(runtime)
         w.add_proxy_configuration()
         p.update()
         w.add_machine_objects()

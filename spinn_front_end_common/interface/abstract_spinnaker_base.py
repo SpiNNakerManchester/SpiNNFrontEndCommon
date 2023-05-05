@@ -106,6 +106,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.splitter_selectors import (
     splitter_selector)
 from spinn_front_end_common.interface.java_caller import JavaCaller
+from spinn_front_end_common.utilities.database import DatabaseUpdater
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
@@ -460,6 +461,11 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         if not self._data_writer.is_ran_last():
             self._do_write_metadata()
+
+        path = self._data_writer.get_database_file_path()
+        if path is not None:
+            updater = DatabaseUpdater(path)
+            updater.add_system_params(run_time)
 
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
@@ -1346,6 +1352,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_routing_setup()
         self._execute_graph_binary_gatherer()
 
+        self._execute_create_database_interface()
+
         FecTimer.end_category(TimerCategory.MAPPING)
 
     # Overridden by spy which adds placement_order
@@ -2020,7 +2028,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             else:
                 timer.skip("No Simulation Interface used")
 
-    def _execute_create_database_interface(self, run_time):
+    def _execute_create_database_interface(self):
         """
         Runs, times and logs Database Interface Creator.
 
@@ -2029,10 +2037,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         :param int run_time: the run duration in milliseconds.
         """
         with FecTimer("Create database interface", TimerWork.OTHER):
-            # Used to used compressed routing tables if available on host
-            # TODO consider not saving router tabes.
-            self._data_writer.set_database_file_path(
-                database_interface(run_time))
+            self._data_writer.set_database_file_path(database_interface())
 
     def _execute_create_notifiaction_protocol(self):
         """
@@ -2172,8 +2177,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             n_machine_time_steps)
 
         self._report_drift(start=True)
-        if self._data_writer.get_requires_mapping():
-            self._execute_create_database_interface(run_time)
         self._execute_create_notifiaction_protocol()
         if (self._data_writer.is_ran_ever() and
                 not self._data_writer.get_requires_mapping() and
