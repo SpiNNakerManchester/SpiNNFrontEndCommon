@@ -16,6 +16,7 @@ import logging
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -56,7 +57,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: Type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO power_provenance(
@@ -77,7 +78,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param float the_value: data
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO gatherer_provenance(
@@ -94,7 +95,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO monitor_provenance(
@@ -113,7 +114,7 @@ class ProvenanceWriter(BaseDatabase):
         :param float the_value: data
         :param bool expected: Flag to say this data was expected
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO router_provenance(
@@ -131,7 +132,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             core_id = self._get_core_id(cur, x, y, p)
             cur.execute(
                 """
@@ -149,7 +150,7 @@ class ProvenanceWriter(BaseDatabase):
 
         :param str message:
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT INTO reports(message)
@@ -175,7 +176,7 @@ class ProvenanceWriter(BaseDatabase):
         :param str description: type of value
         :param int the_value: data
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.execute(
                 """
                 INSERT OR IGNORE INTO connector_provenance(
@@ -196,7 +197,7 @@ class ProvenanceWriter(BaseDatabase):
         """
         if not connections:
             return
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.executemany(
                 """
                 INSERT OR IGNORE INTO boards_provenance(
@@ -211,7 +212,7 @@ class ProvenanceWriter(BaseDatabase):
 
         This will lock the database and then try to do a log
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             # lock the database
             cur.execute(
                 """

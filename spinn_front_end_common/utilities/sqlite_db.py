@@ -218,6 +218,9 @@ class SQLiteDB(AbstractContextManager):
 
 class _DbWrapper(ACMBase):
     def __init__(self, db):
+        """
+        :param sqlite3.Connection db:
+        """
         self.__d = db
 
     def __enter__(self):

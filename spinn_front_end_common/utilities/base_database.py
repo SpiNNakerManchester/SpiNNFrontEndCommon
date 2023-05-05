@@ -70,7 +70,10 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
 
     def _get_core_id(self, cursor, x, y, p):
         """
+        Get the ID for a core.
+
         :param ~sqlite3.Cursor cursor:
+            How to talk to the DB. Must have a transaction open.
         :param int x:
         :param int y:
         :param int p:

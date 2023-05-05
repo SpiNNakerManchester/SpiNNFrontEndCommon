@@ -16,7 +16,7 @@ import logging
 import os
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinnman.spalloc import SpallocJob
@@ -108,7 +108,7 @@ class DatabaseWriter(SQLiteDB):
         Store the machine object into the database.
         """
         machine = FecDataView.get_machine()
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             self.__machine_to_id[machine] = self._machine_id = self.__insert(
                 cur,
                 """
@@ -132,7 +132,7 @@ class DatabaseWriter(SQLiteDB):
         """
         Stores the main application graph description (vertices, edges).
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             # add vertices
             for vertex in FecDataView.iterate_vertices():
                 vertex_id = self.__insert(
@@ -164,7 +164,7 @@ class DatabaseWriter(SQLiteDB):
 
         :param int runtime: the amount of time the application is to run for
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.executemany(
                 """
                 INSERT INTO configuration_parameters (
@@ -192,14 +192,14 @@ class DatabaseWriter(SQLiteDB):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                with self.transaction() as cur:
+                with self.transaction(Isolation.IMMEDIATE) as cur:
                     job._write_session_credentials_to_db(cur)
 
     def add_placements(self):
         """
         Adds the placements objects into the database.
         """
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             # Make sure machine vertices are represented
             for placement in FecDataView.iterate_placemements():
                 if placement.vertex not in self.__vertex_to_id:
@@ -220,7 +220,7 @@ class DatabaseWriter(SQLiteDB):
         Adds the tags into the database.
         """
         tags = FecDataView.get_tags()
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.executemany(
                 """
                 INSERT INTO IP_tags(
@@ -242,7 +242,7 @@ class DatabaseWriter(SQLiteDB):
         # This could happen if there are no LPGs
         if machine_vertices is None:
             return
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             for (m_vertex, partition_id) in machine_vertices:
                 atom_keys = list()
                 if isinstance(m_vertex.app_vertex, HasCustomAtomKeyMap):
@@ -280,7 +280,7 @@ class DatabaseWriter(SQLiteDB):
                    for lpg_m_vertex, m_vertex, part_id
                    in vertex.splitter.targeted_lpgs]
 
-        with self.transaction() as cur:
+        with self.transaction(Isolation.IMMEDIATE) as cur:
             cur.executemany(
                 """
                 INSERT INTO m_vertex_to_lpg_vertex(

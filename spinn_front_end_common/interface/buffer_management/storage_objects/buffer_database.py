@@ -17,6 +17,7 @@ import time
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 _SECONDS_TO_MICRO_SECONDS_CONVERSION = 1000
 #: Name of the database in the data folder
@@ -58,7 +59,7 @@ class BufferDatabase(BaseDatabase):
         :return: True if any region was changed
         :rtype: bool
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             for row in cursor.execute(
                     """
                     SELECT region_id FROM region_view
@@ -169,7 +170,7 @@ class BufferDatabase(BaseDatabase):
         # pylint: disable=too-many-arguments, unused-argument
         # TODO: Use missing
         datablob = sqlite3.Binary(data)
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             region_id = self._get_region_id(cursor, x, y, p, region)
             if self.__use_main_table(cursor, region_id):
                 cursor.execute(
@@ -232,7 +233,7 @@ class BufferDatabase(BaseDatabase):
         :rtype: tuple(memoryview, bool)
         """
         try:
-            with self.transaction() as cursor:
+            with self.transaction(Isolation.DEFERRED) as cursor:
                 region_id = self._get_region_id(cursor, x, y, p, region)
                 data = self._read_contents(cursor, region_id)
                 # TODO missing data
@@ -253,7 +254,7 @@ class BufferDatabase(BaseDatabase):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                with self.transaction() as cur:
+                with self.transaction(Isolation.IMMEDIATE) as cur:
                     job._write_session_credentials_to_db(cur)
 
     def _set_core_name(self, cursor, x, y, p, core_name):
@@ -278,7 +279,7 @@ class BufferDatabase(BaseDatabase):
                 """, (core_name, x, y, p))
 
     def store_vertex_labels(self):
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             for placement in FecDataView.iterate_placemements():
                 self._set_core_name(cursor, placement.x, placement.y,
                                     placement.p, placement.vertex.label)
@@ -290,7 +291,7 @@ class BufferDatabase(BaseDatabase):
                             f"SCAMP(OS)_{chip.x}:{chip.y}")
 
     def get_core_name(self, x, y, p):
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT core_name

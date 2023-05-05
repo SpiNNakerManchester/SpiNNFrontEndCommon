@@ -16,6 +16,7 @@ import os
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+from spinn_front_end_common.utilities.sqlite_db import Isolation
 
 
 class ProvenanceReader(BaseDatabase):
@@ -99,7 +100,7 @@ class ProvenanceReader(BaseDatabase):
         :rtype: list(tuple or ~sqlite3.Row)
         """
         results = []
-        with self.transaction() as cur:
+        with self.transaction(Isolation.DEFERRED) as cur:
             for row in cur.execute(query, params):
                 results.append(row)
         return results

@@ -20,7 +20,7 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
-from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from spinn_front_end_common.utilities.sqlite_db import SQLiteDB, Isolation
 from .data_row_writer import DataRowWriter
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
@@ -104,7 +104,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param bytes spec_bytes: the data specification byte-code
         """
         chip = FecDataView().get_chip_at(core_x, core_y)
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.execute(
                 """
                 INSERT INTO core(
@@ -129,7 +129,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: data specification as byte code
         :rtype: bytes
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT content FROM core
@@ -149,7 +149,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: Yields the (x, y, p)
         :rtype: iterable(tuple(int,int,int))
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT x, y, processor FROM core
@@ -168,7 +168,7 @@ class DsSqlliteDatabase(SQLiteDB):
             Yields the (x, y, p) and saved data specification byte-code pairs
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT x, y, processor, content FROM core
@@ -189,7 +189,7 @@ class DsSqlliteDatabase(SQLiteDB):
             region_size triples
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT x, y, processor, content, memory_used FROM core
@@ -210,7 +210,7 @@ class DsSqlliteDatabase(SQLiteDB):
             Yields the (x, y, p) and saved data specification byte-code pairs
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT x, y, processor, content, memory_used  FROM core
@@ -226,7 +226,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
@@ -244,7 +244,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
@@ -262,7 +262,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
@@ -278,7 +278,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
         :param int app_id: value to set
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -295,7 +295,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int p: core processor ID
         :rtype: int
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT app_id FROM core
@@ -312,7 +312,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param ~spinn_machine.CoreSubsets core_subsets:
             Which cores to mark.
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.executemany(
                 """
                 UPDATE core SET
@@ -333,7 +333,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: start_address, memory_used, memory_written
         :rtype: DataWritten
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT start_address, memory_used, memory_written
@@ -357,7 +357,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int used: size allocated
         :param int written: bytes written
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -383,7 +383,7 @@ class DsSqlliteDatabase(SQLiteDB):
                         chip.nearest_ethernet_y, self.__root_ethernet_id))
 
     def set_size_info(self, x, y, p, memory_used):
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -410,7 +410,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Clears the provenance for all rows.
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.IMMEDIATE) as cursor:
             cursor.execute(
                 """
                 UPDATE core SET
@@ -426,7 +426,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT count(*) as count FROM core
@@ -448,7 +448,7 @@ class DsSqlliteDatabase(SQLiteDB):
             and memory_written
         :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
-        with self.transaction() as cursor:
+        with self.transaction(Isolation.DEFERRED) as cursor:
             for row in cursor.execute(
                     """
                     SELECT
@@ -487,5 +487,5 @@ class DsSqlliteDatabase(SQLiteDB):
             # can't check that because of import circularity.
             job = mac._job
             if isinstance(job, SpallocJob):
-                with self.transaction() as cur:
+                with self.transaction(Isolation.IMMEDIATE) as cur:
                     job._write_session_credentials_to_db(cur)
