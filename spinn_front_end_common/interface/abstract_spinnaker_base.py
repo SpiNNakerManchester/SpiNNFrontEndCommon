@@ -1194,7 +1194,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             if not start and timer.skip_if_cfg_false(
                     "Reports", "write_drift_report_end"):
                 return
-            drift_report()
+            drift_report(start)
 
     def _execute_locate_executable_start_type(self):
         """

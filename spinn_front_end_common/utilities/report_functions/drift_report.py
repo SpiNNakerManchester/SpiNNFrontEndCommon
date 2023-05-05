@@ -22,14 +22,16 @@ from spinn_front_end_common.data import FecDataView
 
 # The fixed point position for drift readings
 DRIFT_FP = 1 << 17
-CLOCK_DRIFT_REPORT = "clock_drift.csv"
+CLOCK_DRIFT_REPORT = "clock_drift{}.csv"
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def drift_report():
+def drift_report(start):
     """
     A report on the clock drift as reported by each chip
+
+    :param bool start: Is this the start or the end
     """
     ethernet_only = get_config_bool(
             "Reports", "drift_report_ethernet_only")
@@ -40,12 +42,14 @@ def drift_report():
         n_chips = len(eth_chips)
 
     # create file path
-    directory_name = os.path.join(
-        FecDataView.get_run_dir_path(), CLOCK_DRIFT_REPORT)
+    report_file = os.path.join(
+        FecDataView.get_run_dir_path(),
+        CLOCK_DRIFT_REPORT.format(FecDataView.get_reset_str()))
 
     # If the file is new, write a header
-    if not os.path.exists(directory_name):
-        with open(directory_name, "w", encoding="utf-8") as writer:
+    if not os.path.exists(report_file):
+        with open(report_file, "w", encoding="utf-8") as writer:
+            writer.write("Taken,")
             for eth_chip in eth_chips:
                 if ethernet_only:
                     writer.write(f'"{eth_chip.x} {eth_chip.y}",')
@@ -60,7 +64,13 @@ def drift_report():
 
     # iterate over ethernet chips and then the chips on that board
     txrx = FecDataView.get_transceiver()
-    with open(directory_name, "a", encoding="utf-8") as writer:
+    with open(report_file, "a", encoding="utf-8") as writer:
+        if start:
+            writer.write("Before run ")
+        else:
+            writer.write("After run ")
+        writer.write(
+            f"{FecDataView.get_run_number()}_{FecDataView.get_run_step()},")
         for eth_chip in eth_chips:
             if ethernet_only:
                 __write_drift(txrx, eth_chip, writer)
