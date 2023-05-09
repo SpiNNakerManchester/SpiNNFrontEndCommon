@@ -22,6 +22,7 @@ import sqlite3
 import struct
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.logger_utils import warn_once
+from pacman.exceptions import PacmanValueError
 logger = logging.getLogger(__name__)
 
 
@@ -35,6 +36,22 @@ class Isolation(enum.Enum):
     IMMEDIATE = "IMMEDIATE"
     #: Take a write lock immediately. This is the strongest lock type.
     EXCLUSIVE = "EXCLUSIVE"
+
+
+class Synchronisation(enum.Enum):
+    """
+    Synchronisation levels for :py:meth:`SQLiteDB.synchronisation`.
+    Higher synchronisation levels carry substantial performance penalties
+    but offer higher durability guarantees.
+    """
+    #: Let the operating system synchronise data to disk on its own schedule.
+    OFF = "OFF"
+    #: Synchronise data to disk on checkpoint.
+    NORMAL = "NORMAL"
+    #: Synchronise on commit.
+    FULL = "FULL"
+    #: Insist on synchronising fully to the disk.
+    EXTRA = "EXTRA"
 
 
 class SQLiteDB(AbstractContextManager):
@@ -53,6 +70,17 @@ class SQLiteDB(AbstractContextManager):
     See the `SQLite SQL documentation <https://www.sqlite.org/lang.html>`_ for
     details of how to write queries, and the Python :py:mod:`sqlite3` module
     for how to do parameter binding.
+
+    .. note::
+        If you plan to use the WAL journalling mode for the DB, you are
+        *recommended* to set this up in the DDL file via::
+
+            PRAGMA journal_mode=WAL;
+
+        This is because the journal mode is persistent for database.
+        For details, see the
+        `SQLite documentation <https://www.sqlite.org/wal.html>`_ on
+        the write-ahead log.
     """
 
     __slots__ = [
@@ -62,7 +90,9 @@ class SQLiteDB(AbstractContextManager):
 
     def __init__(self, database_file=None, *, read_only=False, ddl_file=None,
                  row_factory=sqlite3.Row, text_factory=memoryview,
-                 case_insensitive_like=True):
+                 case_insensitive_like=True,
+                 timeout=5.0,
+                 synchronisation=Synchronisation.NORMAL):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -92,6 +122,13 @@ class SQLiteDB(AbstractContextManager):
         :param bool case_insensitive_like:
             Whether we want the ``LIKE`` matching operator to be case-sensitive
             or case-insensitive (default).
+        :param float timeout:
+            How many seconds the connection should wait before raising an
+            `OperationalError` when a table is locked. If another connection
+            opens a transaction to modify a table, that table will be locked
+            until the transaction is committed. Default five seconds.
+        :param Synchronisation synchronisation:
+            The synchronisation level. Doesn't normally need to be altered.
         """
         self.__db = None
         if database_file is None:
@@ -102,9 +139,10 @@ class SQLiteDB(AbstractContextManager):
                 raise FileNotFoundError(f"no such DB: {database_file}")
             db_uri = pathlib.Path(os.path.abspath(database_file)).as_uri()
             # https://stackoverflow.com/a/21794758/301832
-            self.__db = sqlite3.connect(f"{db_uri}?mode=ro", uri=True)
+            self.__db = sqlite3.connect(
+                f"{db_uri}?mode=ro", uri=True, timeout=timeout)
         else:
-            self.__db = sqlite3.connect(database_file)
+            self.__db = sqlite3.connect(database_file, timeout=timeout)
 
         # We want to assume control over transactions ourselves
         self.__db.isolation_level = None
@@ -132,6 +170,9 @@ class SQLiteDB(AbstractContextManager):
         self.pragma("foreign_keys", True)
         self.pragma("recursive_triggers", True)
         self.pragma("trusted_schema", False)
+        # Direct PRAGMA
+        self.__db.executescript(
+            f"PRAGMA main.synchronous={synchronisation.value};")
 
     def __del__(self):
         self.close()
@@ -154,8 +195,10 @@ class SQLiteDB(AbstractContextManager):
 
         :param str pragma_name:
             The name of the pragma to set.
+            *Must be the name of a supported pragma!*
         :param value:
             The value to set the pragma to.
+            If a string, must not contain a single quote.
         :type value: bool or int or str
         """
         if isinstance(value, bool):
@@ -164,9 +207,12 @@ class SQLiteDB(AbstractContextManager):
             else:
                 self.__db.executescript(f"PRAGMA {pragma_name}=OFF;")
         elif isinstance(value, int):
-            self.__db.executescript(f"PRAGMA {pragma_name}={value};")
+            self.__db.executescript(f"PRAGMA {pragma_name}={int(value)};")
         elif isinstance(value, str):
-            self.__db.executescript(f"PRAGMA {pragma_name}='{value}';")
+            if "'" in value:  # Safety check!
+                raise PacmanValueError(
+                    "DB pragma values must not contain single quotes")
+            self.__db.executescript(f"PRAGMA {pragma_name}='{str(value)}';")
         else:
             raise TypeError("can only set pragmas to bool, int or str")
 
@@ -203,12 +249,18 @@ class SQLiteDB(AbstractContextManager):
             with db.transaction() as cursor:
                 cursor.execute(...)
 
+        If the code inside the context throws, the transaction will be rolled
+        back, otherwise it will be committed.
+
+        .. note::
+            You are *recommended* to make no alterations to global data
+            structures inside a transaction to avoid problems with a
+            transaction rollback not picking up those changes too, and to
+            instead produce data that is processed by code outside the
+            transaction.
+
         :param Isolation isolation_level:
             The transaction isolation level.
-
-            .. note::
-                This sets it for the connection!
-                Can usually be *not* specified.
         :rtype: ~typing.ContextManager(~sqlite3.Cursor)
         """
         if not self.__db:
@@ -228,6 +280,7 @@ class _DbWrapper(ACMBase):
     def __init__(self, db, isolation_level):
         """
         :param sqlite3.Connection db:
+        :param Isolation isolation_level:
         """
         self.__d = db
         self.__isolation_level = isolation_level.value
@@ -238,7 +291,7 @@ class _DbWrapper(ACMBase):
         if not self.__d.in_transaction:
             self.__cursor = c
             # Actually begin the transaction now
-            c.execute("BEGIN " + self.__isolation_level)
+            c.execute(f"BEGIN {self.__isolation_level}")
             assert self.__d.in_transaction
         else:
             # If we didn't start it, we don't finish it
