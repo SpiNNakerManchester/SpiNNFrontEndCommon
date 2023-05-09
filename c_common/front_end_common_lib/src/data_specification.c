@@ -47,11 +47,11 @@ enum {
 
 static uint32_t binary_checksum;
 
-static inline uint32_t get_binary_checksum(void) {
+uint32_t get_binary_checksum(void) {
     uint32_t *ro_data = (uint32_t *) ITCM_START;
     uint32_t sum = 0;
-    for (uint32_t i = 0; i < ITCM_LENGTH; i++) {
-        sum += ro_data[i];
+    for (uint32_t i = ITCM_LENGTH; i > 0; i--) {
+        sum += ro_data[i - 1];
     }
     return sum;
 }
@@ -84,8 +84,8 @@ static inline void verify_checksum(data_specification_metadata_t *ds_regions,
 
     // Do simple unsigned 32-bit checksum
     uint32_t sum = 0;
-    for (uint32_t i = 0; i < n_words; i++) {
-        sum += data[i];
+    for (uint32_t i = n_words; i > 0; i--) {
+        sum += data[i - 1];
     }
     if (sum != checksum) {
         log_error("[ERROR] Region %u with %u words starting at 0x%08x: "
@@ -112,8 +112,8 @@ data_specification_metadata_t *data_specification_get_data_address(void) {
 
     // Cast to the correct type
     data_specification_metadata_t *ds_regions = (data_specification_metadata_t *) user0;
-    for (uint32_t region = 0; region < N_REGIONS; region++) {
-        verify_checksum(ds_regions, region);
+    for (uint32_t region = N_REGIONS; region > 0; region--) {
+        verify_checksum(ds_regions, region - 1);
     }
 
     return ds_regions;
@@ -133,7 +133,7 @@ bool data_specification_read_header(
     }
 
     // Log what we have found
-    log_info("magic = %08x, version = %d.%d", ds_regions->magic_number,
+    log_debug("magic = %08x, version = %d.%d", ds_regions->magic_number,
             ds_regions->version >> VERSION_SHIFT,
             ds_regions->version & VERSION_MASK);
 
