@@ -126,24 +126,17 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     return false;
 }
 
-__attribute__((noreturn))
-//! \brief Stop the program because of a bad recording request
-//! \param[in] data: The address we were seeking to record from
-//! \param[in] size: The amount of data we were seeking to record
-void recording_bad_offset(void *data, uint32_t size) {
-    log_error("DMA transfer of non-word data quantity in recording! "
-            "(data=0x%08x, size=0x%x)", data, size);
-    rt_error(RTE_SWERR);
-}
-
 void recording_finalise(void) {
     log_debug("Finalising recording channels");
 
     // Loop through channels
     for (uint32_t channel = 0; channel < regions->n_regions; channel++) {
-        recording_channel_t *rec = &channels[channel];
-        // If this channel's in use, copy things back to SDRAM
-        if (has_been_initialised(rec)) {
+        recording_region_t *region = &regions->regions[channel];
+        uint32_t space = region->space;
+        if (space > 0) {
+
+            // If this channel's in use, copy things back to SDRAM
+            recording_channel_t *rec = &channels[channel];
             recording_region_t *reg = &regions->regions[channel];
             log_info("Recording channel %u, start=0x%08x, end=0x%08x, write=0x%08x, space=%u",
                     channel, rec->start, rec->end, rec->write, rec->space);

@@ -83,4 +83,7 @@ static inline void *data_specification_get_region(
     return ds_regions->regions[region].pointer;
 }
 
+//! \brief Check the binary checksum still gives the right value
+bool data_specification_validate_binary(void);
+
 #endif

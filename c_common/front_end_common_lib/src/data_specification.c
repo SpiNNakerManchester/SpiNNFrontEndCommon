@@ -39,6 +39,32 @@ enum {
 
 #define N_REGIONS 32
 
+// ITCM is 32K
+#define ITCM_LENGTH 0x7FFF
+
+// ITCM starts at 0
+#define ITCM_START 0
+
+static uint32_t binary_checksum;
+
+uint32_t get_binary_checksum(void) {
+    uint32_t *ro_data = (uint32_t *) ITCM_START;
+    uint32_t sum = 0;
+    for (uint32_t i = ITCM_LENGTH; i > 0; i--) {
+        sum += ro_data[i - 1];
+    }
+    return sum;
+}
+
+bool data_specification_validate_binary(void) {
+    // Skip if we don't have a checksum stored (unlikely to be 0 though possible)
+    if (binary_checksum == 0) {
+        return true;
+    }
+    uint32_t sum = get_binary_checksum();
+    return sum == binary_checksum;
+}
+
 
 /**
  * \brief Verify the checksum of a region; on failure, RTE
@@ -58,8 +84,8 @@ static inline void verify_checksum(data_specification_metadata_t *ds_regions,
 
     // Do simple unsigned 32-bit checksum
     uint32_t sum = 0;
-    for (uint32_t i = 0; i < n_words; i++) {
-        sum += data[i];
+    for (uint32_t i = n_words; i > 0; i--) {
+        sum += data[i - 1];
     }
     if (sum != checksum) {
         log_error("[ERROR] Region %u with %u words starting at 0x%08x: "
@@ -82,11 +108,12 @@ data_specification_metadata_t *data_specification_get_data_address(void) {
     uint user0 = virtual_processor_table[spin1_get_core_id()].user0;
 
     log_debug("SDRAM data begins at address: %08x", user0);
+    binary_checksum = get_binary_checksum();
 
     // Cast to the correct type
     data_specification_metadata_t *ds_regions = (data_specification_metadata_t *) user0;
-    for (uint32_t region = 0; region < N_REGIONS; region++) {
-        verify_checksum(ds_regions, region);
+    for (uint32_t region = N_REGIONS; region > 0; region--) {
+        verify_checksum(ds_regions, region - 1);
     }
 
     return ds_regions;
@@ -106,7 +133,7 @@ bool data_specification_read_header(
     }
 
     // Log what we have found
-    log_info("magic = %08x, version = %d.%d", ds_regions->magic_number,
+    log_debug("magic = %08x, version = %d.%d", ds_regions->magic_number,
             ds_regions->version >> VERSION_SHIFT,
             ds_regions->version & VERSION_MASK);
 

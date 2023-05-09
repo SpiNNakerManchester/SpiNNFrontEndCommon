@@ -25,6 +25,7 @@ from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     get_app_partitions)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from .router_summary import RouterSummary
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -329,9 +330,13 @@ def _write_one_vertex_application_placement(f, vertex):
                     .format(sv.vertex_slice, sv.fpga_id, sv.fpga_link_id,
                             sv.board_address, sv.linked_chip_coordinates))
         else:
+            binary = ""
+            if isinstance(sv, AbstractHasAssociatedBinary):
+                binary = f" using binary file: {sv.get_binary_file_name()}"
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p})"
+                    f"{binary} \n")
     f.write("\n")
 
 
@@ -380,6 +385,9 @@ def _write_one_chip_application_placement(f, chip):
         pro_id = placement.p
         vertex = placement.vertex
         app_vertex = vertex.app_vertex
+        binary = ""
+        if isinstance(vertex, AbstractHasAssociatedBinary):
+            binary = f" using binary file: {vertex.get_binary_file_name()}"
         if app_vertex is not None:
             vertex_label = app_vertex.label
             vertex_model = app_vertex.__class__.__name__
@@ -388,12 +396,12 @@ def _write_one_chip_application_placement(f, chip):
                 pro_id, vertex_label, vertex_atoms))
             f.write("              Slice on this core: {}\n".format(
                 vertex.vertex_slice))
-            f.write("              Model: {}\n".format(vertex_model))
+            f.write("              Model: {}{}\n".format(vertex_model, binary))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
                 pro_id, vertex.label))
-            f.write("              Model: {}\n".format(
-                vertex.__class__.__name__))
+            f.write("              Model: {}{}\n".format(
+                vertex.__class__.__name__, binary))
 
         sdram = vertex.sdram_required
         f.write("              SDRAM required: {}; {} per timestep\n\n"
