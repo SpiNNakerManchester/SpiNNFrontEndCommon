@@ -470,6 +470,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
             self._do_load()
+        else:
+            self._execute_dsg_region_reloader()
 
         if run_time is None:
             self._do_run_no_runtime()
@@ -2128,7 +2130,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             called for the simulation to continue.
         :return:
         """
-
         # Run for each of the given steps
         if self._run_until_complete:
             logger.info("Running until complete")
@@ -2178,10 +2179,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._report_drift(start=True)
         self._execute_create_notifiaction_protocol()
-        if (self._data_writer.is_ran_ever() and
-                not self._data_writer.get_requires_mapping() and
-                not self._data_writer.get_requires_data_generation()):
-            self._execute_dsg_region_reloader()
         self._execute_runtime_update(n_sync_steps)
         self._execute_runner(n_sync_steps, run_time)
         if n_machine_time_steps is not None or self._run_until_complete:
