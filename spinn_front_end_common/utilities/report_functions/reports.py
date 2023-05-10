@@ -212,10 +212,9 @@ def _write_one_router_partition_report(f, partition):
         for m_vertex in outgoing:
             if isinstance(m_vertex, AbstractVirtual):
                 continue
-            source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
-            path = _search_route(source_placement, r_info.key_and_mask)
+            path = _search_route(m_vertex, r_info.key_and_mask)
             f.write(
                 f"    Edge '{edge.label}', "
                 f"from vertex: '{edge.pre_vertex.label}' "
@@ -679,31 +678,29 @@ def generate_comparison_router_report(compressed_routing_tables):
             "Can't open file {} for writing.", file_name)
 
 
-def _search_route(source_placement, key_and_mask):
+def _search_route(source_vertex, key_and_mask):
     """
-    :param ~pacman.model.placements.Placement source_placement:
+    :param ~pacman.model.graphs.machine.MachineVertex source_vertex:
     :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
     :rtype: tuple(str, int)
     """
     # Create text for starting point
     machine = FecDataView.get_machine()
-    source_vertex = source_placement.vertex
     text = ""
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
+        text = "        Virtual SpiNNaker Link on -> "
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
     elif isinstance(source_vertex, MachineFPGAVertex):
-        text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
-            source_placement.x, source_placement.y, source_placement.p)
+        text = "        Virtual FPGA Link on -> "
         flink = machine.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
     else:
+        source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
         y = source_placement.y
         text = "        {}:{}:{} -> ".format(
@@ -740,9 +737,10 @@ def _recursive_trace_to_destinations(
             text += f"\n{pre_space}"
         link = chip.router.get_link(link_id)
         text += f"-> {link}"
-        text += _recursive_trace_to_destinations(
-            link.destination_x, link.destination_y, key_and_mask,
-            new_pre_space)
+        if link is not None:
+            text += _recursive_trace_to_destinations(
+                link.destination_x, link.destination_y, key_and_mask,
+                new_pre_space)
         first = False
 
     return text
