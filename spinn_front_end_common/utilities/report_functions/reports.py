@@ -19,6 +19,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
 from pacman import exceptions
+from pacman.model.graphs import AbstractVirtual
 from pacman.model.graphs.machine import (
     MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
@@ -209,6 +210,8 @@ def _write_one_router_partition_report(f, partition):
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
+            if isinstance(m_vertex, AbstractVirtual):
+                continue
             source_placement = FecDataView.get_placement_of_vertex(m_vertex)
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
