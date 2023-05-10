@@ -31,7 +31,8 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 _LINK_LABELS = {0: 'E', 1: 'NE', 2: 'N', 3: 'W', 4: 'SW', 5: 'S'}
 
-_C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated"
+_C_ROUTING_TABLE_DIR = "compressed_routing_tables_generated{}"
+_COMPARED_FILENAME = "comparison_of_compressed_uncompressed_routing_tables.rpt"
 _PARTITIONING_FILENAME = "partitioned_by_vertex.rpt"
 _PLACEMENT_VTX_GRAPH_FILENAME = "placement_by_vertex_using_graph.rpt"
 _PLACEMENT_VTX_SIMPLE_FILENAME = "placement_by_vertex_without_graph.rpt"
@@ -561,7 +562,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     """
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(),
-        _C_ROUTING_TABLE_DIR + FecDataView.get_reset_str())
+        _C_ROUTING_TABLE_DIR.format(FecDataView.get_reset_str()))
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -638,7 +639,7 @@ def generate_comparison_router_report(compressed_routing_tables):
     routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        compared_filename(FecDataView.get_reset_str()))
+        _COMPARED_FILENAME.format(FecDataView.get_reset_str()))
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(

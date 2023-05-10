@@ -16,7 +16,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.report_functions import reports
 
-_FOLDER_NAME = "routing_tables_from_machine"
+_FOLDER_NAME = "routing_tables_from_machine{}"
 
 
 def routing_table_from_machine_report(routing_tables):
@@ -35,8 +35,9 @@ def routing_table_from_machine_report(routing_tables):
     tables = list(routing_tables.routing_tables)
     progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 
-    folder_name = os.path.join(FecDataView.get_run_dir_path(),
-                               _FOLDER_NAME + FecDataView.get_reset_str())
+    folder_name = os.path.join(
+        FecDataView.get_run_dir_path(),
+        _FOLDER_NAME.format(FecDataView.get_reset_str()))
     os.mkdir(folder_name)
 
     # generate a file for every multicast entry
