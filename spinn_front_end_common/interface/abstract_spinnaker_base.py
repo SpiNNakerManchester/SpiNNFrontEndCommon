@@ -1352,6 +1352,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_system_multicast_routing_generator()
         self._execute_fixed_route_router()
+        self._report_fixed_routes()
+
         self._do_routing()
 
         self._execute_basic_tag_allocator()
@@ -1886,7 +1888,6 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_control_sync(False)
         self._execute_load_fixed_routes()
-        self._report_fixed_routes()
         self._execute_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
