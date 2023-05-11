@@ -30,7 +30,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.utility_models import LivePacketGather
-from spinn_front_end_common.utilities.database import DatabaseReader
+from spinn_front_end_common.utilities.database import (
+    DatabaseReader, DatabaseUpdater)
 
 
 class TestSplitter(AbstractSplitterCommon):
@@ -147,6 +148,10 @@ def test_database_interface():
 
     db_path = database_interface()
     print(db_path)
+
+    # runtime is now updated each run
+    updater = DatabaseUpdater(db_path)
+    updater.add_system_params(1000)
 
     reader = DatabaseReader(db_path)
     assert reader.get_ip_address(0, 0) == writer.get_chip_at(0, 0).ip_address
