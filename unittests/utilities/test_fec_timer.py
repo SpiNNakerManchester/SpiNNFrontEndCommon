@@ -68,10 +68,10 @@ class TestFecTimer(unittest.TestCase):
     def test_nested(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
         FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         FecTimer.end_category(TimerCategory.GET_MACHINE)
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             on, off = db.get_category_timer_sums(TimerCategory.RUN_OTHER)
@@ -79,23 +79,24 @@ class TestFecTimer(unittest.TestCase):
             self.assertGreater(on, 0)
             self.assertGreater(off, 0)
             self.assertEqual(total, on + off)
-            on, off = db.get_category_timer_sums(TimerCategory.MAPPING)
+            on, off = db.get_category_timer_sums(
+                TimerCategory.WITH_MACHINE_MAPPING)
             self.assertGreater(on, 0)
             self.assertGreater(off, 0)
 
     def test_repeat_middle(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
         # Hack for easy testing/ demonstration only
         id1 = FecTimer._category_id
-        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
         id2 = FecTimer._category_id
         self.assertEqual(id1, id2)
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
         id2 = FecTimer._category_id
         self.assertEqual(id1, id2)
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
         id3 = FecTimer._category_id
         self.assertEqual(id1 + 1, id3)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
@@ -116,9 +117,9 @@ class TestFecTimer(unittest.TestCase):
     def test_repeat_mess(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        FecTimer.start_category(TimerCategory.MAPPING)
-        FecTimer.start_category(TimerCategory.MAPPING)
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.RUN_OTHER)
 
@@ -127,7 +128,7 @@ class TestFecTimer(unittest.TestCase):
             FecTimer.end_category(TimerCategory.WAITING)
 
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
         with self.assertRaises(ValueError):
             FecTimer.end_category(TimerCategory.RUN_OTHER)
 
@@ -136,8 +137,8 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
-            FecTimer.start_category(TimerCategory.MAPPING)
-            FecTimer.end_category(TimerCategory.MAPPING)
+            FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
+            FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
             FecTimer.end_category(TimerCategory.RUN_OTHER)
             FecTimer.stop_category_timing()
             total = db.get_category_timer_sum(TimerCategory.WAITING)
@@ -150,11 +151,12 @@ class TestFecTimer(unittest.TestCase):
         FecTimer.start_category(TimerCategory.RUN_OTHER)
         with GlobalProvenance() as db:
             before = db.get_category_timer_sum(TimerCategory.WAITING)
-            FecTimer.start_category(TimerCategory.MAPPING)
+            FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
             FecTimer.start_category(TimerCategory.SHUTTING_DOWN)
             FecTimer.end_category(TimerCategory.SHUTTING_DOWN)
             FecTimer.stop_category_timing()
-            mapping = db.get_category_timer_sum(TimerCategory.MAPPING)
+            mapping = db.get_category_timer_sum(
+                TimerCategory.WITH_MACHINE_MAPPING)
             self.assertGreater(mapping, 0)
             total = db.get_category_timer_sum(TimerCategory.WAITING)
             # As we never ended RUN_OTHER we never got back to WAITING
@@ -165,8 +167,8 @@ class TestFecTimer(unittest.TestCase):
     def test_stop_last_category_blocked(self):
         FecTimer.start_category(TimerCategory.WAITING)
         FecTimer.start_category(TimerCategory.RUN_OTHER)
-        FecTimer.start_category(TimerCategory.MAPPING)
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
         FecTimer.end_category(TimerCategory.RUN_OTHER)
         with self.assertRaises(NotImplementedError):
             FecTimer.end_category(TimerCategory.WAITING)

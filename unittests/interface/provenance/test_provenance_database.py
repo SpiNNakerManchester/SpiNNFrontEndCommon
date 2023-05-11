@@ -64,7 +64,8 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_timings(self):
         with GlobalProvenance() as db:
-            mapping_id = db.insert_category(TimerCategory.MAPPING, False)
+            mapping_id = db.insert_category(
+                TimerCategory.WITH_MACHINE_MAPPING, False)
             db.insert_timing(
                 mapping_id, "compressor", TimerWork.OTHER,
                 timedelta(milliseconds=12), None)
@@ -81,7 +82,7 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_timing(
                 execute_id, "clear", TimerWork.OTHER,
                 timedelta(milliseconds=4), None)
-            data = db.get_timer_sum_by_category(TimerCategory.MAPPING)
+            data = db.get_timer_sum_by_category(TimerCategory.WITH_MACHINE_MAPPING)
             self.assertEqual(12 + 123, data)
             data = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
             self.assertEqual(134 + 344 + 4, data)
@@ -96,10 +97,10 @@ class TestProvenanceDatabase(unittest.TestCase):
 
     def test_category_timings(self):
         with GlobalProvenance() as db:
-            id = db.insert_category(TimerCategory.MAPPING, False)
+            id = db.insert_category(TimerCategory.WITH_MACHINE_MAPPING, False)
             db.insert_category_timing(id, timedelta(milliseconds=12))
 
-            id = db.insert_category(TimerCategory.MAPPING, True)
+            id = db.insert_category(TimerCategory.WITH_MACHINE_MAPPING, True)
             db.insert_category_timing(id, timedelta(milliseconds=123))
 
             id = db.insert_category(TimerCategory.RUN_LOOP, True)
@@ -108,7 +109,8 @@ class TestProvenanceDatabase(unittest.TestCase):
             id = db.insert_category(TimerCategory.RUN_LOOP, False)
             db.insert_category_timing(id, timedelta(milliseconds=344))
 
-            data = db.get_category_timer_sum(TimerCategory.MAPPING)
+            data = db.get_category_timer_sum(
+                TimerCategory.WITH_MACHINE_MAPPING)
         self.assertEqual(12 + 123, data)
 
     def test_gatherer(self):
