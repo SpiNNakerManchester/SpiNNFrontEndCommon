@@ -23,6 +23,7 @@ class TimerCategory(Enum):
     # Category Constants
     WAITING = (auto(), "Waiting")
     SETTING_UP = (auto(), "In Setup")
+    PREPARE_RUN = (auto(), "Preparing run")
     RUN_OTHER = (auto(), "In run other")
     GET_MACHINE = (auto(), "Turning on Machine")
     LOADING = (auto(), "Loading Stage")

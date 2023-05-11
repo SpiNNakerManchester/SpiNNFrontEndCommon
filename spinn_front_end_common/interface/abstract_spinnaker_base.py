@@ -435,37 +435,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not self._should_run():
             return
 
-        self._do_reset_checks()
-
-        FecTimer.setup(self)
-
-        logger.info("Starting execution process")
-
-        self._adjust_config(run_time)
-
-        # Install the Control-C handler
-        # pylint: disable=protected-access
-        if isinstance(threading.current_thread(), threading._MainThread):
-            signal.signal(signal.SIGINT, self.__signal_handler)
-            self._raise_keyboard_interrupt = True
-            sys.excepthook = self.__original_sys_excepthook
-
-        n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
-        if FecDataView.has_allocation_controller():
-            FecDataView.get_allocation_controller().extend_allocation(
-                total_run_time)
+        n_machine_time_steps, total_run_time = self._do_prepare_run(run_time)
 
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
+            self._do_no_machine_mapping(n_machine_time_steps)
             self._do_mapping(total_run_time, n_machine_time_steps)
 
-        if not self._data_writer.is_ran_last():
-            self._do_write_metadata()
-
-        path = self._data_writer.get_database_file_path()
-        if path is not None:
-            updater = DatabaseUpdater(path)
-            updater.add_system_params(run_time)
+        self._do_database_updates(run_time)
 
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
@@ -484,6 +461,39 @@ class AbstractSpinnakerBase(ConfigHandler):
         if isinstance(threading.current_thread(), threading._MainThread):
             self._raise_keyboard_interrupt = False
             sys.excepthook = self.exception_handler
+
+    def _do_prepare_run(self, run_time):
+        """
+        Do the steps that happen every run before mapping
+
+        :param int run_time: the run duration in milliseconds.
+        :return: n_machine_time_steps as a whole int and
+            total_run_time in milliseconds
+        :rtype: tuple(int,float) or tuple(None,None)
+        """
+        FecTimer.setup(self)
+        FecTimer.start_category(TimerCategory.PREPARE_RUN)
+
+        self._do_reset_checks()
+
+        logger.info("Starting execution process")
+
+        self._adjust_config(run_time)
+
+        # Install the Control-C handler
+        # pylint: disable=protected-access
+        if isinstance(threading.current_thread(), threading._MainThread):
+            signal.signal(signal.SIGINT, self.__signal_handler)
+            self._raise_keyboard_interrupt = True
+            sys.excepthook = self.__original_sys_excepthook
+
+        n_machine_time_steps, total_run_time = self._calc_run_time(run_time)
+        if FecDataView.has_allocation_controller():
+            FecDataView.get_allocation_controller().extend_allocation(
+                total_run_time)
+
+        FecTimer.end_category(TimerCategory.PREPARE_RUN)
+        return n_machine_time_steps, total_run_time
 
     def _add_commands_to_command_sender(self, system_placements):
         """
@@ -863,14 +873,15 @@ class AbstractSpinnakerBase(ConfigHandler):
         raise ConfigurationException(
             f"Unexpected cfg setting placer: {name}")
 
-    def _do_write_metadata(self):
-        """
-        Do the various functions to write metadata to the SQLite files.
-        """
-        with FecTimer(
-                "Record vertex labels to database", TimerWork.REPORT):
-            with BufferDatabase() as db:
-                db.store_vertex_labels()
+    def _do_database_updates(self, run_time):
+        with FecTimer("Update databaes", TimerWork.OTHER):
+            if not self._data_writer.is_ran_last():
+                with BufferDatabase() as db:
+                    db.store_vertex_labels()
+            path = self._data_writer.get_database_file_path()
+            if path is not None:
+                updater = DatabaseUpdater(path)
+                updater.add_system_params(run_time)
 
     def _execute_system_multicast_routing_generator(self):
         """
@@ -1287,11 +1298,12 @@ class AbstractSpinnakerBase(ConfigHandler):
                 self._data_writer.reset_sync_signal()
         # hard reset has already stopped application
 
-    def _do_mapping(self, total_run_time, n_machine_time_steps):
+    def _do_no_machine_mapping(self, n_machine_time_steps):
         """
-        Runs, times and logs all the algorithms in the mapping stage.
+        Runs, times and logs all the algorithms in the early mapping stage.
 
-        :param float total_run_time:
+        These are the algorithms which can be run without a machine
+
         :param int n_machine_time_steps:
         """
         FecTimer.start_category(TimerCategory.MAPPING)
@@ -1313,6 +1325,16 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_delay_support_adder()
 
         self._execute_splitter_partitioner()
+        self._report_partitioner()
+        self._execute_local_tdma_builder()
+
+    def _do_mapping(self, total_run_time, n_machine_time_steps):
+        """
+        Runs, times and logs all the algorithms in the mapping stage.
+
+        :param float total_run_time:
+        :param int n_machine_time_steps:
+        """
 
         allocator_data = self._execute_allocator(total_run_time)
         self._execute_machine_generator(allocator_data)
@@ -1325,8 +1347,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_insert_chip_power_monitors(system_placements)
         self._execute_insert_extra_monitor_vertices(system_placements)
 
-        self._report_partitioner()
-        self._execute_local_tdma_builder()
         self._do_placer(system_placements)
         self._report_placements_with_application_graph()
         self._json_placements()
