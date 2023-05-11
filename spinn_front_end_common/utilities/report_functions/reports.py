@@ -242,8 +242,7 @@ def partitioner_report():
 
             f.write("        Partitioning Information by Vertex\n")
             f.write("        ===============================\n\n")
-            f.write(f"Generated: {time_date_string} for target machine "
-                    f"'{FecDataView.get_ipaddress()}'\n\n")
+            f.write(f"Generated: {time_date_string}'\n\n")
 
             for vertex in progress.over(FecDataView.iterate_vertices()):
                 _write_one_vertex_partition(f, vertex)
