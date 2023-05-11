@@ -1241,7 +1241,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         if self._data_writer.has_buffer_manager():
             return
-        with FecTimer("Buffer manager creator", TimerWork.OTHER) as timer:
+        with FecTimer("Buffer manager creator", TimerWork.OTHER):
             self._data_writer.set_buffer_manager(BufferManager())
 
     def _execute_sdram_outgoing_partition_allocator(self):
@@ -1328,7 +1328,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_partitioner()
         self._execute_local_tdma_builder()
         FecTimer.end_category(TimerCategory.NO_MACHINE_MAPPING)
-
 
     def _do_with_machine_mapping(self):
         """

@@ -82,7 +82,8 @@ class TestProvenanceDatabase(unittest.TestCase):
             db.insert_timing(
                 execute_id, "clear", TimerWork.OTHER,
                 timedelta(milliseconds=4), None)
-            data = db.get_timer_sum_by_category(TimerCategory.WITH_MACHINE_MAPPING)
+            data = db.get_timer_sum_by_category(
+                TimerCategory.WITH_MACHINE_MAPPING)
             self.assertEqual(12 + 123, data)
             data = db.get_timer_sum_by_category(TimerCategory.RUN_LOOP)
             self.assertEqual(134 + 344 + 4, data)
