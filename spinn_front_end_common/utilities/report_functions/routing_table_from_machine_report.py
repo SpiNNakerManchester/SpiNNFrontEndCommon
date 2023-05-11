@@ -37,7 +37,7 @@ def routing_table_from_machine_report(routing_tables):
 
     folder_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        _FOLDER_NAME.format(FecDataView.get_reset_str()))
+        _FOLDER_NAME.format(FecDataView.get_load_run_str()))
     os.mkdir(folder_name)
 
     # generate a file for every multicast entry

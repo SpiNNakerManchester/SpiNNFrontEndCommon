@@ -67,6 +67,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._clear()
         # run numbers start at 1 and when not running this is the next one
         self.__fec_data._run_number = 1
+        self.__fec_data._load_run_str = ""
         self.set_up_timings(1000, 1)
 
     @overrides(PacmanDataWriter._setup)
@@ -87,8 +88,6 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter._hard_reset)
     def _hard_reset(self):
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._hard_reset(self)
         SpiNNManDataWriter._local_hard_reset(self)
         self.__fec_data._hard_reset()
@@ -96,16 +95,16 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     @overrides(PacmanDataWriter._soft_reset)
     def _soft_reset(self):
-        if self.is_ran_last():
-            self.__fec_data._reset_number += 1
         PacmanDataWriter._soft_reset(self)
         SpiNNManDataWriter._local_soft_reset(self)
         self.__fec_data._soft_reset()
+        self.__fec_data._load_run_str = f"{self.__fec_data._run_number}"
 
     def __create_run_dir_path(self):
         self.set_run_dir_path(self._child_folder(
             self.__fec_data._timestamp_dir_path,
             f"run_{self.__fec_data._run_number}"))
+        self.__fec_data._load_run_str = ""
 
     def __create_reports_directory(self):
         default_report_file_path = get_config_str(

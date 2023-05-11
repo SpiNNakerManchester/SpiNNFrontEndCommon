@@ -56,7 +56,7 @@ class DsSqlliteDatabase(SQLiteDB):
     @classmethod
     def default_database_file(cls):
         return os.path.join(FecDataView.get_run_dir_path(),
-                            f"ds{FecDataView.get_reset_str()}.sqlite3")
+                            f"ds{FecDataView.get_load_run_str()}.sqlite3")
 
     def __init_db_contents(self):
         """

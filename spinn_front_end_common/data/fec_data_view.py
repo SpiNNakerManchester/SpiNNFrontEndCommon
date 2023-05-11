@@ -66,6 +66,7 @@ class _FecDataModel(object):
         "_java_caller",
         "_live_packet_recorder_params",
         "_live_output_vertices",
+        "_load_run_str",
         "_n_boards_required",
         "_n_chips_required",
         "_n_chips_in_graph",
@@ -74,7 +75,6 @@ class _FecDataModel(object):
         "_notification_protocol",
         "_max_run_time_steps",
         "_monitor_map",
-        "_reset_number",
         "_run_number",
         "_run_step",
         "_simulation_time_step_ms",
@@ -112,8 +112,8 @@ class _FecDataModel(object):
         self._n_boards_required = None
         self._n_chips_required = None
         self._none_labelled_edge_count = 0
-        self._reset_number = 0
         self._run_number = None
+        self._load_run_str = None
         self._simulation_time_step_ms = None
         self._simulation_time_step_per_ms = None
         self._simulation_time_step_per_s = None
@@ -440,30 +440,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         return cls.__fec_data._time_scale_factor is not None
 
-    #  reset number
-
     @classmethod
-    def get_reset_number(cls):
-        """
-        Get the number of times a reset has happened.
-
-        Only counts the first reset after each run.
-
-        So resets that are first soft then hard are ignored.
-        Double reset calls without a run and resets before run are ignored.
-
-        Reset numbers start at zero
-
-        :rtype: int
-        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
-            If the run_number is currently unavailable
-        """
-        if cls.__fec_data._reset_number is None:
-            raise cls._exception("run_number")
-        return cls.__fec_data._reset_number
-
-    @classmethod
-    def get_reset_str(cls):
+    def get_load_run_str(cls):
         """
         Get the number of times a reset has happened as a string.
 
@@ -481,12 +459,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             If the run_number is currently unavailable
         :rtype: str
         """
-        if cls.__fec_data._reset_number is None:
-            raise cls._exception("run_number")
-        if cls.__fec_data._reset_number:
-            return str(cls.__fec_data._reset_number)
-        else:
-            return ""
+        if cls.__fec_data._load_run_str is None:
+            raise cls._exception("load_run_str")
+        return cls.__fec_data._load_run_str
 
     #  run number
 

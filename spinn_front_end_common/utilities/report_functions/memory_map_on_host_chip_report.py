@@ -33,7 +33,7 @@ def memory_map_on_host_chip_report():
     """
     directory_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        "memory_map_reports" + FecDataView.get_reset_str())
+        "memory_map_reports" + FecDataView.get_load_run_str())
     if not os.path.exists(directory_name):
         os.makedirs(directory_name)
 

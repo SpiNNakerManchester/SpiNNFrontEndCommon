@@ -23,7 +23,7 @@ def fixed_route_from_machine_report():
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        "fixed_route_routers"+FecDataView.get_reset_str())
+        "fixed_route_routers"+FecDataView.get_load_run_str())
     transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 

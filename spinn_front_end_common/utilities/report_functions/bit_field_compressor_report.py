@@ -56,7 +56,7 @@ def bitfield_compressor_report():
     :rtype: BitFieldSummary
     """
     file_path = os.path.join(FecDataView.get_run_dir_path(),
-                             file_name(FecDataView.get_reset_str()))
+                             file_name(FecDataView.get_load_run_str()))
     try:
         with open(file_path, "w", encoding="utf-8") as f:
             _write_report(f)

@@ -107,7 +107,7 @@ def router_compressed_summary_report(routing_tables):
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        compressed_routing_summary_filename(FecDataView.get_reset_str()))
+        compressed_routing_summary_filename(FecDataView.get_load_run_str()))
     progress = ProgressBar(FecDataView.get_machine().n_chips,
                            "Generating Routing summary report")
     return _do_router_summary_report(file_name, progress, routing_tables)
@@ -562,7 +562,7 @@ def router_report_from_compressed_router_tables(routing_tables):
     """
     top_level_folder = os.path.join(
         FecDataView.get_run_dir_path(),
-        _C_ROUTING_TABLE_DIR.format(FecDataView.get_reset_str()))
+        _C_ROUTING_TABLE_DIR.format(FecDataView.get_load_run_str()))
     if not os.path.exists(top_level_folder):
         os.mkdir(top_level_folder)
     progress = ProgressBar(routing_tables.routing_tables,
@@ -624,7 +624,7 @@ def _compression_ratio(uncompressed, compressed):
 
 def compared_filename(reset_str):
     return "comparison_of_compressed_uncompressed_routing_tables" + \
-           FecDataView.get_reset_str() + ".rpt"
+           FecDataView.get_load_run_str() + ".rpt"
 
 
 def generate_comparison_router_report(compressed_routing_tables):
@@ -639,7 +639,7 @@ def generate_comparison_router_report(compressed_routing_tables):
     routing_tables = FecDataView.get_uncompressed().routing_tables
     file_name = os.path.join(
         FecDataView.get_run_dir_path(),
-        _COMPARED_FILENAME.format(FecDataView.get_reset_str()))
+        _COMPARED_FILENAME.format(FecDataView.get_load_run_str()))
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             progress = ProgressBar(

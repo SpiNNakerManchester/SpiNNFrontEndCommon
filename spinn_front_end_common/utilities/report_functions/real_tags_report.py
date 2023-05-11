@@ -25,7 +25,7 @@ def tags_from_machine_report():
     Describes what the tags actually present on the machine are.
     """
     filepath = os.path.join(FecDataView.get_run_dir_path(),
-                            file_name(FecDataView.get_reset_str()))
+                            file_name(FecDataView.get_load_run_str()))
     tags = _get_tags()
     with open(filepath, "w", encoding="utf-8") as f:
         f.write("Tags actually read off the machine\n")
