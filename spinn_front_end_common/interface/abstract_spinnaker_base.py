@@ -1242,9 +1242,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         if self._data_writer.has_buffer_manager():
             return
         with FecTimer("Buffer manager creator", TimerWork.OTHER) as timer:
-            if timer.skip_if_virtual_board():
-                return
-
             self._data_writer.set_buffer_manager(BufferManager())
 
     def _execute_sdram_outgoing_partition_allocator(self):
@@ -1999,9 +1996,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Runs, times and logs the energy report if requested.
         """
         with FecTimer("Energy report", TimerWork.REPORT) as timer:
+            # Guaranteed to be False with a virual machine
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
-                return []
-            if timer.skip_if_virtual_board():
                 return []
 
             # TODO runtime is None
