@@ -72,7 +72,9 @@ def compute_energy_used():
         # refer to the time taken in e.g. pop.get_data() or projection.get()
         extraction_time = db.get_timer_sum_by_work(TimerWork.EXTRACT_DATA)
         load_time = db.get_category_timer_sum(TimerCategory.LOADING)
-        mapping_time = db.get_category_timer_sum(TimerCategory.MAPPING)
+        mapping_time = (
+                db.get_category_timer_sum(TimerCategory.NO_MACHINE_MAPPING) +
+                db.get_category_timer_sum(TimerCategory.WITH_MACHINE_MAPPING))
     # TODO get_machine not include here
     power_used = PowerUsed()
 
