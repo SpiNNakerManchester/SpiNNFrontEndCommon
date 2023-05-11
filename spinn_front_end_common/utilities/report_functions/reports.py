@@ -18,8 +18,6 @@ import time
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
-from pacman import exceptions
-from pacman.model.graphs import AbstractVirtual
 from pacman.model.graphs.machine import (
     MachineFPGAVertex, MachineSpiNNakerLinkVertex)
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
