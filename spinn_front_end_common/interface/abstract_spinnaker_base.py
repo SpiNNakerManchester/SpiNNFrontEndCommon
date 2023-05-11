@@ -215,7 +215,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._data_writer.register_binary_search_path(
             os.path.dirname(common_model_binaries.__file__))
 
-        self._data_writer.set_machine_generator(self._get_machine)
+        self._data_writer.set_machine_generator(self._extract_machine)
         FecTimer.end_category(TimerCategory.SETTING_UP)
 
     def _hard_reset(self):
@@ -440,12 +440,14 @@ class AbstractSpinnakerBase(ConfigHandler):
         # build the graphs to modify with system requirements
         if self._data_writer.get_requires_mapping():
             self._do_no_machine_mapping(n_machine_time_steps)
-            self._do_mapping(total_run_time, n_machine_time_steps)
+            self._do_get_machine(total_run_time)
+            self._do_with_machine_mapping()
 
         self._do_database_updates(run_time)
 
         # requires data_generation includes never run and requires_mapping
         if self._data_writer.get_requires_data_generation():
+            self._do_data_generation()
             self._do_load()
         else:
             self._execute_dsg_region_reloader()
@@ -668,27 +670,30 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._data_writer.set_transceiver(transceiver)
             self._data_writer.set_machine(machine)
 
-    def _get_known_machine(self, total_run_time=0.0):
+    def _do_get_machine(self, total_run_time=0.0):
         """
         The Python machine description object.
 
         :param float total_run_time: The total run time to request
         :rtype: ~spinn_machine.Machine
         """
+        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         if not self._data_writer.has_machine():
             if get_config_bool("Machine", "virtual_board"):
                 self._execute_get_virtual_machine()
             else:
                 allocator_data = self._execute_allocator(total_run_time)
                 self._execute_machine_generator(allocator_data)
+            self._json_machine()
+            self._report_board_chip()
+        FecTimer.end_category(TimerCategory.GET_MACHINE)
 
-    def _get_machine(self):
+    def _extract_machine(self):
         """
         The factory method to get a machine.
 
         :rtype: ~spinn_machine.Machine
         """
-        FecTimer.start_category(TimerCategory.GET_MACHINE, True)
         if self._data_writer.is_user_mode() and \
                 self._data_writer.is_soft_reset():
             # Make the reset hard
@@ -696,11 +701,10 @@ class AbstractSpinnakerBase(ConfigHandler):
                 "Calling Get machine after a reset force a hard reset and "
                 "therefore generate a new machine")
             self._hard_reset()
-        self._get_known_machine()
+        self._do_get_machine()
         if not self._data_writer.has_machine():
             raise ConfigurationException(
                 "Not enough information provided to supply a machine")
-        FecTimer.end_category(TimerCategory.GET_MACHINE)
 
     def _create_version_provenance(self):
         """
@@ -1229,7 +1233,6 @@ class AbstractSpinnakerBase(ConfigHandler):
                     set_config(
                         "Buffers", "use_auto_pause_and_resume", "False")
 
-
     def _execute_buffer_manager_creator(self):
         """
         Run, times and logs the buffer manager creator if required.
@@ -1306,7 +1309,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         :param int n_machine_time_steps:
         """
-        FecTimer.start_category(TimerCategory.MAPPING)
+        FecTimer.start_category(TimerCategory.NO_MACHINE_MAPPING)
 
         self._add_dependent_verts_and_edges_for_application_graph()
 
@@ -1327,20 +1330,17 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_splitter_partitioner()
         self._report_partitioner()
         self._execute_local_tdma_builder()
+        FecTimer.end_category(TimerCategory.NO_MACHINE_MAPPING)
 
-    def _do_mapping(self, total_run_time, n_machine_time_steps):
+
+    def _do_with_machine_mapping(self):
         """
         Runs, times and logs all the algorithms in the mapping stage.
 
         :param float total_run_time:
         :param int n_machine_time_steps:
         """
-
-        allocator_data = self._execute_allocator(total_run_time)
-        self._execute_machine_generator(allocator_data)
-        self._json_machine()
-        self._report_board_chip()
-
+        FecTimer.start_category(TimerCategory.WITH_MACHINE_MAPPING)
         system_placements = Placements()
         self._add_commands_to_command_sender(system_placements)
         self._execute_split_lpg_vertices(system_placements)
@@ -1376,7 +1376,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         self._execute_create_database_interface()
 
-        FecTimer.end_category(TimerCategory.MAPPING)
+        FecTimer.end_category(TimerCategory.WITH_MACHINE_MAPPING)
 
     # Overridden by spy which adds placement_order
     def _execute_graph_data_specification_writer(self):
@@ -1393,8 +1393,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, Times and logs the data generation.
         """
+        FecTimer.start_category(TimerCategory.DATA_GENERATION)
         self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
+        FecTimer.end_category(TimerCategory.DATA_GENERATION)
 
     def _execute_routing_setup(self,):
         """
@@ -1884,8 +1886,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         compressor, pre_compress = self._compressor_name()
         self._execute_pre_compression(pre_compress)
         compressed = self._do_early_compression(compressor)
-
-        self._do_data_generation()
 
         self._execute_control_sync(False)
         self._execute_load_fixed_routes()
