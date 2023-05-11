@@ -210,8 +210,6 @@ def _write_one_router_partition_report(f, partition):
     routing_infos = FecDataView.get_routing_infos()
     for edge in partition.edges:
         for m_vertex in outgoing:
-            if isinstance(m_vertex, AbstractVirtual):
-                continue
             r_info = routing_infos.get_routing_info_from_pre_vertex(
                 m_vertex, partition.identifier)
             path = _search_route(m_vertex, r_info.key_and_mask)
@@ -730,18 +728,21 @@ def _recursive_trace_to_destinations(
     routing_tables = FecDataView.get_uncompressed()
     table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
     entry = _locate_routing_entry(table, key_and_mask.key)
-    new_pre_space = pre_space + (" " * len(text))
-    first = True
-    for link_id in entry.link_ids:
-        if not first:
-            text += f"\n{pre_space}"
-        link = chip.router.get_link(link_id)
-        text += f"-> {link}"
-        if link is not None:
-            text += _recursive_trace_to_destinations(
-                link.destination_x, link.destination_y, key_and_mask,
-                new_pre_space)
-        first = False
+    if entry is None:
+        text += " -> No Entry"
+    else:
+        new_pre_space = pre_space + (" " * len(text))
+        first = True
+        for link_id in entry.link_ids:
+            if not first:
+                text += f"\n{pre_space}"
+            link = chip.router.get_link(link_id)
+            text += f"-> {link}"
+            if link is not None:
+                text += _recursive_trace_to_destinations(
+                    link.destination_x, link.destination_y, key_and_mask,
+                    new_pre_space)
+            first = False
 
     return text
 
@@ -761,4 +762,4 @@ def _locate_routing_entry(current_router, key):
     for entry in current_router.multicast_routing_entries:
         if entry.mask & key == entry.routing_entry_key:
             return entry
-    raise exceptions.PacmanRoutingException("no entry located")
+    return None
