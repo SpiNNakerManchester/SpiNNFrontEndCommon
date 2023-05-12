@@ -453,7 +453,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             self._execute_dsg_region_reloader()
 
         if run_time is None:
-            self._do_run_no_runtime()
+            self._do_run_no_runtime(sync_time)
         else:
             self._do_run_with_runtime(
                 run_time, n_machine_time_steps, sync_time)
