@@ -51,6 +51,5 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
         """
         The commands to be sent at given times in the simulation.
 
-        :rtype:
-            iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
+        :rtype: list(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
