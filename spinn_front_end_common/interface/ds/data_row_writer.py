@@ -24,7 +24,7 @@ class DataRowWriter(io.RawIOBase):
         "_data",
     ]
 
-    def __init__(self, x, y, p, targets):
+    def __init__(self, x, y, p, targets=None):
         super().__init__()
         self._x = x
         self._y = y
@@ -57,6 +57,11 @@ class DataRowWriter(io.RawIOBase):
         Closes the writer if not already closed.
         """
         if not self.closed:
-            self._targets.write_data_spec(
-                self._x, self._y, self._p, self._data)
+            if self._targets is not None:
+                self._targets.write_data_spec(
+                    self._x, self._y, self._p, self._data)
         super().close()
+
+    def as_bytes_io(self):
+        assert self.closed
+        return io.BytesIO(self._data)

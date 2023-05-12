@@ -18,11 +18,14 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import Machine
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.data_specification_generator import (
+    DataSpecificationGenerator)
+from spinn_front_end_common.interface.ds.data_row_writer import DataRowWriter
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import (
-    get_data_spec_and_file_writer_filename)
+    get_data_spec_and_file_writer_filename, get_report_writer)
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -35,17 +38,11 @@ def reload_dsg_regions():
     """
     Reloads DSG regions where needed.
     """
-    # build file paths for reloaded stuff
-    data_dir = get_reload_data_dir()
-
     progress = ProgressBar(
         FecDataView.get_n_placements(), "Reloading data")
     for placement in progress.over(FecDataView.iterate_placemements()):
         # Generate the data spec for the placement if needed
-        regenerate_data_spec(placement, data_dir)
-
-    # App data directory can be removed as should be empty
-    os.rmdir(data_dir)
+        regenerate_data_spec(placement)
 
 
 def get_reload_data_dir():
@@ -62,12 +59,11 @@ def get_reload_data_dir():
     return data_dir
 
 
-def regenerate_data_spec(placement, data_dir):
+def regenerate_data_spec(placement):
     """
     Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
-    :param str data_dir: A place to use to write data to
     :return: Whether the data was regenerated or not
     :rtype: bool
     """
@@ -83,23 +79,20 @@ def regenerate_data_spec(placement, data_dir):
 
     txrx = FecDataView.get_transceiver()
 
-    # build the writers for the reports and data
-    spec_file, spec = get_data_spec_and_file_writer_filename(
-        placement.x, placement.y, placement.p, data_dir)
+    data_writer = DataRowWriter(placement.x, placement.y, placement.p)
+    report_writer = get_report_writer(placement.x, placement.y, placement.p)
+
+    # build the file writer for the spec
+    spec = DataSpecificationGenerator(data_writer, report_writer)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(spec, placement)
 
+    spec_reader = data_writer.as_bytes_io()
     # execute the spec
-    with open(spec_file, "rb") as spec_reader:
-        data_spec_executor = DataSpecificationExecutor(
-            spec_reader, Machine.DEFAULT_SDRAM_BYTES)
-        data_spec_executor.execute()
-    try:
-        os.remove(spec_file)
-    except Exception:  # pylint: disable=broad-except
-        # Ignore the deletion of files as non-critical
-        pass
+    data_spec_executor = DataSpecificationExecutor(
+        spec_reader, Machine.DEFAULT_SDRAM_BYTES)
+    data_spec_executor.execute()
 
     # Read the region table for the placement
     regions_base_address = txrx.get_cpu_information_from_core(
