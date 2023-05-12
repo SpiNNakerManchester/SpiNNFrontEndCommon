@@ -121,41 +121,43 @@ class _GraphDataSpecificationWriter(object):
         if not isinstance(vertex, AbstractGeneratesDataSpecification):
             return False
 
-        with targets.create_data_spec(pl.x, pl.y, pl.p) as data_writer:
-            report_writer = get_report_writer(pl.x, pl.y, pl.p)
-            spec = DataSpecificationGenerator(data_writer, report_writer)
+        report_writer = get_report_writer(pl.x, pl.y, pl.p)
+        spec = DataSpecificationGenerator(report_writer)
 
-            # generate the DSG file
-            vertex.generate_data_specification(spec, pl)
+        # generate the DSG file
+        vertex.generate_data_specification(spec, pl)
 
-            # Check the memory usage
-            region_size = APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes)
+        # store the dsg
+        targets.write_data_spec(pl.x, pl.y, pl.p, spec.get_bytes_after_close())
 
-            # extracts the int from the numpy data type generated
-            if not isinstance(region_size, int):
-                region_size = region_size.item()
+        # Check the memory usage
+        region_size = APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes)
 
-            targets.set_size_info(pl.x, pl.y, pl.p, region_size)
+        # extracts the int from the numpy data type generated
+        if not isinstance(region_size, int):
+            region_size = region_size.item()
 
-            # Check per-region memory usage if possible
-            sdram = vertex.sdram_required
-            if isinstance(sdram, MultiRegionSDRAM):
-                for i, size in enumerate(spec.region_sizes):
-                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                    est_size = est_size.get_total_sdram(
-                        FecDataView.get_max_run_time_steps())
-                    if size > est_size:
-                        # pylint: disable=logging-too-many-args
-                        logger.warning(
-                            "Region {} of vertex {} is bigger than expected: "
-                            "{} estimated vs. {} actual",
-                            i, vertex.label, est_size, size)
+        targets.set_size_info(pl.x, pl.y, pl.p, region_size)
 
-            self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
-            self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
-            if (self._sdram_usage[pl.x, pl.y] <=
-                    FecDataView().get_chip_at(pl.x, pl.y).sdram):
-                return True
+        # Check per-region memory usage if possible
+        sdram = vertex.sdram_required
+        if isinstance(sdram, MultiRegionSDRAM):
+            for i, size in enumerate(spec.region_sizes):
+                est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                est_size = est_size.get_total_sdram(
+                    FecDataView.get_max_run_time_steps())
+                if size > est_size:
+                    # pylint: disable=logging-too-many-args
+                    logger.warning(
+                        "Region {} of vertex {} is bigger than expected: "
+                        "{} estimated vs. {} actual",
+                        i, vertex.label, est_size, size)
+
+        self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
+        self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
+        if (self._sdram_usage[pl.x, pl.y] <=
+                FecDataView().get_chip_at(pl.x, pl.y).sdram):
+            return True
 
         # creating the error message which contains the memory usage of
         # what each core within the chip uses and its original estimate.

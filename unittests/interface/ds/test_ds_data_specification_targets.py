@@ -29,16 +29,14 @@ class TestDataSpecificationTargets(unittest.TestCase):
         check = dict()
         db = DsSqlliteDatabase()
         foo = bytearray(b"foo")
-        with db.create_data_spec(0, 0, 0) as writer:
-            writer.write(foo)
+        db.write_data_spec(0, 0, 0, foo)
         c1 = (0, 0, 0)
         check[c1] = foo
         self.assertEqual(check[c1], db.get_ds(0, 0, 0))
 
         c2 = (0, 1, 2)
         bar = bytearray(b"bar")
-        with db.create_data_spec(0, 1, 2) as writer:
-            writer.write(bar)
+        db.write_data_spec(0, 1, 2, bar)
         check[c2] = bar
         self.assertEqual(check[c2], db.get_ds(0, 1, 2))
 

@@ -87,18 +87,18 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         writer.set_placements(Placements([]))
 
         db = DsSqlliteDatabase()
-        with db.create_data_spec(0, 0, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 100)
-            spec.reserve_memory_region(1, 100, empty=True)
-            spec.reserve_memory_region(2, 100)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.write_value(1)
-            spec.write_value(2)
-            spec.switch_write_focus(2)
-            spec.write_value(3)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 100)
+        spec.reserve_memory_region(1, 100, empty=True)
+        spec.reserve_memory_region(2, 100)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.write_value(1)
+        spec.write_value(2)
+        spec.switch_write_focus(2)
+        spec.write_value(3)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
 
         db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
@@ -158,26 +158,28 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         db = DsSqlliteDatabase()
 
-        with db.create_data_spec(0, 0, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reference_memory_region(0, 1)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reference_memory_region(0, 1)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
+
         db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with db.create_data_spec(0, 0, 1) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 12, reference=1)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 12, reference=1)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 1, spec.get_bytes_after_close())
+
         db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with db.create_data_spec(0, 0, 2) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reference_memory_region(0, 1)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reference_memory_region(0, 1)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 2, spec.get_bytes_after_close())
         db.set_size_info(
             0, 0, 2, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
@@ -240,19 +242,20 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         db = DsSqlliteDatabase()
 
-        with db.create_data_spec(0, 0, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reference_memory_region(0, 2)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reference_memory_region(0, 2)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
+
         db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with db.create_data_spec(0, 0, 1) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 12, reference=1)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 12, reference=1)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 1, spec.get_bytes_after_close())
         db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
@@ -277,13 +280,13 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         db = DsSqlliteDatabase()
 
-        with db.create_data_spec(0, 0, 1) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 12, reference=1)
-            spec.reserve_memory_region(1, 12, reference=1)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 12, reference=1)
+        spec.reserve_memory_region(1, 12, reference=1)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 1, spec.get_bytes_after_close())
         db.set_size_info(
             0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
@@ -306,19 +309,19 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         db = DsSqlliteDatabase()
 
-        with db.create_data_spec(0, 0, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 12, reference=1)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 12, reference=1)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
         db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with db.create_data_spec(1, 1, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reference_memory_region(0, 1)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reference_memory_region(0, 1)
+        spec.end_specification()
+        db.write_data_spec(1, 1, 0, spec.get_bytes_after_close())
         db.set_size_info(
             1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
@@ -343,19 +346,20 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         db = DsSqlliteDatabase()
 
-        with db.create_data_spec(1, 1, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reference_memory_region(0, 1)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reference_memory_region(0, 1)
+        spec.end_specification()
+        db.write_data_spec(1, 1, 0, spec.get_bytes_after_close())
+
         db.set_size_info(
             1, 1, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        with db.create_data_spec(0, 0, 0) as spec_writer:
-            spec = DataSpecificationGenerator(spec_writer)
-            spec.reserve_memory_region(0, 12, reference=1)
-            spec.switch_write_focus(0)
-            spec.write_value(0)
-            spec.end_specification()
+        spec = DataSpecificationGenerator()
+        spec.reserve_memory_region(0, 12, reference=1)
+        spec.switch_write_focus(0)
+        spec.write_value(0)
+        spec.end_specification()
+        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
         db.set_size_info(
             0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 

@@ -21,7 +21,6 @@ from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from .data_row_writer import DataRowWriter
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -460,19 +459,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 yield ((row["x"], row["y"], row["processor"]),
                        row["start_address"], row["memory_used"],
                        row["memory_written"])
-
-    def create_data_spec(self, x, y, p):
-        """
-        Get a stream that will write the data specification for a particular
-        core to this database.
-
-        :param int x: X coordinate of the core
-        :param int y: Y coordinate of the core
-        :param int p: Processor ID of the core
-        :return: the stream; the write only happens when the stream is closed
-        :rtype: DataRowWriter
-        """
-        return DataRowWriter(x, y, p, self)
 
     def write_session_credentials_to_db(self):
         """

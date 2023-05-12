@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import io
 import os
 import numpy
 from spinn_utilities.progress_bar import ProgressBar
@@ -20,12 +21,10 @@ from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
-from spinn_front_end_common.interface.ds.data_row_writer import DataRowWriter
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
-from spinn_front_end_common.utilities.utility_calls import (
-    get_data_spec_and_file_writer_filename, get_report_writer)
+from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -79,19 +78,19 @@ def regenerate_data_spec(placement):
 
     txrx = FecDataView.get_transceiver()
 
-    data_writer = DataRowWriter(placement.x, placement.y, placement.p)
     report_writer = get_report_writer(placement.x, placement.y, placement.p)
 
     # build the file writer for the spec
-    spec = DataSpecificationGenerator(data_writer, report_writer)
+    spec = DataSpecificationGenerator(report_writer)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(spec, placement)
 
-    spec_reader = data_writer.as_bytes_io()
+    spec_bytes = io.BytesIO(spec.get_bytes_after_close())
+
     # execute the spec
     data_spec_executor = DataSpecificationExecutor(
-        spec_reader, Machine.DEFAULT_SDRAM_BYTES)
+        spec_bytes, Machine.DEFAULT_SDRAM_BYTES)
     data_spec_executor.execute()
 
     # Read the region table for the placement
