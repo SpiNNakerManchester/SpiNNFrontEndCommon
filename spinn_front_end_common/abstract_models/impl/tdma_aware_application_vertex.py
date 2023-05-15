@@ -43,8 +43,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :param int max_atoms_per_core: The max number of atoms that can be
             placed on a core, used in partitioning.
         :type splitter:
-            ~pacman.model.partitioner_interfaces.AbstractSplitterCommon
-            or None
+            ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         super().__init__(label, max_atoms_per_core, splitter=splitter)
         self.__clocks_between_cores = None

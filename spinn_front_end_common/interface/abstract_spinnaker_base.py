@@ -35,7 +35,7 @@ from spinn_machine import CoreSubsets, Machine
 from spinnman import __version__ as spinnman_version
 from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState, ExecutableType
 
 from data_specification import __version__ as data_spec_version
 
@@ -116,7 +116,6 @@ from spinn_front_end_common.utilities.report_functions import (
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex)
 from spinn_front_end_common.utilities.report_functions.reports import (
@@ -618,7 +617,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # the minimum number of machine timesteps to assign
         max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
-            size = self._data_writer.get_chip_at(x, y).sdram.size
+            size = self._data_writer.get_chip_at(x, y).sdram
             if sdram.fixed > size:
                 raise PacmanPlaceException(
                     f"Too much SDRAM has been allocated on chip {x}, {y}: "
@@ -858,7 +857,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Insert chip power monitors", TimerWork.OTHER) as timer:
             if timer.skip_if_cfg_false("Reports", "write_energy_report"):
                 return
-            insert_chip_power_monitors_to_graphs(system_placements)
+            a_monitor = insert_chip_power_monitors_to_graphs(system_placements)
+            self._data_writer.add_monitor_all_chips(a_monitor)
 
     def _execute_insert_extra_monitor_vertices(self, system_placements):
         """
@@ -875,6 +875,7 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
+        self._data_writer.add_monitor_all_chips(monitor_map[(0, 0)])
 
     def _report_partitioner(self):
         """
@@ -1362,7 +1363,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
-        self._execute_sdram_outgoing_partition_allocator()
 
         FecTimer.end_category(TimerCategory.MAPPING)
 
@@ -1381,7 +1381,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, Times and logs the data generation.
         """
-        # set up timing
+        self._execute_sdram_outgoing_partition_allocator()
         self._execute_graph_data_specification_writer()
 
     def _execute_routing_setup(self,):
