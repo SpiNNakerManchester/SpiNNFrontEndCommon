@@ -17,7 +17,7 @@ import logging
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from data_specification import DataSpecificationGenerator, ReferenceContext
+from data_specification import DataSpecificationGenerator
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from spinn_front_end_common.abstract_models import (
@@ -80,27 +80,25 @@ class _GraphDataSpecificationWriter(object):
         progress = ProgressBar(n_placements, "Generating data specifications")
         vertices_to_reset = list()
 
-        # Do in a context of global identifiers
-        with ReferenceContext():
-            for placement in progress.over(placement_order):
-                # Try to generate the data spec for the placement
-                vertex = placement.vertex
+        for placement in progress.over(placement_order):
+            # Try to generate the data spec for the placement
+            vertex = placement.vertex
+            generated = self.__generate_data_spec_for_vertices(
+                placement, vertex, targets)
+
+            if generated and isinstance(
+                    vertex, AbstractRewritesDataSpecification):
+                vertices_to_reset.append(vertex)
+
+            # If the spec wasn't generated directly, and there is an
+            # application vertex, try with that
+            if not generated and vertex.app_vertex is not None:
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, vertex, targets)
-
+                    placement, vertex.app_vertex, targets)
                 if generated and isinstance(
-                        vertex, AbstractRewritesDataSpecification):
-                    vertices_to_reset.append(vertex)
-
-                # If the spec wasn't generated directly, and there is an
-                # application vertex, try with that
-                if not generated and vertex.app_vertex is not None:
-                    generated = self.__generate_data_spec_for_vertices(
-                        placement, vertex.app_vertex, targets)
-                    if generated and isinstance(
-                            vertex.app_vertex,
-                            AbstractRewritesDataSpecification):
-                        vertices_to_reset.append(vertex.app_vertex)
+                        vertex.app_vertex,
+                        AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(vertex.app_vertex)
 
         # Ensure that the vertices know their regions have been reloaded
         for vertex in vertices_to_reset:
