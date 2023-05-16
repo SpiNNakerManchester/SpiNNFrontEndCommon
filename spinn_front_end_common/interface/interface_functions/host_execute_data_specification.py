@@ -25,8 +25,6 @@ from data_specification.constants import (
     MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
 from data_specification.exceptions import DataSpecificationException
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.helpful_functions import (
-    write_address_to_user0)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG
@@ -433,13 +431,14 @@ class _HostExecuteDataSpecification(object):
         :rtype: int
         """
         (x, y, p) = core
+        txrx = FecDataView.get_transceiver()
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        start_address = FecDataView.get_transceiver().malloc_sdram(
+        start_address = txrx.malloc_sdram(
             x, y, size, self._app_id, tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
         # set user 0 register appropriately to the application data
-        write_address_to_user0(x, y, p, start_address)
+        txrx.write_user_0(x, y, p, start_address)
 
         return start_address

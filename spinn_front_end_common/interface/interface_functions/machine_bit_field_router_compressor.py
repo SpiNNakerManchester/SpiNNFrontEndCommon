@@ -325,13 +325,8 @@ class _MachineBitFieldRouterCompressor(object):
 
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                user_1_base_address = \
-                    transceiver.get_user_1_register_address_from_core(p)
-                user_2_base_address = \
-                    transceiver.get_user_2_register_address_from_core(p)
-                result = transceiver.read_word(x, y, user_1_base_address)
-                bit_fields_merged = transceiver.read_word(
-                    x, y, user_2_base_address)
+                result = transceiver.read_user_1(x, y, p)
+                bit_fields_merged = transceiver.read_user_2(x, y, p)
 
                 if result != self.SUCCESS:
                     host_chips.add((x, y))
@@ -418,25 +413,18 @@ class _MachineBitFieldRouterCompressor(object):
             compressor_executable_path)
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
-            user1_address = \
-                self.__txrx.get_user_1_register_address_from_core(processor_id)
-            user2_address = \
-                self.__txrx.get_user_2_register_address_from_core(processor_id)
-            user3_address = \
-                self.__txrx.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
             time_per_iteration = get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
-            self.__txrx.write_memory(
-                chip_x, chip_y, user1_address,
-                int(time_per_iteration * SECOND_TO_MICRO_SECOND))
+            self.__txrx.write_user_1(
+                chip_x, chip_y, processor_id,
+                time_per_iteration * SECOND_TO_MICRO_SECOND)
             # user 2 Compress as much as needed flag
-            self.__txrx.write_memory(
-                chip_x, chip_y, user2_address, int(self.__compress_max))
+            self.__txrx.write_user_2(
+                chip_x, chip_y, processor_id, self.__compress_max)
             # user 3 the comms_sdram area
-            self.__txrx.write_memory(
-                chip_x, chip_y, user3_address, comms_sdram)
+            self.__txrx.write_user_3(chip_x, chip_y, processor_id, comms_sdram)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y,
@@ -471,15 +459,10 @@ class _MachineBitFieldRouterCompressor(object):
         self.__txrx.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
-        # get the only processor on the chip
-        processor_id = list(cores.all_core_subsets.get_core_subset_for_chip(
-            chip_x, chip_y).processor_ids)[0]
-
-        # update user 2 with location
-        user3_address = self.__txrx.get_user_3_register_address_from_core(
-            processor_id)
-        self.__txrx.write_memory(
-            chip_x, chip_y, user3_address, sdram_address)
+        # tell the compressor where the SDRAM is
+        for p in cores.all_core_subsets.get_core_subset_for_chip(
+                chip_x, chip_y).processor_ids:
+            self.__txrx.write_user_3(chip_x, chip_y, p, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """
@@ -488,6 +471,7 @@ class _MachineBitFieldRouterCompressor(object):
         :param list(tuple(int,int)) list_of_sizes_and_address:
             SDRAM addresses and sizes
         :return: byte array of data
+        :rtype: bytes
         """
         data = b""
         data += self._ONE_WORD.pack(len(list_of_sizes_and_address))
@@ -521,7 +505,7 @@ class _MachineBitFieldRouterCompressor(object):
         """
         # generate address_data
         address_data = self._generate_chip_data(
-            addresses[(chip_x, chip_y)],
+            addresses[chip_x, chip_y],
             cores.get_cores_for_binary(
                 compressor_executable_path).get_core_subset_for_chip(
                     chip_x, chip_y),
@@ -530,8 +514,7 @@ class _MachineBitFieldRouterCompressor(object):
         # get sdram address on chip
         try:
             sdram_address = self.__txrx.malloc_sdram(
-                chip_x, chip_y, len(address_data),
-                compressor_app_id,
+                chip_x, chip_y, len(address_data), compressor_app_id,
                 BIT_FIELD_ADDRESSES_SDRAM_TAG)
         except (SpinnmanInvalidParameterException,
                 SpinnmanUnexpectedResponseCodeException):
@@ -542,16 +525,11 @@ class _MachineBitFieldRouterCompressor(object):
         self.__txrx.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
-        # get the only processor on the chip
+        # Tell the sorter where the SDRAM is
         sorter_cores = cores.get_cores_for_binary(sorter_executable_path)
-        processor_id = list(sorter_cores.get_core_subset_for_chip(
-            chip_x, chip_y).processor_ids)[0]
-
-        # update user 2 with location
-        user2_address = self.__txrx.get_user_2_register_address_from_core(
-            processor_id)
-        self.__txrx.write_memory(
-            chip_x, chip_y, user2_address, sdram_address)
+        for p in sorter_cores.get_core_subset_for_chip(
+                chip_x, chip_y).processor_ids:
+            self.__txrx.write_user_2(chip_x, chip_y, p, sdram_address)
 
     def _load_routing_table_data(
             self, table, compressor_app_id, progress_bar, cores,
@@ -586,15 +564,10 @@ class _MachineBitFieldRouterCompressor(object):
         self.__txrx.write_memory(
             table.x, table.y, base_address, routing_table_data)
 
-        # get the only processor on the chip
-        processor_id = list(cores.all_core_subsets.get_core_subset_for_chip(
-            table.x, table.y).processor_ids)[0]
-
-        # update user 1 with location
-        user1_address = self.__txrx.get_user_1_register_address_from_core(
-            processor_id)
-        self.__txrx.write_memory(
-            table.x, table.y, user1_address, base_address)
+        # Tell the compressor where the SDRAM is
+        for p in cores.all_core_subsets.get_core_subset_for_chip(
+                table.x, table.y).processor_ids:
+            self.__txrx.write_user_1(table.x, table.y, p, base_address)
 
         # update progress bar
         progress_bar.update()

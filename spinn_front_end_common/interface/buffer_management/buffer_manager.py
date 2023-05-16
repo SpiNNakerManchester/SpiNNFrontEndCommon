@@ -344,9 +344,9 @@ class BufferManager(object):
             Where to get the data from.
         """
         # locate receivers
-        receivers = list(OrderedSet(
+        receivers = OrderedSet(
             locate_extra_monitor_mc_receiver(placement.x, placement.y)
-            for placement in recording_placements))
+            for placement in recording_placements)
 
         # update transaction id from the machine for all extra monitors
         for extra_mon in FecDataView.iterate_monitors():

@@ -24,8 +24,11 @@ from spinn_utilities.progress_bar import ProgressBar
 def add_command_senders(system_placements):
     """
     Add command senders
+
+    :return: The command senders that were added
+    :rtype: list(CommandSender)
     """
-    return CommandSenderAdder(system_placements).add_command_senders()
+    return list(CommandSenderAdder(system_placements).add_command_senders())
 
 
 class CommandSenderAdder(object):
@@ -43,6 +46,12 @@ class CommandSenderAdder(object):
         self.__general_command_sender = None
 
     def add_command_senders(self):
+        """
+        Add the needed command senders.
+
+        :return: The command senders that were added
+        :rtype: iterable(CommandSender)
+        """
         progress = ProgressBar(FecDataView.get_n_vertices(), "Adding commands")
         for vertex in progress.over(FecDataView.iterate_vertices()):
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
@@ -53,19 +62,15 @@ class CommandSenderAdder(object):
                 if isinstance(vertex, ApplicationVirtualVertex):
                     link_data = vertex.get_outgoing_link_data(machine)
 
-                command_sender = self.__get_command_sender(link_data)
-
                 # allow the command sender to create key to partition map
-                command_sender.add_commands(
+                self.__get_command_sender(link_data).add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
 
-        all_command_senders = list(self.__command_sender_for_chip.values())
+        yield from self.__command_sender_for_chip.values()
         if self.__general_command_sender is not None:
-            all_command_senders.append(self.__general_command_sender)
-
-        return all_command_senders
+            yield self.__general_command_sender
 
     def __cores(self, x, y):
         return [p.processor_id

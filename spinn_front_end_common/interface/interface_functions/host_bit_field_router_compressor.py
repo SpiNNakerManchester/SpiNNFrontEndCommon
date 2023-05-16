@@ -20,6 +20,7 @@ from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_machine import Machine, MulticastRoutingEntry
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
@@ -290,7 +291,7 @@ class _HostBasedBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
         :param report_folder_path: the report folder base address
         :type report_folder_path: str or None
-        :param dict(dict(int)) most_costly_cores:
+        :param dict(tuple(int,int),dict(int,int)) most_costly_cores:
             Map of chip x, y to processors to count of incoming on processor
         :param compressed_pacman_router_tables:
             a data holder for compressed tables
@@ -402,7 +403,7 @@ class _HostBasedBitFieldRouterCompressor(object):
 
         :param int chip_x: chip x coordinate
         :param int chip_y: chip y coordinate
-        :param dict(dict(int)) most_costly_cores:
+        :param dict(tuple(int,int),dict(int,int)) most_costly_cores:
             Map of chip x, y to processors to count of incoming on processor
         :param dict(int,int) chip_base_addresses:
             maps core id to base address of its bitfields
@@ -468,7 +469,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         Also counts the bitfields setting _n_bitfields.
 
         :param dict(int,list(_BitFieldData)) bit_fields_by_coverage:
-        :param dict(dict(int)) most_costly_cores:
+        :param dict(tuple(int,int),dict(int,int)) most_costly_cores:
             Map of chip x, y to processors to count of incoming on processor
         :param int chip_x:
         :param int chip_y:
@@ -478,33 +479,33 @@ class _HostBasedBitFieldRouterCompressor(object):
 
         # get cores that are the most likely to have the worst time and order
         #  bitfields accordingly
-        cores = list(most_costly_cores[chip_x, chip_y].keys())
         cores = sorted(
-            cores, key=lambda k: most_costly_cores[chip_x, chip_y][k],
+            most_costly_cores[chip_x, chip_y].keys(),
+            key=lambda k: most_costly_cores[chip_x, chip_y][k],
             reverse=True)
 
         # only add bit fields from the worst affected cores, which will
         # build as more and more are taken to make the worst a collection
         # instead of a individual
-        cores_to_add_for = list()
-        for worst_core_id in range(0, len(cores) - 1):
+        cores_to_add_for = OrderedSet()
+        for worst_core_idx in range(0, len(cores) - 1):
+            worst_core = cores[worst_core_idx]
             # determine how many of the worst to add before it balances with
             # next one
-            cores_to_add_for.append(cores[worst_core_id])
+            cores_to_add_for.add(worst_core)
             diff = (
-                most_costly_cores[chip_x, chip_y][cores[worst_core_id]] -
-                most_costly_cores[chip_x, chip_y][cores[worst_core_id + 1]])
+                most_costly_cores[chip_x, chip_y][worst_core] -
+                most_costly_cores[chip_x, chip_y][cores[worst_core_idx + 1]])
 
             # order over most effective bitfields
-            coverage = processor_coverage_by_bitfield[cores[worst_core_id]]
+            coverage = processor_coverage_by_bitfield[worst_core]
             coverage.sort(reverse=True)
 
             # cycle till at least the diff is covered
             covered = 0
-            for redundant_packet_count in coverage:
+            for redundant_count in coverage:
                 to_delete = list()
-                for bit_field_data in bit_fields_by_coverage[
-                        redundant_packet_count]:
+                for bit_field_data in bit_fields_by_coverage[redundant_count]:
                     if bit_field_data.processor_id in cores_to_add_for:
                         if covered < diff:
                             bit_field_data.sort_index = sort_index
@@ -512,13 +513,12 @@ class _HostBasedBitFieldRouterCompressor(object):
                             to_delete.append(bit_field_data)
                             covered += 1
                 for bit_field_data in to_delete:
-                    bit_fields_by_coverage[redundant_packet_count].remove(
+                    bit_fields_by_coverage[redundant_count].remove(
                         bit_field_data)
 
         # take left overs
-        coverage_levels = list(bit_fields_by_coverage.keys())
-        coverage_levels.sort(reverse=True)
-        for coverage_level in coverage_levels:
+        for coverage_level in sorted(
+                bit_fields_by_coverage.keys(), reverse=True):
             for bit_field_data in bit_fields_by_coverage[coverage_level]:
                 bit_field_data.sort_index = sort_index
                 sort_index += 1

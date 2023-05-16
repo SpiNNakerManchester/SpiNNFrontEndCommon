@@ -19,8 +19,7 @@ from .command_sender_machine_vertex import CommandSenderMachineVertex
 from spinn_utilities.overrides import overrides
 
 
-class CommandSender(
-        AbstractOneAppOneMachineVertex):
+class CommandSender(AbstractOneAppOneMachineVertex):
     """
     A utility for sending commands to a vertex (possibly an external device)
     at fixed times in the simulation or in response to simulation events

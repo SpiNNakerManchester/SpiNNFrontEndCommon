@@ -58,6 +58,7 @@ class _MockTransceiver(Transceiver):
         self._next_address += size
         return address
 
+    @overrides(Transceiver.get_user_0_register_address_from_core)
     def get_user_0_register_address_from_core(self, p):
         return self._user_0_addresses[p]
 
