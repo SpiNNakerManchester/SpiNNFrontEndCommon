@@ -268,7 +268,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write(f"  Slice {sv.vertex_slice}\n")
+        f.write(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n")
     f.write("\n")
 
 
@@ -331,7 +331,8 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p})"
+                    f" {sv.label}\n")
     f.write("\n")
 
 
@@ -386,8 +387,8 @@ def _write_one_chip_application_placement(f, chip):
             vertex_atoms = app_vertex.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}\n".format(
-                vertex.vertex_slice))
+            f.write(f"              Slice: {vertex.vertex_slice}")
+            f.write(f"  {vertex.label}\n")
             f.write("              Model: {}\n".format(vertex_model))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
