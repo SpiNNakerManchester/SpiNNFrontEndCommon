@@ -35,32 +35,32 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 class _MockTransceiver(Transceiver):
     """ Pretend transceiver
     """
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument,super-init-not-called
 
     def __init__(self, user_0_addresses):
         """
-
-        :param user_0_addresses: dict of (x, y, p) to user_0_address
+        :param dict(int,int) user_0_addresses:
+            mapping of processor_id to user_0_address
         """
-        self._regions_written = list()
+        self.__regions_written = list()
         self._next_address = 0
-        self._user_0_addresses = user_0_addresses
+        self.__user_0_addresses = user_0_addresses
 
     @property
     def regions_written(self):
         """ A list of tuples of (base_address, data) which has been written
         """
-        return self._regions_written
+        return self.__regions_written
 
     @overrides(Transceiver.malloc_sdram)
-    def malloc_sdram(self,  x, y, size, app_id, tag=None):
+    def malloc_sdram(self, x, y, size, app_id, tag=None):
         address = self._next_address
         self._next_address += size
         return address
 
-    @overrides(Transceiver.get_user_0_register_address_from_core)
-    def get_user_0_register_address_from_core(self, p):
-        return self._user_0_addresses[p]
+    @overrides(Transceiver._user_0_register)
+    def _user_0_register(self, p):
+        return self.__user_0_addresses[p]
 
     @overrides(Transceiver.write_memory)
     def write_memory(
@@ -68,7 +68,7 @@ class _MockTransceiver(Transceiver):
             cpu=0, is_filename=False, get_sum=False):
         if isinstance(data, int):
             data = struct.pack("<I", data)
-        self._regions_written.append((base_address, data))
+        self.__regions_written.append((base_address, data))
 
     @overrides(Transceiver.close)
     def close(self):
@@ -117,7 +117,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # The space between regions should be as allocated regardless of
         # how much data is written
         header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
-        regions = transceiver._regions_written
+        regions = transceiver.regions_written
         self.assertEqual(len(regions), 4)
 
         # Base address for header and table
