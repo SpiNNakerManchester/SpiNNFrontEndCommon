@@ -70,6 +70,7 @@ class _FecDataModel(object):
         "_n_chips_required",
         "_n_chips_in_graph",
         "_next_sync_signal",
+        "_next_ds_reference",
         "_none_labelled_edge_count",
         "_notification_protocol",
         "_max_run_time_steps",
@@ -133,6 +134,7 @@ class _FecDataModel(object):
         self._data_in_multicast_routing_tables = None
         self._database_file_path = None
         self._dsg_targets = None
+        self._next_ds_reference = 0
         self._executable_targets = None
         self._fixed_routes = None
         self._gatherer_map = None
@@ -1190,3 +1192,18 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             str))
         """
         return iter(cls.__fec_data._live_output_vertices)
+
+    @classmethod
+    def get_next_ds_references(cls, number):
+        """
+        Get a a list of unigue ds references
+
+        These will be Unigue since the last hard reset
+
+        :param number: number of values in the list
+        :rtype: list(inrt)
+        """
+        references = range(cls.__fec_data._next_ds_reference,
+                           cls.__fec_data._next_ds_reference+number)
+        cls.__fec_data._next_ds_reference += number
+        return list(references)
