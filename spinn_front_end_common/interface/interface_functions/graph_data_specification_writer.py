@@ -17,14 +17,14 @@ import logging
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from data_specification import DataSpecificationGenerator
 from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+from spinn_front_end_common.interface.ds import (
+    DataSpecificationGenerator, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -68,8 +68,8 @@ class _GraphDataSpecificationWriter(object):
         """
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        targets = DsSqlliteDatabase()
-        targets.write_session_credentials_to_db()
+        ds_db = DsSqlliteDatabase()
+        ds_db.write_session_credentials_to_db()
 
         if placement_order is None:
             placement_order = FecDataView.iterate_placemements()
@@ -84,7 +84,7 @@ class _GraphDataSpecificationWriter(object):
             # Try to generate the data spec for the placement
             vertex = placement.vertex
             generated = self.__generate_data_spec_for_vertices(
-                placement, vertex, targets)
+                placement, vertex, ds_db)
 
             if generated and isinstance(
                     vertex, AbstractRewritesDataSpecification):
@@ -94,7 +94,7 @@ class _GraphDataSpecificationWriter(object):
             # application vertex, try with that
             if not generated and vertex.app_vertex is not None:
                 generated = self.__generate_data_spec_for_vertices(
-                    placement, vertex.app_vertex, targets)
+                    placement, vertex.app_vertex, ds_db)
                 if generated and isinstance(
                         vertex.app_vertex,
                         AbstractRewritesDataSpecification):
@@ -104,13 +104,13 @@ class _GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.set_reload_required(False)
 
-        return targets
+        return ds_db
 
-    def __generate_data_spec_for_vertices(self, pl, vertex, targets):
+    def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
         """
         :param ~.Placement pl: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
-        :param DsSqlliteDatabase targets:
+        :param DsSqlliteDatabase ds_db:
         :return: True if the vertex was data spec-able, False otherwise
         :rtype: bool
         :raises ConfigurationException: if things don't fit
@@ -119,14 +119,18 @@ class _GraphDataSpecificationWriter(object):
         if not isinstance(vertex, AbstractGeneratesDataSpecification):
             return False
 
-        report_writer = get_report_writer(pl.x, pl.y, pl.p)
-        spec = DataSpecificationGenerator(report_writer)
+        x = pl.x
+        y = pl.y
+        p = pl.p
+
+        report_writer = get_report_writer(x, y, p)
+        spec = DataSpecificationGenerator(
+            x, y, p, vertex, ds_db, report_writer)
 
         # generate the DSG file
         vertex.generate_data_specification(spec, pl)
 
-        # store the dsg
-        targets.write_data_spec(pl.x, pl.y, pl.p, spec.get_bytes_after_close())
+        return True
 
         # Check the memory usage
         region_size = APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes)
@@ -135,7 +139,7 @@ class _GraphDataSpecificationWriter(object):
         if not isinstance(region_size, int):
             region_size = region_size.item()
 
-        targets.set_size_info(pl.x, pl.y, pl.p, region_size)
+        ds_db.set_size_info(pl.x, pl.y, pl.p, region_size)
 
         # Check per-region memory usage if possible
         sdram = vertex.sdram_required

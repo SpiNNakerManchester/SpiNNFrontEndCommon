@@ -93,6 +93,89 @@ class DsSqlliteDatabase(SQLiteDB):
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
 
+    def get_core_id(self, core_x, core_y, core_p, vertex):
+        """
+        Gets the database core_id for the core with this x,y,z
+
+        Will create a new database core record if required.
+
+        :param int core_x:
+            X coordinate of the core that `spec_bytes` applies to
+        :param int core_y:
+            Y coordinate of the core that `spec_bytes` applies to
+        :param int p: Processor ID of the core that `spec_bytes` applies to
+        :type vertex:
+            ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
+        :rtype: int
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT core_id FROM core_view
+                    WHERE x = ? AND y = ? AND processor = ?
+                    LIMIT 1
+                    """, (core_x, core_y, core_p)):
+                return row["core_view"]
+            chip_id = self._get_chip_id(cursor, core_x, core_y)
+            cursor.execute(
+                """
+                INSERT INTO core(chip_id, processor, executable_type) 
+                VALUES(?, ?, ?)
+                """, (chip_id, core_p, vertex.get_binary_start_type().value))
+            return cursor.lastrowid
+
+    def _get_chip_id(self, cursor, core_x, core_y):
+        """
+        :param ~sqlite3.Cursor cursor:
+        :param int core_x:
+        :param int core_y:
+        :rtype: int
+        """
+        for row in cursor.execute(
+                """
+                SELECT chip_id FROM chip
+                WHERE x = ? AND y = ?
+                LIMIT 1
+                """, (core_x, core_y)):
+            return row["chip_id"]
+        ethernet_id = self.get_ethernet_id(cursor, core_x, core_y)
+        cursor.execute(
+            """
+            INSERT INTO chip(x, y, ethernet_id) VALUES(?, ?, ?)
+            """, (core_x, core_y, ethernet_id))
+        return cursor.lastrowid
+
+    def get_ethernet_id(self, cursor, core_x, core_y):
+        chip = FecDataView().get_chip_at(core_x, core_y)
+        for row in cursor.execute(
+                """
+                SELECT ethernet_id FROM ethernet
+                WHERE ethernet_x = ? AND ethernet_y = ?
+                LIMIT 1
+                """, (chip.nearest_ethernet_x, chip.nearest_ethernet_y)):
+            return row["ethernet_id"]
+        return self.__root_ethernet_id
+
+    def write_memory_region(
+            self, core_id, region_num, size, reference, label):
+        with self.transaction() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO region(
+                    core_id, region_num, size, reference_num, region_label) 
+                VALUES(?, ?, ?, ?, ?)
+                """, (core_id, region_num, size, reference, label))
+            return cursor.lastrowid
+
+    def write_reference(self, core_id, region_num, reference):
+        with self.transaction() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO reference(core_id, region_num, reference_num) 
+                VALUES(?, ?, ?)
+                """, (core_id, region_num, reference))
+            return cursor.lastrowid
+
     def write_data_spec(self, core_x, core_y, core_p, spec_bytes):
         """
         :param int core_x:

@@ -30,32 +30,95 @@ CREATE TABLE IF NOT EXISTS ethernet(
 CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
     ethernet_x ASC, ethernet_y ASC);
 
-
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the cores and the DSE info to write to them.
-CREATE TABLE IF NOT EXISTS core(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+-- A table describing the chips and their ethernet.
+CREATE TABlE IF NOT EXISTS chip(
+    chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    processor INTEGER NOT NULL,
     ethernet_id INTEGER NOT NULL
-        REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
-    is_system INTEGER DEFAULT 0,
-    app_id INTEGER,
-    content BLOB,
-    start_address INTEGER,
-    memory_used INTEGER,
-    memory_written INTEGER);
+        REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT
+);
+-- Every chip has a unique ID
+CREATE UNIQUE INDEX IF NOT EXISTS chipSanity ON chip(
+    x ASC, y ASC);
+
+CREATE VIEW IF NOT EXISTS chip_view AS
+    SELECT chip_id, ethernet_x, ethernet_y, ip_address, x, y
+    FROM ethernet NATURAL JOIN chip;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the cores.
+CREATE TABLE IF NOT EXISTS core(
+    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    chip_id INTEGER NOT NULL REFERENCES chip(chip_id) ON DELETE RESTRICT,
+    processor INTEGER NOT NULL,
+    executable_type INTEGER NOT NULL);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
-    x ASC, y ASC, processor ASC);
+    chip_id ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-    SELECT ethernet_id, core_id,
+    SELECT core_id,
         ethernet_x, ethernet_y, ip_address,
-        x, y, processor, is_system, app_id, content,
-        start_address, memory_used, memory_written
-    FROM ethernet NATURAL JOIN core;
+        x, y, processor, executable_type
+    FROM core NATURAL JOIN chip_view;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the regions.
+CREATE TABLE IF NOT EXISTS region(
+    region_id INTEGER PRIMARY KEY,
+    region_num INTEGER NOT NULL,
+    core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
+    reference_num INTEGER,
+    size INTEGER NOT NULL,
+    region_label TEXT);
+-- Every region has a unique ID
+CREATE UNIQUE INDEX IF NOT EXISTS region_sanity ON region(
+    core_id ASC, region_num ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
+    reference_num ASC);
+
+CREATE VIEW IF NOT EXISTS region_view AS
+    SELECT region_id, x, y, processor, region_label, reference_num, size, region_label
+    FROM core_view NATURAL JOIN region;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the references.
+CREATE TABLE IF NOT EXISTS reference (
+    reference_id INTEGER PRIMARY KEY,
+    reference_num INTEGER NOT NULL,
+    region_num INTEGER NOT NULL,
+    core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
+    ref_label TEXT);
+-- -- Every reference os unique per core
+CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
+    core_id ASC, region_num ASC);
+CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
+    core_id ASC, reference_num ASC);
+
+CREATE VIEW IF NOT EXISTS reverence_view AS
+SELECT reference_id, ref_label, x, y, processor, reference_num
+FROM reference
+JOIN core_view where reference.core_id = core_view.core_id;
+
+CREATE VIEW IF NOT EXISTS full_reverence_view AS
+SELECT reference_id, ref_label, reverence_view.reference_num, reverence_view.x as source_x, reverence_view.y as source_y, reverence_view.processor as source_p,
+       region_view.x as target_x, region_view.y as target_y, region_view.processor as target_p, region_view.size, region_label
+FROM reverence_view LEFT JOIN region_view
+ON reverence_view.reference_num = region_view.reference_num;
+
+CREATE VIEW IF NOT EXISTS broken_reverence_view AS
+SELECT * FROM full_reverence_view
+WHERE size IS NULL;
+
+--select region_id, reference.reference_num
+--from  reference LEFT JOIN region_view
+--ON reference.reference_num = region_view.reference_num;
+
+CREATE TABLE IF NOT EXISTS app_id (
+    app_id INTEGER NOT NULL
+);
 
 -- Information about how to access the connection proxying
 -- WARNING! May include credentials

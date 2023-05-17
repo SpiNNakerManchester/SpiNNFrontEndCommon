@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .data_specification_generator import DataSpecificationGenerator
 from .ds_sqllite_database import DsSqlliteDatabase
 
 __all__ = [
-    "DsSqlliteDatabase"]
+    "DataSpecificationGenerator", "DsSqlliteDatabase"]
