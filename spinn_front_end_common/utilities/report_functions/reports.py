@@ -268,7 +268,7 @@ def _write_one_vertex_partition(f, vertex):
     machine_vertices = sorted(machine_vertices,
                               key=lambda x: x.vertex_slice.lo_atom)
     for sv in machine_vertices:
-        f.write(f"  Slice {sv.vertex_slice}\n")
+        f.write(f"  Slice {sv.vertex_slice}    Vertex {sv.label}\n")
     f.write("\n")
 
 
@@ -331,7 +331,8 @@ def _write_one_vertex_application_placement(f, vertex):
         else:
             cur_placement = FecDataView.get_placement_of_vertex(sv)
             x, y, p = cur_placement.x, cur_placement.y, cur_placement.p
-            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p}) \n")
+            f.write(f"  Slice {sv.vertex_slice} on core ({x}, {y}, {p})"
+                    f" {sv.label}\n")
     f.write("\n")
 
 
@@ -386,8 +387,8 @@ def _write_one_chip_application_placement(f, chip):
             vertex_atoms = app_vertex.n_atoms
             f.write("  Processor {}: Vertex: '{}', pop size: {}\n".format(
                 pro_id, vertex_label, vertex_atoms))
-            f.write("              Slice on this core: {}\n".format(
-                vertex.vertex_slice))
+            f.write(f"              Slice: {vertex.vertex_slice}")
+            f.write(f"  {vertex.label}\n")
             f.write("              Model: {}\n".format(vertex_model))
         else:
             f.write("  Processor {}: System Vertex: '{}'\n".format(
@@ -405,7 +406,7 @@ def _write_one_chip_application_placement(f, chip):
 
     if total_sdram is not None:
         f.write("Total SDRAM on chip ({} available): {}; {} per-timestep\n\n"
-                .format(chip.sdram.size, total_sdram.fixed,
+                .format(chip, total_sdram.fixed,
                         total_sdram.per_timestep))
 
 
@@ -480,7 +481,7 @@ def _sdram_usage_report_per_chip_with_timesteps(
                     "{} KB ({} bytes)\n\n".format(
                         chip.x, chip.y,
                         int(used_sdram / 1024.0), used_sdram,
-                        int(chip.sdram.size / 1024.0), chip.sdram.size))
+                        int(chip.sdram / 1024.0), chip.sdram))
         except KeyError:
             # Do Nothing
             pass

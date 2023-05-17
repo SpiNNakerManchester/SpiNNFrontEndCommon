@@ -26,7 +26,9 @@ def insert_chip_power_monitors_to_graphs(placements):
     """
     Adds chip power monitors into a given graph.
 
-    param Placements placements:
+    :param ~pacman.model.placements.Placements placements:
+    :return: One of the Vertices added
+    :rtype: ChipPowerMonitorMachineVertex
     """
     sampling_frequency = get_config_int("EnergyMonitor", "sampling_frequency")
     machine = FecDataView.get_machine()
@@ -41,6 +43,8 @@ def insert_chip_power_monitors_to_graphs(placements):
         cores = __cores(machine, chip.x, chip.y)
         p = cores[placements.n_placements_on_chip(chip.x, chip.y)]
         placements.add_placement(Placement(vertex, chip.x, chip.y, p))
+    # return any one of the Vertices created
+    return vertex
 
 
 def __cores(machine, x, y):
