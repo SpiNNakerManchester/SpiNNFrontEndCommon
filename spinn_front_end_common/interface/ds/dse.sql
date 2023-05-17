@@ -44,7 +44,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS chipSanity ON chip(
     x ASC, y ASC);
 
 CREATE VIEW IF NOT EXISTS chip_view AS
-    SELECT chip_id, ethernet_x, ethernet_y, ip_address, x, y
+    SELECT chip_id, x, y, ethernet_x, ethernet_y, ip_address
     FROM ethernet NATURAL JOIN chip;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,15 +53,15 @@ CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
     chip_id INTEGER NOT NULL REFERENCES chip(chip_id) ON DELETE RESTRICT,
     processor INTEGER NOT NULL,
-    executable_type INTEGER NOT NULL);
+    is_system INTEGER NOT NULL,
+    base_address INTEGER);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
     chip_id ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-    SELECT core_id,
-        ethernet_x, ethernet_y, ip_address,
-        x, y, processor, executable_type
+    SELECT core_id, x, y, processor, base_address, is_system,
+           ethernet_x, ethernet_y, ip_address
     FROM core NATURAL JOIN chip_view;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,17 +71,32 @@ CREATE TABLE IF NOT EXISTS region(
     region_num INTEGER NOT NULL,
     core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
     reference_num INTEGER,
-    size INTEGER NOT NULL,
+    size INT NOT NULL,
+    pointer INTEGER,
     region_label TEXT);
 -- Every region has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS region_sanity ON region(
-    core_id ASC, region_num ASC);
+   core_id ASC, region_num ASC);
 CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
     reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS region_view AS
-    SELECT region_id, x, y, processor, region_label, reference_num, size, region_label
+    SELECT region_id, x, y, processor, base_address, is_system,
+           region_num, region_label, reference_num, size, pointer,
+           core_id
     FROM core_view NATURAL JOIN region;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the data to write.
+CREATE TABLE IF NOT EXISTS write (
+    region_id INTEGER PRIMARY KEY,
+    write_data BLOB NOT NULL,
+    data_debug TEXT);
+
+CREATE VIEW IF NOT EXISTS write_view AS
+    SELECT region_id, x, y, processor, region_num, region_label, size, pointer,
+           write_data, length(write_data) as data_size, data_debug, core_id
+    FROM region_view NATURAL JOIN write;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.
@@ -103,8 +118,9 @@ FROM reference
 JOIN core_view where reference.core_id = core_view.core_id;
 
 CREATE VIEW IF NOT EXISTS full_reverence_view AS
-SELECT reference_id, ref_label, reverence_view.reference_num, reverence_view.x as source_x, reverence_view.y as source_y, reverence_view.processor as source_p,
-       region_view.x as target_x, region_view.y as target_y, region_view.processor as target_p, region_view.size, region_label
+SELECT reference_id, ref_label, reverence_view.reference_num,
+       reverence_view.x as x, reverence_view.y as y, reverence_view.processor as source_p,
+       region_view.processor as target_p, region_view.size, region_label, pointer
 FROM reverence_view LEFT JOIN region_view
 ON reverence_view.reference_num = region_view.reference_num;
 
@@ -112,9 +128,11 @@ CREATE VIEW IF NOT EXISTS broken_reverence_view AS
 SELECT * FROM full_reverence_view
 WHERE size IS NULL;
 
---select region_id, reference.reference_num
---from  reference LEFT JOIN region_view
---ON reference.reference_num = region_view.reference_num;
+CREATE VIEW IF NOT EXISTS non_local_reverence_view AS
+SELECT *
+FROM reverence_view LEFT JOIN region_view
+ON reverence_view.reference_num = region_view.reference_num
+WHERE reverence_view.x != region_view.x OR reverence_view.y != region_view.y;
 
 CREATE TABLE IF NOT EXISTS app_id (
     app_id INTEGER NOT NULL

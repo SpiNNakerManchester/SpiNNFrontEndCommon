@@ -14,16 +14,25 @@
 
 import io
 import logging
+import numpy
 import os
 import sqlite3
 from spinn_utilities.log import FormatAdapter
+from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
+from .constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE, MAX_MEM_REGIONS, TABLE_TYPE)
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
+
+# Stop large numbers being written as blobs
+
+sqlite3.register_adapter(numpy.int64, lambda val: int(val))
+sqlite3.register_adapter(numpy.int32, lambda val: int(val))
 
 
 class DsSqlliteDatabase(SQLiteDB):
@@ -117,12 +126,30 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (core_x, core_y, core_p)):
                 return row["core_view"]
             chip_id = self._get_chip_id(cursor, core_x, core_y)
+            if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
+                is_system = 1
+            else:
+                is_system = 0
             cursor.execute(
                 """
-                INSERT INTO core(chip_id, processor, executable_type) 
+                INSERT INTO core(chip_id, processor, is_system) 
                 VALUES(?, ?, ?)
-                """, (chip_id, core_p, vertex.get_binary_start_type().value))
+                """, (chip_id, core_p, is_system))
             return cursor.lastrowid
+
+    def get_core_infos(self, is_system):
+        with self.transaction() as cursor:
+            core_infos = []
+            for row in cursor.execute(
+                    """
+                    SELECT core_id, x, y, processor
+                    FROM core_view
+                    WHERE is_system = ?
+                    ORDER BY core_id
+                     """, (is_system,)):
+                core_infos.append(
+                    (row["core_id"], row["x"], row["y"], row["processor"]))
+        return core_infos
 
     def _get_chip_id(self, cursor, core_x, core_y):
         """
@@ -167,6 +194,17 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (core_id, region_num, size, reference, label))
             return cursor.lastrowid
 
+    def get_memory_region(self, core_id, region_num):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT region_id FROM region
+                    WHERE core_id = ? AND region_num = ?
+                    LIMIT 1
+                    """, (core_id, region_num)):
+                return row["region_id"]
+        raise DsDatabaseException(f"Region {region_num} not set")
+
     def write_reference(self, core_id, region_num, reference):
         with self.transaction() as cursor:
             cursor.execute(
@@ -175,6 +213,115 @@ class DsSqlliteDatabase(SQLiteDB):
                 VALUES(?, ?, ?)
                 """, (core_id, region_num, reference))
             return cursor.lastrowid
+
+    def get_reference_pointers(self, core_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT reference.region_num, pointer
+                    FROM reference JOIN region
+                    ON reference.reference_num = region.reference_num
+                    WHERE reference.core_id = ?
+                    """, (core_id,)):
+                yield row["region_num"], row["pointer"]
+
+    def set_write_data(self, region_id, write_data, data_debug):
+        with self.transaction() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO write(region_id, write_data, data_debug) 
+                VALUES(?, ?, ?)
+                """, (region_id, write_data, data_debug))
+            return cursor.lastrowid
+
+    def get_write_data(self, region_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT write_data  
+                    FROM write
+                    WHERE region_id = ?
+                    LIMIT 1
+                    """, (region_id,)):
+                return bytearray(row["write_data"])
+        return None
+
+    def get_region_sizes(self, core_x, core_y, core_p):
+        regions = dict()
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT region_num, size FROM region_view
+                    WHERE x = ? AND y = ? AND processor = ?
+                    ORDER BY region_num
+                    """, (core_x, core_y, core_p)):
+                regions[row["region_num"]] = row["size"]
+        return regions
+
+    def get_total_size(self, core_x, core_y, core_p):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT sum(size) as total FROM region_view
+                    WHERE x = ? AND y = ? AND processor = ?
+                    LIMIT 1
+                    """, (core_x, core_y, core_p)):
+                return row["total"]
+
+    def set_base_address(self, core_id, base_address):
+        pointer = (base_address + MAX_MEM_REGIONS * TABLE_TYPE.itemsize +
+                   APP_PTR_TABLE_HEADER_BYTE_SIZE)
+        to_update = []
+        with self.transaction() as cursor:
+            cursor.execute(
+                """
+                UPDATE core SET
+                    base_address = ?
+                WHERE core_id = ?
+                """, (base_address, core_id))
+
+            for row in cursor.execute(
+                    """
+                    SELECT region_id, size
+                    FROM region
+                    WHERE core_id = ?
+                    ORDER BY region_num
+                    """, (core_id,)):
+                to_update.append((pointer, row["region_id"]))
+                pointer += row["size"]
+
+            for pointer, region_id in to_update:
+                cursor.execute(
+                    """
+                    UPDATE region 
+                    SET pointer = ?
+                    WHERE region_id = ?
+                    """, (pointer, region_id))
+
+    def get_base_address(self, core_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT base_address 
+                    FROM core 
+                    WHERE core_id = ?
+                    LIMIT 1
+                    """, (core_id, )):
+                return row["base_address"]
+
+    def get_region_pointers(self, core_id):
+        pointers = []
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT region_num, region_id, pointer
+                    FROM region_view
+                    WHERE core_id = ?
+                    ORDER BY region_num
+                     """, (core_id,)):
+                pointers.append(
+                    (row["region_num"], row["region_id"], row["pointer"]))
+            return pointers
 
     def write_data_spec(self, core_x, core_y, core_p, spec_bytes):
         """
@@ -185,6 +332,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int p: Processor ID of the core that `spec_bytes` applies to
         :param bytes spec_bytes: the data specification byte-code
         """
+        old = 1/0
         chip = FecDataView().get_chip_at(core_x, core_y)
         with self.transaction() as cursor:
             cursor.execute(
@@ -211,6 +359,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: data specification as byte code
         :rtype: bytes
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -231,6 +380,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: Yields the (x, y, p)
         :rtype: iterable(tuple(int,int,int))
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -250,14 +400,26 @@ class DsSqlliteDatabase(SQLiteDB):
             Yields the (x, y, p) and saved data specification byte-code pairs
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase))
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT x, y, processor, content FROM core
                     WHERE content IS NOT NULL
-                    """):
+                    """, (Exx, y, p)):
                 yield ((row["x"], row["y"], row["processor"]),
                        io.BytesIO(row["content"]))
+
+    def get_xyp_totalsize(self, core_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT sum(size) as total_size 
+                    FROM region_view
+                    WHERE core_id = ?
+                    LIMIT 1
+                    """, (core_id,)):
+                return row["total_size"]
 
     def system_items(self):
         """
@@ -271,14 +433,15 @@ class DsSqlliteDatabase(SQLiteDB):
             region_size triples
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
         """
+        broken = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, processor, content, memory_used FROM core
-                    WHERE content IS NOT NULL AND is_system = 1
-                    """):
-                yield ((row["x"], row["y"], row["processor"]),
-                       io.BytesIO(row["content"]), row["memory_used"])
+                    SELECT x, y, processor, sum(size) as total FROM region_view
+                    WHERE executable_type = ?
+                    GROUP BY x, y, processor
+                    """, (ExecutableType.SYSTEM.value,)):
+                yield ((row["x"], row["y"], row["processor"]), row["total"])
 
     def app_items(self):
         """
@@ -292,6 +455,7 @@ class DsSqlliteDatabase(SQLiteDB):
             Yields the (x, y, p) and saved data specification byte-code pairs
         :rtype: iterable(tuple(tuple(int,int,int),~io.RawIOBase, int))
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -308,6 +472,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -326,6 +491,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -348,9 +514,9 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
-                    WHERE content IS NOT NULL  AND is_system = 1
+                    WHERE executable_type = ?
                     LIMIT 1
-                    """):
+                    """,(ExecutableType.SYSTEM.value,)):
                 return row["count"]
         raise DsDatabaseException("Count query failed")
 
@@ -360,6 +526,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
         :param int app_id: value to set
         """
+        old = 1/0
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -377,6 +544,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int p: core processor ID
         :rtype: int
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -386,24 +554,6 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (x, y, p)):
                 return row["app_id"]
         return None
-
-    def mark_system_cores(self, core_subsets):
-        """
-        Flags a set of processors as running system binaries.
-
-        :param ~spinn_machine.CoreSubsets core_subsets:
-            Which cores to mark.
-        """
-        with self.transaction() as cursor:
-            cursor.executemany(
-                """
-                UPDATE core SET
-                    is_system = 1
-                WHERE x = ? AND y = ? AND processor = ?
-                """, (
-                    (subset.x, subset.y, p)
-                    for subset in core_subsets
-                    for p in subset.processor_ids))
 
     def get_write_info(self, x, y, p):
         """
@@ -415,6 +565,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: start_address, memory_used, memory_written
         :rtype: DataWritten
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -439,6 +590,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int used: size allocated
         :param int written: bytes written
         """
+        old = 1/0
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -465,6 +617,7 @@ class DsSqlliteDatabase(SQLiteDB):
                         chip.nearest_ethernet_y, self.__root_ethernet_id))
 
     def set_size_info(self, x, y, p, memory_used):
+        old = 1/0
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -492,6 +645,7 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Clears the provenance for all rows.
         """
+        old = 1/0
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -508,6 +662,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -530,6 +685,7 @@ class DsSqlliteDatabase(SQLiteDB):
             and memory_written
         :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
+        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """

@@ -130,21 +130,15 @@ class _GraphDataSpecificationWriter(object):
         # generate the DSG file
         vertex.generate_data_specification(spec, pl)
 
-        return True
-
         # Check the memory usage
-        region_size = APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes)
-
-        # extracts the int from the numpy data type generated
-        if not isinstance(region_size, int):
-            region_size = region_size.item()
-
-        ds_db.set_size_info(pl.x, pl.y, pl.p, region_size)
+        total_size = ds_db.get_total_size(x, y, p)
+        region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
 
         # Check per-region memory usage if possible
         sdram = vertex.sdram_required
         if isinstance(sdram, MultiRegionSDRAM):
-            for i, size in enumerate(spec.region_sizes):
+            region_sizes = ds_db.get_region_sizes(x, y, p)
+            for i, size in region_sizes.items():
                 est_size = sdram.regions.get(i, ConstantSDRAM(0))
                 est_size = est_size.get_total_sdram(
                     FecDataView.get_max_run_time_steps())
@@ -155,10 +149,10 @@ class _GraphDataSpecificationWriter(object):
                         "{} estimated vs. {} actual",
                         i, vertex.label, est_size, size)
 
-        self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
-        self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
-        if (self._sdram_usage[pl.x, pl.y] <=
-                FecDataView().get_chip_at(pl.x, pl.y).sdram):
+        self._vertices_by_chip[x, y].append(vertex)
+        self._sdram_usage[x, y] += total_size
+        if (self._sdram_usage[x, y] <=
+                FecDataView().get_chip_at(x, y).sdram):
             return True
 
         # creating the error message which contains the memory usage of
@@ -168,8 +162,8 @@ class _GraphDataSpecificationWriter(object):
                 vert, region_size, sum(region_size),
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
-            for vert in self._vertices_by_chip[pl.x, pl.y])
+            for vert in self._vertices_by_chip[x, y])
 
         raise ConfigurationException(
-            f"Too much SDRAM has been used on {pl.x}, {pl.y}.  Vertices and"
+            f"Too much SDRAM has been used on {x}, {y}.  Vertices and"
             f" their usage on that chip is as follows:\n{memory_usage}")

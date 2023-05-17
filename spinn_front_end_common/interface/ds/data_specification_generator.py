@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numpy
 from data_specification.enums.data_type import DataType
 from data_specification.exceptions import (
     InvalidSizeException, NotAllocatedException,
     NoRegionSelectedException, ParameterOutOfBoundsException,
     RegionInUseException, RegionUnfilledException, TypeMismatchException,
     UnknownTypeException, UnknownTypeLengthException)
+
+BYTES_PER_WORD = 4
 
 
 class DataSpecificationGenerator(object):
@@ -27,9 +30,11 @@ class DataSpecificationGenerator(object):
 
     __slots__ = [
         "_core_id",
+        "_data",
+        "_data_debug",
         "_ds_db",
         "_report_writer",
-        "_region_id"
+        "_region_id",
     ]
 
     def __init__(self, x, y, p, vertex, ds_db, report_writer=None):
@@ -52,6 +57,8 @@ class DataSpecificationGenerator(object):
         self._report_writer = report_writer
         self._core_id = ds_db.get_core_id(x, y, p, vertex)
         self._region_id = None
+        self._data = None
+        self._data_debug = None
 
     def comment(self, comment):
         """
@@ -92,6 +99,9 @@ class DataSpecificationGenerator(object):
                 cmd_string += f" REF {reference:d}"
             cmd_string += "\n"
             self._report_writer.write(cmd_string)
+
+        if size % BYTES_PER_WORD != 0:
+            size = size + (BYTES_PER_WORD - (size % BYTES_PER_WORD))
 
         self._ds_db.write_memory_region(
             self._core_id, region, size, reference, label)
@@ -153,6 +163,7 @@ class DataSpecificationGenerator(object):
         :raise UnknownTypeException: If the data type is not known
         :raise InvalidSizeException: If the data size is invalid
         """
+        raise NotImplementedError("create_cmd")
 
     def write_value(self, data, data_type=DataType.UINT32):
         """
@@ -177,6 +188,13 @@ class DataSpecificationGenerator(object):
         :raise InvalidSizeException: If the data size is invalid
         :raise NoRegionSelectedException: If no region has been selected
         """
+        self._typebounds("WRITE", "data", data, data_type)
+
+        if self._report_writer is not None:
+            cmd_string = f"WRITE data={data}, dataType={data_type.name}\n"
+            self._report_writer.write(cmd_string)
+        self._data += data_type.encode(data)
+        self._data_debug += f"{data}:{data_type.name} "
 
     def write_array(self, array_values, data_type=DataType.UINT32):
         """
@@ -188,6 +206,29 @@ class DataSpecificationGenerator(object):
         :param DataType data_type: Type of data contained in the array
         :raise NoRegionSelectedException: If no region has been selected
         """
+        if data_type.numpy_typename is None:
+            raise TypeMismatchException("WRITE_ARRAY")
+
+        data = numpy.array(array_values, dtype=data_type.numpy_typename)
+        size = data.size * data_type.size
+
+        if size % 4 != 0:
+            raise UnknownTypeLengthException(size, "WRITE_ARRAY")
+
+        if self._report_writer is not None:
+            cmd_string = f"WRITE_ARRAY {size // 4:d} elements\n"
+            cmd_string += str(list(array_values))
+            cmd_string += "\n"
+            self._report_writer.write(cmd_string)
+        self._data += data.tostring()
+        self._data_debug += f"{array_values}:Array "
+
+    def _end_region(self):
+        if self._data is not None and len(self._data) > 0:
+            self._ds_db.set_write_data(
+                self._region_id, self._data, self._data_debug)
+        self._data = bytearray()
+        self._data_debug = ""
 
     def switch_write_focus(self, region):
         """
@@ -200,6 +241,14 @@ class DataSpecificationGenerator(object):
         :raise RegionUnfilledException:
             If the selected region should not be filled
         """
+        self._end_region()
+
+        if self._report_writer is not None:
+            cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
+            self._report_writer.write(cmd_string)
+
+        self._region_id = self._ds_db.get_memory_region(
+            self._core_id, region)
 
     def set_write_pointer(self, address, address_is_register=False,
                           relative_to_current=False):
@@ -224,6 +273,7 @@ class DataSpecificationGenerator(object):
             valid register ID
         :raise NoRegionSelectedException: If no region has been selected
         """
+        raise NotImplementedError("set_write_pointer")
 
     def end_specification(self, close_writer=True):
         """
@@ -233,32 +283,4 @@ class DataSpecificationGenerator(object):
         :param bool close_writer:
             Indicates whether to close the underlying writer(s)
         """
-
-    def _write_command_to_files(self, cmd_string, no_instruction_number=False):
-        """
-        Writes the binary command to the binary output file and, if the
-        user has requested a text output for debug purposes, also write
-        the text version to the text file.
-
-        Setting the optional parameter ``indent`` to ``True`` causes subsequent
-        commands to be indented by two spaces relative to this one. Similarly,
-        setting ``outdent`` to ``True`` reverses this spacing.
-
-        :param bytearray cmd_word_list: list of binary words to be added to
-            the binary data specification file
-        :param str cmd_string: string describing the command to be added to
-            the report for the data specification file
-        :param bool no_instruction_number: if each report line should include
-            also the address of the command in the file
-        """
-        if self._report_writer is not None:
-            indent_string = "   " * self._txt_indent
-            if no_instruction_number:
-                formatted_cmd_string = f"{indent_string}{cmd_string}\n"
-            else:
-                formatted_cmd_string = (
-                    f"{self._instruction_counter:08X}. "
-                    f"{indent_string}{cmd_string}\n")
-                self._instruction_counter += len(cmd_word_list)
-            self._report_writer.write(str(formatted_cmd_string))
-        return
+        self._end_region()
