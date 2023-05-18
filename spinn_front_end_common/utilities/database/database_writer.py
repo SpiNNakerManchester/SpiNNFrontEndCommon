@@ -21,7 +21,6 @@ from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection, HasCustomAtomKeyMap)
 from spinnman.spalloc import SpallocJob
 from spinn_front_end_common.utility_models import LivePacketGather
-from pacman.utilities.utility_calls import get_field_based_keys
 
 logger = FormatAdapter(logging.getLogger(__name__))
 DB_NAME = "input_output_database.sqlite3"
@@ -255,7 +254,8 @@ class DatabaseWriter(SQLiteDB):
                     # at which point there is nothing to do here anyway
                     if r_info is not None:
                         vertex_slice = m_vertex.vertex_slice
-                        keys = get_field_based_keys(r_info.key, vertex_slice)
+                        key = r_info.key
+                        keys = range(key, key + vertex_slice.n_atoms)
                         start = vertex_slice.lo_atom
                         atom_keys = [(i, k) for i, k in enumerate(keys, start)]
                 m_vertex_id = self.__vertex_to_id[m_vertex]
