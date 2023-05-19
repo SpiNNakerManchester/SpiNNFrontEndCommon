@@ -134,6 +134,7 @@ class _ExecutionContext(object):
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
 
+            print(pointer_table)
             to_write = numpy.concatenate(
                 (header, pointer_table.view("uint32"))).tobytes()
             FecDataView.write_memory(x, y, base_address, to_write)
