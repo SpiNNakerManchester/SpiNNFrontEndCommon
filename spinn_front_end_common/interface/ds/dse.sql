@@ -64,6 +64,11 @@ CREATE VIEW IF NOT EXISTS core_view AS
            ethernet_x, ethernet_y, ip_address
     FROM core NATURAL JOIN chip_view;
 
+CREATE VIEW IF NOT EXISTS core_memory_view AS
+    SELECT core_id, sum(size) as memory_used
+	FROM region
+	GROUP BY core_id;
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the regions.
 CREATE TABLE IF NOT EXISTS region(
@@ -107,6 +112,20 @@ CREATE VIEW IF NOT EXISTS write_too_big AS
     SELECT *
     FROM write_view
     WHERE length(write_data) > size;
+
+CREATE VIEW IF NOT EXISTS core_write_view AS
+    SELECT core_id, sum(length(write_data)) as memory_written
+    FROM region NATURAL JOIN write
+	GROUP BY core_id;
+
+CREATE VIEW IF NOT EXISTS core_info AS
+    SELECT core.core_id, x, y, processor, base_address, memory_used, memory_written
+    FROM core
+        NATURAL JOIN chip
+        LEFT JOIN core_memory_view
+            on core.core_id = core_memory_view.core_id
+        LEFT JOIN core_write_view
+            on core.core_id = core_write_view.core_id;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.

@@ -109,12 +109,12 @@ class _HostExecuteDataSpecification(object):
         Execute the data specs for all system targets.
         """
         try:
-            if FecDataView.has_java_caller():
-                if is_system:
-                    return self.__java_sys()
-                else:
-                    return self.__java_app(uses_advanced_monitors)
-            else:
+            #if FecDataView.has_java_caller():
+            #    if is_system:
+            #        return self.__java_sys()
+            #    else:
+            #        return self.__java_app(uses_advanced_monitors)
+            #else:
                 return self.__python_load(is_system, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:

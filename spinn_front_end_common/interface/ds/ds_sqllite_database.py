@@ -390,12 +390,10 @@ class DsSqlliteDatabase(SQLiteDB):
         :return: Yields the (x, y, p)
         :rtype: iterable(tuple(int,int,int))
         """
-        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, processor FROM core
-                    WHERE content IS NOT NULL
+                    SELECT x, y, processor FROM core_view
                     """):
                 yield (row["x"], row["y"], row["processor"])
 
@@ -482,12 +480,10 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
-        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT COUNT(*) as count FROM core
-                    WHERE content IS NOT NULL
                     LIMIT 1
                     """):
                 return row["count"]
@@ -696,18 +692,16 @@ class DsSqlliteDatabase(SQLiteDB):
             and memory_written
         :rtype: iterable(tuple(tuple(int, int, int), int, int, int))
         """
-        old = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT
                         x, y, processor,
-                        start_address, memory_used, memory_written
-                    FROM core
-                    WHERE start_address IS NOT NULL
+                        base_address, memory_used, memory_written
+                    FROM core_info
                     """):
                 yield ((row["x"], row["y"], row["processor"]),
-                       row["start_address"], row["memory_used"],
+                       row["base_address"], row["memory_used"],
                        row["memory_written"])
 
     def write_session_credentials_to_db(self):
