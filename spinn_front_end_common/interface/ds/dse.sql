@@ -65,7 +65,7 @@ CREATE VIEW IF NOT EXISTS core_view AS
     FROM core NATURAL JOIN chip_view;
 
 CREATE VIEW IF NOT EXISTS core_memory_view AS
-    SELECT core_id, sum(size) as memory_used
+    SELECT core_id, sum(size) as regions_size, sum(size) + 392 as memory_used
 	FROM region
 	GROUP BY core_id;
 
@@ -114,12 +114,13 @@ CREATE VIEW IF NOT EXISTS write_too_big AS
     WHERE length(write_data) > size;
 
 CREATE VIEW IF NOT EXISTS core_write_view AS
-    SELECT core_id, sum(length(write_data)) as memory_written
+    SELECT core_id, sum(length(write_data)) as region_written, sum(length(write_data)) +392 as memory_written
     FROM region NATURAL JOIN write
 	GROUP BY core_id;
 
 CREATE VIEW IF NOT EXISTS core_info AS
-    SELECT core.core_id, x, y, processor, base_address, memory_used, memory_written
+    SELECT core.core_id, x, y, processor, base_address,
+           regions_size, memory_used, region_written, memory_written
     FROM core
         NATURAL JOIN chip
         LEFT JOIN core_memory_view
