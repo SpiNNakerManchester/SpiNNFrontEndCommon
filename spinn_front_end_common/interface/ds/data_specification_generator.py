@@ -33,6 +33,7 @@ class DataSpecificationGenerator(object):
         "_data",
         "_data_debug",
         "_ds_db",
+        "_offset",
         "_report_writer",
         "_region_id",
     ]
@@ -59,6 +60,7 @@ class DataSpecificationGenerator(object):
         self._region_id = None
         self._data = None
         self._data_debug = None
+        self._offset = None
 
     def comment(self, comment):
         """
@@ -226,9 +228,10 @@ class DataSpecificationGenerator(object):
     def _end_region(self):
         if self._data is not None and len(self._data) > 0:
             self._ds_db.set_write_data(
-                self._region_id, self._data, self._data_debug)
+                self._region_id, self._offset, self._data, self._data_debug)
         self._data = bytearray()
         self._data_debug = ""
+        self._offset = 0
 
     def switch_write_focus(self, region):
         """
@@ -250,30 +253,17 @@ class DataSpecificationGenerator(object):
         self._region_id = self._ds_db.get_memory_region(
             self._core_id, region)
 
-    def set_write_pointer(self, address, address_is_register=False,
-                          relative_to_current=False):
+    def set_write_pointer(self, offset):
         """
         Insert command to set the position of the write pointer within the
         current region.
 
-        :param int address:
-            * If ``address_is_register`` is True, the ID of the register
-              containing the address to move to
-            * If ``address_is_register`` is False, the address to move the
-              write pointer to
-        :param bool address_is_register:
-            Indicates if ``address`` is a register ID
-        :param bool relative_to_current:
-            Indicates if ``address`` (or the value read from that register
-            when ``address_is_register`` is True) is to be added to the
-            current address, or used as an absolute address from the start
-            of the current region
-        :raise ParameterOutOfBoundsException:
-            If the ``address_is_register`` is True and ``address`` is not a
-            valid register ID
+        :param int offset:
+            The offset in the region to move the region pointer to
         :raise NoRegionSelectedException: If no region has been selected
         """
-        raise NotImplementedError("set_write_pointer")
+        self._end_region()
+        self._offset = offset
 
     def end_specification(self, close_writer=True):
         """
@@ -284,3 +274,4 @@ class DataSpecificationGenerator(object):
             Indicates whether to close the underlying writer(s)
         """
         self._end_region()
+        self._ds_db = None

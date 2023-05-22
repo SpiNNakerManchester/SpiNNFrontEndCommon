@@ -225,26 +225,36 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (core_id,)):
                 yield row["region_num"], row["pointer"]
 
-    def set_write_data(self, region_id, write_data, data_debug):
+    def set_write_data(self, region_id, offset, write_data, data_debug):
         with self.transaction() as cursor:
             cursor.execute(
                 """
-                INSERT INTO write(region_id, write_data, data_debug) 
-                VALUES(?, ?, ?)
-                """, (region_id, write_data, data_debug))
+                INSERT INTO write(
+                    region_id,  offset, write_data, data_debug) 
+                VALUES(?, ?, ?, ?)
+                """, (region_id, offset, write_data, data_debug))
             return cursor.lastrowid
 
     def get_write_data(self, region_id):
+        data = None
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT write_data  
+                    SELECT offset, write_data  
                     FROM write
                     WHERE region_id = ?
-                    LIMIT 1
+                    ORDER BY offset
                     """, (region_id,)):
-                return bytearray(row["write_data"])
-        return None
+                if data is None:
+                    data = bytearray()
+                offset = row["offset"]
+                if offset < len(data):
+                    raise DsDatabaseException("Offset to low")
+                if offset > len(data):
+                    data += bytearray(len(data)-offset)
+                data += bytearray(row["write_data"])
+
+        return data
 
     def get_region_sizes(self, core_x, core_y, core_p):
         regions = dict()
@@ -510,6 +520,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException:
         """
+        not_used = 1/0
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """

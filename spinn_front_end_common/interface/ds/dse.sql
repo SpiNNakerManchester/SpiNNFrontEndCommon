@@ -89,14 +89,24 @@ CREATE VIEW IF NOT EXISTS region_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the data to write.
 CREATE TABLE IF NOT EXISTS write (
-    region_id INTEGER PRIMARY KEY,
+    write_id  INTEGER PRIMARY KEY,
+    region_id INTEGER NOT NULL,
     write_data BLOB NOT NULL,
+    offset INTEGER NOT NULL,
     data_debug TEXT);
+CREATE UNIQUE INDEX IF NOT EXISTS write_sanity ON write(
+   region_id ASC, offset ASC);
 
 CREATE VIEW IF NOT EXISTS write_view AS
     SELECT region_id, x, y, processor, region_num, region_label, size, pointer,
-           write_data, length(write_data) as data_size, data_debug, core_id
+           offset, write_data, length(write_data) as data_size, data_debug,
+           core_id
     FROM region_view NATURAL JOIN write;
+
+CREATE VIEW IF NOT EXISTS write_too_big AS
+    SELECT *
+    FROM write_view
+    WHERE length(write_data) > size;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.
