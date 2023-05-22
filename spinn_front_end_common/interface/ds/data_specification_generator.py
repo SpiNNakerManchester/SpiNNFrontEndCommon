@@ -71,8 +71,9 @@ class DataSpecificationGenerator(object):
 
         :param str comment: The comment to write
         """
-        self._report_writer.write(comment)
-        self._report_writer.write("\n")
+        if self._report_writer is not None:
+            self._report_writer.write(comment)
+            self._report_writer.write("\n")
 
     def reserve_memory_region(
             self, region, size, label=None, empty=False, reference=None):
