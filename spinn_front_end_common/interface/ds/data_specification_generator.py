@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numpy
 from spinn_utilities.overrides import overrides
-from data_specification.enums.data_type import DataType
-from data_specification.exceptions import (
-    InvalidSizeException, NotAllocatedException,
-    NoRegionSelectedException, ParameterOutOfBoundsException,
-    RegionInUseException, RegionUnfilledException, TypeMismatchException,
-    UnknownTypeException, UnknownTypeLengthException)
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from .base_data_specification_generator import BaseDataSpecificationGenerator
 
