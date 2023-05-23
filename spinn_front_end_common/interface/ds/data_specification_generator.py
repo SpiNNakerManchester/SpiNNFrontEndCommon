@@ -131,16 +131,6 @@ class DataSpecificationGenerator(object):
 
         self._ds_db.write_reference(self._core_id, region, ref)
 
-    def _typebounds(self, cmd, name, value, valuetype):
-        """
-        A simple bounds checker that uses the bounds from a type descriptor.
-        """
-        if valuetype not in DataType:
-            raise UnknownTypeException(valuetype, cmd)
-        if value < valuetype.min or value > valuetype.max:
-            raise ParameterOutOfBoundsException(
-                name, value, valuetype.min, valuetype.max, cmd)
-
     def create_cmd(self, data, data_type=DataType.UINT32):
         """
         Creates command to write a value to the current write pointer, causing
@@ -188,10 +178,10 @@ class DataSpecificationGenerator(object):
               fractional part
             * If ``data`` would overflow the data type
         :raise UnknownTypeException: If the data type is not known
-        :raise InvalidSizeException: If the data size is invalid
+        :raise ValueError: If the data size is invalid
         :raise NoRegionSelectedException: If no region has been selected
         """
-        self._typebounds("WRITE", "data", data, data_type)
+        data_type.check_value(data)
 
         as_bytes = data_type.as_bytes(data)
         if self._report_writer is not None:
@@ -203,6 +193,13 @@ class DataSpecificationGenerator(object):
                 raise ValueError(
                     f"{data}:{data_type.name} as bytes was {as_bytes} "
                     f"when only {data_type.size} bytes expected")
+            if len(self._data) % 4 != 0:  # check we are at a word boundary
+                if len(data) % data_type.size != 0:
+                    raise NotImplementedError(
+                        f"After {len(self._data)} bytes have been written "
+                        f" unable to add data of type {data_type}"
+                        f" without padding")
+
         self._data += as_bytes
         self._data_debug += f"{data}:{data_type.name} "
 
@@ -220,24 +217,48 @@ class DataSpecificationGenerator(object):
             raise TypeMismatchException("WRITE_ARRAY")
 
         data = numpy.array(array_values, dtype=data_type.numpy_typename)
-        size = data.size * data_type.size
 
-        if size % 4 != 0:
-            raise UnknownTypeLengthException(size, "WRITE_ARRAY")
-
-        encoded = data.tostring()
+        encoded = data.tosbytes()
         if self._report_writer is not None:
-            cmd_string = f"WRITE_ARRAY {size // 4:d} elements\n"
+            cmd_string = f"WRITE_ARRAY {len(array_values)} elements\n"
             cmd_string += str(list(array_values))
             cmd_string += f"as {encoded}\n"
             self._report_writer.write(cmd_string)
+            if len(self._data) % 4 != 0:  # check we are at a word boundary
+                raise NotImplementedError(
+                    f"After {len(self._data)} bytes have been written "
+                    f"which is not a multiple of 4"
+                    f" write_array is not supported")
+            if len(encoded) % 4 != 0:  # check we are at a word boundary
+                raise NotImplementedError(
+                    f"Unexpected data (as bytes) length of {len(encoded)}")
+
         self._data += encoded
         self._data_debug += f"{array_values}:Array "
 
-    def _end_region(self):
-        if self._data is not None and len(self._data) > 0:
+    def _end_write_block(self):
+        length = len(self._data)
+        if self._data is not None and length > 0:
+
+            # Safety check if in debug mode
+            if self._report_writer is not None:
+                size = self._ds_db.get_region_size(self._region_id)
+                if size < length:
+                    raise InvalidSizeException(
+                        f"Region size is {size} "
+                        f"so unable to write {length} bytes")
+                if size - self._offset < length:
+                    raise InvalidSizeException(
+                        f"Region size is {size} Offset is {self._offset} "
+                        f"so unable to write {length} bytes")
+                if length % 4 != 0:
+                    raise NotImplementedError(
+                        "Unable to write {length} bytes "
+                        "as not a multiple of 4")
+
             self._ds_db.set_write_data(
                 self._region_id, self._offset, self._data, self._data_debug)
+
         self._data = bytearray()
         self._data_debug = ""
         self._offset = 0
@@ -253,7 +274,7 @@ class DataSpecificationGenerator(object):
         :raise RegionUnfilledException:
             If the selected region should not be filled
         """
-        self._end_region()
+        self._end_write_block()
 
         if self._report_writer is not None:
             cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
@@ -271,7 +292,10 @@ class DataSpecificationGenerator(object):
             The offset in the region to move the region pointer to
         :raise NoRegionSelectedException: If no region has been selected
         """
-        self._end_region()
+        self._end_write_block()
+        if offset % 4 != 0:
+            raise NotImplementedError(
+                f"Unexpected offset of {offset} which is not a multiple of 4")
         self._offset = offset
 
     def end_specification(self, close_writer=True):
@@ -282,5 +306,5 @@ class DataSpecificationGenerator(object):
         :param bool close_writer:
             Indicates whether to close the underlying writer(s)
         """
-        self._end_region()
+        self._end_write_block()
         self._ds_db = None

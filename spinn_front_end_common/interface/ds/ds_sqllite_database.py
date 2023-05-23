@@ -256,6 +256,17 @@ class DsSqlliteDatabase(SQLiteDB):
 
         return data
 
+    def get_region_size(self, region_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT num, size 
+                    FROM region
+                    WHERE region_id = ?
+                    LIMIT 1
+                    """, (region_id)):
+                return row["size"]
+
     def get_region_sizes(self, core_x, core_y, core_p):
         regions = dict()
         with self.transaction() as cursor:
