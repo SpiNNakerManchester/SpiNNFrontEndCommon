@@ -22,7 +22,8 @@ from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, DataSpecException)
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
@@ -104,6 +105,8 @@ class _GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.set_reload_required(False)
 
+        self._run_check_qureies(ds_db)
+
         return ds_db
 
     def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
@@ -167,3 +170,9 @@ class _GraphDataSpecificationWriter(object):
         raise ConfigurationException(
             f"Too much SDRAM has been used on {x}, {y}.  Vertices and"
             f" their usage on that chip is as follows:\n{memory_usage}")
+
+    def _run_check_qureies(self, ds_db):
+        for x, y, p, region, region_size, data_size in ds_db.get_too_big():
+            raise DataSpecException(
+                f"Data for region {region} on {x}:{y}, {p} is {data_size} "
+                f"while only {region_size} was reserved")

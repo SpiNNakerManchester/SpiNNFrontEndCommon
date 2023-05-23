@@ -719,3 +719,14 @@ class DsSqlliteDatabase(SQLiteDB):
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
+
+    def get_too_big(self):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT
+                        x, y, processor, region_num, size, data_size
+                    FROM write_too_big
+                    """):
+                yield (row["x"], row["y"], row["processor"],
+                       row["region_num"], row["size"], row["data_size"])
