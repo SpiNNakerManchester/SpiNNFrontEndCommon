@@ -260,11 +260,11 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT num, size 
+                    SELECT size 
                     FROM region
                     WHERE region_id = ?
                     LIMIT 1
-                    """, (region_id)):
+                    """, (region_id, )):
                 return row["size"]
 
     def get_region_sizes(self, core_x, core_y, core_p):
