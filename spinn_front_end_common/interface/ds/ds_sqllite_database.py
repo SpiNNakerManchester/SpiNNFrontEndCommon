@@ -251,7 +251,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 if offset < len(data):
                     raise DsDatabaseException("Offset to low")
                 if offset > len(data):
-                    data += bytearray(len(data)-offset)
+                    data += bytearray(offset- len(data))
                 data += bytearray(row["write_data"])
 
         return data
