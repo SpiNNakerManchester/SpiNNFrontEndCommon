@@ -13,7 +13,9 @@
 # limitations under the License.
 
 from .data_specification_generator import DataSpecificationGenerator
+from .data_specification_reloader import DataSpecificationReloader
 from .ds_sqllite_database import DsSqlliteDatabase
 
 __all__ = [
-    "DataSpecificationGenerator", "DsSqlliteDatabase"]
+    "DataSpecificationGenerator", "DataSpecificationReloader",
+    "DsSqlliteDatabase"]

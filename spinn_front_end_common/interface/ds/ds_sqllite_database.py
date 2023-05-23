@@ -120,11 +120,15 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT core_id FROM core_view
+                    SELECT core_id 
+                    FROM core_view
                     WHERE x = ? AND y = ? AND processor = ?
                     LIMIT 1
                     """, (core_x, core_y, core_p)):
-                return row["core_view"]
+                return row["core_id"]
+            if vertex is None:
+                raise DsDatabaseException(
+                    f"No region known for {core_x} {core_y} {core_p}")
             chip_id = self._get_chip_id(cursor, core_x, core_y)
             if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
                 is_system = 1
@@ -198,11 +202,11 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_id FROM region
+                    SELECT region_id, size FROM region
                     WHERE core_id = ? AND region_num = ?
                     LIMIT 1
                     """, (core_id, region_num)):
-                return row["region_id"]
+                return row["region_id"], row["size"]
         raise DsDatabaseException(f"Region {region_num} not set")
 
     def write_reference(self, core_id, region_num, reference):
@@ -266,6 +270,17 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (region_id, )):
                 return row["size"]
+
+    def get_region_info(self, region_id):
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, pointer, size 
+                    FROM region_view
+                    WHERE region_id = ?
+                    LIMIT 1
+                    """, (region_id, )):
+                return row["x"], row["y"], row["pointer"], row["size"]
 
     def get_region_sizes(self, core_x, core_y, core_p):
         regions = dict()

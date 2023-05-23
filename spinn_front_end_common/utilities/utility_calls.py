@@ -70,7 +70,8 @@ _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"
 
 
-def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
+def get_report_writer(processor_chip_x, processor_chip_y, processor_id,
+                      use_run_number=False):
     """
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
@@ -78,6 +79,8 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     :param int processor_chip_x: X coordinate of the chip
     :param int processor_chip_y: Y coordinate of the chip
     :param int processor_id: The processor ID
+    :param bool use_run_number:
+        If set the directory will include the run number
     :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
@@ -87,8 +90,11 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
+    dir_name = _RPT_DIR
+    if use_run_number:
+        dir_name += str(FecDataView.get_run_number())
     new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), _RPT_DIR)
+        FecDataView.get_run_dir_path(), dir_name)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))

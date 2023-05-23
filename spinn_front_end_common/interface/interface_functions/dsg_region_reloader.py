@@ -12,16 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import io
 import os
 import numpy
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import Machine
-from data_specification import DataSpecificationExecutor
-from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.data_specification_generator import (
-    DataSpecificationGenerator)
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.interface.ds import (
+    DataSpecificationReloader, DsSqlliteDatabase)
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
@@ -41,7 +36,7 @@ def reload_dsg_regions():
         FecDataView.get_n_placements(), "Reloading data")
     for placement in progress.over(FecDataView.iterate_placemements()):
         # Generate the data spec for the placement if needed
-        regenerate_data_spec(placement)
+        regenerate_data_spec(placement, FecDataView.get_dsg_targets())
 
 
 def get_reload_data_dir():
@@ -58,11 +53,12 @@ def get_reload_data_dir():
     return data_dir
 
 
-def regenerate_data_spec(placement):
+def regenerate_data_spec(placement, ds_db):
     """
     Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
+    :param DsSqlliteDatabase ds_db: Database used in original DS load
     :return: Whether the data was regenerated or not
     :rtype: bool
     """
@@ -76,60 +72,16 @@ def regenerate_data_spec(placement):
     if not vertex.reload_required():
         return False
 
-    txrx = FecDataView.get_transceiver()
-
-    report_writer = get_report_writer(placement.x, placement.y, placement.p)
+    report_writer = get_report_writer(
+        placement.x, placement.y, placement.p, True)
 
     # build the file writer for the spec
-    spec = DataSpecificationGenerator(report_writer)
+    reloader = DataSpecificationReloader(
+        placement.x, placement.y, placement.p, ds_db, report_writer)
 
     # Execute the regeneration
-    vertex.regenerate_data_specification(spec, placement)
+    vertex.regenerate_data_specification(reloader, placement)
 
-    spec_bytes = io.BytesIO(spec.get_bytes_after_close())
-
-    # execute the spec
-    data_spec_executor = DataSpecificationExecutor(
-        spec_bytes, Machine.DEFAULT_SDRAM_BYTES)
-    data_spec_executor.execute()
-
-    # Read the region table for the placement
-    regions_base_address = txrx.get_cpu_information_from_core(
-        placement.x, placement.y, placement.p).user[0]
-    start_region = get_region_base_address_offset(regions_base_address, 0)
-    ptr_table = _get_ptr_table(
-        txrx, placement, regions_base_address, start_region)
-
-    # Get the data spec executor pointer table; note that this will not
-    # have the right pointers since not all regions will be regenerated
-    # but the checksum and size will be updated there
-    ds_ptr_table = data_spec_executor.get_pointer_table(0)
-    ds_ptr_table_bytes = ds_ptr_table.view("uint8")
-
-    # Get the offset of the checksum and the checksum + size to write
-    chk_off = DataSpecificationExecutor.TABLE_TYPE.fields['checksum'][1]
-    chk_size = DataSpecificationExecutor.TABLE_TYPE.itemsize - chk_off
-
-    # Write the regions to the machine
-    for i, region in enumerate(data_spec_executor.dsef.mem_regions):
-        if region is not None and not region.unfilled:
-            # Verify that the region hasn't grown bigger than it was
-            new_size = ds_ptr_table[i]["n_words"]
-            old_size = ptr_table[i]["n_words"]
-            if old_size != -1 and new_size > old_size:
-                raise SpinnFrontEndException(
-                    f"Region {i} of {vertex} has grown from {old_size} bytes "
-                    f"to {new_size} bytes and will overwrite the next region!")
-            txrx.write_memory(
-                placement.x, placement.y, ptr_table[i]["pointer"],
-                region.region_data[:region.max_write_pointer])
-            # Update the checksum and size of the region
-            reg = get_region_base_address_offset(regions_base_address, i)
-            byte_offset = (reg - start_region) + chk_off
-            addr = reg + chk_off
-            txrx.write_memory(
-                placement.x, placement.y, addr,
-                ds_ptr_table_bytes[byte_offset:], chk_size)
     vertex.set_reload_required(False)
     return True
 

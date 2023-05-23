@@ -126,8 +126,10 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
             cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
             self._report_writer.write(cmd_string)
 
-        self._region_id = self._ds_db.get_memory_region(
+        self._region_id, size = self._ds_db.get_memory_region(
             self._core_id, region)
+        if size <= 0:
+            raise NotAllocatedException(f"No size set for region {region}")
 
     def create_cmd(self, data, data_type=DataType.UINT32):
         """
@@ -249,9 +251,10 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
                 f"Unexpected offset of {offset} which is not a multiple of 4")
         self._offset = offset
 
-    def _check_write_block(self):
+    def _check_write_block(self, size=None):
         length = len(self._data)
-        size = self._ds_db.get_region_size(self._region_id)
+        if size is None:
+            size = self._ds_db.get_region_size(self._region_id)
         if size < length:
             raise InvalidSizeException(
                 f"Region size is {size} so unable to write {length} bytes")
