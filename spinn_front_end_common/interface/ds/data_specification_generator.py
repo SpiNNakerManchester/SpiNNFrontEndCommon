@@ -193,12 +193,17 @@ class DataSpecificationGenerator(object):
         """
         self._typebounds("WRITE", "data", data, data_type)
 
-        encoded = data_type.encode(data)
+        as_bytes = data_type.as_bytes(data)
         if self._report_writer is not None:
             cmd_string = f"WRITE data={data}, dataType={data_type.name} " \
-                         f"as {encoded}\n"
+                         f"as {as_bytes}\n"
             self._report_writer.write(cmd_string)
-        self._data += encoded
+            if len(as_bytes) > data_type.size:
+                self._report_writer.flush()
+                raise ValueError(
+                    f"{data}:{data_type.name} as bytes was {as_bytes} "
+                    f"when only {data_type.size} bytes expected")
+        self._data += as_bytes
         self._data_debug += f"{data}:{data_type.name} "
 
     def write_array(self, array_values, data_type=DataType.UINT32):
