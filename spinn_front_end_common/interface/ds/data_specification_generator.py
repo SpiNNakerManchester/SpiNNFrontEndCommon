@@ -193,10 +193,12 @@ class DataSpecificationGenerator(object):
         """
         self._typebounds("WRITE", "data", data, data_type)
 
+        encoded = data_type.encode(data)
         if self._report_writer is not None:
-            cmd_string = f"WRITE data={data}, dataType={data_type.name}\n"
+            cmd_string = f"WRITE data={data}, dataType={data_type.name} " \
+                         f"as {encoded}\n"
             self._report_writer.write(cmd_string)
-        self._data += data_type.encode(data)
+        self._data += encoded
         self._data_debug += f"{data}:{data_type.name} "
 
     def write_array(self, array_values, data_type=DataType.UINT32):
@@ -218,12 +220,13 @@ class DataSpecificationGenerator(object):
         if size % 4 != 0:
             raise UnknownTypeLengthException(size, "WRITE_ARRAY")
 
+        encoded = data.tostring()
         if self._report_writer is not None:
             cmd_string = f"WRITE_ARRAY {size // 4:d} elements\n"
             cmd_string += str(list(array_values))
-            cmd_string += "\n"
+            cmd_string += f"as {encoded}\n"
             self._report_writer.write(cmd_string)
-        self._data += data.tostring()
+        self._data += encoded
         self._data_debug += f"{array_values}:Array "
 
     def _end_region(self):
