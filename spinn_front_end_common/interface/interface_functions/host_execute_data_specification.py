@@ -18,14 +18,13 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.ds.constants import (
-    APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD, DSE_VERSION,
-    MAX_MEM_REGIONS, TABLE_TYPE)
+from spinn_front_end_common.utilities.constants import (
+    APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
+    CORE_DATA_SDRAM_BASE_TAG, DSE_VERSION, MAX_MEM_REGIONS, TABLE_TYPE)
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
-from spinn_front_end_common.utilities.constants import CORE_DATA_SDRAM_BASE_TAG
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

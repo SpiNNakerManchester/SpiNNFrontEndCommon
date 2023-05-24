@@ -21,10 +21,10 @@ from spinn_utilities.log import FormatAdapter
 from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import (
+    APP_PTR_TABLE_HEADER_BYTE_SIZE, MAX_MEM_REGIONS, TABLE_TYPE)
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from .constants import (
-    APP_PTR_TABLE_HEADER_BYTE_SIZE, MAX_MEM_REGIONS, TABLE_TYPE)
 
 _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
