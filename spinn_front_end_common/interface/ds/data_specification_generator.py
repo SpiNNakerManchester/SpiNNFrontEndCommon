@@ -14,17 +14,17 @@
 
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from .base_data_specification_generator import BaseDataSpecificationGenerator
+from .data_specification_base import DataSpecificationBase
 
 
-class DataSpecificationGenerator(BaseDataSpecificationGenerator):
+class DataSpecificationGenerator(DataSpecificationBase):
     """
     Used to generate the data specification data in the database
     """
 
     __slots__ = []
 
-    @overrides(BaseDataSpecificationGenerator.reserve_memory_region)
+    @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, empty=False, reference=None):
         if self._report_writer is not None:
@@ -44,7 +44,7 @@ class DataSpecificationGenerator(BaseDataSpecificationGenerator):
         self._ds_db.write_memory_region(
             self._core_id, region, size, reference, label)
 
-    @overrides(BaseDataSpecificationGenerator.reference_memory_region)
+    @overrides(DataSpecificationBase.reference_memory_region)
     def reference_memory_region(self, region, ref, label=None):
         if self._report_writer is not None:
             cmd_string = f"REFERENCE memRegion={region:d} ref={ref:d}"
@@ -59,8 +59,7 @@ class DataSpecificationGenerator(BaseDataSpecificationGenerator):
         if self._data is not None and len(self._data) > 0:
 
             # Safety check if in debug mode
-            if self._report_writer is not None:
-                self._check_write_block()
+            self._check_write_block()
 
             self._ds_db.set_write_data(
                 self._region_id, self._offset, self._data, self._data_debug)

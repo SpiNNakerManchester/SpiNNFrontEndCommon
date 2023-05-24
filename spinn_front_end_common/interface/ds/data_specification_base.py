@@ -15,15 +15,11 @@
 import numpy
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from data_specification.enums.data_type import DataType
-from data_specification.exceptions import (
-    InvalidSizeException, NotAllocatedException,
-    NoRegionSelectedException, ParameterOutOfBoundsException,
-    RegionInUseException, RegionUnfilledException, TypeMismatchException,
-    UnknownTypeException, UnknownTypeLengthException)
+from spinn_front_end_common.utilities.exceptions import DataSpecException
 BYTES_PER_WORD = 4
 
 
-class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
+class DataSpecificationBase(object, metaclass=AbstractBase):
     """
     Used to generate the data specification data in the database
     """
@@ -36,6 +32,8 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
         "_offset",
         "_report_writer",
         "_region_id",
+        "_region_num",
+        "_size"
     ]
 
     def __init__(self, x, y, p, vertex, ds_db, report_writer=None):
@@ -61,6 +59,8 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
         self._data = None
         self._data_debug = None
         self._offset = None
+        self._region_num = None
+        self._size = None
 
     def comment(self, comment):
         """
@@ -126,10 +126,11 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
             cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
             self._report_writer.write(cmd_string)
 
-        self._region_id, size = self._ds_db.get_memory_region(
+        self._region_id, self._size = self._ds_db.get_memory_region(
             self._core_id, region)
-        if size <= 0:
-            raise NotAllocatedException(f"No size set for region {region}")
+        self._region_num = region
+        if self._size <= 0:
+            raise DataSpecException(f"No size set for region {region}")
 
     def create_cmd(self, data, data_type=DataType.UINT32):
         """
@@ -138,23 +139,7 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
         represent the data type. The data is passed as a parameter to this
         function.
 
-        .. note::
-            This does not actually insert the ``WRITE`` command in the spec;
-            that is done by :py:meth:`write_cmd`.
-
-        :param data: the data to write.
-        :type data: int or float
-        :param DataType data_type: the type to convert ``data`` to
-        :return: ``cmd_word_list`` (binary data to be added to the binary data
-            specification file), and ``cmd_string`` (string describing the
-            command to be added to the report for the data specification file)
-        :rtype: tuple(bytearray, str)
-        :raise ParameterOutOfBoundsException:
-            * If ``data_type`` is an integer type, and ``data`` has a
-              fractional part
-            * If ``data`` would overflow the data type
-        :raise UnknownTypeException: If the data type is not known
-        :raise InvalidSizeException: If the data size is invalid
+        :raise NotImplementedError:
         """
         raise NotImplementedError("create_cmd")
 
@@ -188,17 +173,17 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
             cmd_string = f"WRITE data={data}, dataType={data_type.name} " \
                          f"as {as_bytes}\n"
             self._report_writer.write(cmd_string)
-            if len(as_bytes) > data_type.size:
-                self._report_writer.flush()
-                raise ValueError(
-                    f"{data}:{data_type.name} as bytes was {as_bytes} "
-                    f"when only {data_type.size} bytes expected")
-            if len(self._data) % 4 != 0:  # check we are at a word boundary
-                if len(data) % data_type.size != 0:
-                    raise NotImplementedError(
-                        f"After {len(self._data)} bytes have been written "
-                        f" unable to add data of type {data_type}"
-                        f" without padding")
+        if len(as_bytes) > data_type.size:
+            self._report_writer.flush()
+            raise ValueError(
+                f"{data}:{data_type.name} as bytes was {as_bytes} "
+                f"when only {data_type.size} bytes expected")
+        if len(self._data) % 4 != 0:  # check we are at a word boundary
+            if len(data) % data_type.size != 0:
+                raise NotImplementedError(
+                    f"After {len(self._data)} bytes have been written "
+                    f" unable to add data of type {data_type}"
+                    f" without padding")
 
         self._data += as_bytes
         self._data_debug += f"{data}:{data_type.name} "
@@ -211,27 +196,27 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
         :param array_values: An array of words to be written
         :type array_values: list(int) or list(float) or ~numpy.ndarray
         :param DataType data_type: Type of data contained in the array
-        :raise NoRegionSelectedException: If no region has been selected
         """
-        if data_type.numpy_typename is None:
-            raise TypeMismatchException("WRITE_ARRAY")
-
         data = numpy.array(array_values, dtype=data_type.numpy_typename)
 
         encoded = data.tobytes()
+
         if self._report_writer is not None:
-            cmd_string = f"WRITE_ARRAY {len(array_values)} elements\n"
-            cmd_string += str(list(array_values))
-            cmd_string += f"as {encoded}\n"
+            cmd_string = f"WRITE_ARRAY {len(array_values)} elements in " \
+                         f"{len(encoded)} bytes\n"
+            if len(array_values) < 100:
+                cmd_string += str(list(array_values))
+                cmd_string += f"as {encoded}\n"
             self._report_writer.write(cmd_string)
-            if len(self._data) % 4 != 0:  # check we are at a word boundary
-                raise NotImplementedError(
-                    f"After {len(self._data)} bytes have been written "
-                    f"which is not a multiple of 4"
-                    f" write_array is not supported")
-            if len(encoded) % 4 != 0:  # check we are at a word boundary
-                raise NotImplementedError(
-                    f"Unexpected data (as bytes) length of {len(encoded)}")
+
+        if len(self._data) % 4 != 0:  # check we are at a word boundary
+            raise NotImplementedError(
+                f"After {len(self._data)} bytes have been written "
+                f"which is not a multiple of 4"
+                f" write_array is not supported")
+        if len(encoded) % 4 != 0:  # check we are at a word boundary
+            raise NotImplementedError(
+                f"Unexpected data (as bytes) length of {len(encoded)}")
 
         self._data += encoded
         self._data_debug += f"{array_values}:Array "
@@ -251,16 +236,21 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
                 f"Unexpected offset of {offset} which is not a multiple of 4")
         self._offset = offset
 
-    def _check_write_block(self, size=None):
+    def _check_write_block(self):
         length = len(self._data)
-        if size is None:
-            size = self._ds_db.get_region_size(self._region_id)
-        if size < length:
-            raise InvalidSizeException(
-                f"Region size is {size} so unable to write {length} bytes")
-        if size - self._offset < length:
-            raise InvalidSizeException(
-                f"Region size is {size} Offset is {self._offset} "
+
+        if self._report_writer is not None:
+            cmd_string = f"loading {length} bytes " \
+                         f"into region {self._region_id} " \
+                         f"of size {self._size}\n"
+            self._report_writer.write(cmd_string)
+
+        if self._size < length:
+            raise DataSpecException(
+                f"Region size is {self._size} so unable to write {length} bytes")
+        if self._size - self._offset < length:
+            raise DataSpecException(
+                f"Region size is {self._size} Offset is {self._offset} "
                 f"so unable to write {length} bytes")
         if length % 4 != 0:
             raise NotImplementedError(
@@ -273,7 +263,7 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
 
         """
 
-    def end_specification(self, close_writer=True):
+    def end_specification(self):
         """
         Insert a command to indicate that the specification has finished
         and finish writing.
@@ -282,4 +272,3 @@ class BaseDataSpecificationGenerator(object, metaclass=AbstractBase):
             Indicates whether to close the underlying writer(s)
         """
         self._end_write_block()
-        self._ds_db = None
