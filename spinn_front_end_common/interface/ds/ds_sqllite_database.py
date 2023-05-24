@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import io
 import logging
 import numpy
 import os
@@ -244,7 +243,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT offset, write_data 
+                    SELECT offset, write_data
                     FROM write
                     WHERE region_id = ?
                     ORDER BY offset
@@ -380,7 +379,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT sum(size) as total_size 
+                    SELECT sum(size) as total_size
                     FROM region_view
                     WHERE core_id = ?
                     LIMIT 1

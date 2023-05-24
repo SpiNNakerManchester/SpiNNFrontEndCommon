@@ -14,7 +14,7 @@
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.interface.ds import (
-    DataSpecificationReloader, DsSqlliteDatabase)
+    DataSpecificationReloader)
 from spinn_front_end_common.utilities.utility_calls import get_report_writer
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
@@ -37,7 +37,6 @@ def regenerate_data_spec(placement, ds_db):
     Regenerate a data specification for a placement.
 
     :param ~.Placement placement: The placement to regenerate
-    :param DsSqlliteDatabase ds_db: Database used in original DS load
     :return: Whether the data was regenerated or not
     :rtype: bool
     """
@@ -56,7 +55,8 @@ def regenerate_data_spec(placement, ds_db):
 
     # build the file writer for the spec
     reloader = DataSpecificationReloader(
-        placement.x, placement.y, placement.p, ds_db, report_writer)
+        placement.x, placement.y, placement.p, FecDataView.get_dsg_targets(),
+        report_writer)
 
     # Execute the regeneration
     vertex.regenerate_data_specification(reloader, placement)
