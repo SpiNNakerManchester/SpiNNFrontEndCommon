@@ -247,7 +247,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
         if self._size < length:
             raise DataSpecException(
-                f"Region size is {self._size} so unable to write {length} bytes")
+                f"Region size is {self._size} "
+                f"so unable to write {length} bytes")
         if self._size - self._offset < length:
             raise DataSpecException(
                 f"Region size is {self._size} Offset is {self._offset} "
