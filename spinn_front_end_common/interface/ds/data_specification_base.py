@@ -179,7 +179,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
                 f"{data}:{data_type.name} as bytes was {as_bytes} "
                 f"when only {data_type.size} bytes expected")
         if len(self._data) % 4 != 0:  # check we are at a word boundary
-            if len(data) % data_type.size != 0:
+            if len(as_bytes) % data_type.size != 0:
                 raise NotImplementedError(
                     f"After {len(self._data)} bytes have been written "
                     f" unable to add data of type {data_type}"
