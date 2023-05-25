@@ -218,3 +218,21 @@ def open_scp_connection(chip_x, chip_y, chip_ip_address):
         if conn:
             return conn
     return SCAMPConnection(chip_x, chip_y, remote_host=chip_ip_address)
+
+
+def uniquifier():
+    """
+    Returns a function that filters out duplicates from sequences.
+    The function filters *all* duplicates that it sees.
+
+    :rtype: callable(iterable, iterable)
+    """
+    seen = set()
+
+    def f(sequence):
+        for elem in sequence:
+            if elem not in seen:
+                seen.add(elem)
+                yield elem
+
+    return f

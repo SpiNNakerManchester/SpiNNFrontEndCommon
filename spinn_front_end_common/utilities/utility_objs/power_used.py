@@ -20,27 +20,14 @@ class PowerUsed(object):
     Describes the power used by a simulation.
     """
 
-    __slots__ = [
-        "__num_chips",
-        "__num_cores",
-        "__num_fpgas",
-        "__num_frames",
-        "__exec_time",
-        "__mapping_time",
-        "__data_gen_time",
-        "__loading_time",
+    __slots__ = (
+        "__num_chips", "__num_cores", "__num_fpgas", "__num_frames",
+        "__exec_time", "__mapping_time", "__data_gen_time", "__loading_time",
         "__saving_time",
-        "__chip_energy",
-        "__fpga_total_energy",
-        "__fpga_exec_energy",
-        "__baseline_energy",
-        "__packet_energy",
-        "__mapping_energy",
-        "__data_gen_energy",
-        "__loading_energy",
-        "__saving_energy",
-        "__core_energy",
-        "__router_energy"]
+        "__chip_energy", "__fpga_total_energy", "__fpga_exec_energy",
+        "__baseline_energy", "__packet_energy", "__mapping_energy",
+        "__data_gen_energy", "__loading_energy", "__saving_energy",
+        "__core_energy", "__router_energy")
 
     def __init__(self):
         self.__num_chips = 0

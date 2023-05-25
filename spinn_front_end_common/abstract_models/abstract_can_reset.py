@@ -24,7 +24,7 @@ class AbstractCanReset(object, metaclass=AbstractBase):
     All Vertices and all edges in the original graph
     (the one added to by the user) will be checked and reset.
     """
-    __slots__ = []
+    __slots__ = ()
 
     @abstractmethod
     def reset_to_first_timestep(self):

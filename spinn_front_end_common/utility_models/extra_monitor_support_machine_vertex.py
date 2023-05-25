@@ -118,8 +118,7 @@ class ExtraMonitorSupportMachineVertex(
         # the local transaction id
         "_transaction_id",
         # provenance region address
-        "_prov_region"
-    )
+        "_prov_region")
 
     def __init__(
             self, reinject_point_to_point=False,

@@ -36,7 +36,7 @@ class ProvenanceReader(BaseDatabase):
         is deleted the class will no longer work.
     """
 
-    __slots__ = ["_provenance_data_path"]
+    __slots__ = ("_provenance_data_path", )
 
     @classmethod
     def get_last_run_database_path(cls):

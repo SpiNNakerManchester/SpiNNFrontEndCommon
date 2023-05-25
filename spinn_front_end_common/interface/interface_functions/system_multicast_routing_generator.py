@@ -49,8 +49,11 @@ class _SystemMulticastRoutingGenerator(object):
     Generates routing table entries used by the data in processes with the
     extra monitor cores.
     """
-    __slots__ = ["_key_to_destination_map", "_machine",
-                 "_routing_tables", "_time_out_keys_by_board"]
+    __slots__ = (
+        "_key_to_destination_map",
+        "_machine",
+        "_routing_tables",
+        "_time_out_keys_by_board")
 
     def __init__(self):
         """
@@ -83,6 +86,8 @@ class _SystemMulticastRoutingGenerator(object):
         return (self._routing_tables, self._key_to_destination_map,
                 self._time_out_keys_by_board)
 
+    __LINK_ORDER = (1, 0, 2, 5, 3, 4)
+
     def _generate_routing_tree(self, ethernet_chip):
         """
         Generates a map for each chip to over which link it gets its data.
@@ -91,24 +96,19 @@ class _SystemMulticastRoutingGenerator(object):
         :return: Map of chip.x, chip.y to (source.x, source.y, source.link)
         :rtype: dict(tuple(int, int), tuple(int, int, int))
         """
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
+        eth_x, eth_y = ethernet_chip.x, ethernet_chip.y
         tree = dict()
 
         to_reach = set(
             self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
-        reached = set()
-        reached.add((eth_x, eth_y))
         to_reach.remove((eth_x, eth_y))
-        found = set()
-        found.add((eth_x, eth_y))
-        while len(to_reach) > 0:
-            just_reached = found
-            found = set()
+        found = {(eth_x, eth_y)}
+        while to_reach:
+            just_reached, found = found, set()
             for x, y in just_reached:
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
-                    # Get protential destination
+                for link_id in self.__LINK_ORDER:
+                    # Get potential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
                     if destination in to_reach:
@@ -118,32 +118,27 @@ class _SystemMulticastRoutingGenerator(object):
                             tree[destination] = (x, y, link_id)
                             to_reach.remove(destination)
                             found.add(destination)
-            if len(found) == 0:
+            if not found:
                 return None
         return tree
 
     def _logging_retry(self, ethernet_chip):
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
+        eth_x, eth_y = ethernet_chip.x, ethernet_chip.y
         tree = dict()
         to_reach = set(
             self._machine.get_existing_xys_by_ethernet(eth_x, eth_y))
-        reached = set()
-        reached.add((eth_x, eth_y))
         to_reach.remove((eth_x, eth_y))
-        found = set()
-        found.add((eth_x, eth_y))
+        found = {(eth_x, eth_y)}
         logger.warning("In _logging_retry")
         for x, y in to_reach:
             logger.warning("Still need to reach {}:{}", x, y)
-        while len(to_reach) > 0:
-            just_reached = found
-            found = set()
+        while to_reach:
+            just_reached, found = found, set()
             for x, y in just_reached:
                 logger.warning("Trying from {}:{}", x, y)
                 # Check links starting with the most direct from 0,0
-                for link_id in [1, 0, 2, 5, 3, 4]:
-                    # Get protential destination
+                for link_id in self.__LINK_ORDER:
+                    # Get potential destination
                     destination = self._machine.xy_over_link(x, y, link_id)
                     # If it is useful
                     if destination in to_reach:
@@ -158,7 +153,7 @@ class _SystemMulticastRoutingGenerator(object):
                         else:
                             logger.error("Link down")
             logger.warning("Found {}", len(found))
-            if len(found) == 0:
+            if not found:
                 raise PacmanRoutingException(
                     "Unable to do data in routing on "
                     f"{ethernet_chip.ip_address}.")
@@ -204,8 +199,7 @@ class _SystemMulticastRoutingGenerator(object):
         :param dict(tuple(int,int),tuple(int,int,int)) tree:
             map of chips and links
         """
-        eth_x = ethernet_chip.x
-        eth_y = ethernet_chip.y
+        eth_x, eth_y = ethernet_chip.x, ethernet_chip.y
         key = KEY_START_VALUE
         for (x, y) in self._machine.get_existing_xys_by_ethernet(
                 eth_x, eth_y):
@@ -214,7 +208,7 @@ class _SystemMulticastRoutingGenerator(object):
                 FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(x, y, key, processor_id=placement.p)
             while (x, y) in tree:
-                x, y, link = tree[(x, y)]
+                x, y, link = tree[x, y]
                 self._add_routing_entry(x, y, key, link_ids=[link])
             key += N_KEYS_PER_PARTITION_ID
 
@@ -226,8 +220,7 @@ class _SystemMulticastRoutingGenerator(object):
 
         # add broadcast router timeout keys
         time_out_key = key
-        for (x, y) in self._machine.get_existing_xys_by_ethernet(
-                eth_x, eth_y):
+        for (x, y) in self._machine.get_existing_xys_by_ethernet(eth_x, eth_y):
             placement = FecDataView.get_placement_of_vertex(
                 FecDataView.get_monitor_by_xy(x, y))
             self._add_routing_entry(

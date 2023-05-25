@@ -56,7 +56,7 @@ class BufferedSendingRegion(object):
         exception will be raised.
     """
 
-    __slots__ = [
+    __slots__ = (
         #: A dictionary of timestamp -> list of keys
         "_buffer",
 
@@ -64,8 +64,7 @@ class BufferedSendingRegion(object):
         "_timestamps",
 
         #: The current position in the list of timestamps
-        "_current_timestamp_pos"
-    ]
+        "_current_timestamp_pos")
 
     def __init__(self):
         self._buffer = dict()

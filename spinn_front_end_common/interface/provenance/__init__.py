@@ -26,9 +26,9 @@ from .provenance_writer import ProvenanceWriter
 from .timer_category import TimerCategory
 from .timer_work import TimerWork
 
-__all__ = ["AbstractProvidesLocalProvenanceData", "FecTimer",
+__all__ = ("AbstractProvidesLocalProvenanceData", "FecTimer",
            "GlobalProvenance",
            "AbstractProvidesProvenanceDataFromMachine", "LogStoreDB",
            "ProvenanceReader", "ProvenanceWriter",
            "ProvidesProvenanceDataFromMachineImpl",
-           "TimerCategory", "TimerWork"]
+           "TimerCategory", "TimerWork")

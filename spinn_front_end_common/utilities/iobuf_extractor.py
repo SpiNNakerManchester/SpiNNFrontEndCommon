@@ -45,10 +45,10 @@ class IOBufExtractor(object):
     lines based on their prefix.
     """
 
-    __slots__ = ["_filename_template", "_recovery_mode", "__system_binaries",
-                 "__app_path", "__sys_path",
-                 "__suppress_progress", "__from_cores", "__binary_types",
-                 "__executable_targets"]
+    __slots__ = (
+        "_filename_template", "_recovery_mode", "__system_binaries",
+        "__app_path", "__sys_path", "__suppress_progress",
+        "__from_cores", "__binary_types", "__executable_targets")
 
     def __init__(self, executable_targets=None,
                  recovery_mode=False,

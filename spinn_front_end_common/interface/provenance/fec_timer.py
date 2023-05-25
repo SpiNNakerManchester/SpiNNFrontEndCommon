@@ -64,17 +64,13 @@ class FecTimer(object):
     _category_time = None
     _machine_on = False
     _previous = []
-    __slots__ = [
-
+    __slots__ = (
         # The start time when the timer was set off
         "_start_time",
-
         # Name of algorithm what is being timed
         "_algorithm",
-
         # Type of work being done
-        "_work"
-        ]
+        "_work")
 
     # Algorithm Names used elsewhere
     APPLICATION_RUNNER = "Application runner"

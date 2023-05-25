@@ -73,8 +73,7 @@ class BufferManager(object):
     Manager of send buffers.
     """
 
-    __slots__ = [
-
+    __slots__ = (
         # Set of vertices with buffers to be sent
         "_sender_vertices",
 
@@ -86,8 +85,7 @@ class BufferManager(object):
 
         # The machine controller, in case it wants to make proxied connections
         # for us
-        "_machine_controller"
-    ]
+        "_machine_controller")
 
     def __init__(self):
         # Set of vertices with buffers to be sent

@@ -43,8 +43,7 @@ class JavaCaller(object):
     This separates the choices of how to call the Java batch vs streaming,
     jar locations, parameters, etc. from the rest of the Python code.
     """
-
-    __slots__ = [
+    __slots__ = (
         "_chipxy_by_ethernet",
         # The call to get java to work. Including the path if required.
         "_java_call",
@@ -63,8 +62,7 @@ class JavaCaller(object):
         # The location where the latest placement json is written
         "_placement_json",
         # Properties flag to be passed to Java
-        "_java_properties"
-    ]
+        "_java_properties")
 
     def __init__(self):
         """

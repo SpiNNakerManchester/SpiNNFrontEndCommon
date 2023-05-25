@@ -18,7 +18,7 @@ class StreamingContextManager(object):
     The implementation of the context manager object for streaming
     configuration control.
     """
-    __slots__ = ["_gatherers"]
+    __slots__ = ("_gatherers", )
 
     def __init__(self, gatherers):
         """

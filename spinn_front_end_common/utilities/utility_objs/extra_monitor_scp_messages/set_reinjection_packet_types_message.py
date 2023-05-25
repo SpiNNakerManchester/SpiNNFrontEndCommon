@@ -27,7 +27,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
     An SCP Request to set the dropped packet reinjected packet types.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(self, x, y, p, multicast, point_to_point, fixed_route,
                  nearest_neighbour):

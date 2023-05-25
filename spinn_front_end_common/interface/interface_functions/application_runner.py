@@ -46,7 +46,7 @@ class _ApplicationRunner(object):
     successfully.
     """
 
-    __slots__ = ["__txrx", "__app_id"]
+    __slots__ = ("__txrx", "__app_id")
 
     def __init__(self):
         self.__txrx = FecDataView.get_transceiver()

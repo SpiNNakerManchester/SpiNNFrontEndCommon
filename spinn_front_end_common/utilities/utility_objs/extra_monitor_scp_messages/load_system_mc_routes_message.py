@@ -26,7 +26,7 @@ class LoadSystemMCRoutesMessage(AbstractSCPRequest):
     An SCP Request to write the system multicast routes into the router.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(self, x, y, p):
         """

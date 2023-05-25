@@ -24,6 +24,7 @@ def insert_extra_monitor_vertices_to_graphs(placements):
     Inserts the extra monitor vertices into the graph that correspond to
     the extra monitor cores required.
 
+    :param ~pacman.model.placements.Placements placements:
     :return: vertex to Ethernet connection map,
         list of extra_monitor_vertices,
         vertex_to_chip_map

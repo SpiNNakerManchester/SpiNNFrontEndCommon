@@ -30,11 +30,7 @@ class _RouterProvenanceGatherer(object):
     """
     Gathers diagnostics from the routers.
     """
-
-    __slots__ = ["__txrx"]
-
-    def __init__(self):
-        self.__txrx = FecDataView.get_transceiver()
+    __slots__ = ()
 
     def add_router_provenance_data(self):
         """
@@ -65,16 +61,18 @@ class _RouterProvenanceGatherer(object):
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
 
+    def __get_router_diagnostics(self, x, y):
+        return FecDataView.get_transceiver().get_router_diagnostics(x, y)
+
     def _add_router_table_diagnostic(self, table, reinjection_data):
         """
         :param ~.MulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         :rtype: tuple(int,int)
         """
-        x = table.x
-        y = table.y
+        x, y = table.x, table.y
         try:
-            diagnostics = self.__txrx.get_router_diagnostics(x, y)
+            diagnostics = self.__get_router_diagnostics(x, y)
         except SpinnmanException:
             logger.warning(
                 "Could not read routing diagnostics from {}, {}",
@@ -90,7 +88,7 @@ class _RouterProvenanceGatherer(object):
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         try:
-            diagnostics = self.__txrx.get_router_diagnostics(chip.x, chip.y)
+            diagnostics = self.__get_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
@@ -128,14 +126,12 @@ class _RouterProvenanceGatherer(object):
 
         # simplify the if by making components of it outside.
         has_dropped = (diagnostics.n_dropped_multicast_packets > 0)
-        missing_stuff = False
         has_reinjection = status is not None
-        if has_reinjection:
-            missing_stuff = ((
-                status.n_dropped_packets + status.n_missed_dropped_packets +
-                status.n_dropped_packet_overflows +
-                status.n_reinjected_packets + status.n_processor_dumps +
-                status.n_link_dumps) < diagnostics.n_dropped_multicast_packets)
+        missing_stuff = has_reinjection and ((
+            status.n_dropped_packets + status.n_missed_dropped_packets +
+            status.n_dropped_packet_overflows + status.n_reinjected_packets +
+            status.n_processor_dumps + status.n_link_dumps) <
+            diagnostics.n_dropped_multicast_packets)
 
         with ProvenanceWriter() as db:
             db.insert_router(
@@ -149,8 +145,7 @@ class _RouterProvenanceGatherer(object):
             db.insert_router(
                 x, y, "Dropped_Multicast_Packets",
                 diagnostics.n_dropped_multicast_packets, expected)
-            if (has_dropped and not has_reinjection) or (
-                    has_dropped and has_reinjection and missing_stuff):
+            if has_dropped and (not has_reinjection or missing_stuff):
                 db.insert_report(
                     f"The router on {x}, {y} has dropped "
                     f"{diagnostics.n_dropped_multicast_packets} "

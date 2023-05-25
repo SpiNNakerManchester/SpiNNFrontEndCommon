@@ -56,7 +56,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
     available to subclasses.
     """
     __fec_data = _FecDataModel()
-    __slots__ = []
+    __slots__ = ()
     # pylint: disable=protected-access
 
     @overrides(PacmanDataWriter._mock)

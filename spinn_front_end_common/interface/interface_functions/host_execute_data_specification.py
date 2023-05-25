@@ -49,18 +49,16 @@ def system_cores():
 
 #: A named tuple for a region that can be referenced
 _RegionToRef = namedtuple(
-    "__RegionToUse", ["x", "y", "p", "region", "pointer"])
+    "_RegionToRef", ["x", "y", "p", "region", "pointer"])
 
 
 #: A class for regions to be filled in
 class _CoreToFill(object):
-    __slots__ = [
-        "x", "y", "p", "header", "pointer_table", "base_address", "regions"]
+    __slots__ = (
+        "x", "y", "p", "header", "pointer_table", "base_address", "regions")
 
     def __init__(self, x, y, p, header, pointer_table, base_address):
-        self.x = x
-        self.y = y
-        self.p = p
+        self.x, self.y, self.p = x, y, p
         self.header = header
         self.pointer_table = pointer_table
         self.base_address = base_address
@@ -272,9 +270,9 @@ class _HostExecuteDataSpecification(object):
     Executes the host based data specification.
     """
 
-    __slots__ = [
+    __slots__ = (
         # the application ID of the simulation
-        "_app_id"]
+        "_app_id", )
 
     first = True
 

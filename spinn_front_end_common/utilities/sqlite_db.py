@@ -83,10 +83,9 @@ class SQLiteDB(AbstractContextManager):
         the write-ahead log.
     """
 
-    __slots__ = [
+    __slots__ = (
         # the database holding the data to store
-        "__db",
-    ]
+        "__db", )
 
     def __init__(self, database_file=None, *, read_only=False, ddl_file=None,
                  row_factory=sqlite3.Row, text_factory=memoryview,
@@ -276,6 +275,7 @@ class _DbWrapper(ACMBase):
     https://github.com/python/cpython/issues/61162#issuecomment-1185463221
     except this code is also careful about nesting.
     """
+    __slots__ = ("__d", "__cursor", "__isolation_level")
 
     def __init__(self, db, isolation_level):
         """

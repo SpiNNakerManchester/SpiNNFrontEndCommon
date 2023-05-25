@@ -142,9 +142,7 @@ class AbstractSpinnakerBase(ConfigHandler):
     """
     # pylint: disable=broad-except
 
-    __slots__ = [
-        # The IP-address of the SpiNNaker machine
-
+    __slots__ = (
         # Condition object used for waiting for stop
         # Set during init and the used but never new object
         "_state_condition",
@@ -166,8 +164,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Flag to say is compressed routing tables are on machine
         # TODO remove this when the data change only algorithms are done
-        "_multicast_routes_loaded"
-    ]
+        "_multicast_routes_loaded")
 
     def __init__(self, data_writer_cls=None):
         """

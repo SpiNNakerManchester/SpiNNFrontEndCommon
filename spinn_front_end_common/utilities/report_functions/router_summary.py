@@ -18,13 +18,12 @@ class RouterSummary(object):
     Summary of information about a router.
     """
 
-    __slots__ = [
+    __slots__ = (
         "_total_entries",
         "_max_per_chip",
         "_max_defaultable",
         "_max_link",
-        "_unqiue_routes",
-    ]
+        "_unqiue_routes")
 
     def __init__(self, total_entries, max_per_chip, max_defaultable, max_link,
                  unqiue_routes):

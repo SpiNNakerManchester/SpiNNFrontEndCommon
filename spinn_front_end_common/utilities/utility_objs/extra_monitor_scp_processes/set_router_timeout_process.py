@@ -30,6 +30,7 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
         Timeouts are specified in a weird floating point format.
         See the SpiNNaker datasheet for details.
     """
+    __slots__ = ()
 
     def set_wait1_timeout(self, mantissa, exponent, core_subsets):
         """

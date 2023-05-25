@@ -15,6 +15,4 @@
 from .ds_sqllite_database import DsSqlliteDatabase
 from .data_row_writer import DataRowWriter
 
-__all__ = [
-    "DataRowWriter",
-    "DsSqlliteDatabase"]
+__all__ = ("DataRowWriter", "DsSqlliteDatabase")

@@ -19,7 +19,7 @@ class LivePacketGather(ApplicationVertex):
     """
     A vertex that gathers and forwards multicast packets to the host.
     """
-    __slots__ = ["__params"]
+    __slots__ = ("__params", )
 
     def __init__(self, params, label=None):
         """

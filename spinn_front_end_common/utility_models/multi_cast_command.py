@@ -107,10 +107,6 @@ class MultiCastCommand(object):
         """
         return self._payload
 
-    @payload.setter
-    def payload(self, payload):
-        self._payload = payload
-
     @property
     def is_payload(self):
         """
@@ -121,11 +117,11 @@ class MultiCastCommand(object):
 
         :rtype: bool
         """
-        return self._payload is not None
+        return self.payload is not None
 
     def __repr__(self):
         return (
             f"MultiCastCommand(time={self._time}, key={self._key}, "
-            f"payload={self._payload}, "
+            f"payload={self.payload}, "
             f"time_between_repeat={self._delay_between_repeats}, "
             f"repeats={self._repeat})")

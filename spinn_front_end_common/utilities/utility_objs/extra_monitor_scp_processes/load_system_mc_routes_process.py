@@ -23,6 +23,7 @@ class LoadSystemMCRoutesProcess(AbstractMultiConnectionProcess):
     How to send messages to load the configured system multicast routing
     tables (and save the application routing tables).
     """
+    __slots__ = ()
 
     def load_system_mc_routes(self, core_subsets):
         """

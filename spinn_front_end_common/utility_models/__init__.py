@@ -27,11 +27,11 @@ from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from .streaming_context_manager import StreamingContextManager
 
-__all__ = ["CommandSender", "CommandSenderMachineVertex",
+__all__ = ("CommandSender", "CommandSenderMachineVertex",
            "ChipPowerMonitorMachineVertex",
            "DataSpeedUpPacketGatherMachineVertex",
            "ExtraMonitorSupportMachineVertex",
            "LivePacketGather", "LivePacketGatherMachineVertex",
            "MultiCastCommand", "ReverseIpTagMultiCastSource",
            "ReverseIPTagMulticastSourceMachineVertex",
-           "StreamingContextManager"]
+           "StreamingContextManager")

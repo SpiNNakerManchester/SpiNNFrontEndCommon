@@ -15,10 +15,11 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.exceptions import (
+    SpiNNManCoresNotInStateException, SpinnmanException)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
-from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 
@@ -43,7 +44,7 @@ def load_sys_images():
     __load_images(lambda ty: ty is ExecutableType.SYSTEM,
                   "Loading system executables onto the machine")
     try:
-        _, cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
+        cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
         FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
             cores.all_core_subsets, FecDataView.get_app_id(),
             [CPUState.RUNNING], timeout=10)
@@ -58,12 +59,11 @@ def __load_images(filter_predicate, label):
     :param str label
     """
     # Compute what work is to be done here
-    binaries, cores = filter_targets(filter_predicate)
+    cores = filter_targets(filter_predicate)
 
     try:
-        # ISSUE: Loading order may be non-constant on older Python
         with ProgressBar(cores.total_processors + 1, label) as progress:
-            for binary in binaries:
+            for binary in cores.binaries:
                 progress.update(flood_fill_binary_to_spinnaker(binary))
 
             __start_simulation(cores, FecDataView.get_app_id())
@@ -72,7 +72,7 @@ def __load_images(filter_predicate, label):
         try:
             FecDataView.get_transceiver().stop_application(
                 FecDataView.get_app_id())
-        except Exception:  # pylint: disable=broad-except
+        except SpinnmanException:
             # Ignore this, this was just an attempt at recovery
             pass
         raise e
@@ -81,18 +81,16 @@ def __load_images(filter_predicate, label):
 def filter_targets(filter_predicate):
     """
     :param callable(ExecutableType,bool) filter_predicate:
-    :rtype: tuple(list(str), ~spinnman.model.ExecutableTargets)
+    :rtype: ~spinnman.model.ExecutableTargets
     """
-    binaries = []
     cores = ExecutableTargets()
     targets = FecDataView.get_executable_targets()
     for exe_type in targets.executable_types_in_binary_set():
         if filter_predicate(exe_type):
             for aplx in targets.get_binaries_of_executable_type(exe_type):
-                binaries.append(aplx)
                 cores.add_subsets(
                     aplx, targets.get_cores_for_binary(aplx), exe_type)
-    return binaries, cores
+    return cores
 
 
 def __start_simulation(cores, app_id):

@@ -16,13 +16,12 @@ import io
 
 
 class DataRowWriter(io.RawIOBase):
-    __slots__ = [
+    __slots__ = (
         "_x",
         "_y",
         "_p",
         "_targets",
-        "_data",
-    ]
+        "_data", )
 
     def __init__(self, x, y, p, targets):
         super().__init__()

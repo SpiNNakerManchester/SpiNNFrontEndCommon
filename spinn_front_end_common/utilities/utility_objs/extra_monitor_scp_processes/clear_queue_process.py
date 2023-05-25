@@ -22,6 +22,7 @@ class ClearQueueProcess(AbstractMultiConnectionProcess):
     """
     How to send messages to clear the reinjection queue.
     """
+    __slots__ = ()
 
     def reset_counters(self, core_subsets):
         """

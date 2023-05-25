@@ -38,8 +38,7 @@ class _ChipProvenanceUpdater(object):
     """
     Forces all cores to generate provenance data, and then exit.
     """
-
-    __slots__ = ["__all_cores", "__app_id", "__txrx"]
+    __slots__ = ("__all_cores", "__app_id", "__txrx")
 
     def __init__(self, all_core_subsets):
         """

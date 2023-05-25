@@ -72,7 +72,7 @@ class LiveEventConnection(DatabaseConnection):
         This class is intended to be potentially usable from another
         process than the one that the simulator is present in.
     """
-    __slots__ = [
+    __slots__ = (
         "_atom_id_to_key",
         "__error_keys",
         "__init_callbacks",
@@ -93,7 +93,7 @@ class LiveEventConnection(DatabaseConnection):
         "__is_running",
         "__expect_scp_response",
         "__expect_scp_response_lock",
-        "__scp_response_received"]
+        "__scp_response_received")
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT):

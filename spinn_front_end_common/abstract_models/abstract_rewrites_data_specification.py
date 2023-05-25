@@ -24,7 +24,7 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     and so can rewrite the data specification.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):

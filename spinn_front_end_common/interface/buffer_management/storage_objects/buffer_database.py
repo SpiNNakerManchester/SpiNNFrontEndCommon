@@ -43,7 +43,7 @@ class BufferDatabase(BaseDatabase):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     def clear_region(self, x, y, p, region):
         """

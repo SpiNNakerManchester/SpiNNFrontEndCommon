@@ -37,7 +37,7 @@ def run_system_application(
     :param callable check_for_success_function:
         function used to check success;
         expects `executable_cores`, `transceiver` as inputs
-    :param set(~spinnman.model.enums.CPUState) cpu_end_states:
+    :param frozenset(~spinnman.model.enums.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
     :param str filename_template: the IOBUF filename template.

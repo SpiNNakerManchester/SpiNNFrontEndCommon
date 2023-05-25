@@ -32,11 +32,10 @@ def add_command_senders(system_placements):
 
 
 class CommandSenderAdder(object):
-    __slots__ = [
+    __slots__ = (
         "__command_sender_for_chip",
         "__general_command_sender",
-        "__system_placements"
-    ]
+        "__system_placements")
 
     def __init__(self, system_placements):
         self.__system_placements = system_placements
@@ -84,8 +83,7 @@ class CommandSenderAdder(object):
                     "General command sender")
             return self.__general_command_sender
 
-        x = link_data.connected_chip_x
-        y = link_data.connected_chip_y
+        x, y = link_data.connected_chip_x, link_data.connected_chip_y
 
         command_sender = self.__command_sender_for_chip.get((x, y))
         if command_sender is None:

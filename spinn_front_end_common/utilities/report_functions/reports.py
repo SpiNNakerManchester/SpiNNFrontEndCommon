@@ -15,6 +15,7 @@
 import logging
 import os
 import time
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Router
@@ -491,12 +492,17 @@ def routing_info_report(extra_allocations):
     """
     Generates a report which says which keys is being allocated to each
     vertex.
+
+    :param extra_allocations:
+        Extra vertex/partition ID pairs to report on.
+    :type extra_allocations:
+        iterable(tuple(~pacman.model.graphs.application.ApplicationVertex,str))
     """
     file_name = os.path.join(FecDataView.get_run_dir_path(), _VIRTKEY_FILENAME)
     routing_infos = FecDataView.get_routing_infos()
     try:
         with open(file_name, "w", encoding="utf-8") as f:
-            vertex_partitions = set(
+            vertex_partitions = OrderedSet(
                 (p.pre_vertex, p.identifier)
                 for p in FecDataView.iterate_partitions())
             vertex_partitions.update(extra_allocations)
@@ -504,7 +510,6 @@ def routing_info_report(extra_allocations):
                                    "Generating Routing info report")
             for pre_vert, part_id in progress.over(vertex_partitions):
                 _write_vertex_virtual_keys(f, pre_vert, part_id, routing_infos)
-            progress.end()
     except IOError:
         logger.exception("generate virtual key space information report: "
                          "Can't open file {} for writing.", file_name)
@@ -640,8 +645,7 @@ def generate_comparison_router_report(compressed_routing_tables):
             max_compressed = 0
             uncompressed_for_max = 0
             for table in progress.over(routing_tables):
-                x = table.x
-                y = table.y
+                x, y = table.x, table.y
                 compressed_table = compressed_routing_tables.\
                     get_routing_table_for_chip(x, y)
                 n_entries_uncompressed = table.number_of_entries
@@ -684,26 +688,21 @@ def _search_route(source_placement, key_and_mask):
     :rtype: tuple(str, int)
     """
     # Create text for starting point
-    machine = FecDataView.get_machine()
-    source_vertex = source_placement.vertex
-    text = ""
-    if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
+    vertex = source_placement.vertex
+    if isinstance(vertex, MachineSpiNNakerLinkVertex):
         text = "        Virtual SpiNNaker Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
-        slink = machine.get_spinnaker_link_with_id(
-            source_vertex.spinnaker_link_id)
-        x = slink.connected_chip_x
-        y = slink.connected_chip_y
-    elif isinstance(source_vertex, MachineFPGAVertex):
+        spinn_link = FecDataView.get_machine().get_spinnaker_link_with_id(
+            vertex.spinnaker_link_id)
+        x, y = spinn_link.connected_chip_x, spinn_link.connected_chip_y
+    elif isinstance(vertex, MachineFPGAVertex):
         text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
-        flink = machine.get_fpga_link_with_id(
-            source_vertex.fpga_id, source_vertex.fpga_link_id)
-        x = flink.connected_chip_x
-        y = flink.connected_chip_y
+        fpga_link = FecDataView.get_machine().get_fpga_link_with_id(
+            vertex.fpga_id, vertex.fpga_link_id)
+        x, y = fpga_link.connected_chip_x, fpga_link.connected_chip_y
     else:
-        x = source_placement.x
-        y = source_placement.y
+        x, y = source_placement.x, source_placement.y
         text = "        {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
 

@@ -26,8 +26,7 @@ class ResetCountersMessage(AbstractSCPRequest):
     An SCP Request to reset the statistics counters of the dropped packet
     reinjection.
     """
-
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(self, x, y, p):
         """

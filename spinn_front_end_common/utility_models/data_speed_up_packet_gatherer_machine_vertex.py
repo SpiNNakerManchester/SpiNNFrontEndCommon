@@ -189,7 +189,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         This is an unusual machine vertex, in that it has no associated
         application vertex.
     """
-    __slots__ = [
+    __slots__ = (
         # x coordinate
         "_x",
         # y coordinate
@@ -220,7 +220,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # path to the data out report
         "_out_report_path",
         # data holder for output
-        "_view"]
+        "_view")
 
     #: base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
@@ -291,8 +291,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._missing_seq_nums_data_in = list()
 
         # Create a connection to be used
-        self._x = x
-        self._y = y
+        self._x, self._y = x, y
         self._coord_word = None
         self._ip_address = ip_address
         self._remote_tag = None
@@ -1020,10 +1019,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # create report elements
         if get_config_bool("Reports", "write_data_speed_up_reports"):
-            routers_been_in_use = self._determine_which_routers_were_used(
-                placement)
             self._write_routers_used_into_report(
-                routers_been_in_use, placement)
+                self._determine_which_routers_were_used(placement),
+                placement)
 
         start = float(time.time())
         # if asked for no data, just return a empty byte array
@@ -1141,15 +1139,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         fixed_routes = FecDataView.get_fixed_routes()
         # pylint: disable=unsubscriptable-object
         entry = fixed_routes[placement.x, placement.y]
-        chip_x = placement.x
-        chip_y = placement.y
-        while len(entry.processor_ids) == 0:
+        chip_x, chip_y = placement.x, placement.y
+        while not entry.processor_ids:
             # can assume one link, as its a minimum spanning tree going to
             # the root
-            machine_link = FecDataView.get_chip_at(
+            link = FecDataView.get_chip_at(
                 chip_x, chip_y).router.get_link(next(iter(entry.link_ids)))
-            chip_x = machine_link.destination_x
-            chip_y = machine_link.destination_y
+            chip_x, chip_y = link.destination_x, link.destination_y
             routers.append((chip_x, chip_y))
             entry = fixed_routes[chip_x, chip_y]
         return routers

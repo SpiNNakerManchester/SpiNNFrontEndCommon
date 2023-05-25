@@ -320,9 +320,7 @@ class _MachineBitFieldRouterCompressor(object):
             sorter_binary_path)
         result = True
         for core_subset in sorter_cores:
-            x = core_subset.x
-            y = core_subset.y
-
+            x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
                 result = transceiver.read_user_1(x, y, p)
@@ -473,8 +471,7 @@ class _MachineBitFieldRouterCompressor(object):
         :return: byte array of data
         :rtype: bytes
         """
-        data = b""
-        data += self._ONE_WORD.pack(len(list_of_sizes_and_address))
+        data = self._ONE_WORD.pack(len(list_of_sizes_and_address))
         for (memory_address, size) in list_of_sizes_and_address:
             data += self._TWO_WORDS.pack(memory_address, size)
         return data
@@ -582,8 +579,7 @@ class _MachineBitFieldRouterCompressor(object):
         :return: data array
         :rtype: bytearray
         """
-        data = b''
-        data += self._TWO_WORDS.pack(app_id, routing_table.number_of_entries)
+        data = self._TWO_WORDS.pack(app_id, routing_table.number_of_entries)
 
         # sort entries based on generality
         sorted_routing_table = sorted(
@@ -644,7 +640,7 @@ class _MachineBitFieldRouterCompressor(object):
         blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
-            if size != 0 and size > self._MIN_SIZE_FOR_HEAP:
+            if size > self._MIN_SIZE_FOR_HEAP:
                 sdram_block_addresses_and_sizes[
                     placement.x, placement.y].append((address, size))
         sorted(

@@ -47,11 +47,11 @@ class DatabaseConnection(UDPConnection):
     # tools plugged into it. The message it receives in __run() is sent by
     # NotificationProtocol._send_read_notification
 
-    __slots__ = [
+    __slots__ = (
         "__database_callbacks",
         "__pause_and_stop_callback",
         "__running",
-        "__start_resume_callback"]
+        "__start_resume_callback")
 
     def __init__(self, start_resume_callback_function=None,
                  stop_pause_callback_function=None, local_host=None,

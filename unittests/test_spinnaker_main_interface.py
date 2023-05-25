@@ -24,7 +24,7 @@ from spinn_front_end_common.abstract_models.impl import (
 
 
 class Close_Once(MachineAllocationController):
-    __slots__ = ["closed"]
+    __slots__ = ("closed", )
 
     def __init__(self):
         super().__init__("close-once")

@@ -22,6 +22,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
     """
     How to send messages to control what messages are reinjected.
     """
+    __slots__ = ()
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):

@@ -20,12 +20,11 @@ from .clear_queue_process import ClearQueueProcess
 from .load_application_mc_routes_process import LoadApplicationMCRoutesProcess
 from .load_system_mc_routes_process import LoadSystemMCRoutesProcess
 
-__all__ = [
+__all__ = (
     "ClearQueueProcess",
     "LoadApplicationMCRoutesProcess",
     "LoadSystemMCRoutesProcess",
     "ReadStatusProcess",
     "ResetCountersProcess",
     "SetPacketTypesProcess",
-    "SetRouterTimeoutProcess",
-    ]
+    "SetRouterTimeoutProcess")

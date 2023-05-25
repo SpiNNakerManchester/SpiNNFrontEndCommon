@@ -25,7 +25,7 @@ from pacman.exceptions import PacmanConfigurationException
 
 
 class _HBPJobController(MachineAllocationController):
-    __slots__ = [
+    __slots__ = (
         # the URLs to call the HBP system
         "_extend_lease_url",
         "_check_lease_url",
@@ -33,8 +33,7 @@ class _HBPJobController(MachineAllocationController):
         "_set_power_url",
         "_where_is_url",
         "_machine_name",
-        "_power_on"
-    ]
+        "_power_on")
 
     _WAIT_TIME_MS = 10000
 

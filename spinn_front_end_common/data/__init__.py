@@ -14,5 +14,4 @@
 
 from .fec_data_view import FecDataView
 
-
-__all__ = ["FecDataView"]
+__all__ = ("FecDataView", )

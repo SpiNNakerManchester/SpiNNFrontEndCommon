@@ -70,8 +70,7 @@ class Compression(object):
     Compression algorithm implementation that uses a on-chip router
     compressor in order to parallelise.
     """
-
-    __slots__ = [
+    __slots__ = (
         "_binary_path",
         "_compress_as_much_as_possible",
         "_compress_only_when_needed",
@@ -79,7 +78,7 @@ class Compression(object):
         "_progresses_text",
         "__result_register",
         "_routing_tables",
-        "__failures"]
+        "__failures")
 
     def __init__(self, binary_path, progress_text, result_register):
         """
@@ -162,8 +161,7 @@ class Compression(object):
         """
         transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
-            x = core_subset.x
-            y = core_subset.y
+            x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from specified register
                 if self.__result_register == 0:

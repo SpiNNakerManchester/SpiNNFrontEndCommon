@@ -33,13 +33,12 @@ class MachineAllocationController(
     How to manage the allocation of a machine so that it gets cleaned up
     neatly when the script dies.
     """
-    __slots__ = [
+    __slots__ = (
         #: boolean flag for telling this thread when the system has ended
         "_exited",
         #: the address of the root board of the allocation
         "__hostname",
-        "__connection_data"
-    ]
+        "__connection_data")
 
     def __init__(self, thread_name, hostname=None, connection_data=None):
         """

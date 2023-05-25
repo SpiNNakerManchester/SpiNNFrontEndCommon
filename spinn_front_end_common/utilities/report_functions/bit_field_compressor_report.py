@@ -85,10 +85,11 @@ def _merged_component(to_merge_per_chip, writer):
     found = False
     with ProvenanceReader() as db:
         for (x, y, merged) in db.get_router_by_chip(MERGED_NAME):
-            if (x, y) not in to_merge_per_chip:
+            chip_key = (x, y)
+            if chip_key not in to_merge_per_chip:
                 continue
-            to_merge = to_merge_per_chip[x, y]
-            to_merge_chips.discard((x, y))
+            to_merge = to_merge_per_chip[chip_key]
+            to_merge_chips.discard(chip_key)
             found = True
             writer.write(
                 f"Chip {x}:{y} has {merged} bitfields out of {to_merge} "

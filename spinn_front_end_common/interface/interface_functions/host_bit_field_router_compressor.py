@@ -141,7 +141,7 @@ def start_compression_selection_process(
 
 
 class _BitFieldData(object):
-    __slots__ = [
+    __slots__ = (
         # bit_field data
         "bit_field",
         # Key this applies to
@@ -157,8 +157,7 @@ class _BitFieldData(object):
         # The shift to get the core id
         "core_shift",
         # The number of atoms per core
-        "n_atoms_per_core"
-    ]
+        "n_atoms_per_core")
 
     def __init__(self, processor_id, bit_field, master_pop_key,
                  n_atoms_address, n_atoms_word, core_shift, n_atoms_per_core):
@@ -190,7 +189,7 @@ class _HostBasedBitFieldRouterCompressor(object):
     much as feasible.
     """
 
-    __slots__ = [
+    __slots__ = (
         # List of the entries from the highest successful midpoint
         "_best_routing_entries",
         # The highest successful midpoint
@@ -202,8 +201,7 @@ class _HostBasedBitFieldRouterCompressor(object):
         # Number of bitfields for this core
         "_n_bitfields",
         # Mapping from base keys to size of vertex that they were issued for
-        "__key_atom_map"
-    ]
+        "__key_atom_map")
 
     # max entries that can be used by the application code
     _MAX_SUPPORTED_LENGTH = 1023

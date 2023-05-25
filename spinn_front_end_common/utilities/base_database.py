@@ -45,7 +45,7 @@ class BaseDatabase(SQLiteDB, AbstractContextManager):
         Threads can access different DBs just fine.
     """
 
-    __slots__ = ["_database_file"]
+    __slots__ = ("_database_file", )
 
     def __init__(self, database_file=None, *, read_only=False,
                  row_factory=sqlite3.Row, text_factory=memoryview):

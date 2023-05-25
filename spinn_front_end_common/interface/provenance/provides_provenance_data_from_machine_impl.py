@@ -151,11 +151,8 @@ class ProvidesProvenanceDataFromMachineImpl(
             for provenance items from the given placement.
         :rtype: tuple(str, int, int, int)
         """
-        label = placement.vertex.label
-        x = placement.x
-        y = placement.y
-        p = placement.p
-        desc_label = f"{label} on {x},{y},{p}"
+        x, y, p = placement.x, placement.y, placement.p
+        desc_label = f"{placement.vertex.label} on {x},{y},{p}"
         return desc_label, x, y, p
 
     def parse_system_provenance_items(self, label, x, y, p, provenance_data):

@@ -28,13 +28,12 @@ class LivePacketGatherParameters(object):
     instantiated at a later date.
     """
 
-    __slots__ = [
+    __slots__ = (
         '_port', '_hostname', "_tag", "_strip_sdp", "_use_prefix",
         "_key_prefix", "_prefix_type", "_message_type", "_right_shift",
         "_payload_as_time_stamps", "_use_payload_prefix", "_payload_prefix",
         "_payload_right_shift", "_n_packets_per_time_step", "_label",
-        "_received_key_mask", "_translate_keys", "_translated_key_right_shift"
-    ]
+        "_received_key_mask", "_translate_keys", "_translated_key_right_shift")
 
     def __init__(
             self, port=None, hostname=None, tag=None, strip_sdp=True,

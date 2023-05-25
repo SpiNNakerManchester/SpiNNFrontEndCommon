@@ -39,13 +39,13 @@ class NotificationProtocol(AbstractContextManager):
     :py:class:`DatabaseConnection` (and its subclasses). They are not routed
     via SpiNNaker.
     """
-    __slots__ = [
+    __slots__ = (
         "__database_message_connections",
         "__sent_visualisation_confirmation",
         "__wait_for_read_confirmation",
         "__wait_for_read_timeout",
         "__wait_futures",
-        "__wait_pool"]
+        "__wait_pool")
 
     def __init__(self):
         # Determines whether to wait for confirmation that the database

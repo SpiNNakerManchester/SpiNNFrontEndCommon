@@ -25,10 +25,9 @@ class LPGSplitter(AbstractSplitterCommon):
     Splitter for the :py:class:`LivePacketGather` vertex.
     """
 
-    __slots__ = [
+    __slots__ = (
         "__m_vertices_by_ethernet",
-        "__targeted_lpgs"
-    ]
+        "__targeted_lpgs")
 
     def __init__(self):
         super(LPGSplitter, self).__init__()

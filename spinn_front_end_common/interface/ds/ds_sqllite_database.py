@@ -31,10 +31,9 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = [
+    __slots__ = (
         # The root ethernet id if required
-        "__root_ethernet_id"
-    ]
+        "__root_ethernet_id", )
 
     def __init__(self, init_file=None):
         """

@@ -49,12 +49,9 @@ class ConfigHandler(object):
     dependent of the configuration and the order its methods are called.
     """
 
-    __slots__ = [
-
+    __slots__ = (
         # The writer and therefore view of the global data
-        "_data_writer"
-
-    ]
+        "_data_writer", )
 
     def __init__(self, data_writer_cls=None):
         """

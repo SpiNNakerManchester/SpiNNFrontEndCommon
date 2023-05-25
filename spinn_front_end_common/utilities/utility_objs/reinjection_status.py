@@ -39,44 +39,35 @@ class ReInjectionStatus(object):
     """
 
     __slots__ = (
-
         # The WAIT1 timeout value of the router in cycles
         "_wait1_timeout",
-
         # The WAIT2 timeout value of the router in cycles
         "_wait2_timeout",
 
         # The number of packets dropped by the router and received by\
         # the re injection functionality (may not fit in the queue though)
         "_n_dropped_packets",
-
         # The number of times that when a dropped packet was read it was\
         #    found that another one or more packets had also been dropped,\
         #    but had been missed
         "_n_missed_dropped_packets",
-
         # Of the n_dropped_packets received, how many were lost due to not\
         #    having enough space in the queue of packets to reinject
         "_n_dropped_packet_overflows",
-
         # Of the n_dropped_packets received, how many packets were\
         #    successfully re-injected
         "_n_reinjected_packets",
-
         # The number of times that when a dropped packet was caused due to\
         # a link failing to take the packet.
         "_n_link_dumps",
-
         # The number of times that when a dropped packet was caused due to\
         # a processor failing to take the packet.
         "_n_processor_dumps",
 
         # the flags that states which types of packets were being recorded
         "_flags",
-
         # Indicates the links or processors dropped from
-        "_link_proc_bits"
-    )
+        "_link_proc_bits")
 
     def __init__(self, data, offset):
         """

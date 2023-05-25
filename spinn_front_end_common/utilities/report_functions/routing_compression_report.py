@@ -53,8 +53,7 @@ def generate_routing_compression_checker_report(
                     "\t\tCompressed Route\n\n")
 
             for original in progress.over(routing_tables.routing_tables):
-                x = original.x
-                y = original.y
+                x, y = original.x, original.y
                 f.write(f"Chip: X:{x} Y:{y}\n")
 
                 compressed_table = compressed_routing_tables.\

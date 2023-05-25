@@ -38,8 +38,7 @@ class _GraphBinaryGatherer(object):
     """
     Extracts binaries to be executed.
     """
-
-    __slots__ = ["_exe_targets"]
+    __slots__ = ("_exe_targets", )
 
     def __init__(self):
         self._exe_targets = ExecutableTargets()

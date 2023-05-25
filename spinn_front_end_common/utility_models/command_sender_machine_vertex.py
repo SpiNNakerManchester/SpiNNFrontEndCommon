@@ -28,6 +28,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_calls import uniquifier
 
 
 class CommandSenderMachineVertex(
@@ -37,6 +38,13 @@ class CommandSenderMachineVertex(
     Machine vertex for injecting packets at particular times or in
     response to particular events into a SpiNNaker application.
     """
+    __slots__ = (
+        "_commands_at_start_resume", "_commands_at_pause_stop",
+        "_timed_commands",
+        "_keys_to_partition_id", "_partition_id_keys",
+        "_edge_partition_id_counter",
+        "_vertex_to_key_map")
+
     # Regions for populations
     class DATA_REGIONS(IntEnum):
         SYSTEM_REGION = 0
@@ -330,15 +338,13 @@ class CommandSenderMachineVertex(
         """
         edges = list()
         partition_ids = list()
-        keys_added = set()
+        unique_keys = uniquifier()
         for vertex in self._vertex_to_key_map:
             if not isinstance(vertex, vertex_type):
                 continue
-            for key in self._vertex_to_key_map[vertex]:
-                if key not in keys_added:
-                    keys_added.add(key)
-                    edges.append(edge_type(pre_vertex, vertex))
-                    partition_ids.append(self._keys_to_partition_id[key])
+            for key in unique_keys(self._vertex_to_key_map[vertex]):
+                edges.append(edge_type(pre_vertex, vertex))
+                partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
     def edges_and_partitions(self):

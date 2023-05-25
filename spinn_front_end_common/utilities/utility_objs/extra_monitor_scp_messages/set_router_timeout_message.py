@@ -27,7 +27,7 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
     for dropped packet reinjection.
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(self, x, y, p, timeout_mantissa, timeout_exponent, wait=1):
         """

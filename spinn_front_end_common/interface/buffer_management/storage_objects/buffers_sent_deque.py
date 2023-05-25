@@ -31,7 +31,7 @@ class BuffersSentDeque(object):
     A tracker of buffers sent / to send for a region
     """
 
-    __slots__ = [
+    __slots__ = (
         #: The region being managed
         "_region",
 
@@ -51,8 +51,7 @@ class BuffersSentDeque(object):
         "_sent_stop_message",
 
         #: The number of sequence numbers allowed in a single transmission
-        "_n_sequences_per_transmission"
-    ]
+        "_n_sequences_per_transmission")
 
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):

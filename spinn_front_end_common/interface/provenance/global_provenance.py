@@ -41,9 +41,7 @@ class GlobalProvenance(SQLiteDB):
         You can't port to a different database engine without a lot of work.
     """
 
-    __slots__ = [
-        "_database_file"
-    ]
+    __slots__ = ("_database_file", )
 
     @classmethod
     def get_global_provenace_path(cls):

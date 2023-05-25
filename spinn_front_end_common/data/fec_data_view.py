@@ -48,7 +48,7 @@ class _FecDataModel(object):
 
     __singleton = None
 
-    __slots__ = [
+    __slots__ = (
         # Data values cached
         "_allocation_controller",
         "_buffer_manager",
@@ -87,8 +87,7 @@ class _FecDataModel(object):
         "_simulation_time_step_us",
         "_system_multicast_router_timeout_keys",
         "_timestamp_dir_path",
-        "_time_scale_factor",
-    ]
+        "_time_scale_factor")
 
     def __new__(cls):
         if cls.__singleton:
@@ -181,7 +180,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     __fec_data = _FecDataModel()
 
-    __slots__ = []
+    __slots__ = ()
 
     # current_run_timesteps and first_machine_time_step
 

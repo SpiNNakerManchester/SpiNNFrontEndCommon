@@ -39,16 +39,13 @@ class DatabaseWriter(SQLiteDB):
     by subclasses of this interface.
     """
 
-    __slots__ = [
+    __slots__ = (
         # the path of the database
         "_database_path",
-
         # the identifier for the SpiNNaker machine
         "_machine_id",
-
         # Mappings used to accelerate inserts
-        "__machine_to_id", "__vertex_to_id"
-    ]
+        "__machine_to_id", "__vertex_to_id")
 
     def __init__(self):
         self._database_path = os.path.join(FecDataView.get_run_dir_path(),
