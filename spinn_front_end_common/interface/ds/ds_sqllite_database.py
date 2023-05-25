@@ -349,13 +349,14 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, region_id, pointer
+                    SELECT region_num, region_id, pointer, processor
                     FROM region_view
                     WHERE core_id = ?
                     ORDER BY region_num
                      """, (core_id,)):
                 pointers.append(
-                    (row["region_num"], row["region_id"], row["pointer"]))
+                    (row["region_num"], row["region_id"], row["pointer"],
+                     row["processor"]))
             return pointers
 
     def keys(self):

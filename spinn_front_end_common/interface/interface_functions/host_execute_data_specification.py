@@ -14,6 +14,7 @@
 
 import logging
 import numpy
+import os
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -174,7 +175,7 @@ class _HostExecuteDataSpecification(object):
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
         region_pointers = dsg_targets.get_region_pointers(core_id)
-        for region_num, region_id, pointer in region_pointers:
+        for region_num, region_id, pointer, p in region_pointers:
             pointer_table[region_num]["pointer"] = pointer
 
             data = dsg_targets.get_write_data(region_id)
@@ -196,6 +197,12 @@ class _HostExecuteDataSpecification(object):
 
         base_address = dsg_targets.get_base_address(core_id)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
+        pointer_file = os.path.join(
+            FecDataView.get_run_dir_path(), "pointers.txt")
+        with open(pointer_file, "a") as pf:
+            pf.write(f"{x}:{y}:{p}\n")
+            pf.write(f"{pointer_table}\n")
+
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()
         writer(x, y, base_address, to_write)
