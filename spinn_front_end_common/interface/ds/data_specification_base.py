@@ -21,7 +21,7 @@ BYTES_PER_WORD = 4
 
 class DataSpecificationBase(object, metaclass=AbstractBase):
     """
-    Used to generate the data specification data in the database
+    Base class for all vertex data specification creation
     """
 
     __slots__ = [
@@ -77,7 +77,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
     @abstractmethod
     def reserve_memory_region(
-            self, region, size, label=None, empty=False, reference=None):
+            self, region, size, label=None, reference=None):
         """
         Insert command to reserve a memory region.
 
@@ -85,7 +85,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         :param int size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
         :type label: str or None
-        :param bool empty: Specifies if the region will be left empty
         :param reference: A globally unique reference for this region
         :type reference: int or None
         :raise RegionInUseException: If the ``region`` was already reserved
