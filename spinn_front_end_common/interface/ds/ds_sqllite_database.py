@@ -29,7 +29,7 @@ _DDL_FILE = os.path.join(os.path.dirname(__file__), "dse.sql")
 logger = FormatAdapter(logging.getLogger(__name__))
 
 # Stop large numbers being written as blobs
-
+# pylint: disable=unnecessary-lambda
 sqlite3.register_adapter(numpy.int64, lambda val: int(val))
 sqlite3.register_adapter(numpy.int32, lambda val: int(val))
 
@@ -274,12 +274,12 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, pointer, size
+                    SELECT x, y, pointer
                     FROM region_view
                     WHERE region_id = ?
                     LIMIT 1
                     """, (region_id, )):
-                return row["x"], row["y"], row["pointer"], row["size"]
+                return row["x"], row["y"], row["pointer"]
 
     def get_region_sizes(self, core_x, core_y, core_p):
         regions = dict()

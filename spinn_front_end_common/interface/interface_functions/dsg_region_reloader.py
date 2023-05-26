@@ -29,10 +29,10 @@ def reload_dsg_regions():
         FecDataView.get_n_placements(), "Reloading data")
     for placement in progress.over(FecDataView.iterate_placemements()):
         # Generate the data spec for the placement if needed
-        regenerate_data_spec(placement, FecDataView.get_dsg_targets())
+        regenerate_data_spec(placement)
 
 
-def regenerate_data_spec(placement, ds_db):
+def regenerate_data_spec(placement):
     """
     Regenerate a data specification for a placement.
 

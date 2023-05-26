@@ -122,6 +122,7 @@ class _HostExecuteDataSpecification(object):
                 emergency_recover_states_from_failure()
             raise
 
+    # pylint: disable=unused-private-member
     def __java_sys(self):
         """
         Does the Data Specification Execution and loading using Java.
@@ -149,13 +150,13 @@ class _HostExecuteDataSpecification(object):
         writer = transceiver.write_memory
         core_infos = dsg_targets.get_core_infos(is_system)
         if is_system:
-            type = "system"
+            type_str = "system"
         else:
-            type = "application"
+            type_str = "application"
         progress = ProgressBar(
             len(core_infos) * 2,
             "Executing data specifications and loading data for "
-            f"{type} vertices")
+            f"{type_str} vertices")
 
         for core_id, x, y, p in progress.over(core_infos, finish_at_end=False):
             total_size = dsg_targets.get_xyp_totalsize(core_id)
@@ -199,9 +200,6 @@ class _HostExecuteDataSpecification(object):
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
         pointer_file = os.path.join(
             FecDataView.get_run_dir_path(), "pointers.txt")
-        with open(pointer_file, "a") as pf:
-            pf.write(f"{x}:{y}:{p}\n")
-            pf.write(f"{pointer_table}\n")
 
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()

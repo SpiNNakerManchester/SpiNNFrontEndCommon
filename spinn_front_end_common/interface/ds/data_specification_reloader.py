@@ -34,7 +34,7 @@ class DataSpecificationReloader(DataSpecificationBase):
         _, original_size = self._ds_db.get_memory_region(
             self._core_id, region)
         if original_size != size:
-            DataSpecException(
+            raise DataSpecException(
                 f"Size changed form original {original_size} to {size}")
 
     @overrides(DataSpecificationBase.reference_memory_region)
@@ -45,8 +45,7 @@ class DataSpecificationReloader(DataSpecificationBase):
     def _end_write_block(self):
         if self._data is not None and len(self._data) > 0:
 
-            x, y, pointer, size = self._ds_db.get_region_info(
-                self._region_id)
+            x, y, pointer = self._ds_db.get_region_info(self._region_id)
 
             # Safety check if in debug mode
             self._check_write_block()
