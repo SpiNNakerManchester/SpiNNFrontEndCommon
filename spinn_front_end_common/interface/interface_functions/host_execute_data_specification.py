@@ -198,8 +198,6 @@ class _HostExecuteDataSpecification(object):
 
         base_address = dsg_targets.get_base_address(core_id)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
-        pointer_file = os.path.join(
-            FecDataView.get_run_dir_path(), "pointers.txt")
 
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()
