@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-APPS = sorter.mk \
-       bit_field_ordered_covering_compressor.mk \
-       bit_field_pair_compressor.mk \
-       simple_pair_compressor.mk \
+APPS = simple_pair_compressor.mk \
        simple_unordered_compressor.mk
 
 all: $(APPS)

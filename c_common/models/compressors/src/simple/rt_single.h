@@ -168,20 +168,6 @@ bool load_routing_table(uint32_t app_id) {
     return TRUE;
 }
 
-//! \brief Free memory allocated and call spin1_exit() and sets the user0
-//!     error code correctly.
-//! \param[in] header: the header object
-void cleanup_and_exit(header_t *header) {
-    // Free the memory used by the routing table.
-    log_debug("free sdram blocks which held router tables");
-    FREE(table->entries);
-    // Free the block of SDRAM used to load the routing table.
-    sark_xfree(sv->sdram_heap, (void *) header, ALLOC_LOCK);
-
-    log_info("completed router compressor");
-    malloc_extras_terminate(EXITED_CLEANLY);
-}
-
 //! \brief Gets a pointer to several entries
 //! \param[in] start_entry: The first entry to get
 //! \param[in] n_entries: The number of entries to get
