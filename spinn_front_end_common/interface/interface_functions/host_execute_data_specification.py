@@ -14,7 +14,6 @@
 
 import logging
 import numpy
-import os
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
