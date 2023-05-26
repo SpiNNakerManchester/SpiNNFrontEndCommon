@@ -86,10 +86,7 @@ class MachineAllocationController(
     def create_transceiver(self):
         if not self.__hostname:
             return None
-        txrx = create_transceiver_from_hostname(
-            hostname=self.__hostname,
-            bmp_connection_data=None,
-            version=5, auto_detect_bmp=False)
+        txrx = create_transceiver_from_hostname(self.__hostname, 5)
         txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         return txrx

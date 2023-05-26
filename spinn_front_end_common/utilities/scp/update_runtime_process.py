@@ -75,7 +75,7 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         self._progress = None
 
     def __receive_response(self, _response):
-        if self._progress is not None:
+        if self._progress:
             self._progress.update()
 
     def update_runtime(self, current_time, run_time, infinite_run,
@@ -86,16 +86,16 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         :param bool infinite_run:
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Number of cores being updated
+        :param int n_sync_steps:
         """
-        self._progress = ProgressBar(n_cores, "Updating run time")
-        for core_subset in core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(
-                    _UpdateRuntimeRequest(
-                        core_subset.x, core_subset.y, processor_id,
-                        current_time, run_time, infinite_run, n_sync_steps),
-                    callback=self.__receive_response)
-        self._finish()
-        self._progress.end()
+        with ProgressBar(n_cores, "Updating run time") as self._progress,\
+                self._collect_responses():
+            for core_subset in core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(
+                        _UpdateRuntimeRequest(
+                            core_subset.x, core_subset.y, processor_id,
+                            current_time, run_time, infinite_run,
+                            n_sync_steps),
+                        callback=self.__receive_response)
         self._progress = None
-        self.check_for_error()

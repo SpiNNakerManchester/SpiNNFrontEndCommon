@@ -77,9 +77,8 @@ def machine_generator(
             return txrx.get_machine_details(), txrx
 
     txrx = create_transceiver_from_hostname(
-        hostname=FecDataView.get_ipaddress(),
+        FecDataView.get_ipaddress(), board_version,
         bmp_connection_data=_parse_bmp_details(bmp_details),
-        version=board_version,
         auto_detect_bmp=auto_detect_bmp)
 
     if reset_machine_on_start_up:

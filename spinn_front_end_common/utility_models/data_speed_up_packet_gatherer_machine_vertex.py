@@ -40,9 +40,8 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, open_scp_connection, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import (
-        SetRouterTimeoutProcess, ClearQueueProcess)
+from spinn_front_end_common.utilities.scp import (
+    SetRouterTimeoutProcess, ClearQueueProcess)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -501,24 +500,24 @@ class DataSpeedUpPacketGatherMachineVertex(
                 f"\t\t {time_took_ms}\t\t\t {mbs}\t\t {missing_seq_nums}\n")
 
     def send_data_into_spinnaker(
-            self, x, y, base_address, data, n_bytes=None, offset=0,
-            cpu=0, is_filename=False):  # pylint: disable=unused-argument
+            self, x, y, base_address, data, *,
+            n_bytes=None, offset=0, cpu=0):  # pylint: disable=unused-argument
         """
         Sends a block of data into SpiNNaker to a given chip.
 
         :param int x: chip x for data
         :param int y: chip y for data
         :param int base_address: the address in SDRAM to start writing memory
-        :param data: the data to write (or filename to load data from,
-            if ``is_filename`` is True; that's the only time this is a str)
+        :param data: the data to write or filename to load data from,
+            if a string
         :type data: bytes or bytearray or memoryview or str
         :param int n_bytes: how many bytes to read, or `None` if not set
         :param int offset: where in the data to start from
-        :param int cpu:
+        :param int cpu: Ignored; can only target SDRAM so unimportant
         :param bool is_filename: whether data is actually a file.
         """
         # if file, read in and then process as normal
-        if is_filename:
+        if isinstance(data, str):
             if offset != 0:
                 raise ValueError(
                     "when using a file, you can only have a offset of 0")

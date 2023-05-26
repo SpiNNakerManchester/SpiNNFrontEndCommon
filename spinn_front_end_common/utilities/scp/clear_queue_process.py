@@ -13,26 +13,23 @@
 # limitations under the License.
 
 from spinnman.processes import AbstractMultiConnectionProcess
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_messages import (
-        LoadSystemMCRoutesMessage)
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import (
+        ClearReinjectionQueueMessage)
 
 
-class LoadSystemMCRoutesProcess(AbstractMultiConnectionProcess):
+class ClearQueueProcess(AbstractMultiConnectionProcess):
     """
-    How to send messages to load the configured system multicast routing
-    tables (and save the application routing tables).
+    How to send messages to clear the reinjection queue.
     """
     __slots__ = ()
 
-    def load_system_mc_routes(self, core_subsets):
+    def reset_counters(self, core_subsets):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
-            sets of cores to send command to
         """
-        for core_subset in core_subsets.core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(LoadSystemMCRoutesMessage(
-                    core_subset.x, core_subset.y, processor_id))
-        self._finish()
-        self.check_for_error()
+        with self._collect_responses():
+            for core_subset in core_subsets.core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(ClearReinjectionQueueMessage(
+                        core_subset.x, core_subset.y, processor_id))

@@ -25,11 +25,9 @@ from spinn_utilities.config_holder import get_config_bool
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import (
-        ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
-        SetRouterTimeoutProcess, ClearQueueProcess,
-        LoadApplicationMCRoutesProcess, LoadSystemMCRoutesProcess)
+from spinn_front_end_common.utilities.scp import (
+    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
+    SetRouterTimeoutProcess, ClearQueueProcess, LoadMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
@@ -561,7 +559,7 @@ class ExtraMonitorSupportMachineVertex(
             the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset()
-        process = LoadSystemMCRoutesProcess(
+        process = LoadMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             return process.load_system_mc_routes(core_subsets)
@@ -576,7 +574,7 @@ class ExtraMonitorSupportMachineVertex(
         multicast routes (used by the Data In protocol).
         """
         core_subsets = self._convert_vertices_to_core_subset()
-        process = LoadApplicationMCRoutesProcess(
+        process = LoadMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             return process.load_application_mc_routes(core_subsets)

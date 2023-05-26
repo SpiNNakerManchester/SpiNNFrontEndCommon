@@ -258,7 +258,7 @@ class _MachineBitFieldRouterCompressor(object):
         bit_field_sorter_cores = CoreSubsets()
         bit_field_compressor_cores = CoreSubsets()
 
-        _, cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
+        cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
         view = FecDataView()
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
@@ -454,8 +454,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size)
 
         # write sdram
-        self.__txrx.write_memory(
-            chip_x, chip_y, sdram_address, address_data, len(address_data))
+        self.__txrx.write_memory(chip_x, chip_y, sdram_address, address_data)
 
         # tell the compressor where the SDRAM is
         for p in cores.all_core_subsets.get_core_subset_for_chip(
@@ -519,8 +518,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(address_data))
 
         # write sdram
-        self.__txrx.write_memory(
-            chip_x, chip_y, sdram_address, address_data, len(address_data))
+        self.__txrx.write_memory(chip_x, chip_y, sdram_address, address_data)
 
         # Tell the sorter where the SDRAM is
         sorter_cores = cores.get_cores_for_binary(sorter_executable_path)

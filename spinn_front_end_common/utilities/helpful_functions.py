@@ -24,7 +24,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_n_word_structs = []
+_n_word_structs: list[struct.Struct | None] = []
 
 
 def locate_extra_monitor_mc_receiver(placement_x, placement_y):
@@ -174,31 +174,31 @@ def determine_flow_states(executable_types, no_sync_changes):
         the execute types to locate start and end states from
     :param int no_sync_changes: the number of times sync signals been sent
     :return: dict of executable type to states.
-    :rtype: tuple(dict(ExecutableType,~spinnman.model.enums.CPUState),
-        dict(ExecutableType,~spinnman.model.enums.CPUState))
+    :rtype: tuple(dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)),
+        dict(ExecutableType,tuple(~spinnman.model.enums.CPUState)))
     """
     expected_start_states = dict()
     expected_end_states = dict()
     for start_type in executable_types.keys():
         # cores that ignore all control and are just running
         if start_type == ExecutableType.RUNNING:
-            expected_start_states[ExecutableType.RUNNING] = [
-                CPUState.RUNNING, CPUState.FINISHED]
-            expected_end_states[ExecutableType.RUNNING] = [
-                CPUState.RUNNING, CPUState.FINISHED]
+            expected_start_states[ExecutableType.RUNNING] = (
+                CPUState.RUNNING, CPUState.FINISHED)
+            expected_end_states[ExecutableType.RUNNING] = (
+                CPUState.RUNNING, CPUState.FINISHED)
 
         # cores that require a sync barrier
         elif start_type == ExecutableType.SYNC:
-            expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
-            expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
+            expected_start_states[ExecutableType.SYNC] = (CPUState.SYNC0,)
+            expected_end_states[ExecutableType.SYNC] = (CPUState.FINISHED,)
 
         # cores that use our sim interface
         elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
-                expected_start_states[start_type] = [CPUState.SYNC0]
+                expected_start_states[start_type] = (CPUState.SYNC0,)
             else:
-                expected_start_states[start_type] = [CPUState.SYNC1]
-            expected_end_states[start_type] = [CPUState.PAUSED]
+                expected_start_states[start_type] = (CPUState.SYNC1,)
+            expected_end_states[start_type] = (CPUState.PAUSED,)
 
     # if no states, go boom.
     if not expected_start_states:

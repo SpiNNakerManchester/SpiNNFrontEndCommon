@@ -74,8 +74,8 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
         :param int exponent:
         :param int wait:
         """
-        self._send_request(SetRouterTimeoutMessage(
-            core.x, core.y, processor_id,
-            timeout_mantissa=mantissa, timeout_exponent=exponent, wait=wait))
-        self._finish()
-        self.check_for_error()
+        with self._collect_responses():
+            self._send_request(SetRouterTimeoutMessage(
+                core.x, core.y, processor_id,
+                timeout_mantissa=mantissa, timeout_exponent=exponent,
+                wait=wait))

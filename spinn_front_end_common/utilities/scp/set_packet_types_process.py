@@ -37,10 +37,9 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         :param bool fixed_route: If fixed route should be set
         """
         # pylint: disable=too-many-arguments
-        for core_subset in core_subsets.core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(SetReinjectionPacketTypesMessage(
-                    core_subset.x, core_subset.y, processor_id, multicast,
-                    point_to_point, fixed_route, nearest_neighbour))
-        self._finish()
-        self.check_for_error()
+        with self._collect_responses():
+            for core_subset in core_subsets.core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(SetReinjectionPacketTypesMessage(
+                        core_subset.x, core_subset.y, processor_id, multicast,
+                        point_to_point, fixed_route, nearest_neighbour))

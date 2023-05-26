@@ -92,6 +92,7 @@ class _ExecutionContext(object):
 
         :param tuple(int,int,int) core:
         :param ~io.RawIOBase reader:
+        :param callable writer_func:
         :param int base_address:
         :param int size_allocated:
         :return: base_address, size_allocated, bytes_written
@@ -126,10 +127,9 @@ class _ExecutionContext(object):
         write_header_now = self.__handle_references_to_fill(
             x, y, p, executor, pointer_table, header, base_address)
 
-        # We don't have to write this bit now; we can still to the rest
+        # We don't have to write this bit now; we can still do the rest
         if write_header_now:
             # NB: DSE meta-block is always small (i.e., one SDP write)
-
             to_write = numpy.concatenate(
                 (header, pointer_table.view("uint32"))).tobytes()
             FecDataView.write_memory(x, y, base_address, to_write)

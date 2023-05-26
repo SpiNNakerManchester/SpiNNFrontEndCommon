@@ -15,12 +15,12 @@
 from spinnman.processes import AbstractMultiConnectionProcess
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
-        ClearReinjectionQueueMessage)
+        ResetCountersMessage)
 
 
-class ClearQueueProcess(AbstractMultiConnectionProcess):
+class ResetCountersProcess(AbstractMultiConnectionProcess):
     """
-    How to send messages to clear the reinjection queue.
+    How to send messages to clear the reinjection state counters.
     """
     __slots__ = ()
 
@@ -28,9 +28,8 @@ class ClearQueueProcess(AbstractMultiConnectionProcess):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         """
-        for core_subset in core_subsets.core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(ClearReinjectionQueueMessage(
-                    core_subset.x, core_subset.y, processor_id))
-        self._finish()
-        self.check_for_error()
+        with self._collect_responses():
+            for core_subset in core_subsets.core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(ResetCountersMessage(
+                        core_subset.x, core_subset.y, processor_id))

@@ -48,10 +48,10 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
         :rtype: ReInjectionStatus
         """
         status = dict()
-        self._send_request(GetReinjectionStatusMessage(x, y, p),
-                           functools.partial(self.__handle_response, status))
-        self._finish()
-        self.check_for_error()
+        with self._collect_responses():
+            self._send_request(
+                GetReinjectionStatusMessage(x, y, p),
+                functools.partial(self.__handle_response, status))
         return status[x, y]
 
     def get_reinjection_status_for_core_subsets(self, core_subsets):
@@ -60,12 +60,12 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
         :rtype: dict(tuple(int,int), ReInjectionStatus)
         """
         status = dict()
-        for core_subset in core_subsets.core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(GetReinjectionStatusMessage(
-                    core_subset.x, core_subset.y, processor_id),
-                    functools.partial(self.__handle_response, status))
-        self._finish()
+        with self._collect_responses(check_error=False):
+            for core_subset in core_subsets.core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(GetReinjectionStatusMessage(
+                        core_subset.x, core_subset.y, processor_id),
+                        functools.partial(self.__handle_response, status))
         if self.is_error():
             logger.warning("Error(s) reading reinjection status:")
             for (e, tb) in zip(self._exceptions, self._tracebacks):

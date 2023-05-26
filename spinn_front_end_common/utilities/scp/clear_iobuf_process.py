@@ -46,7 +46,6 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
     .. note::
         The cores must be using the simulation interface.
     """
-
     def __init__(self, connection_selector):
         """
         :param connection_selector:
@@ -57,7 +56,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
         self._progress = None
 
     def __receive_response(self, _response):
-        if self._progress is not None:
+        if self._progress:
             self._progress.update()
 
     def clear_iobuf(self, core_subsets, n_cores=None):
@@ -67,15 +66,13 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
         """
         if n_cores is None:
             n_cores = len(core_subsets)
-        self._progress = ProgressBar(
-            n_cores, "clearing IOBUF from the machine")
-        for core_subset in core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(
-                    _ClearIOBUFRequest(
-                        core_subset.x, core_subset.y, processor_id),
-                    callback=self.__receive_response)
-        self._finish()
-        self._progress.end()
+        with ProgressBar(
+                n_cores, "clearing IOBUF from the machine") as self._progress,\
+                self._collect_responses():
+            for core_subset in core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._send_request(
+                        _ClearIOBUFRequest(
+                            core_subset.x, core_subset.y, processor_id),
+                        callback=self.__receive_response)
         self._progress = None
-        self.check_for_error()
