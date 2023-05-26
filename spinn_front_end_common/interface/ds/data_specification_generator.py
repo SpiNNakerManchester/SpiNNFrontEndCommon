@@ -26,13 +26,11 @@ class DataSpecificationGenerator(DataSpecificationBase):
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
-            self, region, size, label=None, empty=False, reference=None):
+            self, region, size, label=None, reference=None):
         if self._report_writer is not None:
             cmd_string = f"RESERVE memRegion={region:d} size={size:d}"
             if label is not None:
                 cmd_string += f" label='{label}'"
-            if empty:
-                cmd_string += " UNFILLED"
             if reference is not None:
                 cmd_string += f" REF {reference:d}"
             cmd_string += "\n"

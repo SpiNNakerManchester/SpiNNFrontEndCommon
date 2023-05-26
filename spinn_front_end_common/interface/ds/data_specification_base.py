@@ -51,6 +51,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
         :type report_writer: ~io.TextIOBase or None
+        :raises DsDatabaseException: If this core is not known
+            and no vertex supplied (during reload)
         """
         self._ds_db = ds_db
         self._report_writer = report_writer
@@ -115,9 +117,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         :param int region: The ID of the region to switch to, between 0 and 15
         :raise ParameterOutOfBoundsException:
             If the region identifier is not valid
-        :raise NotAllocatedException: If the region has not been allocated
-        :raise RegionUnfilledException:
-            If the selected region should not be filled
+        :raise DataSpecException: If the region has not been allocated
         """
         self._end_write_block()
 
@@ -130,17 +130,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._region_num = region
         if self._size <= 0:
             raise DataSpecException(f"No size set for region {region}")
-
-    def create_cmd(self, data, data_type=DataType.UINT32):
-        """
-        Creates command to write a value to the current write pointer, causing
-        the write pointer to move on by the number of bytes required to
-        represent the data type. The data is passed as a parameter to this
-        function.
-
-        :raise NotImplementedError:
-        """
-        raise NotImplementedError("create_cmd")
 
     def write_value(self, data, data_type=DataType.UINT32):
         """

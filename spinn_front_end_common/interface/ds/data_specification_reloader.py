@@ -30,12 +30,15 @@ class DataSpecificationReloader(DataSpecificationBase):
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
-            self, region, size, label=None, empty=False, reference=None):
+            self, region, size, label=None, reference=None):
         _, original_size = self._ds_db.get_memory_region(
             self._core_id, region)
         if original_size != size:
             raise DataSpecException(
                 f"Size changed form original {original_size} to {size}")
+        if reference is not None:
+            raise NotImplementedError(
+                "reference unexpected during reload")
 
     @overrides(DataSpecificationBase.reference_memory_region)
     def reference_memory_region(self, region, ref, label=None):

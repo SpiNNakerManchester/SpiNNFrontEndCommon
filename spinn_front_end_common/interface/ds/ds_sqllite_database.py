@@ -62,6 +62,12 @@ class DsSqlliteDatabase(SQLiteDB):
 
     @classmethod
     def default_database_file(cls):
+        """
+        Gets the path to the default/ current database file
+
+        :rtype: str
+        :return: Path where the database is or should be writen
+        """
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"ds{FecDataView.get_reset_str()}.sqlite3")
 
@@ -112,9 +118,15 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int core_y:
             Y coordinate of the core that `spec_bytes` applies to
         :param int p: Processor ID of the core that `spec_bytes` applies to
+        :vertex:
+        :param vertex: Vertex to check if it is a system vertex.
+            if missing this method will not create a new record
         :type vertex:
             ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
+             or None
         :rtype: int
+        :raises DsDatabaseException: If this core is not known
+        and no vertex supplied
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
