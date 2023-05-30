@@ -122,11 +122,11 @@ class DsSqlliteDatabase(SQLiteDB):
         :param vertex: Vertex to check if it is a system vertex.
             if missing this method will not create a new record
         :type vertex:
-            ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
+            ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary
              or None
         :rtype: int
-        :raises DsDatabaseException: If this core is not known
-        and no vertex supplied
+        :raises AttributeError:
+            If the vertex is not an AbstractHasAssociatedBinary
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -137,9 +137,6 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (core_x, core_y, core_p)):
                 return row["core_id"]
-            if vertex is None:
-                raise DsDatabaseException(
-                    f"No region known for {core_x} {core_y} {core_p}")
             chip_id = self._get_chip_id(cursor, core_x, core_y)
             if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
                 is_system = 1
@@ -153,6 +150,14 @@ class DsSqlliteDatabase(SQLiteDB):
             return cursor.lastrowid
 
     def get_core_infos(self, is_system):
+        """
+        Gets a list of id, x, y, p for all cores according to is_system
+
+        :param bool is_system: if True returns systenm cores
+            otherwise application cores
+        :return:  list(database_id, x, y, p) for each system or app cores
+        :rtype: list(int, int, int, int)
+        """
         with self.transaction() as cursor:
             core_infos = []
             for row in cursor.execute(
@@ -180,14 +185,14 @@ class DsSqlliteDatabase(SQLiteDB):
                 LIMIT 1
                 """, (core_x, core_y)):
             return row["chip_id"]
-        ethernet_id = self.get_ethernet_id(cursor, core_x, core_y)
+        ethernet_id = self._get_ethernet_id(cursor, core_x, core_y)
         cursor.execute(
             """
             INSERT INTO chip(x, y, ethernet_id) VALUES(?, ?, ?)
             """, (core_x, core_y, ethernet_id))
         return cursor.lastrowid
 
-    def get_ethernet_id(self, cursor, core_x, core_y):
+    def _get_ethernet_id(self, cursor, core_x, core_y):
         chip = FecDataView().get_chip_at(core_x, core_y)
         for row in cursor.execute(
                 """
@@ -200,6 +205,21 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def write_memory_region(
             self, core_id, region_num, size, reference, label):
+        """
+        Writes the information to reserve a memory region into the database
+
+        Typically called after a DS.reserve_memory_region call
+
+        :param int core_id: The database id for the core to reserve on
+        :param int region: The DS number of the region to reserve
+        :param int size: The size to reserve for the region, in bytes
+        :param label: An optional label for the region
+        :type label: str or None
+        :param reference: A globally unique reference for this region
+        :type reference: int or None
+        :param label:
+        :return:
+        """
         with self.transaction() as cursor:
             cursor.execute(
                 """

@@ -83,7 +83,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         """
         Insert command to reserve a memory region.
 
-        :param int region: The number of the region to reserve, from 0 to 15
+        :param int region: The number of the region to reserve, from 0 to 32
         :param int size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
         :type label: str or None
