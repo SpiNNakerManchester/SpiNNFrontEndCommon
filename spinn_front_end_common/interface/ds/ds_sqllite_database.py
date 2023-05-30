@@ -169,24 +169,28 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_core_infos(self, is_system):
         """
-        Gets a list of id, x, y, p for all cores according to is_system
+        Gets a list of id, x, y, p, ethernet_x, ethernet_y for all cores
+        according to is_system
 
         :param bool is_system: if True returns systenm cores
             otherwise application cores
-        :return:  list(database_id, x, y, p) for each system or app cores
-        :rtype: list(int, int, int, int)
+        :return:
+            list(database_id, x, y, p, ethernet_x, ethernet_y)
+            for each system or app core
+        :rtype: list(int, int, int, int, int, int)
         """
         with self.transaction() as cursor:
             core_infos = []
             for row in cursor.execute(
                     """
-                    SELECT core_id, x, y, processor
+                    SELECT core_id, x, y, processor, ethernet_x, ethernet_y
                     FROM core_view
                     WHERE is_system = ?
                     ORDER BY core_id
                      """, (is_system,)):
                 core_infos.append(
-                    (row["core_id"], row["x"], row["y"], row["processor"]))
+                    (row["core_id"], row["x"], row["y"], row["processor"],
+                     row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
     def _get_chip_id(self, cursor, core_x, core_y):

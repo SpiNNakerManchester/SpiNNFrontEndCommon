@@ -157,15 +157,17 @@ class _HostExecuteDataSpecification(object):
             "Executing data specifications and loading data for "
             f"{type_str} vertices")
 
-        for core_id, x, y, p in progress.over(core_infos, finish_at_end=False):
+        for core_id, x, y, p, _, _ in progress.over(
+                core_infos, finish_at_end=False):
             total_size = dsg_targets.get_xyp_totalsize(core_id)
             malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
             base_address = self.__malloc_region_storage(x, y, p, malloc_size)
             dsg_targets.set_base_address(core_id, base_address)
 
-        for core_id, x, y, _ in progress.over(core_infos):
+        for core_id, x, y, _, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
-                writer = self.__select_writer(x, y)
+                gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
+                writer = gatherer.send_data_into_spinnaker
             self.__python_load_core(dsg_targets, core_id, x, y, writer)
 
         if uses_advanced_monitors:

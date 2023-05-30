@@ -48,7 +48,6 @@ class TestDataSpecification(unittest.TestCase):
         unittest_setup()
 
     def test_init(self):
-        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         db = DsSqlliteDatabase()
         vertex1 = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
@@ -56,14 +55,12 @@ class TestDataSpecification(unittest.TestCase):
         DataSpecificationReloader(0, 1, 2, db)
 
     def test_none_ds_vertex(self):
-        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         db = DsSqlliteDatabase()
         vertex = SimpleMachineVertex(0)
         with self.assertRaises(AttributeError):
             DataSpecificationGenerator(0, 1, 2, vertex, db)
 
     def test_bad_x_y_ds_vertex(self):
-        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         db = DsSqlliteDatabase()
         vertex = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
@@ -71,7 +68,6 @@ class TestDataSpecification(unittest.TestCase):
             DataSpecificationGenerator(3, 1, 2, vertex, db)
 
     def test_repeat_x_y_ds_vertex(self):
-        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         db = DsSqlliteDatabase()
         vertex1 = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
@@ -82,10 +78,31 @@ class TestDataSpecification(unittest.TestCase):
             DataSpecificationGenerator(0, 1, 2, vertex2, db)
 
     def test_no_x_y_on_reload(self):
-        FecDataWriter.mock().set_machine(virtual_machine(2, 2))
         db = DsSqlliteDatabase()
         with self.assertRaises(DsDatabaseException):
             DataSpecificationReloader(0, 1, 2, db)
+
+    def test_core_infos(self):
+        FecDataWriter.mock().set_machine(virtual_machine(16, 16))
+        db = DsSqlliteDatabase()
+        s1 = _TestVertexWithBinary("S1", ExecutableType.SYSTEM)
+        DataSpecificationGenerator(0, 0, 2, s1, db)
+        s2 = _TestVertexWithBinary("S2", ExecutableType.SYSTEM)
+        DataSpecificationGenerator(5, 9, 2, s2, db)
+        s3 = _TestVertexWithBinary("S3", ExecutableType.SYSTEM)
+        DataSpecificationGenerator(9, 5, 2, s3, db)
+        a1 = _TestVertexWithBinary(
+            "A1", ExecutableType.USES_SIMULATION_INTERFACE)
+        DataSpecificationGenerator(0, 0, 3, a1, db)
+        a2 = _TestVertexWithBinary(
+            "A2", ExecutableType.USES_SIMULATION_INTERFACE)
+        DataSpecificationGenerator(0, 0, 4, a2, db)
+        sys_infos = [(1, 0, 0, 2, 0, 0), (2, 5, 9, 2, 4, 8),
+                     (3, 9, 5, 2, 8, 4)]
+        self.assertEqual(sys_infos, db.get_core_infos(True))
+        app_infos = [(4, 0, 0, 3, 0, 0), (5, 0, 0, 4, 0, 0)]
+        self.assertEqual(app_infos, db.get_core_infos(False))
+
 
 
 if __name__ == "__main__":
