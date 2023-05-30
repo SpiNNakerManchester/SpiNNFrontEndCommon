@@ -65,7 +65,7 @@ class TestDataSpecification(unittest.TestCase):
         vertex = _TestVertexWithBinary(
             "off_board__system", ExecutableType.SYSTEM)
         with self.assertRaises(KeyError):
-            DataSpecificationGenerator(3, 1, 2, vertex, db)
+            DataSpecificationGenerator(10, 10, 2, vertex, db)
 
     def test_repeat_x_y_ds_vertex(self):
         db = DsSqlliteDatabase()
