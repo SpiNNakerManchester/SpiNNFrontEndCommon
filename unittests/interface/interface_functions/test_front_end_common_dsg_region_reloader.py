@@ -18,6 +18,7 @@ from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placements, Placement
 from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
@@ -40,7 +41,8 @@ regenerate_call_count = 0
 
 
 class _TestMachineVertex(
-        SimpleMachineVertex, AbstractRewritesDataSpecification):
+        SimpleMachineVertex, AbstractHasAssociatedBinary,
+        AbstractGeneratesDataSpecification, AbstractRewritesDataSpecification):
     """ A simple machine vertex for testing
     """
 
@@ -65,6 +67,18 @@ class _TestMachineVertex(
             spec.write_array(data)
         spec.end_specification()
         regenerate_call_count += 1
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
+    def get_binary_file_name(self):
+        raise NotImplementedError()
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        raise NotImplementedError()
+
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
+        raise NotImplementedError()
 
 
 class _MockCPUInfo(object):
