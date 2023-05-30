@@ -15,11 +15,13 @@
 from sqlite3 import IntegrityError
 import unittest
 from spinn_utilities.overrides import overrides
+from spinn_machine import Chip
 from spinn_machine.virtual_machine import virtual_machine
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.data.fec_data_writer import FecDataWriter
+from spinn_front_end_common.data.fec_data_writer import (
+    FecDataView, FecDataWriter)
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import \
     DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase
@@ -103,6 +105,14 @@ class TestDataSpecification(unittest.TestCase):
         app_infos = [(4, 0, 0, 3, 0, 0), (5, 0, 0, 4, 0, 0)]
         self.assertEqual(app_infos, db.get_core_infos(False))
 
+    def test_bad_ethernet(self):
+        bad = Chip(10, 10, 15, None, 100, 8, 8)
+        FecDataView.get_machine().add_chip(bad)
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "bad", ExecutableType.SYSTEM)
+        with self.assertRaises(DsDatabaseException):
+            DataSpecificationGenerator(10, 10, 2, vertex, db)
 
 
 if __name__ == "__main__":

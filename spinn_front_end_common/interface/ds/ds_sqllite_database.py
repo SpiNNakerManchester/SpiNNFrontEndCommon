@@ -38,10 +38,7 @@ class DsSqlliteDatabase(SQLiteDB):
     """
     A database for holding data specification details.
     """
-    __slots__ = [
-        # The root ethernet id if required
-        "__root_ethernet_id"
-    ]
+    __slots__ = []
 
     def __init__(self, init_file=None):
         """
@@ -58,7 +55,6 @@ class DsSqlliteDatabase(SQLiteDB):
             database_file, ddl_file=_DDL_FILE if init_file else None)
         if init_file:
             self.__init_ethernets()
-        self.__root_ethernet_id = self.__find_root_id()
 
     @classmethod
     def default_database_file(cls):
@@ -85,27 +81,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (
                     (ethernet.x, ethernet.y, ethernet.ip_address)
                     for ethernet in eth_chips))
-
-    def __find_root_id(self):
-        first_x = first_y = root_id = None
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT ethernet_id, ethernet_x, ethernet_y FROM ethernet
-                    ORDER BY ethernet_x, ethernet_y
-                    LIMIT 1
-                    """):
-                root_id = row["ethernet_id"]
-                first_x = row["ethernet_x"]
-                first_y = row["ethernet_y"]
-        if root_id is None:
-            # Should only be reachable for an empty machine
-            raise DsDatabaseException("No ethernet chip found")
-        if first_x or first_y:
-            logger.warning(
-                "No Ethernet chip found at 0,0 using {},{} "
-                "for all boards with no IP address.", first_x, first_y)
-        return root_id
 
     def write_core_id(self, x, y, p, vertex):
         """
@@ -214,8 +189,8 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (core_x, core_y, ethernet_id))
         return cursor.lastrowid
 
-    def _get_ethernet_id(self, cursor, core_x, core_y):
-        chip = FecDataView().get_chip_at(core_x, core_y)
+    def _get_ethernet_id(self, cursor, x, y):
+        chip = FecDataView().get_chip_at(x, y)
         for row in cursor.execute(
                 """
                 SELECT ethernet_id FROM ethernet
@@ -223,7 +198,10 @@ class DsSqlliteDatabase(SQLiteDB):
                 LIMIT 1
                 """, (chip.nearest_ethernet_x, chip.nearest_ethernet_y)):
             return row["ethernet_id"]
-        return self.__root_ethernet_id
+        raise DsDatabaseException(
+            f"No Ethernet at "
+            f"{chip.nearest_ethernet_x} {chip.nearest_ethernet_y} "
+            f"for chip {x} {y}")
 
     def write_memory_region(
             self, core_id, region_num, size, reference, label):
