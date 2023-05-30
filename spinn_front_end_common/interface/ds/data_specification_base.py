@@ -36,27 +36,18 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_size"
     ]
 
-    def __init__(self, x, y, p, vertex, ds_db, report_writer=None):
+    def __init__(self, ds_db, report_writer=None):
         """
-
-        :param int x:
-        :param int y:
-        :param int p:
-        :param vertex:
-        :type vertex:
-            ~spinn_front_end_common.abstract_models.AbstractRewritesDataSpecification
         :type  ds_db:
             ~spinn_front_end_common.interface.ds.DataSpecificationGenerator
         :param report_writer:
             Determines if a text version of the specification is to be
             written and, if so, where. No report is written if this is `None`.
         :type report_writer: ~io.TextIOBase or None
-        :raises DsDatabaseException: If this core is not known
-            and no vertex supplied (during reload)
         """
         self._ds_db = ds_db
         self._report_writer = report_writer
-        self._core_id = ds_db.get_core_id(x, y, p, vertex)
+        self._core_id = None  # to be set by subclass
         self._region_id = None
         self._data = None
         self._data_debug = None

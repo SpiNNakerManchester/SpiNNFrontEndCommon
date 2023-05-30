@@ -26,7 +26,22 @@ class DataSpecificationReloader(DataSpecificationBase):
     __slots__ = []
 
     def __init__(self, x, y, p, ds_db, report_writer=None):
-        super().__init__(x, y, p, None, ds_db, report_writer)
+        """
+
+        :param int x:
+        :param int y:
+        :param int p:
+        :type  ds_db:
+            ~spinn_front_end_common.interface.ds.DataSpecificationGenerator
+        :param report_writer:
+            Determines if a text version of the specification is to be
+            written and, if so, where. No report is written if this is `None`.
+        :type report_writer: ~io.TextIOBase or None
+        :raises DsDatabaseException:
+            If there is no core, x, y, p in the database
+        """
+        super().__init__(ds_db, report_writer)
+        self._core_id = ds_db.get_core_id(x, y, p)
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(

@@ -57,7 +57,7 @@ class DsSqlliteDatabase(SQLiteDB):
         super().__init__(
             database_file, ddl_file=_DDL_FILE if init_file else None)
         if init_file:
-            self.__init_db_contents()
+            self.__init_ethernets()
         self.__root_ethernet_id = self.__find_root_id()
 
     @classmethod
@@ -71,7 +71,7 @@ class DsSqlliteDatabase(SQLiteDB):
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"ds{FecDataView.get_reset_str()}.sqlite3")
 
-    def __init_db_contents(self):
+    def __init_ethernets(self):
         """
         Set up the database contents from the machine.
         """
@@ -107,15 +107,13 @@ class DsSqlliteDatabase(SQLiteDB):
                 "for all boards with no IP address.", first_x, first_y)
         return root_id
 
-    def get_core_id(self, core_x, core_y, core_p, vertex):
+    def write_core_id(self, x, y, p, vertex):
         """
-        Gets the database core_id for the core with this x,y,z
+        Creates a database record for the core with this x,y,z
 
-        Will create a new database core record if required.
-
-        :param int core_x:
+        :param int x:
             X coordinate of the core that `spec_bytes` applies to
-        :param int core_y:
+        :param int y:
             Y coordinate of the core that `spec_bytes` applies to
         :param int p: Processor ID of the core that `spec_bytes` applies to
         :vertex:
@@ -123,21 +121,17 @@ class DsSqlliteDatabase(SQLiteDB):
             if missing this method will not create a new record
         :type vertex:
             ~spinn_front_end_common.abstract_models.AbstractHasAssociatedBinary
-             or None
         :rtype: int
         :raises AttributeError:
             If the vertex is not an AbstractHasAssociatedBinary
+        :raises KeyError:
+            If there is no Chip as x, y
+        :raises ~sqlite3.IntegrityError:
+            If this combination of x, y, p has already been used
+            Even if with the same vertex
         """
         with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT core_id
-                    FROM core_view
-                    WHERE x = ? AND y = ? AND processor = ?
-                    LIMIT 1
-                    """, (core_x, core_y, core_p)):
-                return row["core_id"]
-            chip_id = self._get_chip_id(cursor, core_x, core_y)
+            chip_id = self._get_chip_id(cursor, x, y)
             if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
                 is_system = 1
             else:
@@ -146,8 +140,32 @@ class DsSqlliteDatabase(SQLiteDB):
                 """
                 INSERT INTO core(chip_id, processor, is_system)
                 VALUES(?, ?, ?)
-                """, (chip_id, core_p, is_system))
+                """, (chip_id, p, is_system))
             return cursor.lastrowid
+
+    def get_core_id(self, x, y, p):
+        """
+        Gets the database core_id for the core with this x,y,z
+
+        :param int x:
+            X coordinate of the core that `spec_bytes` applies to
+        :param int y:
+            Y coordinate of the core that `spec_bytes` applies to
+        :param int p: Processor ID of the core that `spec_bytes` applies to
+        :rtype: int
+        :raises DsDatabaseException:
+            If there is no core, x, y, p in the database
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT core_id
+                    FROM core_view
+                    WHERE x = ? AND y = ? AND processor = ?
+                    LIMIT 1
+                    """, (x, y, p)):
+                return row["core_id"]
+        raise DsDatabaseException(f"No Core {x=} {y=} {p=}")
 
     def get_core_infos(self, is_system):
         """
