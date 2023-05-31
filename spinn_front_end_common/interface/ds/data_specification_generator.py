@@ -50,7 +50,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
             Even if with the same vertex
         """
         super().__init__(ds_db, report_writer)
-        self._core_id = ds_db.write_core_id(x, y, p, vertex)
+        self._core_id = ds_db.set_core_id(x, y, p, vertex)
 
 
     @overrides(DataSpecificationBase.reserve_memory_region)
@@ -68,7 +68,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
         if size % BYTES_PER_WORD != 0:
             size = size + (BYTES_PER_WORD - (size % BYTES_PER_WORD))
 
-        self._ds_db.write_memory_region(
+        self._ds_db.set_memory_region(
             self._core_id, region, size, reference, label)
 
     @overrides(DataSpecificationBase.reference_memory_region)
@@ -80,7 +80,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
             cmd_string += "\n"
             self._report_writer.write(cmd_string)
 
-        self._ds_db.write_reference(self._core_id, region, ref)
+        self._ds_db.set_reference(self._core_id, region, ref, label)
 
     def _end_write_block(self):
         if self._data is not None and len(self._data) > 0:

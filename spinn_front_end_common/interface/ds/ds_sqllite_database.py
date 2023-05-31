@@ -21,7 +21,7 @@ from spinnman.model.enums import ExecutableType
 from spinnman.spalloc.spalloc_job import SpallocJob
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
-    APP_PTR_TABLE_HEADER_BYTE_SIZE, MAX_MEM_REGIONS, TABLE_TYPE)
+    APP_PTR_TABLE_BYTE_SIZE)
 from spinn_front_end_common.utilities.exceptions import DsDatabaseException
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 
@@ -82,7 +82,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     (ethernet.x, ethernet.y, ethernet.ip_address)
                     for ethernet in eth_chips))
 
-    def write_core_id(self, x, y, p, vertex):
+    def set_core_id(self, x, y, p, vertex):
         """
         Creates a database record for the core with this x,y,z
 
@@ -203,7 +203,7 @@ class DsSqlliteDatabase(SQLiteDB):
             f"{chip.nearest_ethernet_x} {chip.nearest_ethernet_y} "
             f"for chip {x} {y}")
 
-    def write_memory_region(
+    def set_memory_region(
             self, core_id, region_num, size, reference, label):
         """
         Writes the information to reserve a memory region into the database
@@ -229,7 +229,15 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (core_id, region_num, size, reference, label))
             return cursor.lastrowid
 
-    def get_memory_region(self, core_id, region_num):
+    def get_region_id_and_size(self, core_id, region_num):
+        """
+        Gets the database id and size for a region with this core_id
+
+        :param int core_id: The id the database has for this core
+        :param region_num: The DS region number
+        :return: The database id for this region and the size in bytes
+        :rtype: int, int
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -240,25 +248,60 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["region_id"], row["size"]
         raise DsDatabaseException(f"Region {region_num} not set")
 
-    def write_reference(self, core_id, region_num, reference):
+    def set_reference(self, core_id, region_num, reference, ref_label):
+        """
+        Writes a outgoing region_reference into the database
+
+        :param int core_id: The id the database has for this core
+        :param region_num: The DS region number
+        :param int reference: DS number of the reference on this core
+        :param ref_label: label for the refrencing region
+        :type ref_label: str or None
+        """
         with self.transaction() as cursor:
             cursor.execute(
                 """
-                INSERT INTO reference(core_id, region_num, reference_num)
-                VALUES(?, ?, ?)
-                """, (core_id, region_num, reference))
-            return cursor.lastrowid
+                INSERT INTO reference(
+                    core_id, region_num, reference_num, ref_label)
+                VALUES(?, ?, ?, ?)
+                """, (core_id, region_num, reference, ref_label))
 
     def get_reference_pointers(self, core_id):
+        """
+        Yeilds the reference regions and where they point for this core
+
+        :param int core_id: The id the database has for this core
+        :return: Yields the refercing vertext region number and the pointer
+        :rtype: iterable(tuple(int,int))
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT reference.region_num, pointer
-                    FROM reference JOIN region
-                    ON reference.reference_num = region.reference_num
-                    WHERE reference.core_id = ?
+                    SELECT ref_region, pointer
+                    FROM linked_reverence_view
+                    WHERE ref_core_id = ?
                     """, (core_id,)):
-                yield row["region_num"], row["pointer"]
+                yield row["ref_region"], row["pointer"]
+
+    def get_unlinked_references(self):
+        """
+        Finds and yeilds info on unreferenced links
+
+        If all is well this method yields nothing!
+
+        :return: x, y, p, region, reference, label for all unlinked references
+        :rtype: iterable(tuple(int, int, int, int, int, str))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT  x, y, ref_p, ref_region, reference_num, ref_label
+                    FROM linked_reverence_view
+                    WHERE act_region IS NULL
+                     """):
+                yield (row["x"], row["y"], row["ref_p"], row["ref_region"],
+                       row["reference_num"], str(row["ref_label"], "utf8"))
+
 
     def set_write_data(self, region_id, offset, write_data, data_debug):
         with self.transaction() as cursor:
@@ -290,17 +333,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 data += bytearray(row["write_data"])
 
         return data
-
-    def get_region_size(self, region_id):
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT size
-                    FROM region
-                    WHERE region_id = ?
-                    LIMIT 1
-                    """, (region_id, )):
-                return row["size"]
 
     def get_region_info(self, region_id):
         with self.transaction() as cursor:
@@ -336,8 +368,13 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["total"]
 
     def set_base_address(self, core_id, base_address):
-        pointer = (base_address + MAX_MEM_REGIONS * TABLE_TYPE.itemsize +
-                   APP_PTR_TABLE_HEADER_BYTE_SIZE)
+        """
+        Sets the base address for a core and calculates pointers
+
+        :param int core_id: The id the database has for this core
+        :param int base_address: The base address for the whole core
+        """
+        pointer = (base_address + APP_PTR_TABLE_BYTE_SIZE)
         to_update = []
         with self.transaction() as cursor:
             cursor.execute(
@@ -366,6 +403,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (pointer, region_id))
 
     def get_base_address(self, core_id):
+        """
+        Gets the base_address for this core
+
+        :param int core_id: The id the database has for this core
+        :return: The base address for the whole core
+        :rtype: int
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """

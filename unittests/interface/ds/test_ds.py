@@ -25,7 +25,10 @@ from spinn_front_end_common.data.fec_data_writer import (
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import \
     DataSpecificationGenerator, DataSpecificationReloader, DsSqlliteDatabase
-from spinn_front_end_common.utilities.exceptions import DsDatabaseException
+from spinn_front_end_common.utilities.constants import (
+    APP_PTR_TABLE_BYTE_SIZE)
+from spinn_front_end_common.utilities.exceptions import (
+    DataSpecException, DsDatabaseException)
 
 
 class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
@@ -72,9 +75,9 @@ class TestDataSpecification(unittest.TestCase):
     def test_repeat_x_y_ds_vertex(self):
         db = DsSqlliteDatabase()
         vertex1 = _TestVertexWithBinary(
-            "off_board__system", ExecutableType.SYSTEM)
+            "v1", ExecutableType.SYSTEM)
         vertex2 = _TestVertexWithBinary(
-            "off_board__system", ExecutableType.SYSTEM)
+            "v2", ExecutableType.SYSTEM)
         DataSpecificationGenerator(0, 1, 2, vertex1, db)
         with self.assertRaises(IntegrityError):
             DataSpecificationGenerator(0, 1, 2, vertex2, db)
@@ -113,6 +116,114 @@ class TestDataSpecification(unittest.TestCase):
             "bad", ExecutableType.SYSTEM)
         with self.assertRaises(DsDatabaseException):
             DataSpecificationGenerator(10, 10, 2, vertex, db)
+
+    def test_reserve_memory_region(self):
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+        dsg.reserve_memory_region(10, 123456, "test_region")
+        core_id = db.get_core_id(0, 1, 2)
+        region_id, size = db.get_region_id_and_size(core_id, 10)
+        self.assertEqual(123456, size)
+        # May not repeat a location
+        with self.assertRaises(IntegrityError):
+            dsg.reserve_memory_region(10, 24, "repeat_region")
+
+        # check reloading
+        dsr = DataSpecificationReloader(0, 1, 2, db)
+        # ok to repeat serve as long as the size is the same
+        dsr.reserve_memory_region(10, 123456, "different_name")
+        # But the wrong size foes BOOM!
+        with self.assertRaises(DataSpecException):
+            dsr.reserve_memory_region(10, 12345, "different_name")
+        with self.assertRaises(DataSpecException):
+            dsr.reserve_memory_region(10, 212345, "different_name")
+
+    def test_reserve_rounded_up(self):
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+        dsg.reserve_memory_region(10, 1234, "test_region")
+        # the 1234 is rounded up to next 4
+        core_id = db.get_core_id(0, 1, 2)
+        _, size = db.get_region_id_and_size(core_id, 10)
+        self.assertEqual(1236, size)
+
+    def test_switch_write_focus(self):
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+        dsg.reserve_memory_region(10, 123456, "test_region")
+        dsg.switch_write_focus(10)
+        core_id = db.get_core_id(0, 1, 2)
+        region_id, size = db.get_region_id_and_size(core_id, 10)
+        # check internal fields used later are correct
+        self.assertEqual(region_id, dsg._region_id)
+        self.assertEqual(123456, dsg._size)
+        # Error is switching into a region not reserved
+        with self.assertRaises(DsDatabaseException):
+            dsg.switch_write_focus(8)
+
+    def test_pointers(self):
+        db = DsSqlliteDatabase()
+
+        # You can use a reference before defining it
+        vertex1 = _TestVertexWithBinary(
+            "binary1", ExecutableType.SYSTEM)
+        dsg1 = DataSpecificationGenerator(1, 1, 1, vertex1, db)
+        dsg1.reference_memory_region(6, 2)
+        core_id1 = db.get_core_id(1, 1, 1)
+
+        vertex2 = _TestVertexWithBinary(
+            "binary2", ExecutableType.SYSTEM)
+        dsg2 = DataSpecificationGenerator(1, 1, 2, vertex2, db)
+        dsg2.reserve_memory_region(2, 100)
+        dsg2.reserve_memory_region(6, 200, reference=1)
+        dsg2.reserve_memory_region(4, 400, reference=2)
+        core_id2 = db.get_core_id(1, 1, 2)
+
+        # You can use a reference after defining it
+        vertex3 = _TestVertexWithBinary(
+            "binary1", ExecutableType.SYSTEM)
+        dsg3 = DataSpecificationGenerator(1, 1, 3, vertex3, db)
+        dsg3.reference_memory_region(11, 1)
+        # And also use a reference more than once
+        dsg3.reference_memory_region(9, 2)
+        core_id3 = db.get_core_id(1, 1, 3)
+
+        # You can use a reference before defining it
+        # So you can reference a bad region
+        vertex4 = _TestVertexWithBinary(
+            "binary4", ExecutableType.SYSTEM)
+        dsg4 = DataSpecificationGenerator(1, 1, 4, vertex4, db)
+        dsg4.reference_memory_region(8, 3, "oops")
+        core_id4 = db.get_core_id(1, 1, 4)
+
+        db.set_base_address(core_id2, 1000)
+        base_adr = db.get_base_address(core_id2)
+        self.assertEqual(1000, base_adr)
+        p_info = db.get_region_pointers(core_id2)
+        p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
+        p4 = p2 + 100
+        p6 = p4 + 400
+        self.assertEqual([(2, 1, p2, 2), (4, 3, p4, 2), (6, 2, p6, 2)], p_info)
+
+        info = list(db.get_reference_pointers(core_id1))
+        self.assertEqual([(6, p4)], info)
+
+        info = list(db.get_reference_pointers(core_id3))
+        self.assertIn((9, p4), info)
+        self.assertIn((11, p6), info)
+
+        # GIGO referrence 3 never reserved
+        info = list(db.get_reference_pointers(core_id4))
+        self.assertEqual([(8, None)], info)
+
+        bad = list(db.get_unlinked_references())
+        self.assertEqual([(1, 1, 4, 8, 3, "oops")], bad)
 
 
 if __name__ == "__main__":

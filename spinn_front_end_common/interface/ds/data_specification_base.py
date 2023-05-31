@@ -116,7 +116,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
             self._report_writer.write(cmd_string)
 
-        self._region_id, self._size = self._ds_db.get_memory_region(
+        self._region_id, self._size = self._ds_db.get_region_id_and_size(
             self._core_id, region)
         self._region_num = region
         if self._size <= 0:

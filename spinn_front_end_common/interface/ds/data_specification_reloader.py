@@ -46,7 +46,7 @@ class DataSpecificationReloader(DataSpecificationBase):
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, reference=None):
-        _, original_size = self._ds_db.get_memory_region(
+        _, original_size = self._ds_db.get_region_id_and_size(
             self._core_id, region)
         if original_size != size:
             raise DataSpecException(

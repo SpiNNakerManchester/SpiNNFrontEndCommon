@@ -88,8 +88,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
 CREATE VIEW IF NOT EXISTS region_view AS
     SELECT region_id, x, y, processor, base_address, is_system,
            region_num, region_label, reference_num, size, pointer,
-           core_id
-    FROM core_view NATURAL JOIN region;
+           core_id, chip_id
+    FROM chip NATURAL JOIN core NATURAL JOIN region;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the data to write.
@@ -143,20 +143,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
     core_id ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS reverence_view AS
-SELECT reference_id, ref_label, x, y, processor, reference_num
-FROM reference
-JOIN core_view where reference.core_id = core_view.core_id;
+SELECT reference_id, region_num, ref_label, x, y, processor, reference_num, core_id, chip_id
+FROM reference NATURAL JOIN core NATURAL JOIN chip;
 
-CREATE VIEW IF NOT EXISTS full_reverence_view AS
-SELECT reference_id, ref_label, reverence_view.reference_num,
-       reverence_view.x as x, reverence_view.y as y, reverence_view.processor as source_p,
-       region_view.processor as target_p, region_view.size, region_label, pointer
+CREATE VIEW IF NOT EXISTS linked_reverence_view AS
+SELECT reference_id,
+       reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y, reverence_view.chip_id as chip_id,
+       reverence_view.processor as ref_p, reverence_view.core_id as ref_core_id, reverence_view.region_num as ref_region, ref_label,
+       region_view.processor as act_p, region_view.region_num as act_region, region_label,
+       region_view.size,  pointer
 FROM reverence_view LEFT JOIN region_view
-ON reverence_view.reference_num = region_view.reference_num;
-
-CREATE VIEW IF NOT EXISTS broken_reverence_view AS
-SELECT * FROM full_reverence_view
-WHERE size IS NULL;
+ON reverence_view.reference_num = region_view.reference_num
+       AND reverence_view.chip_id = region_view.chip_id;
 
 CREATE VIEW IF NOT EXISTS non_local_reverence_view AS
 SELECT *
