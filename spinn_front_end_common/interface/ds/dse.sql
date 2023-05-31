@@ -31,34 +31,33 @@ CREATE TABLE IF NOT EXISTS ethernet(
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the chips and their ethernet.
 CREATE TABlE IF NOT EXISTS chip(
-    chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL,
+    PRIMARY KEY (x, y),
     FOREIGN KEY (ethernet_x, ethernet_y)
         REFERENCES ethernet(ethernet_x, ethernet_y)
     );
 
--- Every chip has a unique ID
-CREATE UNIQUE INDEX IF NOT EXISTS chipSanity ON chip(
-    x ASC, y ASC);
-
 CREATE VIEW IF NOT EXISTS chip_view AS
-    SELECT chip_id, x, y, ethernet_x, ethernet_y, ip_address
+    SELECT x, y, ethernet_x, ethernet_y, ip_address
     FROM ethernet NATURAL JOIN chip;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the cores.
 CREATE TABLE IF NOT EXISTS core(
     core_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    chip_id INTEGER NOT NULL REFERENCES chip(chip_id) ON DELETE RESTRICT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
     processor INTEGER NOT NULL,
     is_system INTEGER NOT NULL,
-    base_address INTEGER);
+    base_address INTEGER,
+    FOREIGN KEY (x, y) REFERENCES chip(x, y)
+);
 -- Every processor has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
-    chip_id ASC, processor ASC);
+    x ASC, y ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
     SELECT core_id, x, y, processor, base_address, is_system,
@@ -89,7 +88,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
 CREATE VIEW IF NOT EXISTS region_view AS
     SELECT region_id, x, y, processor, base_address, is_system,
            region_num, region_label, reference_num, size, pointer,
-           core_id, chip_id
+           core_id
     FROM chip NATURAL JOIN core NATURAL JOIN region;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,18 +143,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
     core_id ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS reverence_view AS
-SELECT reference_id, region_num, ref_label, x, y, processor, reference_num, core_id, chip_id
+SELECT reference_id, region_num, ref_label, x, y, processor, reference_num, core_id
 FROM reference NATURAL JOIN core NATURAL JOIN chip;
 
 CREATE VIEW IF NOT EXISTS linked_reverence_view AS
 SELECT reference_id,
-       reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y, reverence_view.chip_id as chip_id,
+       reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y,
        reverence_view.processor as ref_p, reverence_view.core_id as ref_core_id, reverence_view.region_num as ref_region, ref_label,
        region_view.processor as act_p, region_view.region_num as act_region, region_label,
        region_view.size,  pointer
 FROM reverence_view LEFT JOIN region_view
 ON reverence_view.reference_num = region_view.reference_num
-       AND reverence_view.chip_id = region_view.chip_id;
+    AND reverence_view.x = region_view.x
+    AND reverence_view.y = region_view.y;
 
 CREATE VIEW IF NOT EXISTS non_local_reverence_view AS
 SELECT *

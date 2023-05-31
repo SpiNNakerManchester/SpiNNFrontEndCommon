@@ -106,16 +106,16 @@ class DsSqlliteDatabase(SQLiteDB):
             Even if with the same vertex
         """
         with self.transaction() as cursor:
-            chip_id = self._get_chip_id(cursor, x, y)
+            self._set_chip(cursor, x, y)
             if vertex.get_binary_start_type() == ExecutableType.SYSTEM:
                 is_system = 1
             else:
                 is_system = 0
             cursor.execute(
                 """
-                INSERT INTO core(chip_id, processor, is_system)
-                VALUES(?, ?, ?)
-                """, (chip_id, p, is_system))
+                INSERT INTO core(x, y, processor, is_system)
+                VALUES(?, ?, ?, ?)
+                """, (x, y, p, is_system))
             return cursor.lastrowid
 
     def get_core_id(self, x, y, p):
@@ -168,26 +168,26 @@ class DsSqlliteDatabase(SQLiteDB):
                      row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
-    def _get_chip_id(self, cursor, x, y):
+    def _set_chip(self, cursor, x, y):
         """
         :param ~sqlite3.Cursor cursor:
         :param int x:
         :param int y:
-        :rtype: int
         """
-        for row in cursor.execute(
+        # skip if it already exists
+        for _ in cursor.execute(
                 """
-                SELECT chip_id FROM chip
+                SELECT x
+                FROM chip
                 WHERE x = ? AND y = ?
                 LIMIT 1
                 """, (x, y)):
-            return row["chip_id"]
+            return
         chip = FecDataView().get_chip_at(x, y)
         cursor.execute(
             """
             INSERT INTO chip(x, y, ethernet_x, ethernet_y) VALUES(?, ?, ?, ?)
             """, (x, y, chip.nearest_ethernet_x, chip.nearest_ethernet_y))
-        return cursor.lastrowid
 
     def set_memory_region(
             self, core_id, region_num, size, reference, label):

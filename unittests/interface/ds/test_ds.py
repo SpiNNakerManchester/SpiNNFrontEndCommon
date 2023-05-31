@@ -114,7 +114,7 @@ class TestDataSpecification(unittest.TestCase):
         db = DsSqlliteDatabase()
         vertex = _TestVertexWithBinary(
             "bad", ExecutableType.SYSTEM)
-        with self.assertRaises(DsDatabaseException):
+        with self.assertRaises(IntegrityError):
             DataSpecificationGenerator(10, 10, 2, vertex, db)
 
     def test_reserve_memory_region(self):
