@@ -47,51 +47,48 @@ CREATE VIEW IF NOT EXISTS chip_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the cores.
 CREATE TABLE IF NOT EXISTS core(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    processor INTEGER NOT NULL,
+    p INTEGER NOT NULL,
     is_system INTEGER NOT NULL,
     base_address INTEGER,
+    PRIMARY KEY (x, y, p),
     FOREIGN KEY (x, y) REFERENCES chip(x, y)
 );
--- Every processor has a unique ID
-CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
-    x ASC, y ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-    SELECT core_id, x, y, processor, base_address, is_system,
+    SELECT x, y, p, base_address, is_system,
            ethernet_x, ethernet_y, ip_address
     FROM core NATURAL JOIN chip_view;
 
 CREATE VIEW IF NOT EXISTS core_memory_view AS
-    SELECT core_id, sum(size) as regions_size, sum(size) + 392 as memory_used
+    SELECT x, y, p, sum(size) as regions_size, sum(size) + 392 as memory_used
 	FROM region
-	GROUP BY core_id;
+	GROUP BY x, y, p;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the regions.
 CREATE TABLE IF NOT EXISTS region(
     region_id INTEGER PRIMARY KEY,
     region_num INTEGER NOT NULL,
-    core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
     reference_num INTEGER,
     content BLOB,
     content_debug TEXT,
     size INT NOT NULL,
     pointer INTEGER,
-    region_label TEXT);
+    region_label TEXT,
+    FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
 -- Every region has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS region_sanity ON region(
-   core_id ASC, region_num ASC);
-CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
-    reference_num ASC);
+   x ASC, y ASC, p ASC, region_num ASC);
 
 CREATE VIEW IF NOT EXISTS region_view AS
-    SELECT region_id, x, y, processor, base_address, is_system,
-           region_num, region_label, reference_num, content, content_debug, length(content) as content_size, size, pointer,
-           core_id
+    SELECT region_id, x, y, p, base_address, is_system,
+           region_num, region_label, reference_num, content, content_debug, length(content) as content_size, size, pointer
     FROM chip NATURAL JOIN core NATURAL JOIN region;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,23 +97,27 @@ CREATE TABLE IF NOT EXISTS reference (
     reference_id INTEGER PRIMARY KEY,
     reference_num INTEGER NOT NULL,
     region_num INTEGER NOT NULL,
-    core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
-    ref_label TEXT);
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    ref_label TEXT,
+    FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
+
 -- -- Every reference os unique per core
 CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
-    core_id ASC, region_num ASC);
+    x ASC, Y ASC, p ASC, region_num ASC);
 CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
-    core_id ASC, reference_num ASC);
+    x ASC, Y ASC, p ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS reverence_view AS
-SELECT reference_id, region_num, ref_label, x, y, processor, reference_num, core_id
+SELECT reference_id, region_num, ref_label, x, y, p, reference_num
 FROM reference NATURAL JOIN core NATURAL JOIN chip;
 
 CREATE VIEW IF NOT EXISTS linked_reverence_view AS
 SELECT reference_id,
        reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y,
-       reverence_view.processor as ref_p, reverence_view.core_id as ref_core_id, reverence_view.region_num as ref_region, ref_label,
-       region_view.processor as act_p, region_view.region_num as act_region, region_label,
+       reverence_view.p as ref_p, reverence_view.region_num as ref_region, ref_label,
+       region_view.p as act_p, region_view.region_num as act_region, region_label,
        region_view.size,  pointer
 FROM reverence_view LEFT JOIN region_view
 ON reverence_view.reference_num = region_view.reference_num

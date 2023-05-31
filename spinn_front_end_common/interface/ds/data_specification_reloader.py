@@ -40,14 +40,14 @@ class DataSpecificationReloader(DataSpecificationBase):
         :raises DsDatabaseException:
             If there is no core, x, y, p in the database
         """
-        super().__init__(ds_db, report_writer)
-        self._core_id = ds_db.get_core_id(x, y, p)
+        super().__init__(x, y, p, ds_db, report_writer)
+
 
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, reference=None):
         _, original_size = self._ds_db.get_region_id_and_size(
-            self._core_id, region)
+            self._x, self._y, self._p, region)
         if original_size != size:
             raise DataSpecException(
                 f"Size changed form original {original_size} to {size}")

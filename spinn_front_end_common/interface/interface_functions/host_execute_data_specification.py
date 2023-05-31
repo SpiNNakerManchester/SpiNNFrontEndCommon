@@ -157,26 +157,26 @@ class _HostExecuteDataSpecification(object):
             "Executing data specifications and loading data for "
             f"{type_str} vertices")
 
-        for core_id, x, y, p, _, _ in progress.over(
+        for x, y, p, _, _ in progress.over(
                 core_infos, finish_at_end=False):
-            total_size = dsg_targets.get_xyp_totalsize(core_id)
+            total_size = dsg_targets.get_xyp_totalsize(x, y, p)
             malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
             base_address = self.__malloc_region_storage(x, y, p, malloc_size)
-            dsg_targets.set_base_address(core_id, base_address)
+            dsg_targets.set_base_address(x, y, p, base_address)
 
-        for core_id, x, y, _, eth_x, eth_y in progress.over(core_infos):
+        for x, y, _, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
                 gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
                 writer = gatherer.send_data_into_spinnaker
-            self.__python_load_core(dsg_targets, core_id, x, y, writer)
+            self.__python_load_core(dsg_targets, x, y, p, writer)
 
         if uses_advanced_monitors:
             self.__reset_router_timeouts()
 
-    def __python_load_core(self, dsg_targets, core_id, x, y, writer):
+    def __python_load_core(self, dsg_targets, x, y, p, writer):
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
-        region_pointers = dsg_targets.get_region_pointers(core_id)
+        region_pointers = dsg_targets.get_region_pointers(x, y, p)
         for region_num, region_id, pointer, p in region_pointers:
             pointer_table[region_num]["pointer"] = pointer
 
@@ -193,11 +193,10 @@ class _HostExecuteDataSpecification(object):
             pointer_table[region_num]["checksum"] = \
                 int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
 
-        for region_num, pointer in dsg_targets.get_reference_pointers(
-                core_id):
+        for region_num, pointer in dsg_targets.get_reference_pointers(x, y, p):
             pointer_table[region_num]["pointer"] = pointer
 
-        base_address = dsg_targets.get_base_address(core_id)
+        base_address = dsg_targets.get_base_address(x, y, p)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
 
         to_write = numpy.concatenate(

@@ -25,7 +25,9 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     """
 
     __slots__ = [
-        "_core_id",
+        "_x",
+        "_y",
+        "_p",
         "_data",
         "_data_debug",
         "_ds_db",
@@ -35,7 +37,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_size"
     ]
 
-    def __init__(self, ds_db, report_writer=None):
+    def __init__(self, x, y, p, ds_db, report_writer=None):
         """
         :type  ds_db:
             ~spinn_front_end_common.interface.ds.DataSpecificationGenerator
@@ -44,9 +46,11 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             written and, if so, where. No report is written if this is `None`.
         :type report_writer: ~io.TextIOBase or None
         """
+        self._x = x
+        self._y = y
+        self._p = p
         self._ds_db = ds_db
         self._report_writer = report_writer
-        self._core_id = None  # to be set by subclass
         self._region_id = None
         self._data = None
         self._data_debug = None
@@ -115,7 +119,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             self._report_writer.write(cmd_string)
 
         self._region_id, self._size = self._ds_db.get_region_id_and_size(
-            self._core_id, region)
+            self._x, self._y, self._p, region)
         self._region_num = region
         if self._size <= 0:
             raise DataSpecException(f"No size set for region {region}")

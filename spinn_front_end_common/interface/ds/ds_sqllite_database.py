@@ -82,16 +82,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     (ethernet.x, ethernet.y, ethernet.ip_address)
                     for ethernet in eth_chips))
 
-    def set_core_id(self, x, y, p, vertex):
+    def set_core(self, x, y, p, vertex):
         """
         Creates a database record for the core with this x,y,z
 
-        :param int x:
-            X coordinate of the core that `spec_bytes` applies to
-        :param int y:
-            Y coordinate of the core that `spec_bytes` applies to
-        :param int p: Processor ID of the core that `spec_bytes` applies to
-        :vertex:
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :param vertex: Vertex to check if it is a system vertex.
             if missing this method will not create a new record
         :type vertex:
@@ -113,34 +110,9 @@ class DsSqlliteDatabase(SQLiteDB):
                 is_system = 0
             cursor.execute(
                 """
-                INSERT INTO core(x, y, processor, is_system)
+                INSERT INTO core(x, y, p, is_system)
                 VALUES(?, ?, ?, ?)
                 """, (x, y, p, is_system))
-            return cursor.lastrowid
-
-    def get_core_id(self, x, y, p):
-        """
-        Gets the database core_id for the core with this x,y,z
-
-        :param int x:
-            X coordinate of the core that `spec_bytes` applies to
-        :param int y:
-            Y coordinate of the core that `spec_bytes` applies to
-        :param int p: Processor ID of the core that `spec_bytes` applies to
-        :rtype: int
-        :raises DsDatabaseException:
-            If there is no core, x, y, p in the database
-        """
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT core_id
-                    FROM core_view
-                    WHERE x = ? AND y = ? AND processor = ?
-                    LIMIT 1
-                    """, (x, y, p)):
-                return row["core_id"]
-        raise DsDatabaseException(f"No Core {x=} {y=} {p=}")
 
     def get_core_infos(self, is_system):
         """
@@ -158,13 +130,13 @@ class DsSqlliteDatabase(SQLiteDB):
             core_infos = []
             for row in cursor.execute(
                     """
-                    SELECT core_id, x, y, processor, ethernet_x, ethernet_y
+                    SELECT x, y, p, ethernet_x, ethernet_y
                     FROM core_view
                     WHERE is_system = ?
-                    ORDER BY core_id
+                    ORDER BY x, y, p
                      """, (is_system,)):
                 core_infos.append(
-                    (row["core_id"], row["x"], row["y"], row["processor"],
+                    (row["x"], row["y"], row["p"],
                      row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
@@ -190,13 +162,15 @@ class DsSqlliteDatabase(SQLiteDB):
             """, (x, y, chip.nearest_ethernet_x, chip.nearest_ethernet_y))
 
     def set_memory_region(
-            self, core_id, region_num, size, reference, label):
+            self, x, y, p, region_num, size, reference, label):
         """
         Writes the information to reserve a memory region into the database
 
         Typically called after a DS.reserve_memory_region call
 
-        :param int core_id: The database id for the core to reserve on
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core t
         :param int region: The DS number of the region to reserve
         :param int size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
@@ -210,16 +184,18 @@ class DsSqlliteDatabase(SQLiteDB):
             cursor.execute(
                 """
                 INSERT INTO region(
-                    core_id, region_num, size, reference_num, region_label)
-                VALUES(?, ?, ?, ?, ?)
-                """, (core_id, region_num, size, reference, label))
+                    x, y, p, region_num, size, reference_num, region_label)
+                VALUES(?, ?, ?, ?, ?, ?, ?)
+                """, (x, y, p, region_num, size, reference, label))
             return cursor.lastrowid
 
-    def get_region_id_and_size(self, core_id, region_num):
+    def get_region_id_and_size(self, x, y, p, region_num):
         """
-        Gets the database id and size for a region with this core_id
+        Gets the database id and size for a region with this x, y, p and num
 
-        :param int core_id: The id the database has for this core
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :param region_num: The DS region number
         :return: The database id for this region and the size in bytes
         :rtype: int, int
@@ -228,17 +204,19 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT region_id, size FROM region
-                    WHERE core_id = ? AND region_num = ?
+                    WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                     LIMIT 1
-                    """, (core_id, region_num)):
+                    """, (x, y, p, region_num)):
                 return row["region_id"], row["size"]
         raise DsDatabaseException(f"Region {region_num} not set")
 
-    def set_reference(self, core_id, region_num, reference, ref_label):
+    def set_reference(self, x, y, p, region_num, reference, ref_label):
         """
         Writes a outgoing region_reference into the database
 
-        :param int core_id: The id the database has for this core
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :param region_num: The DS region number
         :param int reference: DS number of the reference on this core
         :param ref_label: label for the refrencing region
@@ -248,15 +226,17 @@ class DsSqlliteDatabase(SQLiteDB):
             cursor.execute(
                 """
                 INSERT INTO reference(
-                    core_id, region_num, reference_num, ref_label)
-                VALUES(?, ?, ?, ?)
-                """, (core_id, region_num, reference, ref_label))
+                    x, y, p, region_num, reference_num, ref_label)
+                VALUES(?, ?, ?, ?, ?, ?)
+                """, (x, y, p, region_num, reference, ref_label))
 
-    def get_reference_pointers(self, core_id):
+    def get_reference_pointers(self, x, y, p):
         """
         Yeilds the reference regions and where they point for this core
 
-        :param int core_id: The id the database has for this core
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :return: Yields the refercing vertext region number and the pointer
         :rtype: iterable(tuple(int,int))
         """
@@ -265,8 +245,8 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT ref_region, pointer
                     FROM linked_reverence_view
-                    WHERE ref_core_id = ?
-                    """, (core_id,)):
+                    WHERE x = ? AND y = ? AND ref_p = ?
+                    """, (x, y, p)):
                 yield row["ref_region"], row["pointer"]
 
     def get_unlinked_references(self):
@@ -331,7 +311,7 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT region_num, size FROM region_view
-                    WHERE x = ? AND y = ? AND processor = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                     """, (core_x, core_y, core_p)):
                 regions[row["region_num"]] = row["size"]
@@ -342,16 +322,18 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT sum(size) as total FROM region_view
-                    WHERE x = ? AND y = ? AND processor = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (core_x, core_y, core_p)):
                 return row["total"]
 
-    def set_base_address(self, core_id, base_address):
+    def set_base_address(self, x, y, p, base_address):
         """
         Sets the base address for a core and calculates pointers
 
-        :param int core_id: The id the database has for this core
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :param int base_address: The base address for the whole core
         """
         pointer = (base_address + APP_PTR_TABLE_BYTE_SIZE)
@@ -361,16 +343,16 @@ class DsSqlliteDatabase(SQLiteDB):
                 """
                 UPDATE core SET
                     base_address = ?
-                WHERE core_id = ?
-                """, (base_address, core_id))
+                WHERE x = ? AND y = ? AND p = ?
+                """, (base_address, x, y, p))
 
             for row in cursor.execute(
                     """
                     SELECT region_id, size
                     FROM region
-                    WHERE core_id = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
-                    """, (core_id,)):
+                    """, (x, y, p,)):
                 to_update.append((pointer, row["region_id"]))
                 pointer += row["size"]
 
@@ -382,11 +364,13 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE region_id = ?
                     """, (pointer, region_id))
 
-    def get_base_address(self, core_id):
+    def get_base_address(self, x, y, p):
         """
         Gets the base_address for this core
 
-        :param int core_id: The id the database has for this core
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
         :return: The base address for the whole core
         :rtype: int
         """
@@ -395,24 +379,24 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT base_address
                     FROM core
-                    WHERE core_id = ?
+                    WHERE x = ? AND y = ? and p = ?
                     LIMIT 1
-                    """, (core_id, )):
+                    """, (x, y, p)):
                 return row["base_address"]
 
-    def get_region_pointers(self, core_id):
+    def get_region_pointers(self, x, y, p):
         pointers = []
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, region_id, pointer, processor
+                    SELECT region_num, region_id, pointer, p
                     FROM region_view
-                    WHERE core_id = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
-                     """, (core_id,)):
+                     """, (x, y, p)):
                 pointers.append(
                     (row["region_num"], row["region_id"], row["pointer"],
-                     row["processor"]))
+                     row["p"]))
             return pointers
 
     def keys(self):
@@ -428,19 +412,19 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, processor FROM core_view
+                    SELECT x, y, p FROM core_view
                     """):
-                yield (row["x"], row["y"], row["processor"])
+                yield (row["x"], row["y"], row["p"])
 
-    def get_xyp_totalsize(self, core_id):
+    def get_xyp_totalsize(self, x, y, p):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT sum(size) as total_size
                     FROM region_view
-                    WHERE core_id = ?
+                    WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
-                    """, (core_id,)):
+                    """, (x, y, p,)):
                 return row["total_size"]
 
     def ds_n_cores(self):
@@ -475,17 +459,17 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT
-                        x, y, processor,
+                        x, y, p,
                         base_address, sum(size) as memory_used, 
                         sum(content_size) as content_size
                     FROM region_view
-                    GROUP BY x, y, processor
+                    GROUP BY x, y, p
                     """):
                 if row["content_size"]:
                     content_size = row["content_size"]
                 else:
                     content_size = 0
-                yield ((row["x"], row["y"], row["processor"]),
+                yield ((row["x"], row["y"], row["p"]),
                        row["base_address"],
                        row["memory_used"] + APP_PTR_TABLE_BYTE_SIZE,
                        content_size + APP_PTR_TABLE_BYTE_SIZE)
@@ -511,8 +495,8 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT
-                        x, y, processor, region_num, size, data_size
+                        x, y, p, region_num, size, data_size
                     FROM write_too_big
                     """):
-                yield (row["x"], row["y"], row["processor"],
+                yield (row["x"], row["y"], row["p"],
                        row["region_num"], row["size"], row["data_size"])
