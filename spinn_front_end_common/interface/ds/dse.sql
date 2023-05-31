@@ -69,7 +69,6 @@ CREATE VIEW IF NOT EXISTS core_memory_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the regions.
 CREATE TABLE IF NOT EXISTS region(
-    region_id INTEGER PRIMARY KEY,
     region_num INTEGER NOT NULL,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
@@ -80,15 +79,13 @@ CREATE TABLE IF NOT EXISTS region(
     size INT NOT NULL,
     pointer INTEGER,
     region_label TEXT,
+    PRIMARY KEY (x, y, p, region_num),
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
--- Every region has a unique ID
-CREATE UNIQUE INDEX IF NOT EXISTS region_sanity ON region(
-   x ASC, y ASC, p ASC, region_num ASC);
-
 CREATE VIEW IF NOT EXISTS region_view AS
-    SELECT region_id, x, y, p, base_address, is_system,
-           region_num, region_label, reference_num, content, content_debug, length(content) as content_size, size, pointer
+    SELECT x, y, p, base_address, is_system,
+           region_num, region_label, reference_num, content, content_debug,
+           length(content) as content_size, size, pointer
     FROM chip NATURAL JOIN core NATURAL JOIN region;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

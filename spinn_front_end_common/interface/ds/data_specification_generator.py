@@ -89,7 +89,8 @@ class DataSpecificationGenerator(DataSpecificationBase):
             self._check_write_block()
 
             self._ds_db.set_write_data(
-                self._region_id, self._data, self._data_debug)
+                self._x, self._y, self._p, self._region_num,
+                self._data, self._data_debug)
 
         self._data = bytearray()
         self._data_debug = ""

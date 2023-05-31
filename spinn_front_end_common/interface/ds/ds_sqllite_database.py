@@ -189,25 +189,26 @@ class DsSqlliteDatabase(SQLiteDB):
                 """, (x, y, p, region_num, size, reference, label))
             return cursor.lastrowid
 
-    def get_region_id_and_size(self, x, y, p, region_num):
+    def get_region_size(self, x, y, p, region_num):
         """
-        Gets the database id and size for a region with this x, y, p and num
+        Gets the size for a region with this x, y, p and num
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
         :param region_num: The DS region number
         :return: The database id for this region and the size in bytes
-        :rtype: int, int
+        :rtype: int
         """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_id, size FROM region
+                    SELECT size
+                    FROM region
                     WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                     LIMIT 1
                     """, (x, y, p, region_num)):
-                return row["region_id"], row["size"]
+                return row["size"]
         raise DsDatabaseException(f"Region {region_num} not set")
 
     def set_reference(self, x, y, p, region_num, reference, ref_label):
@@ -269,41 +270,41 @@ class DsSqlliteDatabase(SQLiteDB):
                        row["reference_num"], str(row["ref_label"], "utf8"))
 
 
-    def set_write_data(self, region_id, write_data, data_debug):
+    def set_write_data(self, x, y, p, region_num, write_data, data_debug):
         with self.transaction() as cursor:
             cursor.execute(
                 """
                 UPDATE region
                 SET content = ?, content_debug = ?
-                WHERE region_id = ?
-                """, (write_data, data_debug, region_id))
+                WHERE x = ? AND y = ? and p = ? and region_num = ?
+                """, (write_data, data_debug, x, y, p, region_num))
             if cursor.rowcount == 1:
                 return
             pop = 1/0
 
-    def get_write_data(self, region_id):
+    def get_write_data(self, x, y, p, region_num):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT content
                     FROM region
-                    WHERE region_id = ?
-                    """, (region_id,)):
+                    WHERE x = ? AND y = ? AND p = ? and region_num = ?
+                    """, (x, y, p, region_num)):
                 if row["content"]:
                     return bytearray(row["content"])
                 return None
-        raise DsDatabaseException(f"No data for {region_id}")
+        raise DsDatabaseException(f"No data for {x=} {y=} {p=} {region_num=}")
 
-    def get_region_info(self, region_id):
+    def get_region_pointer(self, x, y, p, region_num):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, pointer
-                    FROM region_view
-                    WHERE region_id = ?
+                    SELECT pointer
+                    FROM region
+                    WHERE x = ? AND y = ? AND p = ? AND region_num = ?
                     LIMIT 1
-                    """, (region_id, )):
-                return row["x"], row["y"], row["pointer"]
+                    """, (x, y, p, region_num)):
+                return row["pointer"]
 
     def get_region_sizes(self, core_x, core_y, core_p):
         regions = dict()
@@ -348,21 +349,21 @@ class DsSqlliteDatabase(SQLiteDB):
 
             for row in cursor.execute(
                     """
-                    SELECT region_id, size
+                    SELECT region_num, size
                     FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                     """, (x, y, p,)):
-                to_update.append((pointer, row["region_id"]))
+                to_update.append((pointer, row["region_num"]))
                 pointer += row["size"]
 
-            for pointer, region_id in to_update:
+            for pointer, region_num in to_update:
                 cursor.execute(
                     """
                     UPDATE region
                     SET pointer = ?
-                    WHERE region_id = ?
-                    """, (pointer, region_id))
+                    WHERE x = ? AND y = ? and p = ? and region_num = ?
+                    """, (pointer, x, y, p, region_num))
 
     def get_base_address(self, x, y, p):
         """
@@ -389,14 +390,13 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, region_id, pointer, p
+                    SELECT region_num, pointer
                     FROM region_view
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                      """, (x, y, p)):
                 pointers.append(
-                    (row["region_num"], row["region_id"], row["pointer"],
-                     row["p"]))
+                    (row["region_num"], row["pointer"]))
             return pointers
 
     def keys(self):

@@ -46,7 +46,7 @@ class DataSpecificationReloader(DataSpecificationBase):
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, reference=None):
-        _, original_size = self._ds_db.get_region_id_and_size(
+        original_size = self._ds_db.get_region_size(
             self._x, self._y, self._p, region)
         if original_size != size:
             raise DataSpecException(
@@ -63,13 +63,13 @@ class DataSpecificationReloader(DataSpecificationBase):
     def _end_write_block(self):
         if self._data is not None and len(self._data) > 0:
 
-            x, y, pointer = self._ds_db.get_region_info(self._region_id)
+            pointer = self._ds_db.get_region_pointer(
+                self._x, self._y, self._p, self._region_num)
 
-            # Safety check if in debug mode
             self._check_write_block()
 
             FecDataView.write_memory(
-                x, y, pointer, self._data)
+                self._x, self._y, pointer, self._data)
 
         self._data = bytearray()
         self._data_debug = ""

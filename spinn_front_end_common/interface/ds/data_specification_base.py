@@ -32,7 +32,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_data_debug",
         "_ds_db",
         "_report_writer",
-        "_region_id",
         "_region_num",
         "_size"
     ]
@@ -51,7 +50,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._p = p
         self._ds_db = ds_db
         self._report_writer = report_writer
-        self._region_id = None
         self._data = None
         self._data_debug = None
         self._region_num = None
@@ -118,7 +116,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             cmd_string = f"SWITCH_FOCUS memRegion = {region:d}\n"
             self._report_writer.write(cmd_string)
 
-        self._region_id, self._size = self._ds_db.get_region_id_and_size(
+        self._size = self._ds_db.get_region_size(
             self._x, self._y, self._p, region)
         self._region_num = region
         if self._size <= 0:
@@ -207,7 +205,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
         if self._report_writer is not None:
             cmd_string = f"loading {length} bytes " \
-                         f"into region {self._region_id} " \
+                         f"into region {self._region_num} " \
                          f"of size {self._size}\n"
             self._report_writer.write(cmd_string)
 
