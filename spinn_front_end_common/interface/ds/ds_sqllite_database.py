@@ -168,11 +168,11 @@ class DsSqlliteDatabase(SQLiteDB):
                      row["ethernet_x"], row["ethernet_y"]))
         return core_infos
 
-    def _get_chip_id(self, cursor, core_x, core_y):
+    def _get_chip_id(self, cursor, x, y):
         """
         :param ~sqlite3.Cursor cursor:
-        :param int core_x:
-        :param int core_y:
+        :param int x:
+        :param int y:
         :rtype: int
         """
         for row in cursor.execute(
@@ -180,28 +180,14 @@ class DsSqlliteDatabase(SQLiteDB):
                 SELECT chip_id FROM chip
                 WHERE x = ? AND y = ?
                 LIMIT 1
-                """, (core_x, core_y)):
+                """, (x, y)):
             return row["chip_id"]
-        ethernet_id = self._get_ethernet_id(cursor, core_x, core_y)
+        chip = FecDataView().get_chip_at(x, y)
         cursor.execute(
             """
-            INSERT INTO chip(x, y, ethernet_id) VALUES(?, ?, ?)
-            """, (core_x, core_y, ethernet_id))
+            INSERT INTO chip(x, y, ethernet_x, ethernet_y) VALUES(?, ?, ?, ?)
+            """, (x, y, chip.nearest_ethernet_x, chip.nearest_ethernet_y))
         return cursor.lastrowid
-
-    def _get_ethernet_id(self, cursor, x, y):
-        chip = FecDataView().get_chip_at(x, y)
-        for row in cursor.execute(
-                """
-                SELECT ethernet_id FROM ethernet
-                WHERE ethernet_x = ? AND ethernet_y = ?
-                LIMIT 1
-                """, (chip.nearest_ethernet_x, chip.nearest_ethernet_y)):
-            return row["ethernet_id"]
-        raise DsDatabaseException(
-            f"No Ethernet at "
-            f"{chip.nearest_ethernet_x} {chip.nearest_ethernet_y} "
-            f"for chip {x} {y}")
 
     def set_memory_region(
             self, core_id, region_num, size, reference, label):

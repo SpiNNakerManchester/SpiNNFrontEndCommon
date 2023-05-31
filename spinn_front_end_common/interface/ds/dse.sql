@@ -18,17 +18,15 @@
 
 -- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
+PRAGMA foreign_keys = ON;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the ethernets.
 CREATE TABLE IF NOT EXISTS ethernet(
-    ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL,
-    ip_address TEXT UNIQUE NOT NULL);
--- Every ethernet has a unique chip location in virtual space.
-CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
-    ethernet_x ASC, ethernet_y ASC);
+    ip_address TEXT UNIQUE NOT NULL,
+    PRIMARY KEY (ethernet_x, ethernet_y));
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the chips and their ethernet.
@@ -36,9 +34,12 @@ CREATE TABlE IF NOT EXISTS chip(
     chip_id INTEGER PRIMARY KEY AUTOINCREMENT,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    ethernet_id INTEGER NOT NULL
-        REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT
-);
+    ethernet_x INTEGER NOT NULL,
+    ethernet_y INTEGER NOT NULL,
+    FOREIGN KEY (ethernet_x, ethernet_y)
+        REFERENCES ethernet(ethernet_x, ethernet_y)
+    );
+
 -- Every chip has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS chipSanity ON chip(
     x ASC, y ASC);
