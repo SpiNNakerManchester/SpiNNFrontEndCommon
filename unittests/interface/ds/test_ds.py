@@ -225,6 +225,36 @@ class TestDataSpecification(unittest.TestCase):
         bad = list(db.get_unlinked_references())
         self.assertEqual([(1, 1, 4, 8, 3, "oops")], bad)
 
+    def test_write(self):
+        db = DsSqlliteDatabase()
+
+        # You can use a reference before defining it
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
+        dsg.reserve_memory_region(5, 100, "unused")
+        dsg.reserve_memory_region(10, 123456, "test_region")
+        dsg.switch_write_focus(10)
+        dsg.write_value(12)
+        dsg.write_array([34, 56])
+        dsg.end_specification()
+
+        dsg = DataSpecificationGenerator(0, 1, 3, vertex, db)
+        dsg.reserve_memory_region(7, 444, "unused")
+
+        core_id = db.get_core_id(0, 1, 2)
+        region_id, size = db.get_region_id_and_size(core_id, 10)
+        content = db.get_write_data(region_id)
+        self.assertEqual(3 * 4, len(content))
+        self.assertEqual(
+            bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'), content)
+
+        info = list(db.info_iteritems())
+        size2 = APP_PTR_TABLE_BYTE_SIZE + 100 + 123456
+        size3 = APP_PTR_TABLE_BYTE_SIZE + 444
+        self.assertIn(((0, 1, 2), None, size2, 404), info)
+        self.assertIn(((0, 1, 3), None, size3, APP_PTR_TABLE_BYTE_SIZE), info)
+
 
 if __name__ == "__main__":
     unittest.main()

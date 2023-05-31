@@ -69,8 +69,7 @@ class DataSpecificationReloader(DataSpecificationBase):
             self._check_write_block()
 
             FecDataView.write_memory(
-                x, y, pointer + self._offset, self._data)
+                x, y, pointer, self._data)
 
         self._data = bytearray()
         self._data_debug = ""
-        self._offset = 0

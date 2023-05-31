@@ -289,36 +289,30 @@ class DsSqlliteDatabase(SQLiteDB):
                        row["reference_num"], str(row["ref_label"], "utf8"))
 
 
-    def set_write_data(self, region_id, offset, write_data, data_debug):
+    def set_write_data(self, region_id, write_data, data_debug):
         with self.transaction() as cursor:
             cursor.execute(
                 """
-                INSERT INTO write(
-                    region_id, offset, write_data, data_debug)
-                VALUES(?, ?, ?, ?)
-                """, (region_id, offset, write_data, data_debug))
-            return cursor.lastrowid
+                UPDATE region
+                SET content = ?, content_debug = ?
+                WHERE region_id = ?
+                """, (write_data, data_debug, region_id))
+            if cursor.rowcount == 1:
+                return
+            pop = 1/0
 
     def get_write_data(self, region_id):
-        data = None
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT offset, write_data
-                    FROM write
+                    SELECT content
+                    FROM region
                     WHERE region_id = ?
-                    ORDER BY offset
                     """, (region_id,)):
-                if data is None:
-                    data = bytearray()
-                offset = row["offset"]
-                if offset < len(data):
-                    raise DsDatabaseException("Offset to low")
-                if offset > len(data):
-                    data += bytearray(offset - len(data))
-                data += bytearray(row["write_data"])
-
-        return data
+                if row["content"]:
+                    return bytearray(row["content"])
+                return None
+        raise DsDatabaseException(f"No data for {region_id}")
 
     def get_region_info(self, region_id):
         with self.transaction() as cursor:
@@ -482,12 +476,19 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT
                         x, y, processor,
-                        base_address, memory_used, memory_written
-                    FROM core_info
+                        base_address, sum(size) as memory_used, 
+                        sum(content_size) as content_size
+                    FROM region_view
+                    GROUP BY x, y, processor
                     """):
+                if row["content_size"]:
+                    content_size = row["content_size"]
+                else:
+                    content_size = 0
                 yield ((row["x"], row["y"], row["processor"]),
-                       row["base_address"], row["memory_used"],
-                       row["memory_written"])
+                       row["base_address"],
+                       row["memory_used"] + APP_PTR_TABLE_BYTE_SIZE,
+                       content_size + APP_PTR_TABLE_BYTE_SIZE)
 
     def write_session_credentials_to_db(self):
         """

@@ -29,7 +29,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_data",
         "_data_debug",
         "_ds_db",
-        "_offset",
         "_report_writer",
         "_region_id",
         "_region_num",
@@ -51,7 +50,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._region_id = None
         self._data = None
         self._data_debug = None
-        self._offset = None
         self._region_num = None
         self._size = None
 
@@ -200,21 +198,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._data += encoded
         self._data_debug += f"{array_values}:Array "
 
-    def set_write_pointer(self, offset):
-        """
-        Insert command to set the position of the write pointer within the
-        current region.
-
-        :param int offset:
-            The offset in the region to move the region pointer to
-        :raise NoRegionSelectedException: If no region has been selected
-        """
-        self._end_write_block()
-        if offset % 4 != 0:
-            raise NotImplementedError(
-                f"Unexpected offset of {offset} which is not a multiple of 4")
-        self._offset = offset
-
     def _check_write_block(self):
         length = len(self._data)
 
@@ -227,10 +210,6 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         if self._size < length:
             raise DataSpecException(
                 f"Region size is {self._size} "
-                f"so unable to write {length} bytes")
-        if self._size - self._offset < length:
-            raise DataSpecException(
-                f"Region size is {self._size} Offset is {self._offset} "
                 f"so unable to write {length} bytes")
         if length % 4 != 0:
             raise NotImplementedError(

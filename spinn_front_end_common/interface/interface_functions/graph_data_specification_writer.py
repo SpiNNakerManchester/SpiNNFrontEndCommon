@@ -172,7 +172,4 @@ class _GraphDataSpecificationWriter(object):
             f" their usage on that chip is as follows:\n{memory_usage}")
 
     def _run_check_qureies(self, ds_db):
-        for x, y, p, region, region_size, data_size in ds_db.get_too_big():
-            raise DataSpecException(
-                f"Data for region {region} on {x}:{y}, {p} is {data_size} "
-                f"while only {region_size} was reserved")
+        pass

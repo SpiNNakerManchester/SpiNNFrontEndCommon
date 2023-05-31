@@ -76,9 +76,12 @@ CREATE TABLE IF NOT EXISTS region(
     region_num INTEGER NOT NULL,
     core_id INTEGER NOT NULL REFERENCES core(core_id) ON DELETE RESTRICT,
     reference_num INTEGER,
+    content BLOB,
+    content_debug TEXT,
     size INT NOT NULL,
     pointer INTEGER,
     region_label TEXT);
+
 -- Every region has a unique ID
 CREATE UNIQUE INDEX IF NOT EXISTS region_sanity ON region(
    core_id ASC, region_num ASC);
@@ -87,46 +90,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS region_reference_sanity ON region(
 
 CREATE VIEW IF NOT EXISTS region_view AS
     SELECT region_id, x, y, processor, base_address, is_system,
-           region_num, region_label, reference_num, size, pointer,
+           region_num, region_label, reference_num, content, content_debug, length(content) as content_size, size, pointer,
            core_id
     FROM chip NATURAL JOIN core NATURAL JOIN region;
-
--- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the data to write.
-CREATE TABLE IF NOT EXISTS write (
-    write_id  INTEGER PRIMARY KEY,
-    region_id INTEGER NOT NULL,
-    write_data BLOB NOT NULL,
-    offset INTEGER NOT NULL,
-    data_debug TEXT);
-CREATE UNIQUE INDEX IF NOT EXISTS write_sanity ON write(
-   region_id ASC, offset ASC);
-
-CREATE VIEW IF NOT EXISTS write_view AS
-    SELECT region_id, x, y, processor, region_num, region_label, size, pointer,
-           offset, write_data, length(write_data) as data_size, data_debug,
-           core_id
-    FROM region_view NATURAL JOIN write;
-
-CREATE VIEW IF NOT EXISTS write_too_big AS
-    SELECT *
-    FROM write_view
-    WHERE length(write_data) > size;
-
-CREATE VIEW IF NOT EXISTS core_write_view AS
-    SELECT core_id, sum(length(write_data)) as region_written, sum(length(write_data)) +392 as memory_written
-    FROM region NATURAL JOIN write
-	GROUP BY core_id;
-
-CREATE VIEW IF NOT EXISTS core_info AS
-    SELECT core.core_id, x, y, processor, base_address,
-           regions_size, memory_used, region_written, memory_written
-    FROM core
-        NATURAL JOIN chip
-        LEFT JOIN core_memory_view
-            on core.core_id = core_memory_view.core_id
-        LEFT JOIN core_write_view
-            on core.core_id = core_write_view.core_id;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.
