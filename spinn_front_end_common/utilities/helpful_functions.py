@@ -15,6 +15,7 @@
 import os
 import logging
 import struct
+from typing import Optional
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState, ExecutableType
@@ -24,7 +25,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
-_n_word_structs: list[struct.Struct | None] = []
+_n_word_structs: list[Optional[struct.Struct]] = []
 
 
 def locate_extra_monitor_mc_receiver(placement_x, placement_y):
