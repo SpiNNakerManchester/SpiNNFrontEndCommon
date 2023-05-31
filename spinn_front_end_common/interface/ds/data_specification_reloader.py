@@ -61,15 +61,14 @@ class DataSpecificationReloader(DataSpecificationBase):
             "reference_memory_region unexpected during reload")
 
     def _end_write_block(self):
-        if self._data is not None and len(self._data) > 0:
+        if self._content is not None and len(self._content) > 0:
 
             pointer = self._ds_db.get_region_pointer(
                 self._x, self._y, self._p, self._region_num)
 
             self._check_write_block()
 
-            FecDataView.write_memory(
-                self._x, self._y, pointer, self._data)
+            FecDataView.write_memory(self._x, self._y, pointer, self._content)
 
-        self._data = bytearray()
-        self._data_debug = ""
+        self._content = bytearray()
+        self._content_debug = ""

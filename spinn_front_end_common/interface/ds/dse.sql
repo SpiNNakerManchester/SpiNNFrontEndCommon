@@ -61,11 +61,6 @@ CREATE VIEW IF NOT EXISTS core_view AS
            ethernet_x, ethernet_y, ip_address
     FROM core NATURAL JOIN chip_view;
 
-CREATE VIEW IF NOT EXISTS core_memory_view AS
-    SELECT x, y, p, sum(size) as regions_size, sum(size) + 392 as memory_used
-	FROM region
-	GROUP BY x, y, p;
-
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the regions.
 CREATE TABLE IF NOT EXISTS region(
@@ -101,7 +96,7 @@ CREATE TABLE IF NOT EXISTS reference (
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
 -- -- Every reference os unique per core
-CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
+CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
     x ASC, Y ASC, p ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS reverence_view AS
@@ -117,12 +112,6 @@ FROM reverence_view LEFT JOIN region_view
 ON reverence_view.reference_num = region_view.reference_num
     AND reverence_view.x = region_view.x
     AND reverence_view.y = region_view.y;
-
-CREATE VIEW IF NOT EXISTS non_local_reverence_view AS
-SELECT *
-FROM reverence_view LEFT JOIN region_view
-ON reverence_view.reference_num = region_view.reference_num
-WHERE reverence_view.x != region_view.x OR reverence_view.y != region_view.y;
 
 CREATE TABLE IF NOT EXISTS app_id (
     app_id INTEGER NOT NULL

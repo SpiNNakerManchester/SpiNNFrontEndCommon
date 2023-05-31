@@ -28,8 +28,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_x",
         "_y",
         "_p",
-        "_data",
-        "_data_debug",
+        "_content",
+        "_content_debug",
         "_ds_db",
         "_report_writer",
         "_region_num",
@@ -50,8 +50,8 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._p = p
         self._ds_db = ds_db
         self._report_writer = report_writer
-        self._data = None
-        self._data_debug = None
+        self._content = None
+        self._content_debug = None
         self._region_num = None
         self._size = None
 
@@ -157,15 +157,15 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
             raise ValueError(
                 f"{data}:{data_type.name} as bytes was {as_bytes} "
                 f"when only {data_type.size} bytes expected")
-        if len(self._data) % 4 != 0:  # check we are at a word boundary
+        if len(self._content) % 4 != 0:  # check we are at a word boundary
             if len(as_bytes) % data_type.size != 0:
                 raise NotImplementedError(
-                    f"After {len(self._data)} bytes have been written "
+                    f"After {len(self._content)} bytes have been written "
                     f" unable to add data of type {data_type}"
                     f" without padding")
 
-        self._data += as_bytes
-        self._data_debug += f"{data}:{data_type.name} "
+        self._content += as_bytes
+        self._content_debug += f"{data}:{data_type.name} "
 
     def write_array(self, array_values, data_type=DataType.UINT32):
         """
@@ -188,20 +188,20 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
                 cmd_string += f"as {encoded}\n"
             self._report_writer.write(cmd_string)
 
-        if len(self._data) % 4 != 0:  # check we are at a word boundary
+        if len(self._content) % 4 != 0:  # check we are at a word boundary
             raise NotImplementedError(
-                f"After {len(self._data)} bytes have been written "
+                f"After {len(self._content)} bytes have been written "
                 f"which is not a multiple of 4"
                 f" write_array is not supported")
         if len(encoded) % 4 != 0:  # check we are at a word boundary
             raise NotImplementedError(
                 f"Unexpected data (as bytes) length of {len(encoded)}")
 
-        self._data += encoded
-        self._data_debug += f"{array_values}:Array "
+        self._content += encoded
+        self._content_debug += f"{array_values}:Array "
 
     def _check_write_block(self):
-        length = len(self._data)
+        length = len(self._content)
 
         if self._report_writer is not None:
             cmd_string = f"loading {length} bytes " \

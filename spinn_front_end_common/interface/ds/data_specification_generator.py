@@ -83,14 +83,14 @@ class DataSpecificationGenerator(DataSpecificationBase):
         self._ds_db.set_reference(self._x, self._y, self._p, region, ref, label)
 
     def _end_write_block(self):
-        if self._data is not None and len(self._data) > 0:
+        if self._content is not None and len(self._content) > 0:
 
             # Safety check if in debug mode
             self._check_write_block()
 
-            self._ds_db.set_write_data(
+            self._ds_db.set_region_content(
                 self._x, self._y, self._p, self._region_num,
-                self._data, self._data_debug)
+                self._content, self._content_debug)
 
-        self._data = bytearray()
-        self._data_debug = ""
+        self._content = bytearray()
+        self._content_debug = ""

@@ -270,14 +270,24 @@ class DsSqlliteDatabase(SQLiteDB):
                        row["reference_num"], str(row["ref_label"], "utf8"))
 
 
-    def set_write_data(self, x, y, p, region_num, write_data, data_debug):
+    def set_region_content(self, x, y, p, region_num, content, content_debug):
+        """
+
+        :param x:
+        :param y:
+        :param p:
+        :param region_num:
+        :param write_data:
+        :param data_debug:
+        :return:
+        """
         with self.transaction() as cursor:
             cursor.execute(
                 """
                 UPDATE region
                 SET content = ?, content_debug = ?
                 WHERE x = ? AND y = ? and p = ? and region_num = ?
-                """, (write_data, data_debug, x, y, p, region_num))
+                """, (content, content_debug, x, y, p, region_num))
             if cursor.rowcount == 1:
                 return
             pop = 1/0
