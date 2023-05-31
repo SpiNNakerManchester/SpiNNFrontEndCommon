@@ -192,11 +192,11 @@ class TestDataSpecification(unittest.TestCase):
         db.set_base_address(1, 1, 2, 1000)
         base_adr = db.get_base_address(1, 1, 2)
         self.assertEqual(1000, base_adr)
-        p_info = db.get_region_pointers(1, 1, 2)
+        p_info = list(db.get_region_pointers_and_content(1, 1, 2))
         p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
         p4 = p2 + 100
         p6 = p4 + 400
-        self.assertEqual([(2, p2), (4, p4), (6, p6)], p_info)
+        self.assertEqual([(2, p2, None), (4, p4, None), (6, p6, None)], p_info)
 
         info = list(db.get_reference_pointers(1, 1, 1))
         self.assertEqual([(6, p4)], info)
@@ -230,7 +230,7 @@ class TestDataSpecification(unittest.TestCase):
         dsg.reserve_memory_region(7, 444, "unused")
 
         size = db.get_region_size(0, 1, 2, 10)
-        content = db.get_write_data(0, 1, 2, 10)
+        content = db.get_region_context(0, 1, 2, 10)
         self.assertEqual(3 * 4, len(content))
         self.assertEqual(
             bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'), content)

@@ -176,20 +176,19 @@ class _HostExecuteDataSpecification(object):
     def __python_load_core(self, dsg_targets, x, y, p, writer):
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
-        region_pointers = dsg_targets.get_region_pointers(x, y, p)
-        for region_num, pointer in region_pointers:
+        for region_num, pointer, content in \
+                dsg_targets.get_region_pointers_and_content(x, y, p):
             pointer_table[region_num]["pointer"] = pointer
 
-            data = dsg_targets.get_write_data(x, y, p, region_num)
-            if data is None:
+            if content is None:
                 continue
 
-            writer(x, y, pointer, data)
-            n_words = len(data)
+            writer(x, y, pointer, content)
+            n_words = len(content)
             if n_words % BYTES_PER_WORD != 0:
                 n_words += BYTES_PER_WORD - n_words % BYTES_PER_WORD
             pointer_table[region_num]["n_words"] = n_words / BYTES_PER_WORD
-            n_data = numpy.array(data, dtype="uint8")
+            n_data = numpy.array(content, dtype="uint8")
             pointer_table[region_num]["checksum"] = \
                 int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
 

@@ -172,4 +172,14 @@ class _GraphDataSpecificationWriter(object):
             f" their usage on that chip is as follows:\n{memory_usage}")
 
     def _run_check_qureies(self, ds_db):
-        pass
+        msg = ""
+        for bad in ds_db.get_unlinked_references():
+            x, y, p, region, reference, label = bad
+            if label is None:
+                label = ""
+            else:
+                label = f"({label})"
+            msg = f"{msg} core {x}:{y}:{p} has a broken reference " \
+                  f"{reference}{label} from region {region} "
+        if msg != "":
+            raise DataSpecException(msg)
