@@ -134,10 +134,9 @@ def regenerate_data_spec(placement, data_dir):
             # Update the checksum and size of the region
             reg = get_region_base_address_offset(regions_base_address, i)
             byte_offset = (reg - start_region) + chk_off
-            addr = reg + chk_off
             txrx.write_memory(
-                placement.x, placement.y, addr,
-                ds_ptr_table_bytes[byte_offset:], chk_size)
+                placement.x, placement.y, reg + chk_off,
+                ds_ptr_table_bytes[byte_offset:], n_bytes=chk_size)
     vertex.set_reload_required(False)
     return True
 
