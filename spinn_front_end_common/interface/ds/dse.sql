@@ -91,28 +91,25 @@ CREATE VIEW IF NOT EXISTS region_view AS
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.
 CREATE TABLE IF NOT EXISTS reference (
-    reference_id INTEGER PRIMARY KEY,
     reference_num INTEGER NOT NULL,
     region_num INTEGER NOT NULL,
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
     p INTEGER NOT NULL,
     ref_label TEXT,
+    PRIMARY KEY (x, y, p, region_num),
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
 -- -- Every reference os unique per core
-CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
-    x ASC, Y ASC, p ASC, region_num ASC);
 CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity2 ON reference(
     x ASC, Y ASC, p ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS reverence_view AS
-SELECT reference_id, region_num, ref_label, x, y, p, reference_num
+SELECT x, y, p, region_num, reference_num, ref_label
 FROM reference NATURAL JOIN core NATURAL JOIN chip;
 
 CREATE VIEW IF NOT EXISTS linked_reverence_view AS
-SELECT reference_id,
-       reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y,
+SELECT reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y,
        reverence_view.p as ref_p, reverence_view.region_num as ref_region, ref_label,
        region_view.p as act_p, region_view.region_num as act_region, region_label,
        region_view.size,  pointer
