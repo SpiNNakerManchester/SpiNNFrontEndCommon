@@ -196,7 +196,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param region_num: The DS region number
+        :param int region_num: The DS region number
         :return: The database id for this region and the size in bytes
         :rtype: int
         """
@@ -218,7 +218,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param region_num: The DS region number
+        :param int region_num: The DS region number
         :param int reference: DS number of the reference on this core
         :param ref_label: label for the refrencing region
         :type ref_label: str or None
@@ -235,6 +235,12 @@ class DsSqlliteDatabase(SQLiteDB):
         """
         Yeilds the reference regions and where they point for this core
 
+        This may yield nothing if there are no reference pointers or
+        if the core is not known
+
+        .. note::
+            Do not use the database for anything else while iterating.
+
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
@@ -245,7 +251,7 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT ref_region, pointer
-                    FROM linked_reverence_view
+                    FROM linked_reference_view
                     WHERE x = ? AND y = ? AND ref_p = ?
                     """, (x, y, p)):
                 yield row["ref_region"], row["pointer"]
@@ -256,6 +262,9 @@ class DsSqlliteDatabase(SQLiteDB):
 
         If all is well this method yields nothing!
 
+        .. note::
+            Do not use the database for anything else while iterating.
+
         :return: x, y, p, region, reference, label for all unlinked references
         :rtype: iterable(tuple(int, int, int, int, int, str))
         """
@@ -263,49 +272,64 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT  x, y, ref_p, ref_region, reference_num, ref_label
-                    FROM linked_reverence_view
+                    FROM linked_reference_view
                     WHERE act_region IS NULL
                      """):
                 yield (row["x"], row["y"], row["ref_p"], row["ref_region"],
                        row["reference_num"], str(row["ref_label"], "utf8"))
 
-
     def set_region_content(self, x, y, p, region_num, content, content_debug):
         """
+        Sets the content for this region
 
-        :param x:
-        :param y:
-        :param p:
-        :param region_num:
-        :param write_data:
-        :param data_debug:
-        :return:
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :param int region_num: The DS region number
+        :param bytearray content: content to write
+        :param content_debug: debug text
+        :type content_debug: str or None
+        :raises DsDatabaseException: If the region already has content
         """
         with self.transaction() as cursor:
+            # check for previous content
+            for row in cursor.execute(
+                    """
+                    SELECT content
+                    FROM region
+                    WHERE x = ? AND y = ? and p = ? and region_num = ?
+                    LIMIT 1
+                     """, (x, y, p, region_num)):
+                if row["content"]:
+                    raise DsDatabaseException(
+                        f"Illegal attempt to overwrite content for "
+                        f"{x=} {y=} {p=} {region_num=}")
+
             cursor.execute(
                 """
                 UPDATE region
                 SET content = ?, content_debug = ?
                 WHERE x = ? AND y = ? and p = ? and region_num = ?
                 """, (content, content_debug, x, y, p, region_num))
-            if cursor.rowcount == 1:
-                return
-            pop = 1/0
-
-    def get_write_data(self, x, y, p, region_num):
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT content
-                    FROM region
-                    WHERE x = ? AND y = ? AND p = ? and region_num = ?
-                    """, (x, y, p, region_num)):
-                if row["content"]:
-                    return bytearray(row["content"])
-                return None
-        raise DsDatabaseException(f"No data for {x=} {y=} {p=} {region_num=}")
+            if cursor.rowcount == 0:
+                raise DsDatabaseException(
+                    f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointer(self, x, y, p, region_num):
+        """
+        Gets the pointer for this region as set during the original load
+
+        returns None if the region is known but for some reason the pointer
+        was not set
+
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :param int region_num: The DS region number
+        :return: The pointer set during the original load
+        :rtype: int or None
+        :raises DsDatabaseException: if the region is not known
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
@@ -315,8 +339,21 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (x, y, p, region_num)):
                 return row["pointer"]
+        raise DsDatabaseException(f"No region {x=} {y=} {p=} {region_num=}")
 
-    def get_region_sizes(self, core_x, core_y, core_p):
+    def get_region_sizes(self, x, y, p):
+        """
+        Gets a dict of the regions and sizes reserved
+
+        The returned dict will be empty if there are no regions reserved
+        or if the core is not known.
+
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :return: dict of region_num to size but only for regions with a size
+        :rtype: dict(int, int)
+        """
         regions = dict()
         with self.transaction() as cursor:
             for row in cursor.execute(
@@ -324,18 +361,34 @@ class DsSqlliteDatabase(SQLiteDB):
                     SELECT region_num, size FROM region_view
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
-                    """, (core_x, core_y, core_p)):
+                    """, (x, y, p)):
                 regions[row["region_num"]] = row["size"]
         return regions
 
-    def get_total_size(self, core_x, core_y, core_p):
+    def get_total_regions_size(self, x, y, p):
+        """
+        Gets the total size of the regions of this core
+        
+        Does not include the size of the pointer table
+
+        Returns 0 even if the core is not known
+         
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :return: The size of the regions 
+            or 0 if there are no regions for this core
+        :rtype: int
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
                     SELECT sum(size) as total FROM region_view
                     WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
-                    """, (core_x, core_y, core_p)):
+                    """, (x, y, p)):
+                if row["total"] is None:
+                    return 0
                 return row["total"]
 
     def set_base_address(self, x, y, p, base_address):
@@ -356,6 +409,9 @@ class DsSqlliteDatabase(SQLiteDB):
                     base_address = ?
                 WHERE x = ? AND y = ? AND p = ?
                 """, (base_address, x, y, p))
+            if cursor.rowcount == 0:
+                raise DsDatabaseException(
+                    f"No core {x=} {y=} {p=}")
 
             for row in cursor.execute(
                     """
@@ -394,24 +450,44 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (x, y, p)):
                 return row["base_address"]
+        raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
-    def get_region_pointers(self, x, y, p):
-        pointers = []
+    def get_region_pointers_and_content(self, x, y, p):
+        """
+        Yields the number, pointers and content for each reserved region
+
+        This includes regions with no content set where content will be None
+
+        Will yield nothing if there are no regions reserved or if the core if
+        not known
+
+        :param int x: X coordinate of the core
+        :param int y: Y coordinate of the core
+        :param int p: Processor ID of the core
+        :return: number, pointer and (content or None)
+        :rtype: iterable(tuple(int, int, bytearray or None))
+        """
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, pointer
+                    SELECT region_num, content, pointer
                     FROM region_view
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                      """, (x, y, p)):
-                pointers.append(
-                    (row["region_num"], row["pointer"]))
-            return pointers
+                if row["content"]:
+                    content = bytearray(row["content"])
+                else:
+                    content = None
+                yield row["region_num"], row["pointer"], content
 
-    def keys(self):
+    def get_ds_cores(self):
         """
-        Yields the keys.
+        Yields the x, y, p for the cores with possible DS
+
+        Includes cores where DataSpecs started even if no regions reserved
+
+        Yields nothing if there are no unknown cores
 
         .. note::
             Do not use the database for anything else while iterating.
@@ -422,24 +498,15 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT x, y, p FROM core_view
+                    SELECT x, y, p FROM core
                     """):
                 yield (row["x"], row["y"], row["p"])
 
-    def get_xyp_totalsize(self, x, y, p):
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT sum(size) as total_size
-                    FROM region_view
-                    WHERE x = ? AND y = ? AND p = ?
-                    LIMIT 1
-                    """, (x, y, p,)):
-                return row["total_size"]
-
-    def ds_n_cores(self):
+    def get_n_ds_cores(self):
         """
         Returns the number for cores there is a data specification saved for.
+
+        Includes cores where DataSpecs started even if no regions reserved
 
         :rtype: int
         :raises DsDatabaseException:
@@ -453,9 +520,13 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["count"]
         raise DsDatabaseException("Count query failed")
 
-    def info_iteritems(self):
+    def get_info_for_cores(self):
         """
-        Yields the keys and values for the Info data.
+        Yields the (x, y, p) and write info for each core
+
+        The sizes INCLUDE pointer table size
+
+        Yields nothing if no cores known
 
         .. note::
             A DB transaction may be held while this iterator is processing.
@@ -499,14 +570,3 @@ class DsSqlliteDatabase(SQLiteDB):
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
-
-    def get_too_big(self):
-        with self.transaction() as cursor:
-            for row in cursor.execute(
-                    """
-                    SELECT
-                        x, y, p, region_num, size, data_size
-                    FROM write_too_big
-                    """):
-                yield (row["x"], row["y"], row["p"],
-                       row["region_num"], row["size"], row["data_size"])

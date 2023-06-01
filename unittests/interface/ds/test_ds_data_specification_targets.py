@@ -41,7 +41,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
         check[c2] = bar
         self.assertEqual(check[c2], db.get_ds(0, 1, 2))
 
-        self.assertEqual(2, db.ds_n_cores())
+        self.assertEqual(2, db.get_n_ds_cores())
 
         db.set_app_id(12)
 

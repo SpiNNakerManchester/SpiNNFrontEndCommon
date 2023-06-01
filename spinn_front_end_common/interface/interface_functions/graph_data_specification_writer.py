@@ -134,7 +134,7 @@ class _GraphDataSpecificationWriter(object):
         vertex.generate_data_specification(spec, pl)
 
         # Check the memory usage
-        total_size = ds_db.get_total_size(x, y, p)
+        total_size = ds_db.get_total_regions_size(x, y, p)
         region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
 
         # Check per-region memory usage if possible

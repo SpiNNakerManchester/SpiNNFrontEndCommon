@@ -85,6 +85,7 @@ class TestDataSpecification(unittest.TestCase):
     def test_core_infos(self):
         FecDataWriter.mock().set_machine(virtual_machine(16, 16))
         db = DsSqlliteDatabase()
+        self.assertEqual([], db.get_core_infos(True))
         s1 = _TestVertexWithBinary("S1", ExecutableType.SYSTEM)
         DataSpecificationGenerator(0, 0, 2, s1, db)
         s2 = _TestVertexWithBinary("S2", ExecutableType.SYSTEM)
@@ -134,15 +135,24 @@ class TestDataSpecification(unittest.TestCase):
         with self.assertRaises(DataSpecException):
             dsr.reserve_memory_region(10, 212345, "different_name")
 
-    def test_reserve_rounded_up(self):
-        db = DsSqlliteDatabase()
-        vertex = _TestVertexWithBinary(
-            "binary", ExecutableType.SYSTEM)
-        dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
-        dsg.reserve_memory_region(10, 1234, "test_region")
+        # test round up
+        dsg.reserve_memory_region(12, 1234, "test_region")
         # the 1234 is rounded up to next 4
-        size = db.get_region_size(0, 1, 2, 10)
+        size = db.get_region_size(0, 1, 2, 12)
         self.assertEqual(1236, size)
+
+        # dict will have all regions set for this core
+        sizes = db.get_region_sizes(0, 1, 2)
+        self.assertEqual(2, len(sizes))
+        self.assertEqual(sizes[10], 123456)
+        self.assertEqual(sizes[12], 1236)
+
+        # total sizes
+        self.assertEqual(123456 + 1236, db.get_total_regions_size(0, 1, 2))
+
+        # If core unknown dict empty and size 0
+        self.assertEqual({}, db.get_region_sizes(0, 1, 3))
+        self.assertEqual(0, db.get_total_regions_size(0, 1, 3))
 
     def test_switch_write_focus(self):
         db = DsSqlliteDatabase()
@@ -189,6 +199,10 @@ class TestDataSpecification(unittest.TestCase):
         dsg4 = DataSpecificationGenerator(1, 1, 4, vertex4, db)
         dsg4.reference_memory_region(8, 3, "oops")
 
+        # Will be none before set_base_address called
+        self.assertEqual(None, db.get_region_pointer(1, 1, 2, 6))
+
+        self.assertIsNone(db.get_base_address(1, 1, 2))
         db.set_base_address(1, 1, 2, 1000)
         base_adr = db.get_base_address(1, 1, 2)
         self.assertEqual(1000, base_adr)
@@ -197,9 +211,19 @@ class TestDataSpecification(unittest.TestCase):
         p4 = p2 + 100
         p6 = p4 + 400
         self.assertEqual([(2, p2, None), (4, p4, None), (6, p6, None)], p_info)
+        self.assertEqual(p2, db.get_region_pointer(1, 1, 2, 2))
+        self.assertEqual(p4, db.get_region_pointer(1, 1, 2, 4))
+        self.assertEqual(p6, db.get_region_pointer(1, 1, 2, 6))
+
+        # call fails with unknown region
+        with self.assertRaises(DsDatabaseException):
+            db.get_region_pointer(1, 1, 2, 7)
 
         info = list(db.get_reference_pointers(1, 1, 1))
         self.assertEqual([(6, p4)], info)
+
+        info = list(db.get_reference_pointers(1, 1, 2))
+        self.assertEqual([], info)
 
         info = list(db.get_reference_pointers(1, 1, 3))
         self.assertIn((9, p4), info)
@@ -212,12 +236,28 @@ class TestDataSpecification(unittest.TestCase):
         bad = list(db.get_unlinked_references())
         self.assertEqual([(1, 1, 4, 8, 3, "oops")], bad)
 
+        info = list(db.get_reference_pointers(1, 4, 4))
+        self.assertEqual([], info)
+
+        # will fails on an unknown region
+        with self.assertRaises(DsDatabaseException):
+            db.get_region_pointer(1, 1, 2, 10)
+
+        # will fails on an unknown core
+        with self.assertRaises(DsDatabaseException):
+            db.set_base_address(1, 1, 8, 1000)
+        with self.assertRaises(DsDatabaseException):
+            db.get_base_address(1, 1, 8)
+
     def test_write(self):
         db = DsSqlliteDatabase()
-
-        # You can use a reference before defining it
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.SYSTEM)
+
+        # Emtpy if no cores set
+        self.assertEqual([], list(db.get_info_for_cores()))
+
+        # You can use a reference before defining it
         dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
         dsg.reserve_memory_region(5, 100, "unused")
         dsg.reserve_memory_region(10, 123456, "test_region")
@@ -230,17 +270,50 @@ class TestDataSpecification(unittest.TestCase):
         dsg.reserve_memory_region(7, 444, "unused")
 
         size = db.get_region_size(0, 1, 2, 10)
-        content = db.get_region_context(0, 1, 2, 10)
+        pcs = list(db.get_region_pointers_and_content(0, 1, 2))
+        self.assertEqual(2, len(pcs))
+
+        region, pointer, content = pcs[0]
+        self.assertEqual(5, region)
+        self.assertIsNone(pointer)
+        self.assertIsNone(content)
+
+        region, pointer, content = pcs[1]
+        self.assertEqual(10, region)
+        self.assertIsNone(pointer)
         self.assertEqual(3 * 4, len(content))
         self.assertEqual(
             bytearray(b'\x0c\x00\x00\x00"\x00\x00\x008\x00\x00\x00'), content)
 
-        info = list(db.info_iteritems())
+        pcs = list(db.get_region_pointers_and_content(0, 1, 6))
+        self.assertEqual(0, len(pcs))
+
+        info = list(db.get_info_for_cores())
         size2 = APP_PTR_TABLE_BYTE_SIZE + 100 + 123456
         size3 = APP_PTR_TABLE_BYTE_SIZE + 444
         self.assertIn(((0, 1, 2), None, size2, 404), info)
         self.assertIn(((0, 1, 3), None, size3, APP_PTR_TABLE_BYTE_SIZE), info)
 
+        with self.assertRaises(DsDatabaseException):
+            db.set_region_content(
+                0, 1, 4, 5, bytearray(b'\x0c\x00\x00\x00'), "test")
+
+    def test_ds_cores(self):
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        self.assertEqual([], list(db.get_ds_cores()))
+        self.assertEqual(0, db.get_n_ds_cores())
+
+        DataSpecificationGenerator(0, 1, 3, vertex, db)
+        DataSpecificationGenerator(0, 1, 4, vertex, db)
+        DataSpecificationGenerator(0, 2, 3, vertex, db)
+        self.assertEqual(3, db.get_n_ds_cores())
+        cores = list(db.get_ds_cores())
+        self.assertEqual(3, len(cores))
+        self.assertIn((0, 1, 3), cores)
+        self.assertIn((0, 1, 4), cores)
+        self.assertIn((0, 2, 3), cores)
 
 if __name__ == "__main__":
     unittest.main()

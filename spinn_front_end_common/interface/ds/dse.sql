@@ -99,19 +99,15 @@ CREATE TABLE IF NOT EXISTS reference (
 CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
     x ASC, Y ASC, p ASC, reference_num ASC);
 
-CREATE VIEW IF NOT EXISTS reverence_view AS
-SELECT x, y, p, region_num, reference_num, ref_label
-FROM reference NATURAL JOIN core NATURAL JOIN chip;
-
-CREATE VIEW IF NOT EXISTS linked_reverence_view AS
-SELECT reverence_view.reference_num, reverence_view.x as x, reverence_view.y as y,
-       reverence_view.p as ref_p, reverence_view.region_num as ref_region, ref_label,
-       region_view.p as act_p, region_view.region_num as act_region, region_label,
-       region_view.size,  pointer
-FROM reverence_view LEFT JOIN region_view
-ON reverence_view.reference_num = region_view.reference_num
-    AND reverence_view.x = region_view.x
-    AND reverence_view.y = region_view.y;
+CREATE VIEW IF NOT EXISTS linked_reference_view AS
+SELECT reference.reference_num, reference.x as x, reference.y as y,
+       reference.p as ref_p, reference.region_num as ref_region, ref_label,
+       region.p as act_p, region.region_num as act_region, region_label,
+       region.size,  pointer
+FROM reference LEFT JOIN region
+ON reference.reference_num = region.reference_num
+    AND reference.x = region.x
+    AND reference.y = region.y;
 
 CREATE TABLE IF NOT EXISTS app_id (
     app_id INTEGER NOT NULL

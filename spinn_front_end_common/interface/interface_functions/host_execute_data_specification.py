@@ -159,7 +159,7 @@ class _HostExecuteDataSpecification(object):
 
         for x, y, p, _, _ in progress.over(
                 core_infos, finish_at_end=False):
-            total_size = dsg_targets.get_xyp_totalsize(x, y, p)
+            total_size = dsg_targets.get_total_regions_size(x, y, p)
             malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
             base_address = self.__malloc_region_storage(x, y, p, malloc_size)
             dsg_targets.set_base_address(x, y, p, base_address)
