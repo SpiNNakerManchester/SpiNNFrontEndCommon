@@ -15,6 +15,7 @@
 import unittest
 import spinn_utilities
 import spinn_machine
+import data_specification
 import pacman
 import spinnman
 import spinn_front_end_common
@@ -31,6 +32,7 @@ class Test(unittest.TestCase):
     def test_compare_versions(self):
         spinn_utilities_parts = spinn_utilities.__version__.split('.')
         spinn_machine_parts = spinn_machine.__version__.split('.')
+        data_specification_parts = data_specification.__version__.split('.')
         pacman_parts = pacman.__version__.split('.')
         spinnman_parts = spinnman.__version__.split('.')
         spinn_front_end_common_parts = spinn_front_end_common.\
@@ -44,6 +46,11 @@ class Test(unittest.TestCase):
         self.assertEqual(spinn_machine_parts[0],
                          spinn_front_end_common_parts[0])
         self.assertLessEqual(spinn_machine_parts[1],
+                             spinn_front_end_common_parts[1])
+
+        self.assertEqual(data_specification_parts[0],
+                         spinn_front_end_common_parts[0])
+        self.assertLessEqual(data_specification_parts[1],
                              spinn_front_end_common_parts[1])
 
         self.assertEqual(pacman_parts[0],
