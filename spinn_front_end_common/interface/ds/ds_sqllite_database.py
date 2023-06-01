@@ -368,15 +368,15 @@ class DsSqlliteDatabase(SQLiteDB):
     def get_total_regions_size(self, x, y, p):
         """
         Gets the total size of the regions of this core
-        
+
         Does not include the size of the pointer table
 
         Returns 0 even if the core is not known
-         
+
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :return: The size of the regions 
+        :return: The size of the regions
             or 0 if there are no regions for this core
         :rtype: int
         """
@@ -541,7 +541,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT
                         x, y, p,
-                        base_address, sum(size) as memory_used, 
+                        base_address, sum(size) as memory_used,
                         sum(content_size) as content_size
                     FROM region_view
                     GROUP BY x, y, p

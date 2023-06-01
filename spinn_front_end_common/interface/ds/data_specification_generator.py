@@ -52,7 +52,6 @@ class DataSpecificationGenerator(DataSpecificationBase):
         super().__init__(x, y, p, ds_db, report_writer)
         ds_db.set_core(x, y, p, vertex)
 
-
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, reference=None):
@@ -80,7 +79,8 @@ class DataSpecificationGenerator(DataSpecificationBase):
             cmd_string += "\n"
             self._report_writer.write(cmd_string)
 
-        self._ds_db.set_reference(self._x, self._y, self._p, region, ref, label)
+        self._ds_db.set_reference(
+            self._x, self._y, self._p, region, ref, label)
 
     def _end_write_block(self):
         if self._content is not None and len(self._content) > 0:

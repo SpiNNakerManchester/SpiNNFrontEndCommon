@@ -42,7 +42,6 @@ class DataSpecificationReloader(DataSpecificationBase):
         """
         super().__init__(x, y, p, ds_db, report_writer)
 
-
     @overrides(DataSpecificationBase.reserve_memory_region)
     def reserve_memory_region(
             self, region, size, label=None, reference=None):

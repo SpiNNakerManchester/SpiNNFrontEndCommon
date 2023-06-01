@@ -105,7 +105,7 @@ class _GraphDataSpecificationWriter(object):
         for vertex in vertices_to_reset:
             vertex.set_reload_required(False)
 
-        self._run_check_qureies(ds_db)
+        self._run_check_queries(ds_db)
 
         return ds_db
 
@@ -171,7 +171,7 @@ class _GraphDataSpecificationWriter(object):
             f"Too much SDRAM has been used on {x}, {y}.  Vertices and"
             f" their usage on that chip is as follows:\n{memory_usage}")
 
-    def _run_check_qureies(self, ds_db):
+    def _run_check_queries(self, ds_db):
         msg = ""
         for bad in ds_db.get_unlinked_references():
             x, y, p, region, reference, label = bad

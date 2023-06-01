@@ -161,7 +161,6 @@ class TestDataSpecification(unittest.TestCase):
         dsg = DataSpecificationGenerator(0, 1, 2, vertex, db)
         dsg.reserve_memory_region(10, 123456, "test_region")
         dsg.switch_write_focus(10)
-        size = db.get_region_size(0, 1, 2, 10)
         # check internal fields used later are correct
         self.assertEqual(123456, dsg._size)
         # Error is switching into a region not reserved
@@ -269,7 +268,8 @@ class TestDataSpecification(unittest.TestCase):
         dsg = DataSpecificationGenerator(0, 1, 3, vertex, db)
         dsg.reserve_memory_region(7, 444, "unused")
 
-        size = db.get_region_size(0, 1, 2, 10)
+        self.assertEqual(123456, db.get_region_size(0, 1, 2, 10))
+
         pcs = list(db.get_region_pointers_and_content(0, 1, 2))
         self.assertEqual(2, len(pcs))
 
@@ -314,6 +314,7 @@ class TestDataSpecification(unittest.TestCase):
         self.assertIn((0, 1, 3), cores)
         self.assertIn((0, 1, 4), cores)
         self.assertIn((0, 2, 3), cores)
+
 
 if __name__ == "__main__":
     unittest.main()
