@@ -201,9 +201,9 @@ class TestDataSpecification(unittest.TestCase):
         # Will be none before set_base_address called
         self.assertEqual(None, db.get_region_pointer(1, 1, 2, 6))
 
-        self.assertIsNone(db.get_base_address(1, 1, 2))
-        db.set_base_address(1, 1, 2, 1000)
-        base_adr = db.get_base_address(1, 1, 2)
+        self.assertIsNone(db.get_start_address(1, 1, 2))
+        db.set_start_address(1, 1, 2, 1000)
+        base_adr = db.get_start_address(1, 1, 2)
         self.assertEqual(1000, base_adr)
         p_info = list(db.get_region_pointers_and_content(1, 1, 2))
         p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
@@ -246,7 +246,7 @@ class TestDataSpecification(unittest.TestCase):
         with self.assertRaises(DsDatabaseException):
             db.set_base_address(1, 1, 8, 1000)
         with self.assertRaises(DsDatabaseException):
-            db.get_base_address(1, 1, 8)
+            db.get_start_address(1, 1, 8)
 
     def test_write(self):
         db = DsSqlliteDatabase()

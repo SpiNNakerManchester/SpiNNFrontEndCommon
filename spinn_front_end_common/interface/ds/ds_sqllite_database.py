@@ -391,24 +391,24 @@ class DsSqlliteDatabase(SQLiteDB):
                     return 0
                 return row["total"]
 
-    def set_base_address(self, x, y, p, base_address):
+    def set_start_address(self, x, y, p, start_address):
         """
         Sets the base address for a core and calculates pointers
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int base_address: The base address for the whole core
+        :param int start_address: The base address for the whole core
         """
-        pointer = (base_address + APP_PTR_TABLE_BYTE_SIZE)
+        pointer = (start_address + APP_PTR_TABLE_BYTE_SIZE)
         to_update = []
         with self.transaction() as cursor:
             cursor.execute(
                 """
-                UPDATE core SET
-                    base_address = ?
+                UPDATE core 
+                SET start_address = ?
                 WHERE x = ? AND y = ? AND p = ?
-                """, (base_address, x, y, p))
+                """, (start_address, x, y, p))
             if cursor.rowcount == 0:
                 raise DsDatabaseException(
                     f"No core {x=} {y=} {p=}")
@@ -431,9 +431,9 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE x = ? AND y = ? and p = ? and region_num = ?
                     """, (pointer, x, y, p, region_num))
 
-    def get_base_address(self, x, y, p):
+    def get_start_address(self, x, y, p):
         """
-        Gets the base_address for this core
+        Gets the start_address for this core
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
@@ -444,12 +444,12 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT base_address
+                    SELECT start_address
                     FROM core
                     WHERE x = ? AND y = ? and p = ?
                     LIMIT 1
                     """, (x, y, p)):
-                return row["base_address"]
+                return row["start_address"]
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
 
     def get_region_pointers_and_content(self, x, y, p):
@@ -541,7 +541,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     """
                     SELECT
                         x, y, p,
-                        base_address, sum(size) as memory_used,
+                        start_address, sum(size) as memory_used,
                         sum(content_size) as content_size
                     FROM region_view
                     GROUP BY x, y, p
@@ -551,7 +551,7 @@ class DsSqlliteDatabase(SQLiteDB):
                 else:
                     content_size = 0
                 yield ((row["x"], row["y"], row["p"]),
-                       row["base_address"],
+                       row["start_address"],
                        row["memory_used"] + APP_PTR_TABLE_BYTE_SIZE,
                        content_size + APP_PTR_TABLE_BYTE_SIZE)
 

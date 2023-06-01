@@ -154,8 +154,8 @@ class _HostExecuteDataSpecification(object):
                 core_infos, finish_at_end=False):
             total_size = dsg_targets.get_total_regions_size(x, y, p)
             malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
-            base_address = self.__malloc_region_storage(x, y, p, malloc_size)
-            dsg_targets.set_base_address(x, y, p, base_address)
+            start_address = self.__malloc_region_storage(x, y, p, malloc_size)
+            dsg_targets.set_start_address(x, y, p, start_address)
 
         for x, y, p, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
@@ -188,7 +188,7 @@ class _HostExecuteDataSpecification(object):
         for region_num, pointer in dsg_targets.get_reference_pointers(x, y, p):
             pointer_table[region_num]["pointer"] = pointer
 
-        base_address = dsg_targets.get_base_address(x, y, p)
+        base_address = dsg_targets.get_start_address(x, y, p)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
 
         to_write = numpy.concatenate(

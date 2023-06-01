@@ -51,13 +51,13 @@ CREATE TABLE IF NOT EXISTS core(
     y INTEGER NOT NULL,
     p INTEGER NOT NULL,
     is_system INTEGER NOT NULL,
-    base_address INTEGER,
+    start_address INTEGER,
     PRIMARY KEY (x, y, p),
     FOREIGN KEY (x, y) REFERENCES chip(x, y)
 );
 
 CREATE VIEW IF NOT EXISTS core_view AS
-    SELECT x, y, p, base_address, is_system,
+    SELECT x, y, p, start_address, is_system,
            ethernet_x, ethernet_y, ip_address
     FROM core NATURAL JOIN chip_view;
 
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS region(
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
 CREATE VIEW IF NOT EXISTS region_view AS
-    SELECT x, y, p, base_address, is_system,
+    SELECT x, y, p, start_address, is_system,
            region_num, region_label, reference_num, content, content_debug,
            length(content) as content_size, size, pointer
     FROM chip NATURAL JOIN core NATURAL JOIN region;
