@@ -1034,8 +1034,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self._run, "No Extraction time", end - start)
             return data
 
-        transceiver = FecDataView.get_transceiver()
-
         # Update the IP Tag to work through a NAT firewall
         with self.__open_connection() as connection:
             # update transaction id for extra monitor
@@ -1054,7 +1052,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._view = memoryview(self._output)
             self._max_seq_num = self.calculate_max_seq_num()
             lost_seq_nums = self._receive_data(
-                transceiver, placement, connection, transaction_id)
+                placement, connection, transaction_id)
 
             # Stop anything else getting through (and reduce traffic)
             connection.send_sdp_message(self.__make_sdp_message(
@@ -1082,10 +1080,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         return self._output
 
-    def _receive_data(
-            self, transceiver, placement, connection, transaction_id):
+    def _receive_data(self, placement, connection, transaction_id):
         """
-        :param ~.Transceiver transceiver:
         :param ~.Placement placement:
         :param ~.UDPConnection connection:
         :param int transaction_id:
@@ -1103,7 +1099,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if transaction_id == response_transaction_id:
                     timeoutcount = 0
                     seq_nums, finished = self._process_data(
-                        data, seq_nums, finished, placement, transceiver,
+                        data, seq_nums, finished, placement,
                         lost_seq_nums, transaction_id)
                 else:
                     log.info(
@@ -1120,8 +1116,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
-                        seq_nums, transceiver, placement, lost_seq_nums,
-                        transaction_id)
+                        seq_nums, placement, lost_seq_nums, transaction_id)
         return lost_seq_nums
 
     @staticmethod
@@ -1174,21 +1169,21 @@ class DataSpeedUpPacketGatherMachineVertex(
         return [sn for sn in range(self._max_seq_num) if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
-            self, seq_nums, transceiver, placement, lost_seq_nums,
-            transaction_id):
+            self, seq_nums, placement, lost_seq_nums, transaction_id):
         """
         Determine if there are any missing sequence numbers, and if so
         retransmits the missing sequence numbers back to the core for
         retransmission.
 
         :param set(int) seq_nums: the sequence numbers already received
-        :param ~.Transceiver transceiver: spinnman instance
         :param ~.Placement placement: placement instance
         :param list(int) lost_seq_nums:
         :param int transaction_id: transaction_id
         :return: whether all packets are transmitted
         :rtype: bool
         """
+        transceiver = FecDataView.get_transceiver()
+
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
 
@@ -1275,7 +1270,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return False
 
     def _process_data(
-            self, data, seq_nums, finished, placement, transceiver,
+            self, data, seq_nums, finished, placement,
             lost_seq_nums, transaction_id):
         """
         Take a packet and process it see if we're finished yet.
@@ -1285,7 +1280,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param bool finished: bool which states if finished or not
         :param ~.Placement placement:
             placement object for location on machine
-        :param ~.Transceiver transceiver: spinnman instance
         :param int transaction_id: the transaction ID for this stream
         :param list(int) lost_seq_nums:
             the list of n sequence numbers lost per iteration
@@ -1333,9 +1327,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         if is_end_of_stream:
             if not self._check(seq_nums):
                 finished = self._determine_and_retransmit_missing_seq_nums(
-                    placement=placement, transceiver=transceiver,
-                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums,
-                    transaction_id=transaction_id)
+                    placement=placement, transaction_id=transaction_id,
+                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
             else:
                 finished = True
         return seq_nums, finished

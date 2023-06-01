@@ -55,7 +55,6 @@ def read_data(x, y, address, length, data_format):
     :return: whatever is produced by unpacking the data
     :rtype: tuple
     """
-    # pylint: disable=too-many-arguments
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 

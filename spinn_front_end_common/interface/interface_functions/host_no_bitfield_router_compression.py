@@ -105,8 +105,6 @@ class Compression(object):
 
         :raises SpinnFrontEndException: If compression fails
         """
-        # pylint: disable=too-many-arguments
-
         # build progress bar
         progress_bar = ProgressBar(
             len(self._routing_tables.routing_tables) * 2,

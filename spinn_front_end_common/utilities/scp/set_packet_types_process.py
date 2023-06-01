@@ -36,7 +36,6 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         :param bool nearest_neighbour: If nearest neighbour should be set
         :param bool fixed_route: If fixed route should be set
         """
-        # pylint: disable=too-many-arguments
         with self._collect_responses():
             for core_subset in core_subsets.core_subsets:
                 for processor_id in core_subset.processor_ids:

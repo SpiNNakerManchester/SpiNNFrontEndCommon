@@ -267,7 +267,6 @@ class _HostBasedBitFieldRouterCompressor(object):
         :param int chip_x:
         :param int chip_y:
         """
-        # pylint: disable=too-many-arguments, unused-argument
         # locate the bitfields in a chip level scope
         base_addresses = dict()
         for placement in FecDataView.iterate_placements_by_xy_and_type(

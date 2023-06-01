@@ -119,8 +119,6 @@ def get_report_writer(processor_chip_x, processor_chip_y, processor_id):
     :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
-    # pylint: disable=too-many-arguments
-
     # check if text reports are needed at all
     if not get_config_bool("Reports", "write_text_specs"):
         return None

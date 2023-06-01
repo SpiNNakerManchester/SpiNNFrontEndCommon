@@ -122,7 +122,6 @@ class BufferManager(object):
         :return: data as a byte array
         :rtype: bytearray
         """
-        # pylint: disable=too-many-arguments
         if not get_config_bool("Machine", "enable_advanced_monitor_support"):
             return FecDataView.read_memory(
                 placement_x, placement_y, address, length)

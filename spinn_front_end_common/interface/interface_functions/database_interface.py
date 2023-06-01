@@ -30,7 +30,6 @@ def database_interface(runtime):
     :return: where the database is located, if one is made
     :rtype: str or None
     """
-    # pylint: disable=too-many-arguments
     needs_db = DatabaseWriter.auto_detect_database()
     user_create_database = get_config_bool("Database", "create_database")
     if user_create_database is not None:

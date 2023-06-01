@@ -66,7 +66,8 @@ def regenerate_data_spec(placement, data_dir):
     """
     Regenerate a data specification for a placement.
 
-    :param ~.Placement placement: The placement to regenerate
+    :param ~pacman.model.placements.Placement placement:
+        The placement to regenerate
     :param str data_dir: A place to use to write data to
     :return: Whether the data was regenerated or not
     :rtype: bool

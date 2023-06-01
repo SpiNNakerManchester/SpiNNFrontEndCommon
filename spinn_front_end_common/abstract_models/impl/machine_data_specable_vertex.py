@@ -28,7 +28,6 @@ class MachineDataSpecableVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        # pylint: disable=too-many-arguments, arguments-differ
         tags = FecDataView.get_tags()
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
@@ -49,4 +48,3 @@ class MachineDataSpecableVertex(
         :type reverse_iptags:
             iterable(~spinn_machine.tags.ReverseIPTag) or None
         """
-        # pylint: disable=too-many-arguments

@@ -128,9 +128,7 @@ class ExtraMonitorSupportMachineVertex(
             if we reinject nearest-neighbour packets
         :param bool reinject_fixed_route: if we reinject fixed route packets
         """
-        # pylint: disable=too-many-arguments
-        super().__init__(
-            label="SYSTEM:ExtraMonitor", app_vertex=None)
+        super().__init__("SYSTEM:ExtraMonitor")
 
         self._reinject_multicast = get_config_bool(
             "Machine", "enable_reinjection")
@@ -340,12 +338,12 @@ class ExtraMonitorSupportMachineVertex(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region", empty=True)
 
-    def __get_provenance_region_address(self, txrx, place):
+    def __get_provenance_region_address(self, place):
         """
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param ~pacman.model.placements.Placement place:
         :rtype: int
         """
+        txrx = FecDataView.get_transceiver()
         if self._prov_region is None:
             region_table_addr = txrx.get_cpu_information_from_core(
                 place.x, place.y, place.p).user[0]
@@ -360,10 +358,8 @@ class ExtraMonitorSupportMachineVertex(
     def get_provenance_data_from_machine(self, placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
-        transceiver = FecDataView.get_transceiver()
-        provenance_address = self.__get_provenance_region_address(
-            transceiver, placement)
-        data = transceiver.read_memory(
+        provenance_address = self.__get_provenance_region_address(placement)
+        data = FecDataView.get_transceiver().read_memory(
             placement.x, placement.y, provenance_address,
             _PROVENANCE_FORMAT.size)
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
@@ -526,7 +522,6 @@ class ExtraMonitorSupportMachineVertex(
             If fixed route should be set, or `None` if left as before.
         :type fixed_route: bool or None
         """
-        # pylint: disable=too-many-arguments
         if multicast is not None:
             self._reinject_multicast = multicast
         if point_to_point is not None:

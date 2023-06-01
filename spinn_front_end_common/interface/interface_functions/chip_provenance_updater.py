@@ -84,7 +84,6 @@ class _ChipProvenanceUpdater(object):
         :param int processors_completed:
         :param ~.ProgressBar progress:
         """
-        # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:

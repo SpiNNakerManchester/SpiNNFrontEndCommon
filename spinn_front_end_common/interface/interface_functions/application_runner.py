@@ -61,7 +61,6 @@ class _ApplicationRunner(object):
         :rtype: int
         :raises ConfigurationException:
         """
-        # pylint: disable=too-many-arguments
         logger.info("*** Running simulation... *** ")
 
         # wait for all cores to be ready

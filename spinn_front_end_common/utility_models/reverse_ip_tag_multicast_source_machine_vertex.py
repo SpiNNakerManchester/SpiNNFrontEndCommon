@@ -39,7 +39,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BufferedSendingRegion)
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
@@ -82,45 +82,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
     :type app_vertex: ReverseIpTagMultiCastSource or None
     :param int n_keys: The number of keys to be sent via this multicast source
         (can't be `None` if vertex_slice is also `None`)
-    :param str board_address:
-        The IP address of the board on which to place this vertex if receiving
-        data, either buffered or live (by default, any board is chosen)
-    :param int receive_port:
-        The port on the board that will listen for incoming event packets
-        (default is to disable this feature; set a value to enable it, or set
-        the `reserve_reverse_ip_tag parameter` to True if a random port is to
-        be used)
-    :param int receive_sdp_port:
-        The SDP port to listen on for incoming event packets (defaults to 1)
-    :param int receive_tag:
-        The IP tag to use for receiving live events (uses any by default)
-    :param float receive_rate:
-    :param int virtual_key:
-        The base multicast key to send received events with (assigned
-        automatically by default)
-    :param int prefix:
-        The prefix to "or" with generated multicast keys (default is no prefix)
-    :param ~spinnman.messages.eieio.EIEIOPrefix prefix_type:
-        Whether the prefix should apply to the upper or lower half of the
-        multicast keys (default is upper half)
-    :param bool check_keys:
-        True if the keys of received events should be verified before sending
-        (default False)
+    :param eieio_params:
+        General parameters passed from the application vertex.
     :param ~numpy.ndarray send_buffer_times:
         An array of arrays of time steps at which keys should be sent (one
         array for each key, default disabled)
-    :param str send_buffer_partition_id:
-        The ID of the partition containing the edges down which the events are
-        to be sent
-    :param bool reserve_reverse_ip_tag:
-        True if the source should set up a tag through which it can receive
-        packets; if port is set to `None` this can be used to enable the
-        reception of packets on a randomly assigned port, which can be read
-        from the database
-    :param str injection_partition:
-        If not `None`, will enable injection and specify the partition to send
-        injected keys with
     """
+    __slots__ = (
+        "_reverse_iptags", "_n_keys", "_is_recording",
+        "_first_machine_time_step", "_run_until_timesteps",
+        "_receive_rate", "_receive_sdp_port",
+        "_send_buffer", "_send_buffer_times", "_send_buffers",
+        "_send_buffer_partition_id", "_send_buffer_size",
+        "_injection_partition_id",
+        "_virtual_key", "_mask", "_prefix", "_prefix_type", "_check_keys")
 
     class _REGIONS(IntEnum):
         SYSTEM = 0
@@ -148,39 +123,24 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _n_data_specs = 0
 
     def __init__(
-            self, label,
-            vertex_slice=None,
-            app_vertex=None,
+            self, label, vertex_slice=None, app_vertex=None,
             n_keys=None,
-
-            # Live input parameters
-            receive_port=None,
-            receive_sdp_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
-            receive_tag=None,
-            receive_rate=10,
-
-            # Key parameters
-            virtual_key=None, prefix=None,
-            prefix_type=None, check_keys=False,
-
+            # General fixed parameters from app vertex
+            eieio_params=None,
             # Send buffer parameters
-            send_buffer_times=None,
-            send_buffer_partition_id=None,
-
-            # Extra flag for receiving packets without a port
-            reserve_reverse_ip_tag=False,
-
-            # Partition to send injection keys with
-            injection_partition_id=None):
+            send_buffer_times=None):
         # pylint: disable=too-many-arguments
         if vertex_slice is None:
-            if n_keys is not None:
-                vertex_slice = Slice(0, n_keys - 1)
-            else:
+            if n_keys is None:
                 raise KeyError("Either provide a vertex_slice or n_keys")
+            vertex_slice = Slice(0, n_keys - 1)
+        if not eieio_params:
+            # Get the defaults
+            from .reverse_ip_tag_multi_cast_source import _EIEIOParameters
+            eieio_params = _EIEIOParameters()
 
-        if (send_buffer_partition_id is not None and
-                injection_partition_id is not None):
+        if (eieio_params.send_buffer_partition_id is not None and
+                eieio_params.injection_partition_id is not None):
             raise ValueError(
                 "Can't specify both send_buffer_partition_id and"
                 " injection_partition_id")
@@ -191,18 +151,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._n_keys = vertex_slice.n_atoms
 
         # Set up for receiving live packets
-        if receive_port is not None or reserve_reverse_ip_tag:
+        if eieio_params.receive_port is not None or \
+                eieio_params.reserve_reverse_ip_tag:
             self._reverse_iptags = [ReverseIPtagResource(
-                port=receive_port, sdp_port=receive_sdp_port,
-                tag=receive_tag)]
-        self._receive_rate = receive_rate
-        self._receive_sdp_port = receive_sdp_port
+                port=eieio_params.receive_port,
+                sdp_port=eieio_params.receive_sdp_port,
+                tag=eieio_params.receive_tag)]
+        self._receive_rate = eieio_params.receive_rate
+        self._receive_sdp_port = eieio_params.receive_sdp_port
 
         # Work out if buffers are being sent
         self._send_buffer = None
         self._first_machine_time_step = None
         self._run_until_timesteps = None
-        self._send_buffer_partition_id = send_buffer_partition_id
+        self._send_buffer_partition_id = eieio_params.send_buffer_partition_id
         self._send_buffer_size = 0
         n_buffer_times = 0
         if send_buffer_times is not None:
@@ -227,21 +189,21 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._is_recording = False
 
         # set flag for checking if in injection mode
-        self._injection_partition_id = injection_partition_id
+        self._injection_partition_id = eieio_params.injection_partition_id
 
         # Sort out the keys to be used
-        self._virtual_key = virtual_key
+        self._virtual_key = eieio_params.virtual_key
         self._mask = None
-        self._prefix = prefix
-        self._prefix_type = prefix_type
-        self._check_keys = check_keys
+        self._prefix = eieio_params.prefix
+        self._prefix_type = eieio_params.prefix_type
+        self._check_keys = eieio_params.check_keys
 
         # Work out the prefix details
         if self._prefix is not None:
             if self._prefix_type is None:
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             if self._prefix_type == EIEIOPrefix.UPPER_HALF_WORD:
-                self._prefix = prefix << 16
+                self._prefix = eieio_params.prefix << 16
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
@@ -468,9 +430,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             return
         self._first_machine_time_step = first_machine_time_step
         self._run_until_timesteps = run_until_timesteps
-        key_to_send = self._virtual_key
-        if self._virtual_key is None:
-            key_to_send = 0
+        key_to_send = self._virtual_key or 0
 
         if self._send_buffer is not None:
             self._send_buffer.clear()
@@ -746,6 +706,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._fill_send_buffer()
         return self._send_buffers
 
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
+
     @overrides(SendsBuffersFromHostPreBufferedImpl.get_regions)
     def get_regions(self):
         # Avoid update_buffer as not needed and called during reset
@@ -762,10 +726,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(SendsBuffersFromHostPreBufferedImpl.buffering_input)
     def buffering_input(self):
         return self._send_buffers is not None
-
-    @send_buffers.setter
-    def send_buffers(self, value):
-        self._send_buffers = value
 
     def get_region_buffer_size(self, region):
         """

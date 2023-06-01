@@ -372,7 +372,6 @@ class _HostExecuteDataSpecification(object):
         """
         Execute the data specs for all system targets.
         """
-        # pylint: disable=too-many-arguments
         FecDataView.get_dsg_targets().mark_system_cores(system_cores())
         if FecDataView.has_java_caller():
             self.__java_sys()

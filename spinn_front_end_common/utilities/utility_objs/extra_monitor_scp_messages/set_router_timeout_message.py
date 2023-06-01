@@ -29,7 +29,7 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
 
     __slots__ = ()
 
-    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent, wait=1):
+    def __init__(self, x, y, p, *, timeout_mantissa, timeout_exponent, wait):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255

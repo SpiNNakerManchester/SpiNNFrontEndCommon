@@ -67,7 +67,6 @@ def machine_generator(
     :rtype: tuple(~spinn_machine.Machine,
         ~spinnman.transceiver.Transceiver)
     """
-    # pylint: disable=too-many-arguments
     if FecDataView.has_allocation_controller():
         # If there is an allocation controller and it wants to make a
         # transceiver for us, we let it do so; transceivers obtained that way

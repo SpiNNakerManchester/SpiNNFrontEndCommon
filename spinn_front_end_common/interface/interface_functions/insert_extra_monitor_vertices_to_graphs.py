@@ -33,7 +33,6 @@ def insert_extra_monitor_vertices_to_graphs(placements):
         list(ExtraMonitorSupportMachineVertex),
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
-    # pylint: disable=too-many-arguments, attribute-defined-outside-init
     chip_to_gatherer_map = dict()
     vertex_to_chip_map = dict()
     machine = FecDataView.get_machine()

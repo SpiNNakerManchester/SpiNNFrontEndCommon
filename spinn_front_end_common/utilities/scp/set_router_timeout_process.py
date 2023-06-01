@@ -62,7 +62,7 @@ class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
                 self._set_timeout(
                     core_subset, processor_id, mantissa, exponent, wait=2)
 
-    def _set_timeout(self, core, processor_id, mantissa, exponent, wait):
+    def _set_timeout(self, core, processor_id, mantissa, exponent, *, wait):
         """
         Set a timeout for a router controlled by an extra monitor on a core.
         This is not a parallelised operation in order to aid debugging when

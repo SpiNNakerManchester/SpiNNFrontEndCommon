@@ -21,8 +21,8 @@ class MultiCastCommand(object):
     """
 
     def __init__(
-            self, key, payload=None, time=None, repeat=0,
-            delay_between_repeats=0):
+            self, key, payload=None, *,
+            time=None, repeat=0, delay_between_repeats=0):
         """
         :param int key: The key of the command
         :param payload: The payload of the command

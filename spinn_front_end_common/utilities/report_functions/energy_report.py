@@ -77,8 +77,6 @@ class EnergyReport(object):
         :param ~io.TextIOBase f: file writer
         :param PowerUsed power_used:
         """
-        # pylint: disable=too-many-arguments, too-many-locals
-
         # figure runtime in milliseconds with time scale factor
         runtime_total_ms = (
                 FecDataView.get_current_run_time_ms() *
