@@ -77,14 +77,6 @@ class _HostExecuteDataSpecification(object):
             # reset router tables
             receiver.load_application_routing_tables()
 
-    def __select_writer(self, x, y):
-        view = FecDataView()
-        chip = view.get_chip_at(x, y)
-        ethernet_chip = view.get_chip_at(
-            chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        gatherer = view.get_gatherer_by_xy(ethernet_chip.x, ethernet_chip.y)
-        return gatherer.send_data_into_spinnaker
-
     def __java_app(self, use_monitors):
         """
         :param bool use_monitors:
@@ -110,6 +102,9 @@ class _HostExecuteDataSpecification(object):
         try:
             if FecDataView.has_java_caller():
                 logger.warning("Java not being used for DS loading")
+            # hack to keep pylint quiet until java turned back on
+            if False:
+                self.__java_app(uses_advanced_monitors)
             #    if is_system:
             #        return self.__java_sys()
             #    else:
@@ -164,7 +159,7 @@ class _HostExecuteDataSpecification(object):
             base_address = self.__malloc_region_storage(x, y, p, malloc_size)
             dsg_targets.set_base_address(x, y, p, base_address)
 
-        for x, y, _, eth_x, eth_y in progress.over(core_infos):
+        for x, y, p, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
                 gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
                 writer = gatherer.send_data_into_spinnaker

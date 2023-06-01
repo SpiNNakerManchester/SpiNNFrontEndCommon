@@ -62,7 +62,7 @@ class DsSqlliteDatabase(SQLiteDB):
         Gets the path to the default/ current database file
 
         :rtype: str
-        :return: Path where the database is or should be writen
+        :return: Path where the database is or should be written
         """
         return os.path.join(FecDataView.get_run_dir_path(),
                             f"ds{FecDataView.get_reset_str()}.sqlite3")
@@ -171,7 +171,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core t
-        :param int region: The DS number of the region to reserve
+        :param int region: The number of the region to reserve
         :param int size: The size to reserve for the region, in bytes
         :param label: An optional label for the region
         :type label: str or None
@@ -191,12 +191,12 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_region_size(self, x, y, p, region_num):
         """
-        Gets the size for a region with this x, y, p and num
+        Gets the size for a region with this x, y, p and region
 
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int region_num: The DS region number
+        :param int region_num: The region number
         :return: The database id for this region and the size in bytes
         :rtype: int
         """
@@ -218,9 +218,9 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int region_num: The DS region number
-        :param int reference: DS number of the reference on this core
-        :param ref_label: label for the refrencing region
+        :param int region_num: The region number
+        :param int reference: The number of the reference on this core
+        :param ref_label: label for the referencing region
         :type ref_label: str or None
         """
         with self.transaction() as cursor:
@@ -233,7 +233,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_reference_pointers(self, x, y, p):
         """
-        Yeilds the reference regions and where they point for this core
+        Yields the reference regions and where they point for this core
 
         This may yield nothing if there are no reference pointers or
         if the core is not known
@@ -244,7 +244,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :return: Yields the refercing vertext region number and the pointer
+        :return: Yields the referencing vertex region number and the pointer
         :rtype: iterable(tuple(int,int))
         """
         with self.transaction() as cursor:
@@ -258,7 +258,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_unlinked_references(self):
         """
-        Finds and yeilds info on unreferenced links
+        Finds and yields info on unreferenced links
 
         If all is well this method yields nothing!
 
@@ -285,7 +285,7 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int x: X coordinate of the core
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
-        :param int region_num: The DS region number
+        :param int region_num: The region number
         :param bytearray content: content to write
         :param content_debug: debug text
         :type content_debug: str or None
@@ -483,7 +483,7 @@ class DsSqlliteDatabase(SQLiteDB):
 
     def get_ds_cores(self):
         """
-        Yields the x, y, p for the cores with possible DS
+        Yields the x, y, p for the cores with possible Data Specifications
 
         Includes cores where DataSpecs started even if no regions reserved
 
