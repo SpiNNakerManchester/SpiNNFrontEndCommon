@@ -77,6 +77,7 @@ class _HostExecuteDataSpecification(object):
             # reset router tables
             receiver.load_application_routing_tables()
 
+    # pylint: disable=unused-private-member
     def __java_app(self, use_monitors):
         """
         :param bool use_monitors:
@@ -102,9 +103,6 @@ class _HostExecuteDataSpecification(object):
         try:
             if FecDataView.has_java_caller():
                 logger.warning("Java not being used for DS loading")
-            # hack to keep pylint quiet until java turned back on
-            if False:
-                self.__java_app(uses_advanced_monitors)
             #    if is_system:
             #        return self.__java_sys()
             #    else:
