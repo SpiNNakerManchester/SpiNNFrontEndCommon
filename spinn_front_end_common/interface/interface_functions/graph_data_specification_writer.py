@@ -17,11 +17,11 @@ import logging
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import APP_PTR_TABLE_BYTE_SIZE
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, DataSpecException)
 from spinn_front_end_common.interface.ds import (

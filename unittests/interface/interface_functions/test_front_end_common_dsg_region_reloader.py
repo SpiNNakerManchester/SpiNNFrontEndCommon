@@ -16,7 +16,6 @@ import unittest
 import numpy
 from spinn_utilities.overrides import overrides
 from pacman.model.placements import Placements, Placement
-from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
     AbstractRewritesDataSpecification)
@@ -24,13 +23,13 @@ from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.interface_functions import (
     reload_dsg_regions)
-from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD, MAX_MEM_REGIONS, TABLE_TYPE)
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset, n_word_struct)
 from pacman.model.graphs.machine import (SimpleMachineVertex)
 from spinnman.transceiver import Transceiver
 from spinnman.model import CPUInfo
-from data_specification import DataSpecificationExecutor
 
 # test specific stuff
 reload_region_data = [
@@ -177,7 +176,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             ptr_table_addr = get_region_base_address_offset(user_0_address, 0)
             ptr_table = numpy.frombuffer(transceiver.read_memory(
                 placement.x, placement.y, ptr_table_addr, 0),
-                dtype=DataSpecificationExecutor.TABLE_TYPE)
+                dtype=TABLE_TYPE)
             for j in range(len(reload_region_data)):
                 pos = ((i * len(reload_region_data)) + j) * 2
                 region, data = reload_region_data[j]

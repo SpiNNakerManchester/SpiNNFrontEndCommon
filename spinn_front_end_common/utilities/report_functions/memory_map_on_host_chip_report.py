@@ -17,9 +17,9 @@ import os
 import struct
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
-from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
+from spinn_front_end_common.utilities.constants import (
+    BYTES_PER_WORD, MAX_MEM_REGIONS)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")

@@ -25,7 +25,7 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
-from data_specification.constants import (
+from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
 from spinn_front_end_common.data import FecDataView
 
