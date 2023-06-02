@@ -21,6 +21,7 @@ from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
     CORE_DATA_SDRAM_BASE_TAG, DSE_VERSION, MAX_MEM_REGIONS, TABLE_TYPE)
+from spinn_front_end_common.utilities.exceptions import DataSpecException
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 from spinn_front_end_common.utilities.emergency_recovery import (
@@ -155,18 +156,28 @@ class _HostExecuteDataSpecification(object):
             total_size = dsg_targets.get_total_regions_size(x, y, p)
             malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
             start_address = self.__malloc_region_storage(x, y, p, malloc_size)
-            dsg_targets.set_start_address(x, y, p, start_address)
+            expected_size = dsg_targets.set_start_address(
+                x, y, p, start_address)
+            if (malloc_size != expected_size):
+                raise DataSpecException(
+                    f"For {x=}{y=}{p=} {malloc_size=} != {expected_size=}")
 
         for x, y, p, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
                 gatherer = FecDataView.get_gatherer_by_xy(eth_x, eth_y)
                 writer = gatherer.send_data_into_spinnaker
-            self.__python_load_core(dsg_targets, x, y, p, writer)
+            written = self.__python_load_core(dsg_targets, x, y, p, writer)
+            to_write = dsg_targets.get_memory_to_write(x, y, p)
+            if (malloc_size != expected_size):
+                raise DataSpecException(
+                    f"For {x=}{y=}{p=} {written=} != {to_write=}")
+
 
         if uses_advanced_monitors:
             self.__reset_router_timeouts()
 
     def __python_load_core(self, dsg_targets, x, y, p, writer):
+        written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
         for region_num, pointer, content in \
@@ -177,16 +188,23 @@ class _HostExecuteDataSpecification(object):
                 continue
 
             writer(x, y, pointer, content)
-            n_words = len(content)
-            if n_words % BYTES_PER_WORD != 0:
-                n_words += BYTES_PER_WORD - n_words % BYTES_PER_WORD
-            pointer_table[region_num]["n_words"] = n_words / BYTES_PER_WORD
+            n_bytes = len(content)
+            written += n_bytes
+            if n_bytes % BYTES_PER_WORD != 0:
+                n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
+            pointer_table[region_num]["n_words"] = n_bytes / BYTES_PER_WORD
             n_data = numpy.array(content, dtype="uint8")
             pointer_table[region_num]["checksum"] = \
                 int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
 
-        for region_num, pointer in dsg_targets.get_reference_pointers(x, y, p):
-            pointer_table[region_num]["pointer"] = pointer
+        try:
+            for region_num, pointer in dsg_targets.get_reference_pointers(x, y, p):
+                pointer_table[region_num]["pointer"] = pointer
+        except TypeError:
+            if pointer is None:
+                raise DataSpecException(
+                    f"{x=} {y=} {p=} {region_num=} has a unsatisfied pointer")
+            raise
 
         base_address = dsg_targets.get_start_address(x, y, p)
         header = numpy.array([APPDATA_MAGIC_NUM, DSE_VERSION], dtype="<u4")
@@ -194,6 +212,8 @@ class _HostExecuteDataSpecification(object):
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()
         writer(x, y, base_address, to_write)
+        written += len(to_write)
+        return written
 
     def __malloc_region_storage(self, x, y, p, size):
         """

@@ -85,7 +85,7 @@ CREATE VIEW IF NOT EXISTS region_view AS
     FROM chip NATURAL JOIN core NATURAL JOIN region;
 
 CREATE VIEW IF NOT EXISTS content_size_view AS
-SELECT x,y,p, sum(IIF(content is NULL, 0, length(content))) as contents_size
+SELECT x,y,p, sum(COALESCE(length(content), 0)) as contents_size
 FROM region
 GROUP BY x, y, p;
 

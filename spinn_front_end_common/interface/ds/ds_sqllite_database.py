@@ -271,7 +271,8 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT  x, y, ref_p, ref_region, reference_num, ref_label
+                    SELECT  x, y, ref_p, ref_region, reference_num, 
+                        COALESCE(ref_label, "") as ref_label
                     FROM linked_reference_view
                     WHERE act_region IS NULL
                      """):
@@ -384,14 +385,13 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT sum(size) as total 
+                    SELECT COALESCE(sum(size), 0) as total 
                     FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (x, y, p)):
-                if row["total"] is None:
-                    return 0
                 return row["total"]
+        pop = 1/0
 
     def set_start_address(self, x, y, p, start_address):
         """
