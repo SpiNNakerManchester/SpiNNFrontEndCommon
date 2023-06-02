@@ -78,11 +78,9 @@ CREATE TABLE IF NOT EXISTS region(
     PRIMARY KEY (x, y, p, region_num),
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
-CREATE VIEW IF NOT EXISTS region_view AS
-    SELECT x, y, p, start_address, is_system,
-           region_num, region_label, reference_num, content, content_debug,
-           length(content) as content_size, size, pointer
-    FROM chip NATURAL JOIN core NATURAL JOIN region;
+-- -- Every reference is unique per core
+CREATE UNIQUE INDEX IF NOT EXISTS reference_in_sanity ON region(
+    x ASC, Y ASC, p ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS content_size_view AS
 SELECT x,y,p, sum(COALESCE(length(content), 0)) as contents_size
@@ -116,8 +114,8 @@ CREATE TABLE IF NOT EXISTS reference (
     PRIMARY KEY (x, y, p, region_num),
     FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
 
--- -- Every reference os unique per core
-CREATE UNIQUE INDEX IF NOT EXISTS reference_sanity ON reference(
+-- -- Every reference is unique per core
+CREATE UNIQUE INDEX IF NOT EXISTS reference_out_sanity ON reference(
     x ASC, Y ASC, p ASC, reference_num ASC);
 
 CREATE VIEW IF NOT EXISTS linked_reference_view AS
