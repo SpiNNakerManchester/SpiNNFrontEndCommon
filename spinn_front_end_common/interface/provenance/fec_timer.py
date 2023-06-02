@@ -16,10 +16,12 @@ import os
 import sys
 import time
 from datetime import timedelta
+from typing import List
 from spinn_utilities.config_holder import (get_config_bool)
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 from .global_provenance import GlobalProvenance
+from .timer_category import TimerCategory
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -63,7 +65,7 @@ class FecTimer(object):
     _category = None
     _category_time = None
     _machine_on = False
-    _previous = []
+    _previous: List[TimerCategory] = []
     __slots__ = (
         # The start time when the timer was set off
         "_start_time",

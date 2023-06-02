@@ -123,7 +123,7 @@ def test_database_interface():
     writer.add_vertex(lpg_vertex)
     writer.add_edge(ApplicationEdge(app_vertex_1, lpg_vertex), "Test")
 
-    lpg_vertex.splitter.create_vertices(placements)
+    lpg_vertex.splitter.create_sys_vertices(placements)
     _place_vertices(app_vertex_1, placements, [(0, 0)])
     _place_vertices(app_vertex_2, placements, [(0, 1), (1, 1)])
 

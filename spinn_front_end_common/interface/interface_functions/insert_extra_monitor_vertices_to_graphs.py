@@ -17,6 +17,8 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGatherMachineVertex, ExtraMonitorSupportMachineVertex)
+from spinn_front_end_common.utilities.utility_calls import (
+    pick_core_for_system_placement)
 
 
 def insert_extra_monitor_vertices_to_graphs(placements):
@@ -25,16 +27,14 @@ def insert_extra_monitor_vertices_to_graphs(placements):
     the extra monitor cores required.
 
     :param ~pacman.model.placements.Placements placements:
-    :return: vertex to Ethernet connection map,
-        list of extra_monitor_vertices,
-        vertex_to_chip_map
+    :return: mapping from *Ethernet-enabled* chip locations to their gatherer,
+        mapping from *all* chip locations to their extra monitor
     :rtype: tuple(
         dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-        list(ExtraMonitorSupportMachineVertex),
         dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
     """
     chip_to_gatherer_map = dict()
-    vertex_to_chip_map = dict()
+    chip_to_monitor_map = dict()
     machine = FecDataView.get_machine()
     ethernet_chips = machine.ethernet_connected_chips
     progress = ProgressBar(
@@ -44,18 +44,11 @@ def insert_extra_monitor_vertices_to_graphs(placements):
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
         chip_to_gatherer_map[eth.x, eth.y] = gatherer
-        cores = __cores(machine, eth.x, eth.y)
-        p = cores[placements.n_placements_on_chip(eth.x, eth.y)]
+        p = pick_core_for_system_placement(placements, eth.x, eth.y)
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
-            vertex_to_chip_map[x, y] = monitor
-            cores = __cores(machine, x, y)
-            p = cores[placements.n_placements_on_chip(x, y)]
+            chip_to_monitor_map[x, y] = monitor
+            p = pick_core_for_system_placement(placements, x, y)
             placements.add_placement(Placement(monitor, x, y, p))
-    return chip_to_gatherer_map, vertex_to_chip_map
-
-
-def __cores(machine, x, y):
-    return [p.processor_id for p in machine.get_chip_at(x, y).processors
-            if not p.is_monitor]
+    return chip_to_gatherer_map, chip_to_monitor_map

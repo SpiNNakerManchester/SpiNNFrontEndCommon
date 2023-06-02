@@ -28,4 +28,4 @@ def split_lpg_vertices(system_placements):
         existing placements to be added to
     """
     for vertex in FecDataView.get_vertices_by_type(LivePacketGather):
-        vertex.splitter.create_vertices(system_placements)
+        vertex.splitter.create_sys_vertices(system_placements)

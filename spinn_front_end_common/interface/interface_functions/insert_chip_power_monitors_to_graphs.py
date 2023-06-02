@@ -18,6 +18,8 @@ from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
+from spinn_front_end_common.utilities.utility_calls import (
+    pick_core_for_system_placement)
 
 _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
@@ -40,13 +42,7 @@ def insert_chip_power_monitors_to_graphs(placements):
         vertex = ChipPowerMonitorMachineVertex(
             f"ChipPowerMonitor on {chip.x}, {chip.y}",
             sampling_frequency=sampling_frequency)
-        cores = __cores(machine, chip.x, chip.y)
-        p = cores[placements.n_placements_on_chip(chip.x, chip.y)]
+        p = pick_core_for_system_placement(placements, chip.x, chip.y)
         placements.add_placement(Placement(vertex, chip.x, chip.y, p))
     # return any one of the Vertices created
     return vertex
-
-
-def __cores(machine, x, y):
-    return [p.processor_id for p in machine.get_chip_at(x, y).processors
-            if not p.is_monitor]

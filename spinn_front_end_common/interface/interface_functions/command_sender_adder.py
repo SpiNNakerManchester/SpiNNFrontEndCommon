@@ -11,14 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.graphs.application import ApplicationVirtualVertex
+from pacman.model.placements import Placement
+from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex)
 from spinn_front_end_common.utility_models import CommandSender
-from pacman.model.graphs.application import ApplicationVirtualVertex
-from pacman.model.placements import Placement
-from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.utility_calls import (
+    pick_core_for_system_placement)
 
 
 def add_command_senders(system_placements):
@@ -71,11 +73,6 @@ class CommandSenderAdder(object):
         if self.__general_command_sender is not None:
             yield self.__general_command_sender
 
-    def __cores(self, x, y):
-        return [p.processor_id
-                for p in FecDataView.get_chip_at(x, y).processors
-                if not p.is_monitor]
-
     def __get_command_sender(self, link_data):
         if link_data is None:
             if self.__general_command_sender is None:
@@ -90,8 +87,7 @@ class CommandSenderAdder(object):
             command_sender = self.__new_command_sender(
                 f"Command Sender on {x}, {y}")
             self.__command_sender_for_chip[(x, y)] = command_sender
-            cores = self.__cores(x, y)
-            p = cores[self.__system_placements.n_placements_on_chip(x, y)]
+            p = pick_core_for_system_placement(self.__system_placements, x, y)
             self.__system_placements.add_placement(
                 Placement(command_sender.machine_vertex, x, y, p))
         return command_sender
