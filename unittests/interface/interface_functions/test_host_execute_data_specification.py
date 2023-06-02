@@ -19,7 +19,9 @@ from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
+from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placements
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.data.fec_data_writer import FecDataWriter
 from spinn_front_end_common.interface.ds import (
     DataSpecificationGenerator)
@@ -73,23 +75,41 @@ class _MockTransceiver(Transceiver):
         pass
 
 
+class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
+
+    def __init__(self, binary_file_name, binary_start_type):
+        super().__init__(0)
+        self._binary_file_name = binary_file_name
+        self._binary_start_type = binary_start_type
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
+    def get_binary_file_name(self):
+        return self._binary_file_name
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return self._binary_start_type
+
+
+
 class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def setUp(cls):
         unittest_setup()
         set_config("Machine", "enable_advanced_monitor_support", "False")
-        raise cls.skipTest("to be fixed")
-
+        raise unittest.SkipTest("to fix")
+        
     def test_call(self):
         writer = FecDataWriter.mock()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         writer.set_transceiver(transceiver)
-        writer.set_placements(Placements([]))
 
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.USES_SIMULATION_INTERFACE)
         db = DsSqlliteDatabase()
-        spec = DataSpecificationGenerator()
+        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
         spec.reserve_memory_region(0, 100)
-        spec.reserve_memory_region(1, 100, empty=True)
+        spec.reserve_memory_region(1, 100)
         spec.reserve_memory_region(2, 100)
         spec.switch_write_focus(0)
         spec.write_value(0)
@@ -99,13 +119,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.write_value(3)
         spec.end_specification()
 
-        db.set_size_info(
-            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
-        # Execute the spec
-        targets = ExecutableTargets()
-        targets.add_processor(
-            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        writer.set_executable_targets(targets)
         writer.set_dsg_targets(db)
 
         execute_application_data_specs()
@@ -119,30 +132,31 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions), 4)
 
         # Base address for header and table
-        self.assertEqual(regions[1][0], 0)
+        self.assertEqual(regions[3][0], 0)
 
         # Base address for region 0 (after header and table)
-        self.assertEqual(regions[2][0], header_and_table_size)
+        self.assertEqual(regions[1][0], header_and_table_size)
 
         # Base address for region 2
-        self.assertEqual(regions[3][0], header_and_table_size + 200)
+        self.assertEqual(regions[2][0], header_and_table_size + 200)
 
         # User 0 write address
         self.assertEqual(regions[0][0], 1000)
 
         # Size of header and table
-        self.assertEqual(len(regions[1][1]), header_and_table_size)
+        self.assertEqual(len(regions[3][1]), header_and_table_size)
 
         # Size of region 0
-        self.assertEqual(len(regions[2][1]), 12)
+        self.assertEqual(len(regions[1][1]), 12)
 
         # Size of region 2
-        self.assertEqual(len(regions[3][1]), 4)
+        self.assertEqual(len(regions[2][1]), 4)
 
         # Size of user 0
         self.assertEqual(len(regions[0][1]), 4)
 
-        _, memory_used, memory_written = db.get_write_info(0, 0, 0)
+        pc = list(db.get_info_for_cores())
+        _, _, memory_used, memory_written = pc[0]
         # We reserved 3 regions at 100 each
         self.assertEqual(memory_used, header_and_table_size + 300)
         # We wrote 4 words
@@ -153,43 +167,33 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(
             user_0_addresses={0: 1000, 1: 2000, 2: 3000})
         writer.set_transceiver(transceiver)
-        writer.set_placements(Placements([]))
 
         db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.USES_SIMULATION_INTERFACE)
 
-        spec = DataSpecificationGenerator()
+        spec = DataSpecificationGenerator(0, 0, 0, vertex, db)
         spec.reference_memory_region(0, 1)
         spec.end_specification()
-        db.write_data_spec(0, 0, 0, spec.get_bytes_after_close())
 
-        db.set_size_info(
-            0, 0, 0, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
-
-        spec = DataSpecificationGenerator()
+        spec = DataSpecificationGenerator(0, 0, 1, vertex, db)
         spec.reserve_memory_region(0, 12, reference=1)
         spec.switch_write_focus(0)
         spec.write_value(0)
         spec.end_specification()
-        db.write_data_spec(0, 0, 1, spec.get_bytes_after_close())
 
-        db.set_size_info(
-            0, 0, 1, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
-
-        spec = DataSpecificationGenerator()
+        spec = DataSpecificationGenerator(0, 0, 2, vertex, db)
         spec.reference_memory_region(0, 1)
         spec.end_specification()
-        db.write_data_spec(0, 0, 2, spec.get_bytes_after_close())
-        db.set_size_info(
-            0, 0, 2, APP_PTR_TABLE_BYTE_SIZE + sum(spec.region_sizes))
 
-        targets = ExecutableTargets()
-        targets.add_processor(
-            "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
-        targets.add_processor(
-            "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
-        targets.add_processor(
-            "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
-        writer.set_executable_targets(targets)
+        #targets = ExecutableTargets()
+        #targets.add_processor(
+        #    "text.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        #targets.add_processor(
+        #    "text.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+        #targets.add_processor(
+        #    "text.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
+        #writer.set_executable_targets(targets)
         writer.set_dsg_targets(db)
 
         execute_application_data_specs()
@@ -201,6 +205,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         header_and_table_size = ((MAX_MEM_REGIONS * 3) + 2) * BYTES_PER_WORD
 
+        pc = list(db.get_info_for_cores())
+        _, _, memory_used, memory_written = pc[0]
         _, memory_used, memory_written = db.get_write_info(0, 0, 0)
         self.assertEqual(memory_used, header_and_table_size)
         self.assertEqual(memory_written, header_and_table_size)

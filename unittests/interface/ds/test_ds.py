@@ -202,7 +202,8 @@ class TestDataSpecification(unittest.TestCase):
         self.assertEqual(None, db.get_region_pointer(1, 1, 2, 6))
 
         self.assertIsNone(db.get_start_address(1, 1, 2))
-        db.set_start_address(1, 1, 2, 1000)
+        size = db.set_start_address(1, 1, 2, 1000)
+        self.assertEqual(APP_PTR_TABLE_BYTE_SIZE + 100 + 200 + 400, size)
         base_adr = db.get_start_address(1, 1, 2)
         self.assertEqual(1000, base_adr)
         p_info = list(db.get_region_pointers_and_content(1, 1, 2))
@@ -244,7 +245,7 @@ class TestDataSpecification(unittest.TestCase):
 
         # will fails on an unknown core
         with self.assertRaises(DsDatabaseException):
-            db.set_base_address(1, 1, 8, 1000)
+            db.set_start_address(1, 1, 8, 1000)
         with self.assertRaises(DsDatabaseException):
             db.get_start_address(1, 1, 8)
 
@@ -315,6 +316,22 @@ class TestDataSpecification(unittest.TestCase):
         self.assertIn((0, 1, 4), cores)
         self.assertIn((0, 2, 3), cores)
 
+    def test_memory_to_write(self):
+        db = DsSqlliteDatabase()
+        vertex = _TestVertexWithBinary(
+            "binary", ExecutableType.SYSTEM)
+        dsg = DataSpecificationGenerator(0, 1, 3, vertex, db)
+        dsg.reserve_memory_region(5, 200, "used")
+        dsg.switch_write_focus(5)
+        dsg.write_array([34, 56])
+
+        dsg = DataSpecificationGenerator(0, 1, 4, vertex, db)
+        dsg = DataSpecificationGenerator(0, 1, 5, vertex, db)
+        dsg.reserve_memory_region(5, 100, "unused")
+        self.assertEqual(APP_PTR_TABLE_BYTE_SIZE,
+                         db.get_memory_to_write(0, 1, 4))
+        self.assertEqual(APP_PTR_TABLE_BYTE_SIZE,
+                         db.get_memory_to_write(0, 1, 3))
 
 if __name__ == "__main__":
     unittest.main()
