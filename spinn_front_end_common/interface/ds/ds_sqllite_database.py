@@ -358,7 +358,8 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, size FROM region_view
+                    SELECT region_num, size 
+                    FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                     """, (x, y, p)):
@@ -383,7 +384,8 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT sum(size) as total FROM region_view
+                    SELECT sum(size) as total 
+                    FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (x, y, p)):
@@ -399,8 +401,11 @@ class DsSqlliteDatabase(SQLiteDB):
         :param int y: Y coordinate of the core
         :param int p: Processor ID of the core
         :param int start_address: The base address for the whole core
+        :return: The expected size of the malloced_area
+        :rtype: int
+        :raises DsDatabaseException: if the region is not known
         """
-        pointer = (start_address + APP_PTR_TABLE_BYTE_SIZE)
+        next_pointer = (start_address + APP_PTR_TABLE_BYTE_SIZE)
         to_update = []
         with self.transaction() as cursor:
             cursor.execute(
@@ -420,8 +425,8 @@ class DsSqlliteDatabase(SQLiteDB):
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                     """, (x, y, p,)):
-                to_update.append((pointer, row["region_num"]))
-                pointer += row["size"]
+                to_update.append((next_pointer, row["region_num"]))
+                next_pointer += row["size"]
 
             for pointer, region_num in to_update:
                 cursor.execute(
@@ -430,6 +435,8 @@ class DsSqlliteDatabase(SQLiteDB):
                     SET pointer = ?
                     WHERE x = ? AND y = ? and p = ? and region_num = ?
                     """, (pointer, x, y, p, region_num))
+
+            return next_pointer - start_address
 
     def get_start_address(self, x, y, p):
         """
@@ -471,7 +478,7 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT region_num, content, pointer
-                    FROM region_view
+                    FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                      """, (x, y, p)):
@@ -520,6 +527,52 @@ class DsSqlliteDatabase(SQLiteDB):
                 return row["count"]
         raise DsDatabaseException("Count query failed")
 
+    def get_memory_to_malloc(self, x, y, p):
+        """
+        Gets the expected number of bytes to be written
+
+        :param int x: core X coordinate
+        :param int y: core Y coordinate
+        :param int p: core processor ID
+        :return: expected memory_written in bytes
+        :rtype: int
+        """
+        to_malloc = APP_PTR_TABLE_BYTE_SIZE
+        with self.transaction() as cursor:
+            # try the fast way using regions
+            for row in cursor.execute(
+                    """
+                    SELECT regions_size
+                    FROM region_size_view
+                    WHERE x = ? AND y = ? AND p = ?
+                    LIMIT 1
+                    """, (x, y, p)):
+                to_malloc += row["regions_size"]
+        return to_malloc
+
+    def get_memory_to_write(self, x, y, p):
+        """
+        Gets the expected number of bytes to be written
+
+        :param int x: core X coordinate
+        :param int y: core Y coordinate
+        :param int p: core processor ID
+        :return: expected memory_written in bytes
+        :rtype: int
+        """
+        to_write = APP_PTR_TABLE_BYTE_SIZE
+        with self.transaction() as cursor:
+            # try the fast way using regions
+            for row in cursor.execute(
+                    """
+                    SELECT contents_size
+                    FROM content_size_view
+                    WHERE x = ? AND y = ? AND p = ?
+                    LIMIT 1
+                    """, (x, y, p)):
+                to_write += row["contents_size"]
+        return to_write
+
     def get_info_for_cores(self):
         """
         Yields the (x, y, p) and write info for each core
@@ -539,21 +592,11 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT
-                        x, y, p,
-                        start_address, sum(size) as memory_used,
-                        sum(content_size) as content_size
-                    FROM region_view
-                    GROUP BY x, y, p
+                    SELECT x, y, p, start_address, to_write,malloc_size
+                    FROM core_summary_view
                     """):
-                if row["content_size"]:
-                    content_size = row["content_size"]
-                else:
-                    content_size = 0
-                yield ((row["x"], row["y"], row["p"]),
-                       row["start_address"],
-                       row["memory_used"] + APP_PTR_TABLE_BYTE_SIZE,
-                       content_size + APP_PTR_TABLE_BYTE_SIZE)
+                 yield ((row["x"], row["y"], row["p"]), row["start_address"],
+                       row["malloc_size"], row["to_write"])
 
     def write_session_credentials_to_db(self):
         """

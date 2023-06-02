@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS core(
     p INTEGER NOT NULL,
     is_system INTEGER NOT NULL,
     start_address INTEGER,
+    memory_written INTEGER,
     PRIMARY KEY (x, y, p),
     FOREIGN KEY (x, y) REFERENCES chip(x, y)
 );
@@ -82,6 +83,26 @@ CREATE VIEW IF NOT EXISTS region_view AS
            region_num, region_label, reference_num, content, content_debug,
            length(content) as content_size, size, pointer
     FROM chip NATURAL JOIN core NATURAL JOIN region;
+
+CREATE VIEW IF NOT EXISTS content_size_view AS
+SELECT x,y,p, sum(IIF(content is NULL, 0, length(content))) as contents_size
+FROM region
+GROUP BY x, y, p;
+
+CREATE VIEW IF NOT EXISTS region_size_view AS
+SELECT x,y,p, sum(size) as regions_size
+FROM region
+GROUP BY x, y, p;
+
+CREATE VIEW IF NOT EXISTS core_summary_view AS
+SELECT core.x, core.y, core.p, start_address,
+       contents_size, COALESCE(contents_size + 392, 392) as to_write,
+       regions_size, COALESCE(regions_size + 392, 392) as malloc_size
+FROM core NATURAL JOIN chip
+LEFT JOIN content_size_view
+ON core.x = content_size_view.x AND core.y = content_size_view.y AND core.p = content_size_view.p
+LEFT JOIN region_size_view
+ON core.x = region_size_view.x AND core.y = region_size_view.y AND core.p = region_size_view.p;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the references.
