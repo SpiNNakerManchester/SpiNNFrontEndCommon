@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 import logging
 import numpy
+from typing import NamedTuple
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
@@ -47,9 +47,15 @@ def system_cores():
     return cores
 
 
-#: A named tuple for a region that can be referenced
-_RegionToRef = namedtuple(
-    "_RegionToRef", ["x", "y", "p", "region", "pointer"])
+class _RegionToRef(NamedTuple):
+    """
+    A named tuple for a region that can be referenced.
+    """
+    x: int
+    y: int
+    p: int
+    region: int
+    pointer: int
 
 
 #: A class for regions to be filled in
