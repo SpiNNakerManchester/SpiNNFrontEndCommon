@@ -200,7 +200,7 @@ class _HostExecuteDataSpecification(object):
             for region_num, pointer in dsg_targets.get_reference_pointers(
                     x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
-        except TypeError as ex:
+        except TypeError:
             # pylint: disable=raise-missing-from, undefined-loop-variable
             if pointer is None:
                 raise DataSpecException(
