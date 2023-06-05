@@ -391,7 +391,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     LIMIT 1
                     """, (x, y, p)):
                 return row["total"]
-            raise DsDatabaseException(f"Query failed unexpectedly")
+            raise DsDatabaseException("Query failed unexpectedly")
 
     def set_start_address(self, x, y, p, start_address):
         """

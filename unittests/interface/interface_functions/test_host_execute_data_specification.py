@@ -30,7 +30,7 @@ from spinn_front_end_common.interface.interface_functions import (
 from spinn_front_end_common.interface.config_setup import unittest_setup
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 from spinn_front_end_common.utilities.constants import (
-    BYTES_PER_WORD, MAX_MEM_REGIONS, APP_PTR_TABLE_BYTE_SIZE)
+    BYTES_PER_WORD, MAX_MEM_REGIONS)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 
 
