@@ -271,7 +271,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT  x, y, ref_p, ref_region, reference_num, 
+                    SELECT  x, y, ref_p, ref_region, reference_num,
                         COALESCE(ref_label, "") as ref_label
                     FROM linked_reference_view
                     WHERE act_region IS NULL
@@ -359,7 +359,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT region_num, size 
+                    SELECT region_num, size
                     FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
@@ -385,13 +385,13 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             for row in cursor.execute(
                     """
-                    SELECT COALESCE(sum(size), 0) as total 
+                    SELECT COALESCE(sum(size), 0) as total
                     FROM region
                     WHERE x = ? AND y = ? AND p = ?
                     LIMIT 1
                     """, (x, y, p)):
                 return row["total"]
-        pop = 1/0
+            raise DsDatabaseException(f"Query failed unexpectedly")
 
     def set_start_address(self, x, y, p, start_address):
         """
@@ -410,7 +410,7 @@ class DsSqlliteDatabase(SQLiteDB):
         with self.transaction() as cursor:
             cursor.execute(
                 """
-                UPDATE core 
+                UPDATE core
                 SET start_address = ?
                 WHERE x = ? AND y = ? AND p = ?
                 """, (start_address, x, y, p))
@@ -595,7 +595,7 @@ class DsSqlliteDatabase(SQLiteDB):
                     SELECT x, y, p, start_address, to_write,malloc_size
                     FROM core_summary_view
                     """):
-                 yield ((row["x"], row["y"], row["p"]), row["start_address"],
+                yield ((row["x"], row["y"], row["p"]), row["start_address"],
                        row["malloc_size"], row["to_write"])
 
     def write_session_credentials_to_db(self):

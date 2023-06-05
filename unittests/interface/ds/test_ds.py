@@ -333,5 +333,6 @@ class TestDataSpecification(unittest.TestCase):
         self.assertEqual(APP_PTR_TABLE_BYTE_SIZE,
                          db.get_memory_to_write(0, 1, 3))
 
+
 if __name__ == "__main__":
     unittest.main()

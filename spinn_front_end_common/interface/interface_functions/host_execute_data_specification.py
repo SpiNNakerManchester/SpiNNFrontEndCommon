@@ -172,7 +172,6 @@ class _HostExecuteDataSpecification(object):
                 raise DataSpecException(
                     f"For {x=}{y=}{p=} {written=} != {to_write=}")
 
-
         if uses_advanced_monitors:
             self.__reset_router_timeouts()
 
@@ -198,7 +197,8 @@ class _HostExecuteDataSpecification(object):
                 int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
 
         try:
-            for region_num, pointer in dsg_targets.get_reference_pointers(x, y, p):
+            for region_num, pointer in dsg_targets.get_reference_pointers(
+                    x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
         except TypeError:
             if pointer is None:

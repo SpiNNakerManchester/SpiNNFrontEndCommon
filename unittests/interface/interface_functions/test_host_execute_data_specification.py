@@ -18,7 +18,6 @@ import unittest
 from spinn_utilities.config_holder import set_config
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
-from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.placements import Placements
@@ -91,7 +90,6 @@ class _TestVertexWithBinary(SimpleMachineVertex, AbstractHasAssociatedBinary):
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return self._binary_start_type
-
 
 
 class TestHostExecuteDataSpecification(unittest.TestCase):
