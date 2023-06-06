@@ -476,11 +476,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         is_per_timestep_sdram = self._is_per_timestep_sdram()
 
         # Disable auto pause and resume if the binary can't do it
-        if not get_config_bool("Machine", "virtual_board"):
-            for executable_type in self._data_writer.get_executable_types():
-                if not executable_type.supports_auto_pause_and_resume:
-                    set_config(
-                        "Buffers", "use_auto_pause_and_resume", "False")
+        for executable_type in self._data_writer.get_executable_types():
+            if not executable_type.supports_auto_pause_and_resume:
+                set_config(
+                    "Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out the maximum run duration given all recordings
         if not self._data_writer.has_max_run_time_steps():
@@ -1392,6 +1391,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                     graph_binary_gatherer())
             except KeyError:
                 if get_config_bool("Machine", "virtual_board"):
+                    # Github actions have no binaries
                     logger.warning(
                         "Ignoring exectable not found as using virtual")
                     timer.error("exectable not found and virtual board")
