@@ -104,12 +104,12 @@ class _HostExecuteDataSpecification(object):
         try:
             if FecDataView.has_java_caller():
                 logger.warning("Java not being used for DS loading")
-            #    if is_system:
-            #        return self.__java_sys()
-            #    else:
-            #        return self.__java_app(uses_advanced_monitors)
-            # else:
-            return self.__python_load(is_system, uses_advanced_monitors)
+                if is_system:
+                    return self.__java_sys()
+                else:
+                    return self.__java_app(uses_advanced_monitors)
+            else:
+                return self.__python_load(is_system, uses_advanced_monitors)
         except:  # noqa: E722
             if uses_advanced_monitors:
                 emergency_recover_states_from_failure()
