@@ -17,6 +17,7 @@ main interface for the SpiNNaker tools
 import logging
 import math
 import os
+import re
 import signal
 import sys
 import threading
@@ -134,6 +135,11 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
+
+SHARED_PATH = re.compile(r".*\/shared\/([^\/]+)")
+SHARED_GROUP = 1
+SHARED_WITH_PATH = re.compile(r".*\/Shared with (all|groups|me)\/([^\/]+)")
+SHARED_WITH_GROUP = 2
 
 
 class AbstractSpinnakerBase(ConfigHandler):
@@ -268,6 +274,34 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Try a simple environment variable, or None if that doesn't exist
         return os.getenv("OIDC_BEARER_TOKEN")
+
+    @property
+    def __group_collab_or_job(self):
+        """
+        :return: The group, collab, or NMPI Job ID to associate with jobs
+        :rtype: dict()
+        """
+        # Try to get a NMPI Job
+        nmpi_job = os.getenv("NMPI_JOB_ID")
+        if nmpi_job is not None:
+            return {"nmpi_job": nmpi_job}
+
+        # Try to get the collab from the path
+        cwd = os.getcwd()
+        match_obj = SHARED_PATH.match(cwd)
+        if match_obj:
+            return {"collab": match_obj.group(SHARED_GROUP)}
+        match_obj = SHARED_WITH_PATH.match(cwd)
+        if match_obj:
+            return {"collab": match_obj.group(SHARED_WITH_GROUP)}
+
+        # Try to use the config to get a group
+        group = get_config_str("Machine", "spalloc_group")
+        if group is not None:
+            return {"group": group}
+
+        # Nothing ventured, nothing gained
+        return {}
 
     def exception_handler(self, exc_type, value, traceback_obj):
         """
@@ -673,7 +707,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             return None
         if get_config_str("Machine", "spalloc_server") is not None:
             with FecTimer("SpallocAllocator", TimerWork.OTHER):
-                return spalloc_allocator(self.__bearer_token)
+                return spalloc_allocator(
+                    self.__bearer_token, **self.__group_collab_or_job)
         if get_config_str("Machine", "remote_spinnaker_url") is not None:
             with FecTimer("HBPAllocator", TimerWork.OTHER):
                 # TODO: Would passing the bearer token to this ever make sense?
