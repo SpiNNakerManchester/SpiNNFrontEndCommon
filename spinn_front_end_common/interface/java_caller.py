@@ -44,7 +44,7 @@ class JavaCaller(object):
     jar locations, parameters, etc. from the rest of the Python code.
     """
     __slots__ = (
-        "_chipxy_by_ethernet",
+        "_chip_by_ethernet",
         # The call to get java to work. Including the path if required.
         "_java_call",
         # The location of the java jar file
@@ -87,7 +87,7 @@ class JavaCaller(object):
         self._gatherer_iptags = None
         self._gatherer_cores = None
         self._java_properties = get_config_str("Java", "java_properties")
-        self._chipxy_by_ethernet = None
+        self._chip_by_ethernet = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
             # pylint: disable=not-an-iterable
@@ -145,24 +145,24 @@ class JavaCaller(object):
         """
         tags = FecDataView.get_tags()
         self._monitor_cores = dict()
-        for core, monitor_core in FecDataView.iterate_monitor_items():
+        for chip, monitor_core in FecDataView.iterate_monitor_items():
             placement = FecDataView.get_placement_of_vertex(monitor_core)
-            self._monitor_cores[core] = placement.p
+            self._monitor_cores[chip] = placement.p
 
         self._gatherer_iptags = dict()
         self._gatherer_cores = dict()
-        for core, packet_gather in FecDataView.iterate_gather_items():
-            self._gatherer_iptags[core] = \
+        for chip, packet_gather in FecDataView.iterate_gather_items():
+            self._gatherer_iptags[chip] = \
                 tags.get_ip_tags_for_vertex(packet_gather)[0]
             placement = FecDataView.get_placement_of_vertex(packet_gather)
-            self._gatherer_cores[core] = placement.p
+            self._gatherer_cores[chip] = placement.p
 
-        self._chipxy_by_ethernet = defaultdict(list)
+        self._chip_by_ethernet = defaultdict(list)
         machine = FecDataView.get_machine()
         for chip in machine.chips:
-            chip_xy = (chip.x, chip.y)
-            ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-            self._chipxy_by_ethernet[ethernet].append(chip_xy)
+            ethernet = machine.get_chip_at(
+                chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+            self._chip_by_ethernet[ethernet].append(chip)
 
     def _machine_json(self):
         """
@@ -246,17 +246,16 @@ class JavaCaller(object):
     def _placements_grouped(self, recording_placements):
         """
         :param ~pacman.model.placements.Placements recording_placementss:
-        :rtype: dict(tuple(int,int),dict(tuple(int,int),
-            ~pacman.model.placements.Placement))
+        :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
         for placement in recording_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
                 machine = FecDataView.get_machine()
                 chip = machine.get_chip_at(placement.x, placement.y)
-                chip_xy = (placement.x, placement.y)
-                ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-                by_ethernet[ethernet][chip_xy].append(placement)
+                ethernet = machine.get_chip_at(
+                    chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+                by_ethernet[ethernet][chip].append(placement)
         return by_ethernet
 
     def _write_gather(self, used_placements, path):
@@ -268,23 +267,23 @@ class JavaCaller(object):
         """
         placements_by_ethernet = self._placements_grouped(used_placements)
         json_obj = list()
-        for ethernet in self._chipxy_by_ethernet:
+        for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
             json_gather = dict()
-            json_gather["x"] = ethernet[0]
-            json_gather["y"] = ethernet[1]
+            json_gather["x"] = ethernet.x
+            json_gather["y"] = ethernet.y
             json_gather["p"] = self._gatherer_cores[ethernet]
             json_gather["iptag"] = self._json_iptag(
                 self._gatherer_iptags[ethernet])
             json_chips = list()
-            for chip_xy in self._chipxy_by_ethernet[ethernet]:
+            for chip in self._chip_by_ethernet[ethernet]:
                 json_chip = dict()
-                json_chip["x"] = chip_xy[0]
-                json_chip["y"] = chip_xy[1]
-                json_chip["p"] = self._monitor_cores[chip_xy]
-                if chip_xy in by_chip:
+                json_chip["x"] = chip.x
+                json_chip["y"] = chip.y
+                json_chip["p"] = self._monitor_cores[chip]
+                if chip in by_chip:
                     json_placements = list()
-                    for placement in by_chip[chip_xy]:
+                    for placement in by_chip[chip]:
                         json_p = self._json_placement(placement)
                         if json_p:
                             json_placements.append(json_p)

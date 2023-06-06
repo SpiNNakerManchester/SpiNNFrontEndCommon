@@ -445,7 +445,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param extra_monitor_cores_to_ethernet_connection_map:
             mapping between cores and connections
         :type extra_monitor_cores_to_ethernet_connection_map:
-            dict(tuple(int,int), DataSpeedUpPacketGatherMachineVertex)
+            dict(Chip, DataSpeedUpPacketGatherMachineVertex)
         :return: a write function of either a LPG or the spinnMan
         :rtype: callable
         """
@@ -456,7 +456,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         ethernet_connected_chip = FecDataView.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         gatherer = extra_monitor_cores_to_ethernet_connection_map[
-            ethernet_connected_chip.x, ethernet_connected_chip.y]
+            ethernet_connected_chip]
         return gatherer.send_data_into_spinnaker
 
     def _generate_data_in_report(

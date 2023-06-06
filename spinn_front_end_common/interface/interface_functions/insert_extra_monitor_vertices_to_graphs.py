@@ -30,8 +30,8 @@ def insert_extra_monitor_vertices_to_graphs(placements):
     :return: mapping from *Ethernet-enabled* chip locations to their gatherer,
         mapping from *all* chip locations to their extra monitor
     :rtype: tuple(
-        dict(tuple(int,int),DataSpeedUpPacketGatherMachineVertex),
-        dict(tuple(int,int),ExtraMonitorSupportMachineVertex))
+        dict(Chip,DataSpeedUpPacketGatherMachineVertex),
+        dict(Chip,ExtraMonitorSupportMachineVertex))
     """
     chip_to_gatherer_map = dict()
     chip_to_monitor_map = dict()
@@ -43,12 +43,12 @@ def insert_extra_monitor_vertices_to_graphs(placements):
     for eth in progress.over(ethernet_chips):
         gatherer = DataSpeedUpPacketGatherMachineVertex(
             x=eth.x, y=eth.y, ip_address=eth.ip_address)
-        chip_to_gatherer_map[eth.x, eth.y] = gatherer
+        chip_to_gatherer_map[eth] = gatherer
         p = pick_core_for_system_placement(placements, eth.x, eth.y)
         placements.add_placement(Placement(gatherer, eth.x, eth.y, p))
         for x, y in machine.get_existing_xys_by_ethernet(eth.x, eth.y):
             monitor = ExtraMonitorSupportMachineVertex()
-            chip_to_monitor_map[x, y] = monitor
+            chip_to_monitor_map[machine.get_chip_at(x, y)] = monitor
             p = pick_core_for_system_placement(placements, x, y)
             placements.add_placement(Placement(monitor, x, y, p))
     return chip_to_gatherer_map, chip_to_monitor_map

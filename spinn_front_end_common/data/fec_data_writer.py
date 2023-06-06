@@ -21,6 +21,7 @@ from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+from spinn_machine import Chip
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
 from spinnman.model import ExecutableTargets
@@ -484,7 +485,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def __gatherer_map_error(self):
         return TypeError(
-            "gatherer_map must be a dict((int, int), "
+            "gatherer_map must be a dict(Chip, "
             "DataSpeedUpPacketGatherMachineVertex)")
 
     def set_gatherer_map(self, gatherer_map):
@@ -492,16 +493,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         Sets the map of (x,y) to Gatherer Vertices.
 
         :param gatherer_map:
-        :type gatherer_map:
-            dict((int, int), DataSpeedUpPacketGatherMachineVertex)
+        :type gatherer_map: dict(Chip, DataSpeedUpPacketGatherMachineVertex)
         """
         if not isinstance(gatherer_map, dict):
             raise self.__gatherer_map_error()
         try:
-            for (x, y), vertex in gatherer_map.items():
-                if not isinstance(x, int):
-                    raise self.__gatherer_map_error()
-                if not isinstance(y, int):
+            for chip, vertex in gatherer_map.items():
+                if not isinstance(chip, Chip):
                     raise self.__gatherer_map_error()
                 if not isinstance(
                         vertex, DataSpeedUpPacketGatherMachineVertex):
@@ -513,7 +511,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def __monitor_map_error(self):
         return TypeError(
-            "monitor_map must be a dict((int, int), "
+            "monitor_map must be a dict(Chip, "
             "ExtraMonitorSupportMachineVertex)")
 
     def set_monitor_map(self, monitor_map):
@@ -522,15 +520,13 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
         :param monitor_map:
         :type monitor_map:
-            dict((int, int), ExtraMonitorSupportMachineVertex)
+            dict(Chip, ExtraMonitorSupportMachineVertex)
         """
         if not isinstance(monitor_map, dict):
             raise self.__monitor_map_error()
         try:
-            for (x, y), vertex in monitor_map.items():
-                if not isinstance(x, int):
-                    raise self.__monitor_map_error()
-                if not isinstance(y, int):
+            for chip, vertex in monitor_map.items():
+                if not isinstance(chip, Chip):
                     raise self.__monitor_map_error()
                 if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
                     raise self.__monitor_map_error()
