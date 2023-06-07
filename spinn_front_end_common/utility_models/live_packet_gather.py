@@ -16,7 +16,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from pacman.model.placements import Placement
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
-    vertex_xy)
+    vertex_chip)
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 from spinn_front_end_common.data import FecDataView
@@ -49,7 +49,7 @@ class _LPGSplitter(AbstractSplitterCommon):
             lpg_vtx = LivePacketGatherMachineVertex(
                 self.governed_app_vertex.params, self.governed_app_vertex)
             self.governed_app_vertex.remember_machine_vertex(lpg_vtx)
-            p = pick_core_for_system_placement(system_placements, eth.x, eth.y)
+            p = pick_core_for_system_placement(system_placements, eth)
             system_placements.add_placement(
                 Placement(lpg_vtx, eth.x, eth.y, p))
             self.__m_vertices_by_ethernet[eth.x, eth.y] = lpg_vtx
@@ -79,7 +79,7 @@ class _LPGSplitter(AbstractSplitterCommon):
         # Find the nearest placement for the first machine vertex of the source
         m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
             partition_id)))
-        chip = FecDataView.get_chip_at(*vertex_xy(m_vertex))
+        chip = vertex_chip(m_vertex)
         lpg_vertex = self.__m_vertices_by_ethernet[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y]
         for m_vertex in source_vertex.splitter.get_out_going_vertices(

@@ -11,20 +11,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Optional
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.placements import Placement
+from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utility_models import (
     ChipPowerMonitorMachineVertex)
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 
-_LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
-
-def insert_chip_power_monitors_to_graphs(placements):
+def insert_chip_power_monitors_to_graphs(
+        placements: Placements) -> Optional[ChipPowerMonitorMachineVertex]:
     """
     Adds chip power monitors into a given graph.
 
@@ -37,12 +36,13 @@ def insert_chip_power_monitors_to_graphs(placements):
     # create progress bar
     progress = ProgressBar(
         machine.n_chips, "Adding Chip power monitors to Graph")
+    vertex = None  # In case of a machine with no chips...
 
     for chip in progress.over(machine.chips):
         vertex = ChipPowerMonitorMachineVertex(
             f"ChipPowerMonitor on {chip.x}, {chip.y}",
             sampling_frequency=sampling_frequency)
-        p = pick_core_for_system_placement(placements, chip.x, chip.y)
+        p = pick_core_for_system_placement(placements, chip)
         placements.add_placement(Placement(vertex, chip.x, chip.y, p))
     # return any one of the Vertices created
     return vertex

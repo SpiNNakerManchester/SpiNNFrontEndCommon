@@ -318,11 +318,10 @@ class _HostExecuteDataSpecification(object):
             receiver.load_application_routing_tables()
 
     def __select_writer(self, x, y):
-        view = FecDataView()
-        chip = view.get_chip_at(x, y)
-        ethernet_chip = view.get_chip_at(
+        chip = FecDataView.get_chip_at(x, y)
+        ethernet_chip = FecDataView.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        gatherer = view.get_gatherer_by_xy(ethernet_chip.x, ethernet_chip.y)
+        gatherer = FecDataView.get_gatherer_by_chip(ethernet_chip)
         return gatherer.send_data_into_spinnaker
 
     def __python_app(self, use_monitors):

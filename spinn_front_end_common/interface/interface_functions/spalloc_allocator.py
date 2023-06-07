@@ -14,7 +14,7 @@
 from contextlib import ExitStack
 import logging
 import math
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -228,8 +228,8 @@ class _OldSpallocJobController(MachineAllocationController):
 _MACHINE_VERSION = 5
 
 
-def spalloc_allocator(bearer_token: str = None) -> Tuple[
-        str, int, None, bool, bool, Dict[Tuple[int, int], str], None,
+def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
+        str, int, None, bool, bool, Dict[Tuple[int, int], str],
         MachineAllocationController]:
     """
     Request a machine from a SPALLOC server that will fit the given
@@ -270,7 +270,7 @@ def spalloc_allocator(bearer_token: str = None) -> Tuple[
 
 def _allocate_job_new(
         spalloc_server: str, n_boards: int,
-        bearer_token: str = None) -> Tuple[
+        bearer_token: Optional[str] = None) -> Tuple[
             str, Dict[Tuple[int, int], str], MachineAllocationController]:
     """
     Request a machine from an new-style spalloc server that will fit the
@@ -306,7 +306,7 @@ def _allocate_job_new(
         # Success! We don't want to close the client, job or task now;
         # the allocation controller now owns them.
         stack.pop_all()
-        return (root, connections, allocation_controller)
+    return (root, connections, allocation_controller)
 
 
 def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[

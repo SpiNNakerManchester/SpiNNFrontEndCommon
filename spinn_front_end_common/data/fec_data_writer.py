@@ -17,6 +17,7 @@ import logging
 import math
 import os
 import time
+from typing import Dict, Tuple
 from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
@@ -325,7 +326,10 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         self.__fec_data._hardware_time_step_ms = (
             rounded / MICRO_TO_MILLISECOND_CONVERSION)
 
-    def set_system_multicast_routing_data(self, data):
+    def set_system_multicast_routing_data(
+            self, data: Tuple[
+                MulticastRoutingTables, Dict[Tuple[int, int], int],
+                Dict[Tuple[int, int], int]]):
         """
         Sets the system_multicast_routing_data.
 
@@ -413,7 +417,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
         """
         :param fixed_routes:
         :type fixed_routes:
-            dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
+            dict(~spinn_machine.Chip, ~spinn_machine.FixedRouteEntry)
         """
         if not isinstance(fixed_routes, dict):
             raise TypeError("fixed_routes must be a dict")

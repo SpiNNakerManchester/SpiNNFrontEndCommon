@@ -14,6 +14,7 @@
 
 import logging
 import os
+from typing import Dict, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_machine import CoreSubsets
@@ -623,7 +624,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # system multicast routing data
 
     @classmethod
-    def get_data_in_multicast_key_to_chip_map(cls):
+    def get_data_in_multicast_key_to_chip_map(
+            cls) -> Dict[Tuple[int, int], int]:
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
@@ -653,7 +655,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._data_in_multicast_routing_tables
 
     @classmethod
-    def get_system_multicast_router_timeout_keys(cls):
+    def get_system_multicast_router_timeout_keys(
+            cls) -> Dict[Tuple[int, int], int]:
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.
@@ -701,7 +704,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         """
         Gets the fixed routes if they have been created.
 
-        :rtype: dict(tuple(int,int), ~spinn_machine.FixedRouteEntry)
+        :rtype: dict(~spinn_machine.Chip, ~spinn_machine.FixedRouteEntry)
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the fixed_routes is currently unavailable
         """
@@ -1030,6 +1033,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map[cls.get_chip_at(x, y)]
 
     @classmethod
+    def get_monitor_by_chip(cls, chip):
+        """
+        The ExtraMonitorSupportMachineVertex for chip.
+
+        :param ~spinn_machine.Chip chip: chip to get monitor for
+        :rtype: ExtraMonitorSupportMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the monitors are currently unavailable
+        :raises KeyError: If chip (x,y) does not have a monitor
+        """
+        if cls.__fec_data._monitor_map is None:
+            raise cls._exception("monitors_map")
+        # pylint: disable=unsubscriptable-object
+        return cls.__fec_data._monitor_map[chip]
+
+    @classmethod
     def iterate_monitor_items(cls):
         """
         Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
@@ -1069,6 +1088,24 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         if cls.__fec_data._monitor_map is None:
             raise cls._exception("monitors_map")
         return cls.__fec_data._monitor_map.values()
+
+    @classmethod
+    def get_gatherer_by_chip(cls, chip):
+        """
+        The DataSpeedUpPacketGatherMachineVertex for an Ethernet-enabled chip.
+
+        :param ~spinn_machine.Chip chip: The Ethernet-enabled chip
+        :rtype: DataSpeedUpPacketGatherMachineVertex
+        :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
+            If the gatherers are currently unavailable
+        :raises KeyError:
+            If the chip does not have a gatherer
+            (e.g., if it is not an Ethernet-enabled chip)
+        """
+        if cls.__fec_data._gatherer_map is None:
+            raise cls._exception("gatherer_map")
+        # pylint: disable=unsubscriptable-object
+        return cls.__fec_data._gatherer_map[chip]
 
     @classmethod
     def get_gatherer_by_xy(cls, x, y):

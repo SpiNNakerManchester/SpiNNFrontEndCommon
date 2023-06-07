@@ -694,41 +694,39 @@ def _search_route(source_placement, key_and_mask):
             source_placement.x, source_placement.y, source_placement.p)
         spinn_link = FecDataView.get_machine().get_spinnaker_link_with_id(
             vertex.spinnaker_link_id)
-        x, y = spinn_link.connected_chip_x, spinn_link.connected_chip_y
+        chip = FecDataView.get_chip_at(
+            spinn_link.connected_chip_x, spinn_link.connected_chip_y)
     elif isinstance(vertex, MachineFPGAVertex):
         text = "        Virtual FPGA Link on {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
         fpga_link = FecDataView.get_machine().get_fpga_link_with_id(
             vertex.fpga_id, vertex.fpga_link_id)
-        x, y = fpga_link.connected_chip_x, fpga_link.connected_chip_y
+        chip = FecDataView.get_chip_at(
+            fpga_link.connected_chip_x, fpga_link.connected_chip_y)
     else:
-        x, y = source_placement.x, source_placement.y
+        chip = source_placement.chip
         text = "        {}:{}:{} -> ".format(
             source_placement.x, source_placement.y, source_placement.p)
 
     # If the destination is virtual, replace with the real destination chip
     text += _recursive_trace_to_destinations(
-        x, y, key_and_mask, pre_space="        ")
+        chip, key_and_mask, pre_space="        ")
     return text
 
 
 # Locates the destinations of a route
-def _recursive_trace_to_destinations(
-        chip_x, chip_y, key_and_mask, pre_space):
+def _recursive_trace_to_destinations(chip, key_and_mask, pre_space):
     """
     Recursively search though routing tables till no more entries are
     registered with this key
 
-    :param int chip_x:
-    :param int chip_y
+    :param ~spinn_machine.Chip chip:
     :param ~pacman.model.routing_info.BaseKeyAndMask key_and_mask:
     :rtype: str
     """
-    chip = FecDataView.get_chip_at(chip_x, chip_y)
-
-    text = f"-> Chip {chip_x}:{chip_y}"
+    text = f"-> Chip {chip.x}:{chip.y}"
     routing_tables = FecDataView.get_uncompressed()
-    table = routing_tables.get_routing_table_for_chip(chip_x, chip_y)
+    table = routing_tables.get_routing_table_for_chip(chip.x, chip.y)
     entry = _locate_routing_entry(table, key_and_mask.key)
     new_pre_space = pre_space + (" " * len(text))
     first = True
@@ -738,8 +736,8 @@ def _recursive_trace_to_destinations(
         link = chip.router.get_link(link_id)
         text += f"-> {link}"
         text += _recursive_trace_to_destinations(
-            link.destination_x, link.destination_y, key_and_mask,
-            new_pre_space)
+            FecDataView.get_chip_at(link.destination_x, link.destination_y),
+            key_and_mask, new_pre_space)
         first = False
 
     return text

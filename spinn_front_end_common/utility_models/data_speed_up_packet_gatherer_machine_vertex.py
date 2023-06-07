@@ -378,11 +378,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write mc chip key map
         machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
-        chips_on_board = list(machine.get_existing_xys_on_board(
+        chip_xys_on_board = list(machine.get_existing_xys_on_board(
             machine.get_chip_at(placement.x, placement.y)))
 
         # write how many chips to read
-        spec.write_value(len(chips_on_board))
+        spec.write_value(len(chip_xys_on_board))
 
         # write the broad cast keys for timeouts
         router_timeout_key = (
@@ -393,7 +393,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         mc_data_chips_to_keys = (
             FecDataView.get_data_in_multicast_key_to_chip_map())
         # write each chip x and y and base key
-        for chip_xy in chips_on_board:
+        for chip_xy in chip_xys_on_board:
             board_chip_x, board_chip_y = machine.get_local_xy(
                 machine.get_chip_at(*chip_xy))
             spec.write_value(board_chip_x)
@@ -427,37 +427,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "data_speed_up_packet_gatherer.aplx"
-
-    @staticmethod
-    def locate_correct_write_data_function_for_chip_location(
-            uses_advanced_monitors, x, y, transceiver,
-            extra_monitor_cores_to_ethernet_connection_map):
-        """
-        Supports other components figuring out which gatherer and function
-        to call for writing data onto SpiNNaker.
-
-        :param bool uses_advanced_monitors:
-            Whether the system is using advanced monitors
-        :param int x: the chip x coordinate to write data to
-        :param int y: the chip y coordinate to write data to
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the SpiNNMan instance
-        :param extra_monitor_cores_to_ethernet_connection_map:
-            mapping between cores and connections
-        :type extra_monitor_cores_to_ethernet_connection_map:
-            dict(Chip, DataSpeedUpPacketGatherMachineVertex)
-        :return: a write function of either a LPG or the spinnMan
-        :rtype: callable
-        """
-        if not uses_advanced_monitors:
-            return transceiver.write_memory
-
-        chip = FecDataView.get_chip_at(x, y)
-        ethernet_connected_chip = FecDataView.get_chip_at(
-            chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        gatherer = extra_monitor_cores_to_ethernet_connection_map[
-            ethernet_connected_chip]
-        return gatherer.send_data_into_spinnaker
 
     def _generate_data_in_report(
             self, time_diff, data_size, x, y,
@@ -508,13 +477,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param int x: chip x for data
         :param int y: chip y for data
         :param int base_address: the address in SDRAM to start writing memory
-        :param data: the data to write or filename to load data from,
-            if a string
+        :param data:
+            the data to write or filename to load data from (if a string)
         :type data: bytes or bytearray or memoryview or str
         :param int n_bytes: how many bytes to read, or `None` if not set
         :param int offset: where in the data to start from
         :param int cpu: Ignored; can only target SDRAM so unimportant
-        :param bool is_filename: whether data is actually a file.
         """
         # if file, read in and then process as normal
         if isinstance(data, str):
@@ -530,11 +498,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         elif n_bytes is None:
             n_bytes = len(data)
 
+        destination = FecDataView.get_chip_at(x, y)
         # start time recording
         start = datetime.datetime.now()
         # send data
         self._send_data_via_extra_monitors(
-            x, y, base_address, data[offset:n_bytes + offset])
+            destination, base_address, data[offset:n_bytes + offset])
         # end time recording
         end = datetime.datetime.now()
 
@@ -594,13 +563,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         return connection
 
     def _send_data_via_extra_monitors(
-            self, destination_chip_x, destination_chip_y, start_address,
-            data_to_write):
+            self, destination_chip, start_address, data_to_write):
         """
         Sends data using the extra monitor cores.
 
-        :param int destination_chip_x: chip x
-        :param int destination_chip_y: chip y
+        :param Chip destination_chip: chip to send to
         :param int start_address: start address in SDRAM to write data to
         :param bytearray data_to_write: the data to write
         :param int start_address: the base SDRAM address
@@ -614,9 +581,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # determine board chip IDs, as the LPG does not know
             # machine scope IDs
             machine = FecDataView.get_machine()
-            chip = FecDataView.get_chip_at(
-                destination_chip_x, destination_chip_y)
-            dest_x, dest_y = machine.get_local_xy(chip)
+            dest_x, dest_y = machine.get_local_xy(destination_chip)
             self._coord_word = (dest_x << DEST_X_SHIFT) | dest_y
 
             # for safety, check the transaction id from the machine before
@@ -1129,19 +1094,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of chip locations
         :rtype: list(tuple(int,int))
         """
-        routers = [(placement.x, placement.y)]
+        routers = [placement.xy]
         fixed_routes = FecDataView.get_fixed_routes()
         # pylint: disable=unsubscriptable-object
-        entry = fixed_routes[placement.x, placement.y]
-        chip_x, chip_y = placement.x, placement.y
+        chip = placement.chip
+        entry = fixed_routes[chip]
         while not entry.processor_ids:
             # can assume one link, as its a minimum spanning tree going to
             # the root
-            link = FecDataView.get_chip_at(
-                chip_x, chip_y).router.get_link(next(iter(entry.link_ids)))
-            chip_x, chip_y = link.destination_x, link.destination_y
-            routers.append((chip_x, chip_y))
-            entry = fixed_routes[chip_x, chip_y]
+            link = chip.router.get_link(next(iter(entry.link_ids)))
+            chip = FecDataView.get_chip_at(
+                link.destination_x, link.destination_y)
+            routers.append((link.destination_x, link.destination_y))
+            entry = fixed_routes[chip]
         return routers
 
     def _write_routers_used_into_report(self, routers_been_in_use, placement):

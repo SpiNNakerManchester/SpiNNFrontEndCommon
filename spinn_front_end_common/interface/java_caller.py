@@ -206,23 +206,23 @@ class JavaCaller(object):
         :rtype: dict
         """
         vertex = placement.vertex
-        json_placement = dict()
-        json_placement["x"] = placement.x
-        json_placement["y"] = placement.y
-        json_placement["p"] = placement.p
+        json_placement = {
+            "x": placement.x,
+            "y": placement.y,
+            "p": placement.p,
+            "vertex": {
+                "label": vertex.label,
+                "recordedRegionIds": [],
+                "recordingRegionBaseAddress": 0}}
 
-        json_vertex = dict()
-        json_vertex["label"] = vertex.label
         if isinstance(vertex, AbstractReceiveBuffersToHost) and \
                 vertex.get_recorded_region_ids():
             self._recording = True
+            json_vertex = json_placement["vertex"]
+            # Replace fields in template above
             json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
             json_vertex["recordingRegionBaseAddress"] = \
                 vertex.get_recording_region_base_address(placement)
-        else:
-            json_vertex["recordedRegionIds"] = []
-            json_vertex["recordingRegionBaseAddress"] = 0
-        json_placement["vertex"] = json_vertex
 
         return json_placement
 
@@ -231,17 +231,15 @@ class JavaCaller(object):
         :param ~pacman.model.tags.IPTag iptag:
         :rtype: dict
         """
-        json_tag = dict()
-        json_tag["x"] = iptag.destination_x
-        json_tag["y"] = iptag.destination_y
-        json_tag["boardAddress"] = iptag.board_address
-        json_tag["targetAddress"] = iptag.ip_address
-        # Intentionally not including port!
-        json_tag["stripSDP"] = iptag.strip_sdp
-        json_tag["tagID"] = iptag.tag
-        json_tag["trafficIdentifier"] = iptag.traffic_identifier
-
-        return json_tag
+        return {
+            "x": iptag.destination_x,
+            "y": iptag.destination_y,
+            "boardAddress": iptag.board_address,
+            "targetAddress": iptag.ip_address,
+            # Intentionally not including port!
+            "stripSDP": iptag.strip_sdp,
+            "tagID": iptag.tag,
+            "trafficIdentifier": iptag.traffic_identifier}
 
     def _placements_grouped(self, recording_placements):
         """
@@ -249,13 +247,14 @@ class JavaCaller(object):
         :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
         """
         by_ethernet = defaultdict(lambda: defaultdict(list))
+        machine = FecDataView.get_machine()
         for placement in recording_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
-                machine = FecDataView.get_machine()
-                chip = machine.get_chip_at(placement.x, placement.y)
+                chip = placement.chip
                 ethernet = machine.get_chip_at(
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-                by_ethernet[ethernet][chip].append(placement)
+                if ethernet:
+                    by_ethernet[ethernet][chip].append(placement)
         return by_ethernet
 
     def _write_gather(self, used_placements, path):
@@ -269,25 +268,22 @@ class JavaCaller(object):
         json_obj = list()
         for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
-            json_gather = dict()
-            json_gather["x"] = ethernet.x
-            json_gather["y"] = ethernet.y
-            json_gather["p"] = self._gatherer_cores[ethernet]
-            json_gather["iptag"] = self._json_iptag(
-                self._gatherer_iptags[ethernet])
+            json_gather = {
+                "x": ethernet.x,
+                "y": ethernet.y,
+                "p": self._gatherer_cores[ethernet],
+                "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
             json_chips = list()
             for chip in self._chip_by_ethernet[ethernet]:
-                json_chip = dict()
-                json_chip["x"] = chip.x
-                json_chip["y"] = chip.y
-                json_chip["p"] = self._monitor_cores[chip]
+                json_chip = {
+                    "x": chip.x,
+                    "y": chip.y,
+                    "p": self._monitor_cores[chip]}
                 if chip in by_chip:
-                    json_placements = list()
-                    for placement in by_chip[chip]:
-                        json_p = self._json_placement(placement)
-                        if json_p:
-                            json_placements.append(json_p)
-                    if len(json_placements) > 0:
+                    json_placements = [
+                        self._json_placement(placement)
+                        for placement in by_chip[chip]]
+                    if json_placements:
                         json_chip["placements"] = json_placements
                 json_chips.append(json_chip)
             json_gather["monitors"] = json_chips

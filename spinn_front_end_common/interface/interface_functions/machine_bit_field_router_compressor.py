@@ -48,7 +48,7 @@ from spinn_front_end_common.utilities.constants import (
 from .load_executable_images import filter_targets
 from .host_bit_field_router_compressor import (
     generate_key_to_atom_map, generate_report_path,
-    start_compression_selection_process)
+    HostBasedBitFieldRouterCompressor)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -203,7 +203,7 @@ class _MachineBitFieldRouterCompressor(object):
 
     def _on_host_compress(self, on_host_chips, routing_tables):
         """
-        :param iterable(tuple(int,int)) on_host_chips:
+        :param iterable(Chip) on_host_chips:
         :param MulticastRoutingTables routing_tables:
         """
         if get_config_bool(
@@ -227,14 +227,12 @@ class _MachineBitFieldRouterCompressor(object):
             compressed_tables = MulticastRoutingTables()
             key_atom_map = generate_key_to_atom_map()
 
-            for (chip_x, chip_y) in progress.over(on_host_chips, False):
-                start_compression_selection_process(
-                    router_table=routing_tables.get_routing_table_for_chip(
-                        chip_x, chip_y),
-                    report_folder_path=report_folder_path,
-                    most_costly_cores=most_costly_cores,
-                    compressed_pacman_router_tables=compressed_tables,
-                    key_atom_map=key_atom_map)
+            compressor = HostBasedBitFieldRouterCompressor(
+                key_atom_map, report_folder_path, most_costly_cores)
+            for chip in progress.over(on_host_chips, False):
+                compressor.compress_bitfields(
+                    routing_tables.get_routing_table_for_chip(chip.x, chip.y),
+                    compressed_tables)
 
             # load host compressed routing tables
             for table in compressed_tables.routing_tables:
@@ -259,11 +257,10 @@ class _MachineBitFieldRouterCompressor(object):
         bit_field_compressor_cores = CoreSubsets()
 
         cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
-        view = FecDataView()
         for routing_table in progress_bar.over(routing_tables, False):
             # add 1 core to the sorter, and the rest to compressors
             sorter = None
-            for processor in view.get_chip_at(
+            for processor in FecDataView.get_chip_at(
                     routing_table.x, routing_table.y).processors:
                 if (not processor.is_monitor and
                         not cores.all_core_subsets.is_core(
@@ -310,7 +307,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         :param ~spinnman.model.ExecutableTargets executable_targets:
             cores to load router compressor with bitfield on
-        :param list(tuple(int,int)) host_chips:
+        :param list(Chip) host_chips:
             the chips which need to be ran on host.
         :param str sorter_binary_path: the path to the sorter binary
         :rtype: bool
@@ -327,7 +324,7 @@ class _MachineBitFieldRouterCompressor(object):
                 bit_fields_merged = transceiver.read_user_2(x, y, p)
 
                 if result != self.SUCCESS:
-                    host_chips.add((x, y))
+                    host_chips.add(FecDataView.get_chip_at(x, y))
                     result = False
                 generate_provenance_item(x, y, bit_fields_merged)
         return result
@@ -360,16 +357,16 @@ class _MachineBitFieldRouterCompressor(object):
             again. `None` for as much as needed
         :type retry_count: int or None
         :return:
-            the list of tuples saying which chips this will need to use
-            host compression, as the malloc failed.
-        :rtype: list(tuple(int,int))
+            the list of which chips will need to use host compression,
+            as the malloc failed.
+        :rtype: list(~spinn_machine.Chip)
         """
         run_by_host = list()
         for table in routing_tables.routing_tables:
             try:
                 self._load_routing_table_data(
                     table, compressor_app_id, progress_bar,
-                    cores, matrix_addresses_and_size[(table.x, table.y)])
+                    cores, matrix_addresses_and_size[table.x, table.y])
 
                 comms_sdram = self.__txrx.malloc_sdram(
                     table.x, table.y, SIZE_OF_COMMS_SDRAM, compressor_app_id,
@@ -377,19 +374,19 @@ class _MachineBitFieldRouterCompressor(object):
 
                 self._load_address_data(
                     addresses, table.x, table.y, compressor_app_id,
-                    cores, matrix_addresses_and_size[(table.x, table.y)],
+                    cores, matrix_addresses_and_size[table.x, table.y],
                     compressor_executable_path, sorter_executable_path,
                     comms_sdram, retry_count)
 
                 self._load_usable_sdram(
-                    matrix_addresses_and_size[(table.x, table.y)], table.x,
+                    matrix_addresses_and_size[table.x, table.y], table.x,
                     table.y, compressor_app_id, cores)
 
                 self._load_compressor_data(
                     table.x, table.y, compressor_executable_path, cores,
                     comms_sdram)
             except CantFindSDRAMToUseException:
-                run_by_host.append((table.x, table.y))
+                run_by_host.append(FecDataView.get_chip_at(table.x, table.y))
 
         return run_by_host
 

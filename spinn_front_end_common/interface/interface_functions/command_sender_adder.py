@@ -81,13 +81,14 @@ class CommandSenderAdder(object):
             return self.__general_command_sender
 
         x, y = link_data.connected_chip_x, link_data.connected_chip_y
+        chip = FecDataView.get_chip_at(x, y)
 
-        command_sender = self.__command_sender_for_chip.get((x, y))
+        command_sender = self.__command_sender_for_chip.get(chip)
         if command_sender is None:
             command_sender = self.__new_command_sender(
                 f"Command Sender on {x}, {y}")
-            self.__command_sender_for_chip[(x, y)] = command_sender
-            p = pick_core_for_system_placement(self.__system_placements, x, y)
+            self.__command_sender_for_chip[chip] = command_sender
+            p = pick_core_for_system_placement(self.__system_placements, chip)
             self.__system_placements.add_placement(
                 Placement(command_sender.machine_vertex, x, y, p))
         return command_sender

@@ -152,8 +152,7 @@ class _GraphDataSpecificationWriter(object):
 
             self._vertices_by_chip[pl.x, pl.y].append(pl.vertex)
             self._sdram_usage[pl.x, pl.y] += sum(spec.region_sizes)
-            if (self._sdram_usage[pl.x, pl.y] <=
-                    FecDataView().get_chip_at(pl.x, pl.y).sdram):
+            if (self._sdram_usage[pl.x, pl.y] <= pl.chip.sdram):
                 return True
 
         # creating the error message which contains the memory usage of

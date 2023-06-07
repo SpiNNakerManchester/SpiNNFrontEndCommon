@@ -236,18 +236,15 @@ def uniquifier():
     return f
 
 
-def pick_core_for_system_placement(system_placements, x, y):
+def pick_core_for_system_placement(system_placements, chip):
     """
     Get a core number for use putting a system placement on a chip.
 
     :param ~pacman.model.placements.Placements system_placements:
         Already-made system placements
-    :param int x: X coordinate of chip of interest
-    :param int y: Y coordinate of chip of interest
+    :param ~spinn_machine.Chip chip: Chip of interest
     :return: a core that a system placement could be put on
     :rtype: int
     """
-    cores = [p.processor_id
-             for p in FecDataView.get_chip_at(x, y).processors
-             if not p.is_monitor]
-    return cores[system_placements.n_placements_on_chip(x, y)]
+    cores = [p.processor_id for p in chip.processors if not p.is_monitor]
+    return cores[system_placements.n_placements_on_chip(chip.x, chip.y)]

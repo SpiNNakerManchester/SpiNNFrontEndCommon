@@ -236,14 +236,14 @@ class ExtraMonitorSupportMachineVertex(
     def generate_data_specification(self, spec, placement):
         # storing for future usage
         self._placement = placement
+        chip = placement.chip
         self._app_id = FecDataView.get_app_id()
         # write reinjection config
-        self._generate_reinjection_config(spec, placement)
+        self._generate_reinjection_config(spec, chip)
         # write data speed up out config
         self._generate_data_speed_up_out_config(spec)
         # write data speed up in config
-        self._generate_data_speed_up_in_config(
-            spec, FecDataView().get_chip_at(placement.x, placement.y))
+        self._generate_data_speed_up_in_config(spec, chip)
         self._generate_provenance_area(spec)
         spec.end_specification()
 
@@ -262,10 +262,10 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(Gatherer.TRANSACTION_ID_KEY)
         spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(self, spec, placement):
+    def _generate_reinjection_config(self, spec, chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
-        :param ~.Placement placement:
+        :param ~.Chip chip:
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.REINJECT_CONFIG,
@@ -283,7 +283,6 @@ class ExtraMonitorSupportMachineVertex(
         # add the reinjection mc interface
         router_timeout_keys = \
             FecDataView.get_system_multicast_router_timeout_keys()
-        chip = FecDataView().get_chip_at(placement.x, placement.y)
         # Write the base key for multicast comms
         # pylint: disable=unsubscriptable-object
         spec.write_value(router_timeout_keys[
@@ -402,8 +401,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def set_router_wait2_timeout(
@@ -430,8 +428,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def reset_reinjection_counters(self, extra_monitor_cores_to_set):
@@ -452,8 +449,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def clear_reinjection_queue(self, extra_monitor_cores_to_set):
@@ -472,8 +468,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             process.reset_counters(core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def get_reinjection_status(self):
@@ -483,7 +478,7 @@ class ExtraMonitorSupportMachineVertex(
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
         """
-        placement = FecDataView.get_placement_of_vertex(self)
+        placement = self._placement
         process = ReadStatusProcess(
             FecDataView.get_scamp_connection_selector())
         try:
@@ -541,8 +536,7 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_multicast, self._reinject_nearest_neighbour,
                 self._reinject_fixed_route)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def load_system_mc_routes(self):
@@ -559,8 +553,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             return process.load_system_mc_routes(core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     def load_application_mc_routes(self):
@@ -574,8 +567,7 @@ class ExtraMonitorSupportMachineVertex(
         try:
             return process.load_application_mc_routes(core_subsets)
         except:  # noqa: E722
-            emergency_recover_state_from_failure(
-                self, FecDataView.get_placement_of_vertex(self))
+            emergency_recover_state_from_failure(self, self._placement)
             raise
 
     @staticmethod
