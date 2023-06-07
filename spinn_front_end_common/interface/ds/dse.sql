@@ -92,6 +92,11 @@ SELECT x,y,p, sum(size) as regions_size
 FROM region
 GROUP BY x, y, p;
 
+CREATE VIEW IF NOT EXISTS region_size_ethernet_view AS
+SELECT x,y,p, sum(size) as regions_size, ethernet_x, ethernet_y
+FROM chip NATURAL JOIN region
+GROUP BY x, y, p;
+
 CREATE VIEW IF NOT EXISTS core_summary_view AS
 SELECT core.x, core.y, core.p, start_address,
        contents_size, COALESCE(contents_size + 392, 392) as to_write,
