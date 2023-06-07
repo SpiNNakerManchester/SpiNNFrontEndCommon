@@ -613,3 +613,21 @@ class DsSqlliteDatabase(SQLiteDB):
             if isinstance(job, SpallocJob):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
+
+
+    def set_app_id(self):
+        """
+        Sets the app id
+
+        """
+        with self.transaction() as cursor:
+            # check for previous content
+            cursor.execute(
+                """
+                INSERT INTO app_id(app_id)
+                VALUES(?)
+                """, (FecDataView.get_app_id(), ))
+            if cursor.rowcount == 0:
+                raise DsDatabaseException(
+                    f"Unable to set app id")
+

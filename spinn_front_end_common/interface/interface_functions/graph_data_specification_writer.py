@@ -71,6 +71,7 @@ class _GraphDataSpecificationWriter(object):
         # vertex
         ds_db = DsSqlliteDatabase()
         ds_db.write_session_credentials_to_db()
+        ds_db. set_app_id()
 
         if placement_order is None:
             placement_order = FecDataView.iterate_placemements()
