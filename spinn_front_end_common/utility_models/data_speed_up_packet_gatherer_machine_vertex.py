@@ -40,8 +40,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.utility_calls import (
     get_region_base_address_offset, open_scp_connection, retarget_tag)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.utilities.scp import (
-    SetRouterTimeoutProcess, ClearQueueProcess)
+from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -883,7 +882,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self])
-        process = SetRouterTimeoutProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
@@ -900,7 +899,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset([self])
-        process = SetRouterTimeoutProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
@@ -917,10 +916,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             the placements object
         """
         core_subsets = convert_vertices_to_core_subset([self])
-        process = ClearQueueProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
-            process.reset_counters(core_subsets)
+            process.clear_queue(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(
                 self, FecDataView.get_placement_of_vertex(self))

@@ -23,7 +23,7 @@ from spinn_front_end_common.data import FecDataView
 
 def routing_setup():
     """
-    Initialises the router diagnostic filters.
+    Initialises the routing diagnostic filters.
 
     .. note::
         This does not load any routes into them.
@@ -32,12 +32,12 @@ def routing_setup():
     routing_tables = FecDataView.get_uncompressed().routing_tables
     progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
-    # Clear the routing table for each router that needs to be set up
+    # Clear the routing table for each table that needs to be set up
     # and set up the diagnostics
-    for router in progress.over(routing_tables):
-        transceiver.clear_multicast_routes(router.x, router.y)
-        transceiver.clear_router_diagnostic_counters(router.x, router.y)
-        _set_router_diagnostic_filters(router.x, router.y, transceiver)
+    for table in progress.over(routing_tables):
+        transceiver.clear_multicast_routes(table.x, table.y)
+        transceiver.clear_router_diagnostic_counters(table.x, table.y)
+        _set_router_diagnostic_filters(table.x, table.y, transceiver)
 
 
 def _set_router_diagnostic_filters(x, y, transceiver):

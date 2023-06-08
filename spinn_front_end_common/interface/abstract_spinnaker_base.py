@@ -867,7 +867,10 @@ class AbstractSpinnakerBase(ConfigHandler):
             system_placements)
         self._data_writer.set_gatherer_map(gather_map)
         self._data_writer.set_monitor_map(monitor_map)
-        self._data_writer.add_monitor_all_chips(monitor_map[0, 0])
+        # Pick one, the first one
+        for mon in monitor_map.values():
+            self._data_writer.add_monitor_all_chips(mon)
+            break
 
     def _report_partitioner(self):
         """

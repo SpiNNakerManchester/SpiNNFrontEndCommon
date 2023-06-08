@@ -61,60 +61,58 @@ class _RouterProvenanceGatherer(object):
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
 
-    def __get_router_diagnostics(self, x, y):
-        return FecDataView.get_transceiver().get_router_diagnostics(x, y)
+    def __get_router_diagnostics(self, chip):
+        return FecDataView.get_transceiver().get_router_diagnostics(
+            chip.x, chip.y)
 
     def _add_router_table_diagnostic(self, table, reinjection_data):
         """
-        :param ~.MulticastRoutingTable table:
+        :param ~.AbstractMulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
-        :rtype: tuple(int,int)
+        :rtype: Chip
         """
-        x, y = table.x, table.y
+        chip = table.chip
         try:
-            diagnostics = self.__get_router_diagnostics(x, y)
+            diagnostics = self.__get_router_diagnostics(chip)
         except SpinnmanException:
             logger.warning(
-                "Could not read routing diagnostics from {}, {}",
-                x, y, exc_info=True)
+                "Could not read routing diagnostics from {},{}",
+                chip.x, chip.y, exc_info=True)
             return (-1, -1)  # Not a chip location
-        status = self.__get_status(reinjection_data, x, y)
-        self.__router_diagnostics(x, y, diagnostics, status, True, table)
-        return x, y
+        status = self.__get_status(reinjection_data, chip)
+        self.__router_diagnostics(chip, diagnostics, status, True, table)
+        return chip
 
     def _add_unseen_router_chip_diagnostic(self, chip, reinjection_data):
         """
         :param ~.Chip chip:
-        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
+        :param dict(Chip,ReInjectionStatus) reinjection_data:
         """
         try:
-            diagnostics = self.__get_router_diagnostics(chip.x, chip.y)
+            diagnostics = self.__get_router_diagnostics(chip)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
         if (diagnostics.n_dropped_multicast_packets or
                 diagnostics.n_local_multicast_packets or
                 diagnostics.n_external_multicast_packets):
-            status = self.__get_status(reinjection_data, chip.x, chip.y)
-            self.__router_diagnostics(
-                chip.x, chip.y, diagnostics, status, False, None)
+            status = self.__get_status(reinjection_data, chip)
+            self.__router_diagnostics(chip, diagnostics, status, False, None)
 
     @staticmethod
-    def __get_status(reinjection_data, x, y):
+    def __get_status(reinjection_data, chip):
         """
-        :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
-        :param int x:
-        :param int y:
+        :param dict(Chip,ReInjectionStatus) reinjection_data:
+        :param Chip chip:
         :rtype: ReInjectionStatus or None
         """
-        return reinjection_data[x, y] if reinjection_data else None
+        return reinjection_data.get(chip) if reinjection_data else None
 
-    def __router_diagnostics(self, x, y, diagnostics, status, expected, table):
+    def __router_diagnostics(self, chip, diagnostics, status, expected, table):
         """
         Describes the router diagnostics for one router.
 
-        :param int x: x coordinate of the router in question
-        :param int y: y coordinate of the router in question
+        :param Chip chip: Chip of the router in question
         :param ~.RouterDiagnostics diagnostics: the router diagnostics object
         :param ReInjectionStatus status:
             the data gained from the extra monitor re-injection subsystem
@@ -132,6 +130,7 @@ class _RouterProvenanceGatherer(object):
             status.n_dropped_packet_overflows + status.n_reinjected_packets +
             status.n_processor_dumps + status.n_link_dumps) <
             diagnostics.n_dropped_multicast_packets)
+        x, y = chip.x, chip.y
 
         with ProvenanceWriter() as db:
             db.insert_router(

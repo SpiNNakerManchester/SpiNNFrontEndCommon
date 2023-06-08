@@ -11,20 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations  # Type checking trickery
 import logging
 import os
-from typing import Dict, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Chip, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
+from spinnman.model import ExecutableTargets
+from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
-from pacman.model.graphs.application import ApplicationEdge
-# in code to avoid circular import
-# from spinn_front_end_common.utility_models import LivePacketGather
-# from spinn_front_end_common.utility_models import CommandSender
+from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
+from pacman.model.graphs import AbstractVertex
+from pacman.model.routing_tables import MulticastRoutingTables
+if TYPE_CHECKING:
+    # May be circular references in here; it's OK
+    from spinn_front_end_common.interface.buffer_management import (
+        BufferManager)
+    from spinn_front_end_common.abstract_models import (
+        AbstractMachineAllocationController)
+    from spinn_front_end_common.interface.java_caller import JavaCaller
+    from spinn_front_end_common.utilities.utility_objs import (
+        LivePacketGatherParameters)
+    from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+    from spinn_front_end_common.utility_models import (
+        ExtraMonitorSupportMachineVertex,
+        DataSpeedUpPacketGatherMachineVertex)
+    from spinn_front_end_common.utilities.notification_protocol import (
+        NotificationProtocol)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _EMPTY_CORE_SUBSETS = CoreSubsets()
@@ -186,7 +202,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # current_run_timesteps and first_machine_time_step
 
     @classmethod
-    def get_current_run_timesteps(cls):
+    def get_current_run_timesteps(cls) -> Optional[int]:
         """
         The end of this or the previous do__run loop time in steps.
 
@@ -199,7 +215,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._current_run_timesteps
 
     @classmethod
-    def get_current_run_time_ms(cls):
+    def get_current_run_time_ms(cls) -> float:
         """
         The end of this or the previous do__run loop time in ms.
 
@@ -218,7 +234,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # _allocation_controller
     @classmethod
-    def has_allocation_controller(cls):
+    def has_allocation_controller(cls) -> bool:
         """
         Reports if an AllocationController object has already been set.
 
@@ -229,7 +245,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._allocation_controller is not None
 
     @classmethod
-    def get_allocation_controller(cls):
+    def get_allocation_controller(cls) -> AbstractMachineAllocationController:
         """
         Returns the allocation controller if known.
 
@@ -244,7 +260,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # _buffer_manager
     @classmethod
-    def has_buffer_manager(cls):
+    def has_buffer_manager(cls) -> bool:
         """
         Reports if a BufferManager object has already been set.
 
@@ -255,7 +271,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._buffer_manager is not None
 
     @classmethod
-    def get_buffer_manager(cls):
+    def get_buffer_manager(cls) -> BufferManager:
         """
         Returns the buffer manager if known.
 
@@ -270,7 +286,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._buffer_manager
 
     @classmethod
-    def get_first_machine_time_step(cls):
+    def get_first_machine_time_step(cls) -> Optional[int]:
         """
         The start of this or the next do_run loop time in steps.
 
@@ -283,7 +299,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # max_run_time_steps methods
 
     @classmethod
-    def get_max_run_time_steps(cls):
+    def get_max_run_time_steps(cls) -> int:
         """
         Returns the calculated longest time this or a future run loop could be.
 
@@ -302,7 +318,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._max_run_time_steps
 
     @classmethod
-    def has_max_run_time_steps(cls):
+    def has_max_run_time_steps(cls) -> bool:
         """
         Indicates if max_run_time_steps is currently available.
 
@@ -313,7 +329,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # simulation_time_step_methods
 
     @classmethod
-    def has_time_step(cls):
+    def has_time_step(cls) -> bool:
         """
         Check if any/all of the time_step values are known.
 
@@ -326,7 +342,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_us is not None
 
     @classmethod
-    def get_simulation_time_step_us(cls):
+    def get_simulation_time_step_us(cls) -> int:
         """
         The simulation timestep, in microseconds.
 
@@ -341,7 +357,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_us
 
     @classmethod
-    def get_simulation_time_step_s(cls):
+    def get_simulation_time_step_s(cls) -> float:
         """
         The simulation timestep, in seconds.
 
@@ -356,7 +372,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_s
 
     @classmethod
-    def get_simulation_time_step_ms(cls):
+    def get_simulation_time_step_ms(cls) -> float:
         """
         The simulation time step, in milliseconds.
 
@@ -371,7 +387,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_ms
 
     @classmethod
-    def get_simulation_time_step_per_ms(cls):
+    def get_simulation_time_step_per_ms(cls) -> float:
         """
         The number of simulation time steps in a millisecond.
 
@@ -386,7 +402,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_per_ms
 
     @classmethod
-    def get_simulation_time_step_per_s(cls):
+    def get_simulation_time_step_per_s(cls) -> float:
         """
         The number of simulation time steps in a seconds.
 
@@ -401,7 +417,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._simulation_time_step_per_s
 
     @classmethod
-    def get_hardware_time_step_ms(cls):
+    def get_hardware_time_step_ms(cls) -> float:
         """
         The hardware timestep, in milliseconds.
 
@@ -416,7 +432,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._hardware_time_step_ms
 
     @classmethod
-    def get_hardware_time_step_us(cls):
+    def get_hardware_time_step_us(cls) -> int:
         """
         The hardware timestep, in microseconds.
 
@@ -433,7 +449,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # time scale factor
 
     @classmethod
-    def get_time_scale_factor(cls):
+    def get_time_scale_factor(cls) -> Union[int, float]:
         """
         :rtype: int or float
         :raises SpiNNUtilsException:
@@ -446,7 +462,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._time_scale_factor
 
     @classmethod
-    def has_time_scale_factor(cls):
+    def has_time_scale_factor(cls) -> bool:
         """
         :rtype: bool
         """
@@ -455,7 +471,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     #  reset number
 
     @classmethod
-    def get_reset_number(cls):
+    def get_reset_number(cls) -> int:
         """
         Get the number of times a reset has happened.
 
@@ -475,7 +491,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._reset_number
 
     @classmethod
-    def get_reset_str(cls):
+    def get_reset_str(cls) -> str:
         """
         Get the number of times a reset has happened as a string.
 
@@ -503,7 +519,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     #  run number
 
     @classmethod
-    def get_run_number(cls):
+    def get_run_number(cls) -> int:
         """
         Get the number of this or the next run.
 
@@ -518,7 +534,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._run_number
 
     @classmethod
-    def get_run_step(cls):
+    def get_run_step(cls) -> Optional[int]:
         """
         Get the auto pause and resume step currently running if any.
 
@@ -539,7 +555,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # n_boards/chips required
 
     @classmethod
-    def has_n_boards_required(cls):
+    def has_n_boards_required(cls) -> bool:
         """
         Reports if a user has sets the number of boards requested during setup.
 
@@ -550,7 +566,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._n_boards_required is not None
 
     @classmethod
-    def get_n_boards_required(cls):
+    def get_n_boards_required(cls) -> int:
         """
         Gets the number of boards requested by the user during setup if known.
 
@@ -565,7 +581,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._n_boards_required
 
     @classmethod
-    def get_n_chips_needed(cls):
+    def get_n_chips_needed(cls) -> int:
         """
         Gets the number of chips needed, if set.
 
@@ -588,7 +604,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         raise cls._exception("n_chips_requiredr")
 
     @classmethod
-    def has_n_chips_needed(cls):
+    def has_n_chips_needed(cls) -> bool:
         """
         Detects if the number of chips needed has been set.
 
@@ -602,7 +618,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._n_chips_in_graph is not None
 
     @classmethod
-    def get_timestamp_dir_path(cls):
+    def get_timestamp_dir_path(cls) -> str:
         """
         Returns path to existing time-stamped directory in the reports
         directory.
@@ -641,7 +657,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._data_in_multicast_key_to_chip_map
 
     @classmethod
-    def get_data_in_multicast_routing_tables(cls):
+    def get_data_in_multicast_routing_tables(cls) -> MulticastRoutingTables:
         """
         Retrieve the data_in_multicast_routing_tables if known.
         These are the routing tables used to handle Data In streaming.
@@ -675,7 +691,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # ipaddress
 
     @classmethod
-    def has_ipaddress(cls):
+    def has_ipaddress(cls) -> bool:
         """
         Detects if the IP address of the board with chip 0,0 is known.
 
@@ -684,7 +700,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._ipaddress is not None
 
     @classmethod
-    def get_ipaddress(cls):
+    def get_ipaddress(cls) -> str:
         """
         Gets the IP address of the board with chip 0,0 if it has been set.
 
@@ -700,7 +716,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     # fixed_routes
     @classmethod
-    def get_fixed_routes(cls):
+    def get_fixed_routes(cls) -> Dict[Chip, FixedRouteEntry]:
         """
         Gets the fixed routes if they have been created.
 
@@ -713,7 +729,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._fixed_routes
 
     @classmethod
-    def has_java_caller(cls):
+    def has_java_caller(cls) -> bool:
         """
         Reports if there is a Java called that can be used.
 
@@ -727,11 +743,11 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._java_caller is not None
 
     @classmethod
-    def get_java_caller(cls):
+    def get_java_caller(cls) -> JavaCaller:
         """
         Gets the Java_caller.
 
-        :rtype: str
+        :rtype: JavaCaller
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the java_caller is currently unavailable
         """
@@ -742,7 +758,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # run_dir_path in UtilsDataView
 
     @classmethod
-    def get_json_dir_path(cls):
+    def get_json_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all JSON files.
 
@@ -763,7 +779,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls._child_folder(cls.get_run_dir_path(), "json_files")
 
     @classmethod
-    def get_provenance_dir_path(cls):
+    def get_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all provenance files.
 
@@ -783,7 +799,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls._child_folder(cls.get_run_dir_path(), "provenance_data")
 
     @classmethod
-    def get_app_provenance_dir_path(cls):
+    def get_app_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds all application provenance
         files.
@@ -806,7 +822,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.get_provenance_dir_path(), "app_provenance_data")
 
     @classmethod
-    def get_system_provenance_dir_path(cls):
+    def get_system_provenance_dir_path(cls) -> str:
         """
         Returns the path to the directory that holds system provenance files.
 
@@ -851,7 +867,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return child
 
     @classmethod
-    def get_next_none_labelled_edge_number(cls):
+    def get_next_none_labelled_edge_number(cls) -> int:
         """
         Returns an unused number for labelling an unlabelled edge.
 
@@ -861,7 +877,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._none_labelled_edge_count
 
     @classmethod
-    def get_next_sync_signal(cls):
+    def get_next_sync_signal(cls) -> Signal:
         """
         Returns alternately Signal.SYNC0 and Signal.SYNC1.
 
@@ -875,7 +891,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             return Signal.SYNC1
 
     @classmethod
-    def get_executable_types(cls):
+    def get_executable_types(cls) -> Dict[ExecutableType, CoreSubsets]:
         """
         Gets the executable_types if they have been created.
 
@@ -890,7 +906,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_types
 
     @classmethod
-    def get_cores_for_type(cls, executable_type):
+    def get_cores_for_type(
+            cls, executable_type: ExecutableType) -> CoreSubsets:
         """
         Get the subset of cores running executables of the given type.
 
@@ -904,7 +921,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             executable_type, _EMPTY_CORE_SUBSETS)
 
     @classmethod
-    def has_live_packet_recorder_params(cls):
+    def has_live_packet_recorder_params(cls) -> bool:
         """
         Reports if there are live_packet_recorder_params.
 
@@ -915,7 +932,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._live_packet_recorder_params is not None
 
     @classmethod
-    def get_live_packet_recorder_params(cls):
+    def get_live_packet_recorder_params(cls) -> Dict[
+            LivePacketGatherParameters, Tuple[AbstractVertex, List[str]]]:
         """
         Mapping of live_packet_gatherer_params to a list of tuples
         (vertex and list of ids)).
@@ -932,8 +950,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # Add method in view so add can be done without going through ASB
     @classmethod
     def add_live_packet_gatherer_parameters(
-            cls, live_packet_gatherer_params, vertex_to_record_from,
-            partition_ids):
+            cls, live_packet_gatherer_params: LivePacketGatherParameters,
+            vertex_to_record_from: AbstractVertex,
+            partition_ids: Iterable[str]):
         """
         Adds parameters for a new live packet gatherer (LPG) if needed, or
         adds to the tracker for parameters.
@@ -960,8 +979,9 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             live_packet_gatherer_params)
         if lpg_vertex is None:
             # UGLY import due to circular reference
-            from spinn_front_end_common.utility_models import LivePacketGather
-            lpg_vertex = LivePacketGather(
+            from spinn_front_end_common.utility_models import (
+                LivePacketGather as LPG)
+            lpg_vertex = LPG(
                 live_packet_gatherer_params, live_packet_gatherer_params.label)
             cls.__fec_data._live_packet_recorder_params[
                 live_packet_gatherer_params] = lpg_vertex
@@ -971,7 +991,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
                 ApplicationEdge(vertex_to_record_from, lpg_vertex), part_id)
 
     @classmethod
-    def get_database_file_path(cls):
+    def get_database_file_path(cls) -> Optional[str]:
         """
         Will return the database_file_path if set or `None` if not set
         or set to `None`
@@ -981,7 +1001,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._database_file_path
 
     @classmethod
-    def get_executable_targets(cls):
+    def get_executable_targets(cls) -> ExecutableTargets:
         """
         Binaries to be executed.
 
@@ -994,7 +1014,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._executable_targets
 
     @classmethod
-    def get_dsg_targets(cls):
+    def get_dsg_targets(cls) -> DsSqlliteDatabase:
         """
         Data Spec targets database.
 
@@ -1007,7 +1027,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._dsg_targets
 
     @classmethod
-    def has_monitors(cls):
+    def has_monitors(cls) -> bool:
         """
         Detect is ExtraMonitorSupportMachineVertex(s) have been created.
 
@@ -1016,7 +1036,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map is not None
 
     @classmethod
-    def get_monitor_by_xy(cls, x, y):
+    def get_monitor_by_xy(
+            cls, x: int, y: int) -> ExtraMonitorSupportMachineVertex:
         """
         The ExtraMonitorSupportMachineVertex for chip (x,y).
 
@@ -1033,7 +1054,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map[cls.get_chip_at(x, y)]
 
     @classmethod
-    def get_monitor_by_chip(cls, chip):
+    def get_monitor_by_chip(
+            cls, chip: Chip) -> ExtraMonitorSupportMachineVertex:
         """
         The ExtraMonitorSupportMachineVertex for chip.
 
@@ -1049,7 +1071,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map[chip]
 
     @classmethod
-    def iterate_monitor_items(cls):
+    def iterate_monitor_items(
+            cls) -> Iterable[Tuple[Chip, ExtraMonitorSupportMachineVertex]]:
         """
         Iterates over the (x,y) and ExtraMonitorSupportMachineVertex.
 
@@ -1064,7 +1087,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map.items()
 
     @classmethod
-    def get_n_monitors(cls):
+    def get_n_monitors(cls) -> int:
         """
         Number of ExtraMonitorSupportMachineVertexs.
 
@@ -1077,7 +1100,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return len(cls.__fec_data._monitor_map)
 
     @classmethod
-    def iterate_monitors(cls):
+    def iterate_monitors(cls) -> Iterable[ExtraMonitorSupportMachineVertex]:
         """
         Iterates over the ExtraMonitorSupportMachineVertex(s).
 
@@ -1090,7 +1113,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._monitor_map.values()
 
     @classmethod
-    def get_gatherer_by_chip(cls, chip):
+    def get_gatherer_by_chip(
+            cls, chip: Chip) -> DataSpeedUpPacketGatherMachineVertex:
         """
         The DataSpeedUpPacketGatherMachineVertex for an Ethernet-enabled chip.
 
@@ -1108,7 +1132,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._gatherer_map[chip]
 
     @classmethod
-    def get_gatherer_by_xy(cls, x, y):
+    def get_gatherer_by_xy(
+            cls, x: int, y: int) -> DataSpeedUpPacketGatherMachineVertex:
         """
         The DataSpeedUpPacketGatherMachineVertex for chip (x,y).
 
@@ -1125,7 +1150,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._gatherer_map[cls.get_chip_at(x, y)]
 
     @classmethod
-    def iterate_gather_items(cls):
+    def iterate_gather_items(cls) -> Iterable[
+            Tuple[Chip, DataSpeedUpPacketGatherMachineVertex]]:
         """
         Iterates over the (x,y) and DataSpeedUpPacketGatherMachineVertex.
 
@@ -1140,7 +1166,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._gatherer_map.items()
 
     @classmethod
-    def get_n_gathers(cls):
+    def get_n_gathers(cls) -> int:
         """
         Number of DataSpeedUpPacketGatherMachineVertex(s).
 
@@ -1153,7 +1179,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return len(cls.__fec_data._gatherer_map)
 
     @classmethod
-    def iterate_gathers(cls):
+    def iterate_gathers(cls) -> Iterable[DataSpeedUpPacketGatherMachineVertex]:
         """
         Iterates over the DataSpeedUpPacketGatherMachineVertex(s).
 
@@ -1166,7 +1192,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._gatherer_map.values()
 
     @classmethod
-    def iterate_database_socket_addresses(cls):
+    def iterate_database_socket_addresses(cls) -> Iterable[SocketAddress]:
         """
         Iterates over the registered database_socket_addresses.
 
@@ -1175,7 +1201,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return iter(cls.__fec_data._database_socket_addresses)
 
     @classmethod
-    def get_n_database_socket_addresses(cls):
+    def get_n_database_socket_addresses(cls) -> int:
         """
         Number of registered database_socket_addresses.
 
@@ -1184,7 +1210,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return len(cls.__fec_data._database_socket_addresses)
 
     @classmethod
-    def add_database_socket_address(cls, database_socket_address):
+    def add_database_socket_address(
+            cls, database_socket_address: SocketAddress):
         """
         Adds a socket address to the list of known addresses.
 
@@ -1198,7 +1225,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         cls.__fec_data._database_socket_addresses.add(database_socket_address)
 
     @classmethod
-    def add_database_socket_addresses(cls, database_socket_addresses):
+    def add_database_socket_addresses(
+            cls, database_socket_addresses: Iterable[SocketAddress]):
         """
         Adds all socket addresses to the list of known addresses.
 
@@ -1214,7 +1242,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             cls.add_database_socket_address(socket_address)
 
     @classmethod
-    def get_notification_protocol(cls):
+    def get_notification_protocol(cls) -> NotificationProtocol:
         """
         The notification protocol handler.
 
@@ -1227,7 +1255,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._notification_protocol
 
     @classmethod
-    def add_live_output_vertex(cls, vertex, partition_id):
+    def add_live_output_vertex(
+            cls, vertex: ApplicationVertex, partition_id: str):
         """
         Add a vertex that is to be output live, and so wants its atom IDs
         recorded in the database.
@@ -1239,7 +1268,8 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         cls.__fec_data._live_output_vertices.add((vertex, partition_id))
 
     @classmethod
-    def iterate_live_output_vertices(cls):
+    def iterate_live_output_vertices(
+            cls) -> Iterable[Tuple[ApplicationVertex, str]]:
         """
         Get an iterator over the live output vertices and partition IDs.
 

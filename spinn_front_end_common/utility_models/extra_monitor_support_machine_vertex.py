@@ -26,8 +26,7 @@ from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.scp import (
-    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
-    SetRouterTimeoutProcess, ClearQueueProcess, LoadMCRoutesProcess)
+    ReinjectorControlProcess, LoadMCRoutesProcess)
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES,
     BYTES_PER_WORD, BYTES_PER_KB)
@@ -396,7 +395,7 @@ class ExtraMonitorSupportMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
-        process = SetRouterTimeoutProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
@@ -423,7 +422,7 @@ class ExtraMonitorSupportMachineVertex(
         mantissa, exponent = timeout
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
-        process = SetRouterTimeoutProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
@@ -444,7 +443,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
-        process = ResetCountersProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.reset_counters(core_subsets)
@@ -463,10 +462,10 @@ class ExtraMonitorSupportMachineVertex(
         """
         core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set)
-        process = ClearQueueProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
-            process.reset_counters(core_subsets)
+            process.clear_queue(core_subsets)
         except:  # noqa: E722
             emergency_recover_state_from_failure(self, self._placement)
             raise
@@ -479,7 +478,7 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: ReInjectionStatus
         """
         placement = self._placement
-        process = ReadStatusProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             return process.get_reinjection_status(
@@ -492,11 +491,11 @@ class ExtraMonitorSupportMachineVertex(
         """
         Get the reinjection status from a set of extra monitor cores.
 
-        :rtype: dict(tuple(int,int), ReInjectionStatus)
+        :rtype: dict(~spinn_machine.Chip, ReInjectionStatus)
         """
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())
-        process = ReadStatusProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
@@ -528,7 +527,7 @@ class ExtraMonitorSupportMachineVertex(
 
         core_subsets = convert_vertices_to_core_subset(
             FecDataView.iterate_monitors())
-        process = SetPacketTypesProcess(
+        process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
         try:
             process.set_packet_types(

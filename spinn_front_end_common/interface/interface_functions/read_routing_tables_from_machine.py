@@ -31,10 +31,10 @@ def read_routing_tables_from_machine():
     transceiver = FecDataView.get_transceiver()
 
     machine_routing_tables = MulticastRoutingTables()
-    for routing_table in progress.over(routing_tables):
+    for table in progress.over(routing_tables):
         # get multicast entries from machine
         machine_routing_table = _read_routing_table(
-            transceiver, routing_table, app_id)
+            transceiver, table, app_id)
         machine_routing_tables.add_routing_table(machine_routing_table)
     return machine_routing_tables
 

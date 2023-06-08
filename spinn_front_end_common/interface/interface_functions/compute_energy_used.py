@@ -90,8 +90,8 @@ def compute_energy_used():
     power_used.mapping_time_secs = mapping_time / _MS_PER_SECOND
 
     runtime_total_ms = (
-            FecDataView.get_current_run_timesteps() *
-            FecDataView.get_time_scale_factor())
+        FecDataView.get_current_run_timesteps() *
+        FecDataView.get_time_scale_factor())
     # TODO: extraction time as currently defined is part of execution time,
     #       so for now don't add it on, but revisit this in the future
     total_booted_time = execute_time + load_time
