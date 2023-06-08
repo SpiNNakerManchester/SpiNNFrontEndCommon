@@ -93,8 +93,8 @@ FROM region
 GROUP BY x, y, p;
 
 CREATE VIEW IF NOT EXISTS region_size_ethernet_view AS
-SELECT x,y,p, sum(size) as regions_size, ethernet_x, ethernet_y
-FROM chip NATURAL JOIN region
+SELECT x,y,p, sum(size) as regions_size, ethernet_x, ethernet_y, is_system
+FROM chip NATURAL JOIN core NATURAL JOIN region
 GROUP BY x, y, p;
 
 CREATE VIEW IF NOT EXISTS core_summary_view AS

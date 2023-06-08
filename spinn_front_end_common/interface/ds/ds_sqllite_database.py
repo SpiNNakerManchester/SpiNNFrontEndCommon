@@ -418,26 +418,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 raise DsDatabaseException(
                     f"No core {x=} {y=} {p=}")
 
-            for row in cursor.execute(
-                    """
-                    SELECT region_num, size
-                    FROM region
-                    WHERE x = ? AND y = ? AND p = ?
-                    ORDER BY region_num
-                    """, (x, y, p,)):
-                to_update.append((next_pointer, row["region_num"]))
-                next_pointer += row["size"]
-
-            for pointer, region_num in to_update:
-                cursor.execute(
-                    """
-                    UPDATE region
-                    SET pointer = ?
-                    WHERE x = ? AND y = ? and p = ? and region_num = ?
-                    """, (pointer, x, y, p, region_num))
-
-            return next_pointer - start_address
-
     def get_start_address(self, x, y, p):
         """
         Gets the start_address for this core
@@ -458,6 +438,18 @@ class DsSqlliteDatabase(SQLiteDB):
                     """, (x, y, p)):
                 return row["start_address"]
         raise DsDatabaseException(f"No core {x=} {y=} {p=}")
+
+    def set_region_pointer(self, x, y, p, region_num, pointer):
+        with self.transaction() as cursor:
+            cursor.execute(
+                """
+                UPDATE region
+                SET pointer = ?
+                WHERE x = ? AND y = ? and p = ? and region_num = ?
+                """, (pointer, x, y, p, region_num))
+            if cursor.rowcount == 0:
+                raise DsDatabaseException(
+                    f"No region {x=} {y=} {p=} {region_num=}")
 
     def get_region_pointers_and_content(self, x, y, p):
         """

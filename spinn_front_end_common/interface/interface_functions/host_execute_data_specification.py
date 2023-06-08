@@ -153,14 +153,7 @@ class _HostExecuteDataSpecification(object):
 
         for x, y, p, _, _ in progress.over(
                 core_infos, finish_at_end=False):
-            total_size = dsg_targets.get_total_regions_size(x, y, p)
-            malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
-            start_address = self.__malloc_region_storage(x, y, p, malloc_size)
-            expected_size = dsg_targets.set_start_address(
-                x, y, p, start_address)
-            if (malloc_size != expected_size):
-                raise DataSpecException(
-                    f"For {x=}{y=}{p=} {malloc_size=} != {expected_size=}")
+            self.__python_maloc_core(dsg_targets, x, y, p)
 
         for x, y, p, eth_x, eth_y in progress.over(core_infos):
             if uses_advanced_monitors:
@@ -168,12 +161,31 @@ class _HostExecuteDataSpecification(object):
                 writer = gatherer.send_data_into_spinnaker
             written = self.__python_load_core(dsg_targets, x, y, p, writer)
             to_write = dsg_targets.get_memory_to_write(x, y, p)
-            if (malloc_size != expected_size):
+            if (written != to_write):
                 raise DataSpecException(
                     f"For {x=}{y=}{p=} {written=} != {to_write=}")
 
         if uses_advanced_monitors:
             self.__reset_router_timeouts()
+
+    def __python_maloc_core(self, dsg_targets, x, y, p):
+        region_sizes = dsg_targets.get_region_sizes(x, y, p)
+        total_size = sum(region_sizes.values())
+        malloc_size = total_size + APP_PTR_TABLE_BYTE_SIZE
+        start_address = self.__malloc_region_storage(x, y, p, malloc_size)
+        dsg_targets.set_start_address(x, y, p, start_address)
+
+        next_pointer = start_address + APP_PTR_TABLE_BYTE_SIZE
+        for region_num, size in region_sizes.items():
+            dsg_targets.set_region_pointer(x, y, p, region_num, next_pointer)
+            next_pointer += size
+
+        # safety code
+        total_size = dsg_targets.get_total_regions_size(x, y, p)
+        expected_pointer = start_address + APP_PTR_TABLE_BYTE_SIZE + total_size
+        if (next_pointer != expected_pointer):
+            raise DataSpecException(
+                f"For {x=} {y=} {p=} {next_pointer=} != {expected_pointer=}")
 
     def __python_load_core(self, dsg_targets, x, y, p, writer):
         written = 0
@@ -212,6 +224,8 @@ class _HostExecuteDataSpecification(object):
 
         to_write = numpy.concatenate(
             (header, pointer_table.view("uint32"))).tobytes()
+        if base_address is None:
+            print("here")
         writer(x, y, base_address, to_write)
         written += len(to_write)
         return written

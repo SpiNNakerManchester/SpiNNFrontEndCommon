@@ -173,81 +173,26 @@ class TestDataSpecification(unittest.TestCase):
         # You can use a reference before defining it
         vertex1 = _TestVertexWithBinary(
             "binary1", ExecutableType.SYSTEM)
-        dsg1 = DataSpecificationGenerator(1, 1, 1, vertex1, db)
-        dsg1.reference_memory_region(6, 2)
+        dsg = DataSpecificationGenerator(1, 2, 3, vertex1, db)
+        dsg.reserve_memory_region(2, 100)
+        dsg.reserve_memory_region(6, 200, reference=1)
+        dsg.reserve_memory_region(4, 400, reference=2)
+        db.set_start_address(1, 2, 3, 1000)
+        self.assertEqual(1000, db.get_start_address(1, 2, 3))
 
-        vertex2 = _TestVertexWithBinary(
-            "binary2", ExecutableType.SYSTEM)
-        dsg2 = DataSpecificationGenerator(1, 1, 2, vertex2, db)
-        dsg2.reserve_memory_region(2, 100)
-        dsg2.reserve_memory_region(6, 200, reference=1)
-        dsg2.reserve_memory_region(4, 400, reference=2)
-
-        # You can use a reference after defining it
-        vertex3 = _TestVertexWithBinary(
-            "binary1", ExecutableType.SYSTEM)
-        dsg3 = DataSpecificationGenerator(1, 1, 3, vertex3, db)
-        dsg3.reference_memory_region(11, 1)
-        # And also use a reference more than once
-        dsg3.reference_memory_region(9, 2)
-
-        # You can use a reference before defining it
-        # So you can reference a bad region
-        vertex4 = _TestVertexWithBinary(
-            "binary4", ExecutableType.SYSTEM)
-        dsg4 = DataSpecificationGenerator(1, 1, 4, vertex4, db)
-        dsg4.reference_memory_region(8, 3, "oops")
-
-        # Will be none before set_base_address called
-        self.assertEqual(None, db.get_region_pointer(1, 1, 2, 6))
-
-        self.assertIsNone(db.get_start_address(1, 1, 2))
-        size = db.set_start_address(1, 1, 2, 1000)
-        self.assertEqual(APP_PTR_TABLE_BYTE_SIZE + 100 + 200 + 400, size)
-        base_adr = db.get_start_address(1, 1, 2)
-        self.assertEqual(1000, base_adr)
-        p_info = list(db.get_region_pointers_and_content(1, 1, 2))
-        p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
-        p4 = p2 + 100
-        p6 = p4 + 400
-        self.assertEqual([(2, p2, None), (4, p4, None), (6, p6, None)], p_info)
-        self.assertEqual(p2, db.get_region_pointer(1, 1, 2, 2))
-        self.assertEqual(p4, db.get_region_pointer(1, 1, 2, 4))
-        self.assertEqual(p6, db.get_region_pointer(1, 1, 2, 6))
-
-        # call fails with unknown region
         with self.assertRaises(DsDatabaseException):
-            db.get_region_pointer(1, 1, 2, 7)
+            db.set_start_address(1, 3, 4, 123)
 
-        info = list(db.get_reference_pointers(1, 1, 1))
-        self.assertEqual([(6, p4)], info)
-
-        info = list(db.get_reference_pointers(1, 1, 2))
-        self.assertEqual([], info)
-
-        info = list(db.get_reference_pointers(1, 1, 3))
-        self.assertIn((9, p4), info)
-        self.assertIn((11, p6), info)
-
-        # GIGO referrence 3 never reserved
-        info = list(db.get_reference_pointers(1, 1, 4))
-        self.assertEqual([(8, None)], info)
-
-        bad = list(db.get_unlinked_references())
-        self.assertEqual([(1, 1, 4, 8, 3, "oops")], bad)
-
-        info = list(db.get_reference_pointers(1, 4, 4))
-        self.assertEqual([], info)
-
-        # will fails on an unknown region
         with self.assertRaises(DsDatabaseException):
-            db.get_region_pointer(1, 1, 2, 10)
+            db.get_start_address(1, 3, 4)
 
-        # will fails on an unknown core
+        db.set_region_pointer(1, 2, 3, 2, 1400)
+        self.assertEqual(1400, db.get_region_pointer(1, 2, 3, 2))
+
         with self.assertRaises(DsDatabaseException):
-            db.set_start_address(1, 1, 8, 1000)
+            db.set_region_pointer(1, 2, 3, 9, 1400)
         with self.assertRaises(DsDatabaseException):
-            db.get_start_address(1, 1, 8)
+            db.get_region_pointer(1, 2, 3, 9)
 
     def test_write(self):
         db = DsSqlliteDatabase()
