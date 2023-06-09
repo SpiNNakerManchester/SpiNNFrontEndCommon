@@ -107,7 +107,6 @@ from spinn_front_end_common.utilities.report_functions import (
     bitfield_compressor_report, board_chip_report, EnergyReport,
     fixed_route_from_machine_report, memory_map_on_host_report,
     memory_map_on_host_chip_report, network_specification,
-    router_collision_potential_report,
     routing_table_from_machine_report, tags_from_machine_report,
     write_json_machine, write_json_placements,
     write_json_routing_tables, drift_report)
@@ -1237,18 +1236,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             write_json_routing_tables(self._data_writer.get_uncompressed())
             # Output ignored as never used
 
-    def _report_router_collision_potential(self):
-        """
-        Write, time and log the router collision report.
-        """
-        with FecTimer(
-                "Router collision potential report",
-                TimerWork.REPORT) as timer:
-            if timer.skip_if_cfg_false(
-                    "Reports", "write_router_collision_potential_report"):
-                return
-            router_collision_potential_report()
-
     def _report_drift(self, start):
         """
         Write, time and log the inter-board timer drift.
@@ -1356,7 +1343,6 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._report_routers()
         self._report_router_summary()
         self._json_routing_tables()
-        # self._report_router_collision_potential()
         self._execute_locate_executable_start_type()
         self._execute_buffer_manager_creator()
 
