@@ -279,6 +279,29 @@ class DsSqlliteDatabase(SQLiteDB):
                 yield (row["x"], row["y"], row["ref_p"], row["ref_region"],
                        row["reference_num"], str(row["ref_label"], "utf8"))
 
+    def get_double_region(self):
+        """
+        Finds and yields any region that was used in both region definition
+            and a reference
+
+         If all is well this method yields nothing!
+
+        .. note::
+            Do not use the database for anything else while iterating.
+
+        :return: x, y, p
+        :rtype: iterable(tuple(int, int, int))
+        """
+        with self.transaction() as cursor:
+            for row in cursor.execute(
+                    """
+                    SELECT x, y, p, region_num
+                    FROM pointer_content_view
+                    GROUP BY X, y, p, region_num
+                    HAVING count(*) != 1
+                     """):
+                yield (row["x"], row["y"], row["p"], row["region_num"])
+
     def set_region_content(self, x, y, p, region_num, content, content_debug):
         """
         Sets the content for this region
@@ -470,7 +493,7 @@ class DsSqlliteDatabase(SQLiteDB):
             for row in cursor.execute(
                     """
                     SELECT region_num, content, pointer
-                    FROM region
+                    FROM pointer_content_view
                     WHERE x = ? AND y = ? AND p = ?
                     ORDER BY region_num
                      """, (x, y, p)):

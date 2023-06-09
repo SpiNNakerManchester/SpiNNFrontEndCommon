@@ -191,27 +191,24 @@ class _HostExecuteDataSpecification(object):
         written = 0
         pointer_table = numpy.zeros(
             MAX_MEM_REGIONS, dtype=TABLE_TYPE)
-        for region_num, pointer, content in \
-                dsg_targets.get_region_pointers_and_content(x, y, p):
-            pointer_table[region_num]["pointer"] = pointer
-
-            if content is None:
-                continue
-
-            writer(x, y, pointer, content)
-            n_bytes = len(content)
-            written += n_bytes
-            if n_bytes % BYTES_PER_WORD != 0:
-                n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
-            pointer_table[region_num]["n_words"] = n_bytes / BYTES_PER_WORD
-            n_data = numpy.array(content, dtype="uint8")
-            pointer_table[region_num]["checksum"] = \
-                int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
-
         try:
-            for region_num, pointer in dsg_targets.get_reference_pointers(
-                    x, y, p):
+            for region_num, pointer, content in \
+                    dsg_targets.get_region_pointers_and_content(x, y, p):
                 pointer_table[region_num]["pointer"] = pointer
+
+                if content is None:
+                    continue
+
+                writer(x, y, pointer, content)
+                n_bytes = len(content)
+                written += n_bytes
+                if n_bytes % BYTES_PER_WORD != 0:
+                    n_bytes += BYTES_PER_WORD - n_bytes % BYTES_PER_WORD
+                pointer_table[region_num]["n_words"] = n_bytes / BYTES_PER_WORD
+                n_data = numpy.array(content, dtype="uint8")
+                pointer_table[region_num]["checksum"] = \
+                    int(numpy.sum(n_data.view("uint32"))) & 0xFFFFFFFF
+
         except TypeError:
             # pylint: disable=raise-missing-from, undefined-loop-variable
             if pointer is None:

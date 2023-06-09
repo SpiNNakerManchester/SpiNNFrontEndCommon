@@ -171,14 +171,28 @@ class TestDataSpecification(unittest.TestCase):
         db = DsSqlliteDatabase()
 
         # You can use a reference before defining it
-        vertex1 = _TestVertexWithBinary(
+        vertex = _TestVertexWithBinary(
             "binary1", ExecutableType.SYSTEM)
-        dsg = DataSpecificationGenerator(1, 2, 3, vertex1, db)
-        dsg.reserve_memory_region(2, 100)
-        dsg.reserve_memory_region(6, 200, reference=1)
-        dsg.reserve_memory_region(4, 400, reference=2)
-        db.set_start_address(1, 2, 3, 1000)
-        self.assertEqual(1000, db.get_start_address(1, 2, 3))
+        dsg1 = DataSpecificationGenerator(1, 1, 1, vertex, db)
+        dsg1.reference_memory_region(6, 2)
+
+        # You can use a reference before defining it
+        dsg2 = DataSpecificationGenerator(1, 1, 2, vertex, db)
+        dsg2.reserve_memory_region(2, 100)
+        dsg2.reserve_memory_region(6, 200, reference=1)
+        dsg2.reserve_memory_region(4, 400, reference=2)
+        db.set_start_address(1, 1, 2, 1000)
+        self.assertEqual(1000, db.get_start_address(1, 1, 2))
+
+        dsg3 = DataSpecificationGenerator(1, 1, 3, vertex, db)
+        dsg3.reference_memory_region(11, 1)
+        # And also use a reference more than once
+        dsg3.reference_memory_region(9, 2)
+
+        # You can use a reference before defining it
+        # So you can reference a bad region
+        dsg4 = DataSpecificationGenerator(1, 1, 4, vertex, db)
+        dsg4.reference_memory_region(8, 3, "oops")
 
         with self.assertRaises(DsDatabaseException):
             db.set_start_address(1, 3, 4, 123)
@@ -186,13 +200,39 @@ class TestDataSpecification(unittest.TestCase):
         with self.assertRaises(DsDatabaseException):
             db.get_start_address(1, 3, 4)
 
-        db.set_region_pointer(1, 2, 3, 2, 1400)
-        self.assertEqual(1400, db.get_region_pointer(1, 2, 3, 2))
+        p2 = 1000 + APP_PTR_TABLE_BYTE_SIZE
+        p4 = p2 + 100
+        p6 = p4 + 400
+        db.set_region_pointer(1, 1, 2, 2, p2)
+        db.set_region_pointer(1, 1, 2, 4, p4)
+        db.set_region_pointer(1, 1, 2, 6, p6)
+
+        self.assertEqual(p2, db.get_region_pointer(1, 1, 2, 2))
+        self.assertEqual(p4, db.get_region_pointer(1, 1, 2, 4))
+        self.assertEqual(p6, db.get_region_pointer(1, 1, 2, 6))
+
+        region_infos = list(db.get_region_pointers_and_content(1, 1, 2))
+        self.assertEqual(3, len(region_infos))
+        self.assertIn((2, p2, None), region_infos)
+        self.assertIn((4, p4, None), region_infos)
+        self.assertIn((6, p6, None), region_infos)
+
+        region_infos = list(db.get_region_pointers_and_content(1, 1, 1))
+        self.assertEqual(1, len(region_infos))
+        self.assertIn((6, p4, None), region_infos)
+
+        region_infos = list(db.get_region_pointers_and_content(1, 1, 3))
+        self.assertEqual(2, len(region_infos))
+        self.assertIn((11, p6, None), region_infos)
+        self.assertIn((9, p4, None), region_infos)
+
+        # region_num, pointer, content
 
         with self.assertRaises(DsDatabaseException):
             db.set_region_pointer(1, 2, 3, 9, 1400)
         with self.assertRaises(DsDatabaseException):
             db.get_region_pointer(1, 2, 3, 9)
+
 
     def test_write(self):
         db = DsSqlliteDatabase()
@@ -212,7 +252,7 @@ class TestDataSpecification(unittest.TestCase):
         dsg.end_specification()
 
         dsg = DataSpecificationGenerator(0, 1, 3, vertex, db)
-        dsg.reserve_memory_region(7, 444, "unused")
+        dsg.reserve_memory_region(7, 444, "unused2")
 
         self.assertEqual(123456, db.get_region_size(0, 1, 2, 10))
 
