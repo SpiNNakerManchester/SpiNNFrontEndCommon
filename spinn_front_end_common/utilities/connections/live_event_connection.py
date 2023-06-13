@@ -11,14 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 import logging
 import struct
 from threading import Thread, Condition
 from time import sleep
+from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
-    EIEIODataMessage, KeyPayloadDataElement)
+    EIEIODataMessage, KeyPayloadDataElement, KeyDataElement)
 from spinnman.messages.eieio import EIEIOType, AbstractEIEIOMessage
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import (
@@ -31,9 +32,12 @@ from spinnman.utilities.utility_functions import reprogram_tag_to_listener
 from spinnman.messages.eieio import (
     read_eieio_command_message, read_eieio_data_message)
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinn_front_end_common.utilities.database import (
+    DatabaseConnection, DatabaseReader)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
+_InitCallback = Callable[[str, int, float, float], None]
+_RcvCallback = Callable[[str, int, Optional[List[int]]], None]
+_Callback = Callable[[str, 'LiveEventConnection'], None]
 logger = FormatAdapter(logging.getLogger(__name__))
 
 # The maximum number of 32-bit keys that will fit in a packet
@@ -95,8 +99,11 @@ class LiveEventConnection(DatabaseConnection):
         "__expect_scp_response_lock",
         "__scp_response_received")
 
-    def __init__(self, live_packet_gather_label, receive_labels=None,
-                 send_labels=None, local_host=None, local_port=NOTIFY_PORT):
+    def __init__(self, live_packet_gather_label: str,
+                 receive_labels: Optional[Iterable[str]] = None,
+                 send_labels: Optional[Iterable[str]] = None,
+                 local_host: Optional[str] = None,
+                 local_port: int = NOTIFY_PORT):
         """
         :param str live_packet_gather_label:
             The label of the vertex to which received events are being sent
@@ -124,16 +131,18 @@ class LiveEventConnection(DatabaseConnection):
             list(receive_labels) if receive_labels is not None else None)
         self.__send_labels = (
             list(send_labels) if send_labels is not None else None)
-        self.__sender_connection = None
-        self.__send_address_details = dict()
+        self.__sender_connection: Optional[EIEIOConnection] = None
+        self.__send_address_details: Dict[str, Tuple[
+            int, int, int, Optional[str]]] = dict()
         # Also used by SpynnakerPoissonControlConnection
-        self._atom_id_to_key = dict()
-        self.__key_to_atom_id_and_label = dict()
-        self.__live_event_callbacks = list()
-        self.__start_resume_callbacks = dict()
-        self.__pause_stop_callbacks = dict()
-        self.__init_callbacks = dict()
-        self.__receiver_details = list()
+        self._atom_id_to_key: Dict[str, List[int]] = dict()
+        self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
+        self.__live_event_callbacks: List[
+            List[Tuple[_RcvCallback, bool]]] = list()
+        self.__start_resume_callbacks: Dict[str, List[_Callback]] = dict()
+        self.__pause_stop_callbacks: Dict[str, List[_Callback]] = dict()
+        self.__init_callbacks: Dict[str, List[_InitCallback]] = dict()
+        self.__receiver_details: List[Tuple[int, int, int, str]] = list()
         if receive_labels is not None:
             for label in receive_labels:
                 self.__live_event_callbacks.append(list())
@@ -145,15 +154,15 @@ class LiveEventConnection(DatabaseConnection):
                 self.__start_resume_callbacks[label] = list()
                 self.__pause_stop_callbacks[label] = list()
                 self.__init_callbacks[label] = list()
-        self.__receiver_listener = None
-        self.__receiver_connection = None
-        self.__error_keys = set()
+        self.__receiver_listener: Optional[ConnectionListener] = None
+        self.__receiver_connection: Optional[UDPConnection] = None
+        self.__error_keys: Set[int] = set()
         self.__is_running = False
         self.__expect_scp_response = False
         self.__expect_scp_response_lock = Condition()
-        self.__scp_response_received = None
+        self.__scp_response_received: Optional[bytes] = None
 
-    def add_send_label(self, label):
+    def add_send_label(self, label: str):
         if self.__send_labels is None:
             self.__send_labels = list()
         if label not in self.__send_labels:
@@ -163,7 +172,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__pause_stop_callbacks[label] = list()
             self.__init_callbacks[label] = list()
 
-    def add_receive_label(self, label):
+    def add_receive_label(self, label: str):
         if self.__receive_labels is None:
             self.__receive_labels = list()
         if label not in self.__receive_labels:
@@ -174,7 +183,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__pause_stop_callbacks[label] = list()
             self.__init_callbacks[label] = list()
 
-    def add_init_callback(self, label, init_callback):
+    def add_init_callback(self, label: str, init_callback: _InitCallback):
         """
         Add a callback to be called to initialise a vertex.
 
@@ -190,8 +199,9 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__init_callbacks[label].append(init_callback)
 
-    def add_receive_callback(self, label, live_event_callback,
-                             translate_key=True):
+    def add_receive_callback(
+            self, label: str, live_event_callback: _RcvCallback,
+            translate_key: bool = True):
         """
         Add a callback for the reception of live events from a vertex.
 
@@ -206,13 +216,17 @@ class LiveEventConnection(DatabaseConnection):
             True if the key is to be converted to an atom ID, False if the
             key should stay a key
         """
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
         label_id = self.__receive_labels.index(label)
         logger.info("Receive callback {} registered to label {}",
                     live_event_callback, label)
         self.__live_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
 
-    def add_start_callback(self, label, start_callback):
+    def add_start_callback(
+            self, label: str,
+            start_callback: Callable[[str, LiveEventConnection], None]):
         """
         Add a callback for the start of the simulation.
 
@@ -230,7 +244,8 @@ class LiveEventConnection(DatabaseConnection):
             "future release.")
         self.add_start_resume_callback(label, start_callback)
 
-    def add_start_resume_callback(self, label, start_resume_callback):
+    def add_start_resume_callback(
+            self, label: str, start_resume_callback: _Callback):
         """
         Add a callback for the start and resume state of the simulation.
 
@@ -243,7 +258,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__start_resume_callbacks[label].append(start_resume_callback)
 
-    def add_pause_stop_callback(self, label, pause_stop_callback):
+    def add_pause_stop_callback(
+            self, label: str, pause_stop_callback: _Callback):
         """
         Add a callback for the pause and stop state of the simulation.
 
@@ -256,13 +272,13 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.__pause_stop_callbacks[label].append(pause_stop_callback)
 
-    def __read_database_callback(self, db_reader):
+    def __read_database_callback(self, db_reader: DatabaseReader):
         """
         :param DatabaseReader db_reader:
         """
         self.__handle_possible_rerun_state()
 
-        vertex_sizes = dict()
+        vertex_sizes: Dict[str, int] = dict()
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
         machine_timestep_ms = db_reader.get_configuration_parameter_value(
@@ -279,7 +295,7 @@ class LiveEventConnection(DatabaseConnection):
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
-    def __init_sender(self, db, vertex_sizes):
+    def __init_sender(self, db: DatabaseReader, vertex_sizes: Dict[str, int]):
         """
         :param DatabaseReader db:
         :param dict(str,int) vertex_sizes:
@@ -290,14 +306,16 @@ class LiveEventConnection(DatabaseConnection):
                 self.__sender_connection = job.open_listener_connection()
             else:
                 self.__sender_connection = EIEIOConnection()
+        if self.__send_labels is None:
+            raise ConfigurationException("no send labels defined")
         for label in self.__send_labels:
             self.__send_address_details[label] = self.__get_live_input_details(
                 db, label)
-            self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(
-                label)
+            self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(label)
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
-    def __init_receivers(self, db, vertex_sizes):
+    def __init_receivers(self, db: DatabaseReader,
+                         vertex_sizes: Dict[str, int]):
         """
         :param DatabaseReader db:
         :param dict(str,int) vertex_sizes:
@@ -310,6 +328,8 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__receiver_connection = UDPConnection()
         receivers = set()
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
         for label_id, label in enumerate(self.__receive_labels):
             _, port, board_address, tag, x, y = self.__get_live_output_details(
                 db, label)
@@ -340,7 +360,9 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_listener.start()
             self.__send_tag_messages_now()
 
-    def __get_live_input_details(self, db_reader, send_label):
+    def __get_live_input_details(
+            self, db_reader: DatabaseReader, send_label: str) -> Tuple[
+                int, int, int, Optional[str]]:
         """
         :param DatabaseReader db_reader:
         :param str send_label:
@@ -351,7 +373,9 @@ class LiveEventConnection(DatabaseConnection):
         ip_address = db_reader.get_ip_address(x, y)
         return x, y, p, ip_address
 
-    def __get_live_output_details(self, db_reader, receive_label):
+    def __get_live_output_details(
+            self, db_reader: DatabaseReader, receive_label: str) -> Tuple[
+                str, int, str, int, int, int]:
         host, port, strip_sdp, board_address, tag, chip_x, chip_y = \
             db_reader.get_live_output_details(
                 receive_label, self.__live_packet_gather_label)
@@ -359,11 +383,12 @@ class LiveEventConnection(DatabaseConnection):
             raise ConfigurationException(
                 f"no live output tag found for {receive_label} in app graph")
         if not strip_sdp:
-            raise receive_label("Currently, only IP tags which strip the SDP "
-                                "headers are supported")
+            raise ConfigurationException(
+                "Currently, only IP tags which strip the SDP headers "
+                "are supported")
         return host, port, board_address, tag, chip_x, chip_y
 
-    def __handle_possible_rerun_state(self):
+    def __handle_possible_rerun_state(self) -> None:
         # reset from possible previous calls
         if self.__sender_connection is not None:
             self.__sender_connection.close()
@@ -375,14 +400,16 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_connection.close()
             self.__receiver_connection = None
 
-    def __launch_thread(self, kind, label, callback):
+    def __launch_thread(
+            self, kind, label: str,
+            callback: Callable[[str, LiveEventConnection], None]):
         thread = Thread(
             target=callback, args=(label, self),
             name=(f"{kind} callback thread for live_event_connection "
                   f"{self._local_port}:{self._local_ip_address}"))
         thread.start()
 
-    def __do_start_resume(self):
+    def __do_start_resume(self) -> None:
         for label, callbacks in self.__start_resume_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
@@ -391,13 +418,13 @@ class LiveEventConnection(DatabaseConnection):
             thread = Thread(target=self.__send_tag_messages_thread)
             thread.start()
 
-    def __do_stop_pause(self):
+    def __do_stop_pause(self) -> None:
         self.__is_running = False
         for label, callbacks in self.__pause_stop_callbacks.items():
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
-    def __send_tag_messages_thread(self):
+    def __send_tag_messages_thread(self) -> None:
         if self.__receiver_connection is None:
             return
         while self.__is_running:
@@ -422,7 +449,7 @@ class LiveEventConnection(DatabaseConnection):
                 while self.__scp_response_received is None:
                     self.__expect_scp_response_lock.wait(timeout=1.0)
 
-    def __handle_scp_packet(self, data):
+    def __handle_scp_packet(self, data: bytes) -> bool:
         with self.__expect_scp_response_lock:
             # SCP unexpected
             if not self.__expect_scp_response:
@@ -436,7 +463,7 @@ class LiveEventConnection(DatabaseConnection):
                 return True
             return False
 
-    def __do_receive_packet(self, data):
+    def __do_receive_packet(self, data: bytes):
         if self.__handle_scp_packet(data):
             return
 
@@ -445,7 +472,7 @@ class LiveEventConnection(DatabaseConnection):
             header = _ONE_SHORT.unpack_from(data)[0]
             if header & 0xC000 == 0x4000:
                 return read_eieio_command_message(data, 0)
-            packet = read_eieio_data_message(data, 0)
+            packet: EIEIODataMessage = read_eieio_data_message(data, 0)
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
             else:
@@ -455,13 +482,18 @@ class LiveEventConnection(DatabaseConnection):
         except Exception:
             logger.warning("problem handling received packet", exc_info=True)
 
-    def __handle_time_packet(self, packet):
-        key_times_labels = dict()
-        atoms_times_labels = dict()
+    def __rcv_label(self, label_id: int) -> str:
+        if self.__receive_labels is None:
+            raise ConfigurationException("no receive labels defined")
+        return self.__receive_labels[label_id]
+
+    def __handle_time_packet(self, packet: EIEIODataMessage):
+        key_times_labels: Dict[int, Dict[int, List[int]]] = dict()
+        atoms_times_labels: Dict[int, Dict[int, List[int]]] = dict()
         while packet.is_next_element:
-            element = packet.next_element
-            time = element.payload
-            key = element.key
+            element: KeyPayloadDataElement = packet.next_element
+            time: int = element.payload
+            key: int = element.key
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
                 if time not in key_times_labels:
@@ -477,20 +509,21 @@ class LiveEventConnection(DatabaseConnection):
 
         for time in key_times_labels:
             for label_id in key_times_labels[time]:
-                label = self.__receive_labels[label_id]
+                label = self.__rcv_label(label_id)
                 for c_back, use_atom in self.__live_event_callbacks[label_id]:
                     if use_atom:
                         c_back(label, time, atoms_times_labels[time][label_id])
                     else:
                         c_back(label, time, key_times_labels[time][label_id])
 
-    def __handle_no_time_packet(self, packet):
+    def __handle_no_time_packet(self, packet: EIEIODataMessage):
         while packet.is_next_element:
-            element = packet.next_element
-            key = element.key
+            element: Union[KeyDataElement,
+                           KeyPayloadDataElement] = packet.next_element
+            key: int = element.key
             if key in self.__key_to_atom_id_and_label:
                 atom_id, label_id = self.__key_to_atom_id_and_label[key]
-                label = self.__receive_labels[label_id]
+                label = self.__rcv_label(label_id)
                 for c_back, use_atom in self.__live_event_callbacks[label_id]:
                     if isinstance(element, KeyPayloadDataElement):
                         if use_atom:
@@ -499,18 +532,19 @@ class LiveEventConnection(DatabaseConnection):
                             c_back(label, key, element.payload)
                     else:
                         if use_atom:
-                            c_back(label, atom_id)
+                            c_back(label, atom_id, None)
                         else:
-                            c_back(label, key)
+                            c_back(label, key, None)
             else:
                 self.__handle_unknown_key(key)
 
-    def __handle_unknown_key(self, key):
+    def __handle_unknown_key(self, key: int):
         if key not in self.__error_keys:
             self.__error_keys.add(key)
             logger.warning("Received unexpected key {}", key)
 
-    def send_event(self, label, atom_id, send_full_keys=False):
+    def send_event(self, label: str, atom_id: int,
+                   send_full_keys: bool = False):
         """
         Send an event from a single atom.
 
@@ -524,7 +558,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.send_events(label, [atom_id], send_full_keys)
 
-    def send_events(self, label, atom_ids, send_full_keys=False):
+    def send_events(self, label: str, atom_ids: List[int],
+                    send_full_keys: bool = False):
         """
         Send a number of events.
 
@@ -557,7 +592,7 @@ class LiveEventConnection(DatabaseConnection):
 
             self._send(message, x, y, p, ip_address)
 
-    def send_event_with_payload(self, label, atom_id, payload):
+    def send_event_with_payload(self, label: str, atom_id: int, payload: int):
         """
         Send an event with a payload from a single atom.
 
@@ -568,7 +603,8 @@ class LiveEventConnection(DatabaseConnection):
         """
         self.send_events_with_payloads(label, [(atom_id, payload)])
 
-    def send_events_with_payloads(self, label, atom_ids_and_payloads):
+    def send_events_with_payloads(
+            self, label: str, atom_ids_and_payloads: List[Tuple[int, int]]):
         """
         Send a number of events with payloads.
 
@@ -593,7 +629,7 @@ class LiveEventConnection(DatabaseConnection):
 
             self._send(message, x, y, p, ip_address)
 
-    def send_eieio_message(self, message, label):
+    def send_eieio_message(self, message: AbstractEIEIOMessage, label: str):
         """
         Send an EIEIO message (using one-way the live input) to the
         vertex with the given label.
@@ -630,12 +666,14 @@ class LiveEventConnection(DatabaseConnection):
                 source_port=0, source_cpu=0,
                 source_chip_x=0, source_chip_y=0),
             data=message.bytestring)
+        if self.__sender_connection is None:
+            raise ConfigurationException("no sender connection available")
         self.__sender_connection.send_to(
             # Prefix padding: two empty bytes
             b'\0\0' + sdp_message.bytestring,
             (ip_address, SCP_SCAMP_PORT))
 
-    def close(self):
+    def close(self) -> None:
         self.__is_running = False
         self.__handle_possible_rerun_state()
         super().close()
