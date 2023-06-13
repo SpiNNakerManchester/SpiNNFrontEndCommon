@@ -176,7 +176,7 @@ class ReverseIpTagMultiCastSource(
                 if hasattr(self._send_buffer_times[0], "__len__"):
                     vertex_slice = vertex.vertex_slice
                     send_buffer_times_to_set = self._send_buffer_times[
-                        vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+                        vertex_slice.get_raster_ids()]
             vertex.send_buffer_times = send_buffer_times_to_set
 
     def enable_recording(self, new_state=True):
