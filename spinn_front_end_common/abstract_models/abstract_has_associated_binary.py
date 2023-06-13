@@ -15,6 +15,8 @@
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from spinnman.model.enums import ExecutableType
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -26,7 +28,7 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         """
         Get the binary name to be run for this vertex.
 
@@ -34,7 +36,7 @@ class AbstractHasAssociatedBinary(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         """
         Get the start type of the binary to be run.
 

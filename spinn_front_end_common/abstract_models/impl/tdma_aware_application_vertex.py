@@ -11,10 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Optional
+from spinn_utilities.abstract_base import abstractmethod
 from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
-from spinn_utilities.abstract_base import abstractmethod
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class TDMAAwareApplicationVertex(ApplicationVertex):
@@ -24,6 +27,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
     """
 
     __slots__ = (
+        "__timings_set",
         "__initial_offset",
         "__n_phases",
         "__n_slots",
@@ -36,7 +40,9 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
 
     _TDMA_MISSED_SLOTS_NAME = "Number_of_times_the_tdma_fell_behind"
 
-    def __init__(self, label, max_atoms_per_core, splitter=None):
+    def __init__(
+            self, label: str, max_atoms_per_core: int,
+            splitter: Optional[AbstractSplitterCommon] = None):
         """
         :param label: The name of the vertex.
         :type label: str or None
@@ -46,14 +52,15 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
             ~pacman.model.partitioner_splitters.AbstractSplitterCommon or None
         """
         super().__init__(label, max_atoms_per_core, splitter=splitter)
-        self.__clocks_between_cores = None
-        self.__n_slots = None
-        self.__clocks_between_spikes = None
-        self.__initial_offset = None
-        self.__n_phases = None
-        self.__clocks_per_cycle = None
+        self.__clocks_between_cores = 0
+        self.__n_slots = 0
+        self.__clocks_between_spikes = 0
+        self.__initial_offset = 0
+        self.__n_phases = 0
+        self.__clocks_per_cycle = 0
+        self.__timings_set = False
 
-    def set_initial_offset(self, new_value):
+    def set_initial_offset(self, new_value: int):
         """
         Sets the initial offset.
 
@@ -61,7 +68,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         self.__initial_offset = new_value
 
-    def get_n_phases(self):
+    def get_n_phases(self) -> int:
         """
         Compute the number of phases needed for this application vertex.
         This is the maximum number of packets any machine vertex created
@@ -72,7 +79,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
         return self.n_atoms
 
-    def generate_tdma_data_specification_data(self, vertex_index):
+    def generate_tdma_data_specification_data(
+            self, vertex_index: int) -> List[int]:
         """
         Generates the TDMA configuration data needed for the data spec.
 
@@ -80,6 +88,9 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         :return: array of data to write.
         :rtype: list(int)
         """
+        if not self.__timings_set:
+            raise ConfigurationException(
+                "generating TDMA data before timings set")
         core_slot = vertex_index & self.__n_slots
         offset_clocks = (
             self.__initial_offset + (self.__clocks_between_cores * core_slot))
@@ -90,7 +101,7 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
                 self.__clocks_between_spikes]
 
     @property
-    def tdma_sdram_size_in_bytes(self):
+    def tdma_sdram_size_in_bytes(self) -> int:
         """
         The number of bytes needed by the TDMA data.
 
@@ -99,8 +110,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         return self._TDMA_N_ELEMENTS * BYTES_PER_WORD
 
     def set_other_timings(
-            self, clocks_between_cores, n_slots, clocks_between_spikes,
-            n_phases, clocks_per_cycle):
+            self, clocks_between_cores: int, n_slots: int,
+            clocks_between_spikes: int, n_phases: int, clocks_per_cycle: int):
         """
         Sets the other timings needed for the TDMA.
 
@@ -116,9 +127,10 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         self.__clocks_between_spikes = clocks_between_spikes
         self.__n_phases = n_phases
         self.__clocks_per_cycle = clocks_per_cycle
+        self.__timings_set = True
 
     @abstractmethod
-    def get_n_cores(self):
+    def get_n_cores(self) -> int:  # type: ignore[empty-body]
         """
         Get the number of cores this application vertex is using in the TDMA.
 
@@ -127,7 +139,8 @@ class TDMAAwareApplicationVertex(ApplicationVertex):
         """
 
     def get_tdma_provenance_item(
-            self,  x, y, p, desc_label, tdma_slots_missed):
+            self, x: int, y: int, p: int, desc_label: str,
+            tdma_slots_missed: int):
         """
         Get the provenance item used for the TDMA provenance.
 

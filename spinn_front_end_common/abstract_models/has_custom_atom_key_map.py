@@ -11,9 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import List, Tuple
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.machine.machine_vertex import MachineVertex
+from pacman.model.routing_info.routing_info import RoutingInfo
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(ApplicationVertex)
@@ -25,7 +29,9 @@ class HasCustomAtomKeyMap(object, metaclass=AbstractBase):
     """
 
     @abstractmethod
-    def get_atom_key_map(self, pre_vertex, partition_id, routing_info):
+    def get_atom_key_map(
+            self, pre_vertex: MachineVertex, partition_id: str,
+            routing_info: RoutingInfo) -> List[Tuple[int, int]]:
         """
         Get the mapping between atoms and keys for the given partition id,
         and for the given machine pre-vertex.

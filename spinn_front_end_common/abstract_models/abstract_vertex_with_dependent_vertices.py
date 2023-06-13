@@ -11,10 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Iterable
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.application import ApplicationVertex
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(ApplicationVertex)
@@ -28,7 +29,7 @@ class AbstractVertexWithEdgeToDependentVertices(
     __slots__ = ()
 
     @abstractmethod
-    def dependent_vertices(self):
+    def dependent_vertices(self) -> Iterable[ApplicationVertex]:
         """
         Return the vertices which this vertex depends upon.
 
@@ -36,7 +37,8 @@ class AbstractVertexWithEdgeToDependentVertices(
         """
 
     @abstractmethod
-    def edge_partition_identifiers_for_dependent_vertex(self, vertex):
+    def edge_partition_identifiers_for_dependent_vertex(
+            self, vertex: ApplicationVertex) -> Iterable[str]:
         """
         Return the dependent edge identifiers for a particular dependent
         vertex.

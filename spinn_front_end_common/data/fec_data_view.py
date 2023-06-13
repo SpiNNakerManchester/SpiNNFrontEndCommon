@@ -14,7 +14,8 @@
 from __future__ import annotations  # Type checking trickery
 import logging
 import os
-from typing import Dict, Iterable, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import (
+    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_machine import CoreSubsets, Chip, FixedRouteEntry
@@ -24,7 +25,6 @@ from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
-from pacman.model.graphs import AbstractVertex
 from pacman.model.routing_tables import MulticastRoutingTables
 if TYPE_CHECKING:
     # May be circular references in here; it's OK
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         DataSpeedUpPacketGatherMachineVertex)
     from spinn_front_end_common.utilities.notification_protocol import (
         NotificationProtocol)
+    from spinn_front_end_common.utility_models import LivePacketGather
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _EMPTY_CORE_SUBSETS = CoreSubsets()
@@ -106,7 +107,7 @@ class _FecDataModel(object):
         "_timestamp_dir_path",
         "_time_scale_factor")
 
-    def __new__(cls):
+    def __new__(cls) -> _FecDataModel:
         if cls.__singleton:
             return cls.__singleton
         # pylint: disable=protected-access
@@ -116,64 +117,73 @@ class _FecDataModel(object):
         obj._clear()
         return obj
 
-    def _clear(self):
+    def _clear(self) -> None:
         """
         Clears out all data.
         """
         # Can not be cleared during hard reset as previous runs data checked
-        self._database_socket_addresses = set()
-        self._executable_types = None
-        self._hardware_time_step_ms = None
-        self._hardware_time_step_us = None
-        self._live_packet_recorder_params = None
-        self._live_output_vertices = set()
-        self._java_caller = None
-        self._n_boards_required = None
-        self._n_chips_required = None
+        self._database_socket_addresses: Set[SocketAddress] = set()
+        self._executable_types: Optional[
+            Dict[ExecutableType, CoreSubsets]] = None
+        self._hardware_time_step_ms: Optional[float] = None
+        self._hardware_time_step_us: Optional[int] = None
+        self._live_packet_recorder_params: Optional[Dict[
+            LivePacketGatherParameters,
+            LivePacketGather]] = None
+        self._live_output_vertices: Set[Tuple[ApplicationVertex, str]] = set()
+        self._java_caller: Optional[JavaCaller] = None
+        self._n_boards_required: Optional[int] = None
+        self._n_chips_required: Optional[int] = None
         self._none_labelled_edge_count = 0
         self._reset_number = 0
-        self._run_number = None
-        self._simulation_time_step_ms = None
-        self._simulation_time_step_per_ms = None
-        self._simulation_time_step_per_s = None
-        self._simulation_time_step_s = None
-        self._simulation_time_step_us = None
-        self._time_scale_factor = None
-        self._timestamp_dir_path = None
+        self._run_number: Optional[int] = None
+        self._simulation_time_step_ms: Optional[float] = None
+        self._simulation_time_step_per_ms: Optional[float] = None
+        self._simulation_time_step_per_s: Optional[float] = None
+        self._simulation_time_step_s: Optional[float] = None
+        self._simulation_time_step_us: Optional[int] = None
+        self._time_scale_factor: Optional[Union[int, float]] = None
+        self._timestamp_dir_path: Optional[str] = None
         self._hard_reset()
 
-    def _hard_reset(self):
+    def _hard_reset(self) -> None:
         """
         Clears out all data that should change after a reset and graph change.
         """
-        self._buffer_manager = None
-        self._allocation_controller = None
-        self._data_in_multicast_key_to_chip_map = None
-        self._data_in_multicast_routing_tables = None
-        self._database_file_path = None
-        self._dsg_targets = None
-        self._executable_targets = None
-        self._fixed_routes = None
-        self._gatherer_map = None
-        self._ipaddress = None
-        self._n_chips_in_graph = None
-        self._next_sync_signal = Signal.SYNC0
-        self._notification_protocol = None
-        self._max_run_time_steps = None
-        self._monitor_map = None
-        self._system_multicast_router_timeout_keys = None
+        self._buffer_manager: Optional[BufferManager] = None
+        self._allocation_controller: Optional[
+            AbstractMachineAllocationController] = None
+        self._data_in_multicast_key_to_chip_map: Optional[
+            Dict[Tuple[int, int], int]] = None
+        self._data_in_multicast_routing_tables: Optional[
+            MulticastRoutingTables] = None
+        self._database_file_path: Optional[str] = None
+        self._dsg_targets: Optional[DsSqlliteDatabase] = None
+        self._executable_targets: Optional[ExecutableTargets] = None
+        self._fixed_routes: Optional[Dict[Chip, FixedRouteEntry]] = None
+        self._gatherer_map: Optional[Dict[
+            Chip, DataSpeedUpPacketGatherMachineVertex]] = None
+        self._ipaddress: Optional[str] = None
+        self._n_chips_in_graph: Optional[int] = None
+        self._next_sync_signal: Signal = Signal.SYNC0
+        self._notification_protocol: Optional[NotificationProtocol] = None
+        self._max_run_time_steps: Optional[int] = None
+        self._monitor_map: Optional[Dict[
+            Chip, ExtraMonitorSupportMachineVertex]] = None
+        self._system_multicast_router_timeout_keys: Optional[
+            Dict[Tuple[int, int], int]] = None
         self._soft_reset()
         self._clear_notification_protocol()
 
-    def _soft_reset(self):
+    def _soft_reset(self) -> None:
         """
         Clears timing and other data that should changed every reset.
         """
-        self._current_run_timesteps = 0
+        self._current_run_timesteps: Optional[int] = 0
         self._first_machine_time_step = 0
-        self._run_step = None
+        self._run_step: Optional[int] = None
 
-    def _clear_notification_protocol(self):
+    def _clear_notification_protocol(self) -> None:
         if self._notification_protocol:
             try:
                 self._notification_protocol.close()
@@ -367,7 +377,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
-        if cls.__fec_data._simulation_time_step_us is None:
+        if cls.__fec_data._simulation_time_step_s is None:
             raise cls._exception("simulation_time_step_s")
         return cls.__fec_data._simulation_time_step_s
 
@@ -382,7 +392,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step_ms is currently unavailable
         """
-        if cls.__fec_data._simulation_time_step_us is None:
+        if cls.__fec_data._simulation_time_step_ms is None:
             raise cls._exception("simulation_time_step_ms")
         return cls.__fec_data._simulation_time_step_ms
 
@@ -631,7 +641,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         :raises ~spinn_utilities.exceptions.SpiNNUtilsException:
             If the simulation_time_step is currently unavailable
         """
-        if cls.__fec_data._timestamp_dir_path:
+        if cls.__fec_data._timestamp_dir_path is not None:
             return cls.__fec_data._timestamp_dir_path
         if cls._is_mocked():
             return cls._temporary_dir_path()
@@ -933,7 +943,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
 
     @classmethod
     def get_live_packet_recorder_params(cls) -> Dict[
-            LivePacketGatherParameters, Tuple[AbstractVertex, List[str]]]:
+            LivePacketGatherParameters, LivePacketGather]:
         """
         Mapping of live_packet_gatherer_params to a list of tuples
         (vertex and list of ids)).
@@ -951,7 +961,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     @classmethod
     def add_live_packet_gatherer_parameters(
             cls, live_packet_gatherer_params: LivePacketGatherParameters,
-            vertex_to_record_from: AbstractVertex,
+            vertex_to_record_from: ApplicationVertex,
             partition_ids: Iterable[str]):
         """
         Adds parameters for a new live packet gatherer (LPG) if needed, or
@@ -1192,7 +1202,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._gatherer_map.values()
 
     @classmethod
-    def iterate_database_socket_addresses(cls) -> Iterable[SocketAddress]:
+    def iterate_database_socket_addresses(cls) -> Iterator[SocketAddress]:
         """
         Iterates over the registered database_socket_addresses.
 

@@ -15,12 +15,13 @@
 import logging
 import sys
 from threading import Thread
+from typing import Dict, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.transceiver import create_transceiver_from_hostname
+from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
 from spinn_front_end_common.abstract_models import (
     AbstractMachineAllocationController)
 from spinnman.connections.udp_packet_connections import EIEIOConnection
@@ -40,7 +41,8 @@ class MachineAllocationController(
         "__hostname",
         "__connection_data")
 
-    def __init__(self, thread_name, hostname=None, connection_data=None):
+    def __init__(self, thread_name: str, hostname: Optional[str] = None,
+                 connection_data: Optional[Dict[Tuple[int, int], str]] = None):
         """
         :param str thread_name:
         """
@@ -52,11 +54,11 @@ class MachineAllocationController(
         thread.start()
 
     @overrides(AbstractMachineAllocationController.close)
-    def close(self):
+    def close(self) -> None:
         self._exited = True
 
     @abstractmethod
-    def _wait(self):
+    def _wait(self) -> bool:  # type: ignore[empty-body]
         """
         Wait for some bounded amount of time for a change in the status
         of the machine allocation.
@@ -65,13 +67,13 @@ class MachineAllocationController(
         :rtype: bool
         """
 
-    def _teardown(self):
+    def _teardown(self) -> None:
         """
         Perform any extra tear-down that the thread requires. Does not
         need to be overridden if no action is desired.
         """
 
-    def __manage_allocation(self):
+    def __manage_allocation(self) -> None:
         machine_still_allocated = True
         while machine_still_allocated and not self._exited:
             machine_still_allocated = self._wait()
@@ -83,7 +85,7 @@ class MachineAllocationController(
             sys.exit(1)
 
     @overrides(AbstractMachineAllocationController.create_transceiver)
-    def create_transceiver(self):
+    def create_transceiver(self) -> Optional[Transceiver]:
         if not self.__hostname:
             return None
         txrx = create_transceiver_from_hostname(self.__hostname, 5)
@@ -91,11 +93,16 @@ class MachineAllocationController(
         txrx.discover_scamp_connections()
         return txrx
 
-    @overrides(AbstractMachineAllocationController.open_sdp_connection)
-    def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
+    def __host(self, chip_x: int, chip_y: int):
         if not self.__connection_data:
             return None
-        host = self.__connection_data[chip_x, chip_y]
+        return self.__connection_data.get((chip_x, chip_y))
+
+    @overrides(AbstractMachineAllocationController.open_sdp_connection)
+    def open_sdp_connection(
+            self, chip_x: int, chip_y: int,
+            udp_port: int = SCP_SCAMP_PORT) -> Optional[SCAMPConnection]:
+        host = self.__host(chip_x, chip_y)
         if not host:
             return None
         return SCAMPConnection(
@@ -103,10 +110,9 @@ class MachineAllocationController(
             remote_host=host, remote_port=udp_port)
 
     @overrides(AbstractMachineAllocationController.open_eieio_connection)
-    def open_eieio_connection(self, chip_x, chip_y):
-        if not self.__connection_data:
-            return None
-        host = self.__connection_data[chip_x, chip_y]
+    def open_eieio_connection(
+            self, chip_x: int, chip_y: int) -> Optional[EIEIOConnection]:
+        host = self.__host(chip_x, chip_y)
         if not host:
             return None
         return EIEIOConnection(remote_host=host, remote_port=SCP_SCAMP_PORT)

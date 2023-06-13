@@ -27,7 +27,7 @@ class AbstractCanReset(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def reset_to_first_timestep(self):
+    def reset_to_first_timestep(self) -> None:
         """
         Reset the object to first time step.
         """

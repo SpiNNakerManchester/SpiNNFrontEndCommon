@@ -15,6 +15,7 @@
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -27,7 +28,7 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractproperty
-    def is_in_injection_mode(self):
+    def is_in_injection_mode(self) -> bool:
         """
         Whether this vertex is actually in injection mode.
 
@@ -35,7 +36,7 @@ class AbstractSupportsDatabaseInjection(object, metaclass=AbstractBase):
         """
 
     @abstractproperty
-    def injection_partition_id(self):
+    def injection_partition_id(self) -> str:
         """
         The partition that packets are being injected with.
 
