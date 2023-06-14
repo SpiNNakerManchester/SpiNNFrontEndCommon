@@ -103,7 +103,6 @@ class _HostExecuteDataSpecification(object):
         """
         try:
             if FecDataView.has_java_caller():
-                logger.warning("Java not being used for DS loading")
                 if is_system:
                     return self.__java_sys()
                 else:
