@@ -11,10 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
 
 
 @require_subclass(MachineVertex)
@@ -28,11 +28,11 @@ class AbstractProvidesProvenanceDataFromMachine(
     __slots__ = ()
 
     @abstractmethod
-    def get_provenance_data_from_machine(self, placement):
+    def get_provenance_data_from_machine(self, placement: Placement):
         """
-        Get an iterable of provenance data items.
+        Get provenance data items for a placement and store them in the
+        provenance DB.
 
         :param ~pacman.model.placements.Placement placement:
             the placement of the object
-        :rtype: iterable
         """

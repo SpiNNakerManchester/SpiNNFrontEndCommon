@@ -16,6 +16,7 @@ import argparse
 import os
 import sqlite3
 import numpy
+from typing import Iterable
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
 # import matplotlib.pyplot as plot
 # import seaborn
@@ -64,7 +65,7 @@ class Plotter(object):
     def __exit__(self, *args):
         return self._db.__exit__(*args)
 
-    def __do_chip_query(self, description):
+    def __do_chip_query(self, description: str) -> Iterable[sqlite3.Row]:
         # Does the query in one of two ways, depending on schema version
         with self._db.transaction() as cur:
             if self.__have_insertion_order:
@@ -120,7 +121,7 @@ class Plotter(object):
         return ((src + "/" + name).replace("_", " "),
                 max(xs) + 1, max(ys) + 1, ary)
 
-    def __do_sum_query(self, description):
+    def __do_sum_query(self, description: str) -> Iterable[sqlite3.Row]:
         # Does the query in one of two ways, depending on schema version
         with self._db.transaction() as cur:
             if self.__have_insertion_order:

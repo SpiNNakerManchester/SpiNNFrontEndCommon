@@ -11,8 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, List, Optional, Tuple
 from spinn_front_end_common.utilities.sqlite_db import SQLiteDB
-from spinnman.spalloc import SpallocClient
+from spinnman.spalloc import SpallocClient, SpallocJob
 
 
 class DatabaseReader(SQLiteDB):
@@ -21,12 +22,12 @@ class DatabaseReader(SQLiteDB):
     """
     __slots__ = ("__job", "__looked_for_job")
 
-    def __init__(self, database_path):
+    def __init__(self, database_path: str):
         """
         :param str database_path: The path to the database
         """
         super().__init__(database_path, read_only=True, text_factory=str)
-        self.__job = None
+        self.__job: Optional[SpallocJob] = None
         self.__looked_for_job = False
 
     def __exec_one(self, query, *args):
@@ -38,7 +39,7 @@ class DatabaseReader(SQLiteDB):
     def __r2t(row, *args):
         return tuple(None if row is None else row[key] for key in args)
 
-    def get_job(self):
+    def get_job(self) -> SpallocJob:
         """
         Get the job described in the database. If no job exists, direct
         connection to boards should be used.
@@ -51,9 +52,10 @@ class DatabaseReader(SQLiteDB):
             with self.transaction() as cur:
                 self.__job = SpallocClient.open_job_from_database(cur)
             self.__looked_for_job = True
+        assert self.__job is not None
         return self.__job
 
-    def get_key_to_atom_id_mapping(self, label):
+    def get_key_to_atom_id_mapping(self, label: str) -> Dict[int, int]:
         """
         Get a mapping of event key to atom ID for a given vertex.
 
@@ -70,7 +72,7 @@ class DatabaseReader(SQLiteDB):
                     WHERE label = ?
                     """, (label, ))}
 
-    def get_atom_id_to_key_mapping(self, label):
+    def get_atom_id_to_key_mapping(self, label: str) -> Dict[int, int]:
         """
         Get a mapping of atom ID to event key for a given vertex.
 
@@ -87,7 +89,9 @@ class DatabaseReader(SQLiteDB):
                     WHERE label = ?
                     """, (label, ))}
 
-    def get_live_output_details(self, label, receiver_label):
+    def get_live_output_details(
+            self, label: str, receiver_label: str) -> Tuple[
+                str, int, bool, str, int, int, int]:
         """
         Get the IP address, port and whether the SDP headers are to be
         stripped from the output from a vertex.
@@ -107,7 +111,8 @@ class DatabaseReader(SQLiteDB):
             "ip_address", "port", "strip_sdp", "board_address", "tag",
             "chip_x", "chip_y")
 
-    def get_configuration_parameter_value(self, parameter_name):
+    def get_configuration_parameter_value(
+            self, parameter_name: str) -> Optional[float]:
         """
         Get the value of a configuration parameter.
 
@@ -123,10 +128,10 @@ class DatabaseReader(SQLiteDB):
         return None if row is None else float(row["value"])
 
     @staticmethod
-    def __xyp(row):
+    def __xyp(row) -> Tuple[int, int, int]:
         return int(row["x"]), int(row["y"]), int(row["p"])
 
-    def get_placements(self, label):
+    def get_placements(self, label: str) -> List[Tuple[int, int, int]]:
         """
         Get the placements of an application vertex with a given label.
 
@@ -142,7 +147,7 @@ class DatabaseReader(SQLiteDB):
                     WHERE vertex_label = ?
                     """, (label, ))]
 
-    def get_ip_address(self, x, y):
+    def get_ip_address(self, x: int, y: int) -> Optional[str]:
         """
         Get an IP address to contact a chip.
 
@@ -157,5 +162,5 @@ class DatabaseReader(SQLiteDB):
             WHERE x = ? AND y = ? OR x = 0 AND y = 0
             ORDER BY x DESC
             """, x, y)
-        # Should only fail if no machine is present!
+        # Should only fail if no machine is present or a bad XY given!
         return None if row is None else row["eth_ip_address"]

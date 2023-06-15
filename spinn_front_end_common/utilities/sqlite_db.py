@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 from contextlib import AbstractContextManager as ACMBase
 import enum
 import hashlib
@@ -20,6 +20,8 @@ import os
 import pathlib
 import sqlite3
 import struct
+from typing import Optional, Union
+from typing_extensions import Literal
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.logger_utils import warn_once
 from pacman.exceptions import PacmanValueError
@@ -87,11 +89,15 @@ class SQLiteDB(AbstractContextManager):
         # the database holding the data to store
         "__db", )
 
-    def __init__(self, database_file=None, *, read_only=False, ddl_file=None,
-                 row_factory=sqlite3.Row, text_factory=memoryview,
-                 case_insensitive_like=True,
-                 timeout=5.0,
-                 synchronisation=Synchronisation.NORMAL):
+    def __init__(
+            self, database_file: Optional[str] = None, *,
+            read_only: bool = False, ddl_file: Optional[str] = None,
+            row_factory: Union[
+                type[sqlite3.Row], type[tuple], None] = sqlite3.Row,
+            text_factory: Union[
+                type[memoryview], type[str], None] = memoryview,
+            case_insensitive_like: bool = True, timeout: float = 5.0,
+            synchronisation=Synchronisation.NORMAL):
         """
         :param str database_file:
             The name of a file that contains (or will contain) an SQLite
@@ -173,10 +179,10 @@ class SQLiteDB(AbstractContextManager):
         self.__db.executescript(
             f"PRAGMA main.synchronous={synchronisation.value};")
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.close()
 
-    def close(self):
+    def close(self) -> None:
         """
         Finalises and closes the database.
         """
@@ -187,7 +193,7 @@ class SQLiteDB(AbstractContextManager):
         except AttributeError:
             self.__db = None
 
-    def pragma(self, pragma_name, value):
+    def pragma(self, pragma_name: str, value: Union[bool, int, str]):
         """
         Set a database ``PRAGMA``. See the `SQLite PRAGMA documentation
         <https://www.sqlite.org/pragma.html>`_ for details.
@@ -200,6 +206,8 @@ class SQLiteDB(AbstractContextManager):
             If a string, must not contain a single quote.
         :type value: bool or int or str
         """
+        if not self.__db:
+            raise AttributeError("database has been closed")
         if isinstance(value, bool):
             if value:
                 self.__db.executescript(f"PRAGMA {pragma_name}=ON;")
@@ -216,7 +224,7 @@ class SQLiteDB(AbstractContextManager):
             raise TypeError("can only set pragmas to bool, int or str")
 
     @property
-    def connection(self):
+    def connection(self) -> sqlite3.Connection:
         """
         The underlying SQLite database connection.
 
@@ -239,7 +247,7 @@ class SQLiteDB(AbstractContextManager):
             raise AttributeError("database has been closed")
         return self.__db
 
-    def transaction(self, isolation_level=Isolation.DEFERRED):
+    def transaction(self, isolation_level=Isolation.DEFERRED) -> _DbWrapper:
         """
         Get a context manager that manages a transaction on the database.
         The value of the context manager is a :py:class:`~sqlite3.Cursor`.
@@ -277,16 +285,16 @@ class _DbWrapper(ACMBase):
     """
     __slots__ = ("__d", "__cursor", "__isolation_level")
 
-    def __init__(self, db, isolation_level):
+    def __init__(self, db: sqlite3.Connection, isolation_level: Isolation):
         """
         :param sqlite3.Connection db:
         :param Isolation isolation_level:
         """
         self.__d = db
         self.__isolation_level = isolation_level.value
-        self.__cursor = None
+        self.__cursor: Optional[sqlite3.Cursor] = None
 
-    def __enter__(self):
+    def __enter__(self) -> sqlite3.Cursor:
         c = self.__d.cursor()
         if not self.__d.in_transaction:
             self.__cursor = c
@@ -298,7 +306,7 @@ class _DbWrapper(ACMBase):
             self.__cursor = None
         return c
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> Literal[False]:
         if self.__cursor:
             if exc_type is None:
                 self.__d.commit()

@@ -15,7 +15,7 @@ from __future__ import annotations  # Type checking trickery
 import logging
 import os
 from typing import (
-    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, TYPE_CHECKING)
+    Dict, Iterable, Iterator, Optional, Set, Tuple, Union, cast, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
 from spinn_machine import CoreSubsets, Chip, FixedRouteEntry
@@ -23,6 +23,7 @@ from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import ExecutableType
 from spinnman.messages.scp.enums.signal import Signal
+from spinnman.spalloc import SpallocJob
 from pacman.data import PacmanDataView
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.routing_tables import MulticastRoutingTables
@@ -42,6 +43,10 @@ if TYPE_CHECKING:
     from spinn_front_end_common.utilities.notification_protocol import (
         NotificationProtocol)
     from spinn_front_end_common.utility_models import LivePacketGather
+    from spinn_front_end_common.interface.interface_functions.\
+        spalloc_allocator import SpallocJobController as _JobCtrl
+else:
+    _JobCtrl = object
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _EMPTY_CORE_SUBSETS = CoreSubsets()
@@ -267,6 +272,22 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
             raise cls._exception("allocation_controller")
 
         return cls.__fec_data._allocation_controller
+
+    @classmethod
+    def _get_spalloc_job(cls) -> Optional[SpallocJob]:
+        """
+        Returns the (new) Spalloc job, if there is one.
+        """
+        mac = cls.__fec_data._allocation_controller
+        if mac is None:
+            return None
+        if mac.proxying:
+            # This is now assumed to be a SpallocJobController;
+            # can't fully check that because of import circularity.
+            job = cast(_JobCtrl, mac)._job
+            if isinstance(job, SpallocJob):
+                return job
+        return None
 
     # _buffer_manager
     @classmethod

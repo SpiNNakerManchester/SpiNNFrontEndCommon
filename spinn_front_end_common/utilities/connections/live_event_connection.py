@@ -135,7 +135,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__send_address_details: Dict[str, Tuple[
             int, int, int, Optional[str]]] = dict()
         # Also used by SpynnakerPoissonControlConnection
-        self._atom_id_to_key: Dict[str, List[int]] = dict()
+        self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
         self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
         self.__live_event_callbacks: List[
             List[Tuple[_RcvCallback, bool]]] = list()
@@ -281,8 +281,10 @@ class LiveEventConnection(DatabaseConnection):
         vertex_sizes: Dict[str, int] = dict()
         run_time_ms = db_reader.get_configuration_parameter_value(
             "runtime")
-        machine_timestep_ms = db_reader.get_configuration_parameter_value(
-            "machine_time_step") / 1000.0
+        machine_timestep = db_reader.get_configuration_parameter_value(
+            "machine_time_step")
+        assert run_time_ms is not None
+        assert machine_timestep is not None
 
         if self.__send_labels is not None:
             self.__init_sender(db_reader, vertex_sizes)
@@ -293,7 +295,7 @@ class LiveEventConnection(DatabaseConnection):
         for label, vertex_size in vertex_sizes.items():
             for init_callback in self.__init_callbacks[label]:
                 init_callback(
-                    label, vertex_size, run_time_ms, machine_timestep_ms)
+                    label, vertex_size, run_time_ms, machine_timestep / 1000.0)
 
     def __init_sender(self, db: DatabaseReader, vertex_sizes: Dict[str, int]):
         """

@@ -17,19 +17,27 @@ import json
 import logging
 import os
 import subprocess
+from typing import Dict, List, Optional, Union, cast
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import Chip
+from spinn_machine.tags import IPTag
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.utilities.report_functions import (
-    write_json_machine)
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from pacman.model.placements import Placement, Placements
+from spinn_front_end_common.utilities.report_functions.write_json_machine \
+    import write_json_machine  # Argh! Mypy
+from spinn_front_end_common.utilities.exceptions import (
+    ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
+_JsonValue = Union[int, float, str, None, "_JsonObject", "_JsonArray"]
+_JsonObject = Dict[str, _JsonValue]
+_JsonArray = List[_JsonValue]
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -60,17 +68,17 @@ class JavaCaller(object):
         # Dict of ethernet (x, y) to the p of the packetGather vertex
         "_gatherer_cores",
         # The location where the latest placement json is written
-        "_placement_json",
+        "__placement_json",
         # Properties flag to be passed to Java
         "_java_properties")
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Creates a Java caller and checks the user/configuration parameters.
 
         :raise ConfigurationException: if simple parameter checking fails.
         """
-        self._recording = None
+        self._recording: Optional[bool] = None
         self._java_call = get_config_str("Java", "java_call")
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
@@ -81,13 +89,13 @@ class JavaCaller(object):
 
         self._find_java_jar()
 
-        self._machine_json_path = None
-        self._placement_json = None
-        self._monitor_cores = None
-        self._gatherer_iptags = None
-        self._gatherer_cores = None
+        self._machine_json_path: Optional[str] = None
+        self.__placement_json: Optional[str] = None
+        self._monitor_cores: Optional[Dict[Chip, int]] = None
+        self._gatherer_iptags: Optional[Dict[Chip, IPTag]] = None
+        self._gatherer_cores: Optional[Dict[Chip, int]] = None
         self._java_properties = get_config_str("Java", "java_properties")
-        self._chip_by_ethernet = None
+        self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
             # pylint: disable=not-an-iterable
@@ -97,7 +105,7 @@ class JavaCaller(object):
                         "Java Properties must start with -D "
                         f"found at {_property}")
 
-    def _find_java_jar(self):
+    def _find_java_jar(self) -> None:
         java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
         java_jar_path = get_config_str("Java", "java_jar_path")
         if java_spinnaker_path is None:
@@ -139,7 +147,7 @@ class JavaCaller(object):
                 raise ConfigurationException(
                     f"No file found at java_jar_path: {java_jar_path}")
 
-    def set_advanced_monitors(self):
+    def set_advanced_monitors(self) -> None:
         """
         Create information describing what's going on with the monitor cores.
         """
@@ -152,8 +160,9 @@ class JavaCaller(object):
         self._gatherer_iptags = dict()
         self._gatherer_cores = dict()
         for chip, packet_gather in FecDataView.iterate_gather_items():
-            self._gatherer_iptags[chip] = \
-                tags.get_ip_tags_for_vertex(packet_gather)[0]
+            gatherer_tags = tags.get_ip_tags_for_vertex(packet_gather)
+            assert gatherer_tags is not None
+            self._gatherer_iptags[chip] = gatherer_tags[0]
             placement = FecDataView.get_placement_of_vertex(packet_gather)
             self._gatherer_cores[chip] = placement.p
 
@@ -164,7 +173,7 @@ class JavaCaller(object):
                 chip.nearest_ethernet_x, chip.nearest_ethernet_y)
             self._chip_by_ethernet[ethernet].append(chip)
 
-    def _machine_json(self):
+    def _machine_json(self) -> str:
         """
         Converts the machine in this class to JSON.
 
@@ -175,7 +184,7 @@ class JavaCaller(object):
                 progress_bar=False, validate=False)
         return self._machine_json_path
 
-    def set_placements(self, used_placements):
+    def set_placements(self, used_placements: Placements):
         """
         Passes in the placements leaving this class to decide pass it to
         Java.
@@ -194,19 +203,25 @@ class JavaCaller(object):
             FecDataView.get_json_dir_path(), "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
-            self._placement_json = self._write_placements(
+            self.__placement_json = self._write_placements(
                 used_placements, path)
         else:
-            self._placement_json = self._write_gather(
+            self.__placement_json = self._write_gather(
                 used_placements, path)
 
-    def _json_placement(self, placement):
+    @property
+    def _placement_json(self) -> str:
+        if self.__placement_json is None:
+            raise SpinnFrontEndException("placements not set")
+        return self.__placement_json
+
+    def _json_placement(self, placement: Placement):
         """
         :param ~pacman.model.placements.Placement placement:
         :rtype: dict
         """
         vertex = placement.vertex
-        json_placement = {
+        json_placement: _JsonObject = {
             "x": placement.x,
             "y": placement.y,
             "p": placement.p,
@@ -218,7 +233,7 @@ class JavaCaller(object):
         if isinstance(vertex, AbstractReceiveBuffersToHost) and \
                 vertex.get_recorded_region_ids():
             self._recording = True
-            json_vertex = json_placement["vertex"]
+            json_vertex = cast(_JsonObject, json_placement["vertex"])
             # Replace fields in template above
             json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
             json_vertex["recordingRegionBaseAddress"] = \
@@ -226,7 +241,7 @@ class JavaCaller(object):
 
         return json_placement
 
-    def _json_iptag(self, iptag):
+    def _json_iptag(self, iptag: IPTag) -> _JsonObject:
         """
         :param ~pacman.model.tags.IPTag iptag:
         :rtype: dict
@@ -241,12 +256,14 @@ class JavaCaller(object):
             "tagID": iptag.tag,
             "trafficIdentifier": iptag.traffic_identifier}
 
-    def _placements_grouped(self, recording_placements):
+    def _placements_grouped(self, recording_placements: Placements) -> Dict[
+            Chip, Dict[Chip, List[Placement]]]:
         """
         :param ~pacman.model.placements.Placements recording_placementss:
         :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
         """
-        by_ethernet = defaultdict(lambda: defaultdict(list))
+        by_ethernet: Dict[Chip, Dict[Chip, List[Placement]]] = defaultdict(
+            lambda: defaultdict(list))
         machine = FecDataView.get_machine()
         for placement in recording_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
@@ -257,25 +274,30 @@ class JavaCaller(object):
                     by_ethernet[ethernet][chip].append(placement)
         return by_ethernet
 
-    def _write_gather(self, used_placements, path):
+    def _write_gather(self, used_placements: Placements, path: str) -> str:
         """
         :param ~pacman.model.placements.Placements used_placements:
             placements that are being used. May not be all placements
         :param str path:
         :rtype: str
         """
+        assert self._chip_by_ethernet is not None
+        assert self._gatherer_cores is not None
+        assert self._gatherer_iptags is not None
+        assert self._monitor_cores is not None
+
         placements_by_ethernet = self._placements_grouped(used_placements)
-        json_obj = list()
+        json_obj: _JsonArray = list()
         for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
-            json_gather = {
+            json_gather: _JsonObject = {
                 "x": ethernet.x,
                 "y": ethernet.y,
                 "p": self._gatherer_cores[ethernet],
                 "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
-            json_chips = list()
+            json_chips: _JsonArray = list()
             for chip in self._chip_by_ethernet[ethernet]:
-                json_chip = {
+                json_chip: _JsonObject = {
                     "x": chip.x,
                     "y": chip.y,
                     "p": self._monitor_cores[chip]}
@@ -295,7 +317,7 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, used_placements, path):
+    def _write_placements(self, used_placements: Placements, path: str) -> str:
         """
         :param ~pacman.model.placements.Placements placements:
             Placements that are being used. May not be all placements
@@ -303,7 +325,7 @@ class JavaCaller(object):
         :rtype: str
         """
         # Read back the regions
-        json_obj = list()
+        json_obj: _JsonArray = list()
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
                 json_p = self._json_placement(placement)
@@ -316,7 +338,7 @@ class JavaCaller(object):
 
         return path
 
-    def _run_java(self, *args):
+    def _run_java(self, *args: str):
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.
@@ -332,7 +354,7 @@ class JavaCaller(object):
         params.extend(args)
         return subprocess.call(params)
 
-    def get_all_data(self):
+    def get_all_data(self) -> None:
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.
@@ -360,7 +382,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_data_specification(self):
+    def execute_data_specification(self) -> None:
         """
         Writes all the data specifications, uploading the result to the
         machine.
@@ -379,7 +401,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_system_data_specification(self):
+    def execute_system_data_specification(self) -> None:
         """
         Writes all the data specifications for system cores,
         uploading the result to the machine.
@@ -398,7 +420,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def execute_app_data_specification(self, use_monitors):
+    def execute_app_data_specification(self, use_monitors: bool) -> None:
         """
         Writes all the data specifications for application cores,
         uploading the result to the machine.

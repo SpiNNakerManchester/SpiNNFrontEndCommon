@@ -14,6 +14,7 @@
 
 import json
 import os
+from typing import Optional
 from spinn_utilities.progress_bar import ProgressBar, DummyProgressBar
 from spinn_machine.json_machine import to_json
 from pacman.utilities import file_format_schemas
@@ -24,7 +25,9 @@ from spinn_front_end_common.data import FecDataView
 MACHINE_FILENAME = "machine.json"
 
 
-def write_json_machine(json_folder=None, progress_bar=True, validate=True):
+def write_json_machine(
+        json_folder: Optional[str] = None, progress_bar: bool = True,
+        validate: bool = True) -> str:
     """
     Runs the code to write the machine in Java readable JSON.
 
@@ -54,7 +57,7 @@ def write_json_machine(json_folder=None, progress_bar=True, validate=True):
     return file_path
 
 
-def _progress(progress_bar):
+def _progress(progress_bar: bool) -> ProgressBar:
     # Steps are tojson, validate and writefile
     if progress_bar:
         return ProgressBar(3, "Converting to JSON machine")

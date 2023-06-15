@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 import io
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .ds_sqllite_database import DsSqlliteDatabase
 
 
 class DataRowWriter(io.RawIOBase):
@@ -23,7 +26,7 @@ class DataRowWriter(io.RawIOBase):
         "_targets",
         "_data", )
 
-    def __init__(self, x, y, p, targets):
+    def __init__(self, x: int, y: int, p: int, targets: DsSqlliteDatabase):
         super().__init__()
         self._x = x
         self._y = y
@@ -31,7 +34,7 @@ class DataRowWriter(io.RawIOBase):
         self._targets = targets
         self._data = bytearray()
 
-    def write(self, data):
+    def write(self, data: bytes):  # type: ignore[override]
         assert self.closed is False
         self._data += data
 
@@ -51,7 +54,7 @@ class DataRowWriter(io.RawIOBase):
     def fileno(self):
         raise OSError
 
-    def close(self):
+    def close(self) -> None:
         """
         Closes the writer if not already closed.
         """

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import List
 from spinn_front_end_common.utilities.constants import (
     SARK_PER_MALLOC_SDRAM_USAGE, BYTES_PER_WORD)
 
@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities.constants import (
 _PER_REGION_HEADER_SIZE = BYTES_PER_WORD * 3
 
 
-def get_recording_header_size(n_recording_regions):
+def get_recording_header_size(n_recording_regions: int) -> int:
     """
     Get the size of the data to be written for the recording header.
 
@@ -34,7 +34,7 @@ def get_recording_header_size(n_recording_regions):
     return BYTES_PER_WORD + (n_recording_regions * _PER_REGION_HEADER_SIZE)
 
 
-def get_recording_data_constant_size(n_recording_regions):
+def get_recording_data_constant_size(n_recording_regions: int) -> int:
     """
     Get the size of the headers that are stored in the SDRAM spaces
     allocated during recording_initialise, and so do not need to be
@@ -46,7 +46,7 @@ def get_recording_data_constant_size(n_recording_regions):
     return (n_recording_regions * SARK_PER_MALLOC_SDRAM_USAGE)
 
 
-def get_recording_header_array(recorded_region_sizes):
+def get_recording_header_array(recorded_region_sizes: List[int]) -> List[int]:
     """
     Get data to be written for the recording header.
 
@@ -55,7 +55,6 @@ def get_recording_header_array(recorded_region_sizes):
         A size of 0 is acceptable.
     :rtype: list(int)
     """
-
     # See recording.h/recording_initialise for data included in the header
     data = list()
 

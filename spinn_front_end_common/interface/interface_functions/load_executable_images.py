@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Callable
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
@@ -27,7 +28,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 _APP_READY_TIMEOUT = 10.0
 
 
-def load_app_images():
+def load_app_images() -> None:
     """
     Go through the executable targets and load each binary to everywhere
     and then send a start request to the cores that actually use it.
@@ -36,7 +37,7 @@ def load_app_images():
                   "Loading executables onto the machine")
 
 
-def load_sys_images():
+def load_sys_images() -> None:
     """
     Go through the executable targets and load each binary to everywhere
     and then send a start request to the cores that actually use it.
@@ -53,7 +54,8 @@ def load_sys_images():
         raise e
 
 
-def __load_images(filter_predicate, label):
+def __load_images(
+        filter_predicate: Callable[[ExecutableType], bool], label: str):
     """
     :param callable(ExecutableType,bool) filter_predicate:
     :param str label
@@ -78,7 +80,9 @@ def __load_images(filter_predicate, label):
         raise e
 
 
-def filter_targets(filter_predicate):
+def filter_targets(
+        filter_predicate: Callable[[ExecutableType], bool]
+        ) -> ExecutableTargets:
     """
     :param callable(ExecutableType,bool) filter_predicate:
     :rtype: ~spinnman.model.ExecutableTargets

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from typing import Optional
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from pacman.model.resources.iptag_resource import IPtagResource
@@ -36,14 +36,15 @@ class LivePacketGatherParameters(object):
         "_received_key_mask", "_translate_keys", "_translated_key_right_shift")
 
     def __init__(
-            self, port=None, hostname=None, tag=None, strip_sdp=True,
+            self, port: Optional[int] = None, hostname: Optional[str] = None,
+            tag=None, strip_sdp=True,
             use_prefix=False, key_prefix=None, prefix_type=None,
             message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, label=None,
             received_key_mask=0xFFFFFFFF,
-            translate_keys=False, translated_key_right_shift=0):
+            translate_keys=False, translated_key_right_shift=0) -> None:
         """
         :raises ConfigurationException:
             If the parameters passed are known to be an invalid combination.
@@ -88,7 +89,7 @@ class LivePacketGatherParameters(object):
         self._translated_key_right_shift = translated_key_right_shift
 
     @property
-    def port(self):
+    def port(self) -> Optional[int]:
         """
         Where to send data from SpiNNaker:
         the port of the listening UDP socket.
@@ -98,17 +99,17 @@ class LivePacketGatherParameters(object):
         return self._port
 
     @property
-    def hostname(self):
+    def hostname(self) -> Optional[str]:
         """
         Where to send data from SpiNNaker: the host name of the listening UDP
         socket.
 
-        :rtype: bool
+        :rtype: str
         """
         return self._hostname
 
     @property
-    def tag(self):
+    def tag(self) -> Optional[int]:
         """
         A fixed tag ID to assign, or `None` if any tag is OK
 
@@ -117,7 +118,7 @@ class LivePacketGatherParameters(object):
         return self._tag
 
     @property
-    def strip_sdp(self):
+    def strip_sdp(self) -> bool:
         """
         Whether to remove SDP headers from the messages before sending.
 
@@ -126,7 +127,7 @@ class LivePacketGatherParameters(object):
         return self._strip_sdp
 
     @property
-    def use_prefix(self):
+    def use_prefix(self) -> bool:
         """
         Whether to use EIEIO prefix compaction on keys.
 
@@ -135,7 +136,7 @@ class LivePacketGatherParameters(object):
         return self._use_prefix
 
     @property
-    def key_prefix(self):
+    def key_prefix(self) -> int:
         """
         The EIEIO key prefix to remove from messages.
 
@@ -144,7 +145,7 @@ class LivePacketGatherParameters(object):
         return self._key_prefix
 
     @property
-    def prefix_type(self):
+    def prefix_type(self) -> Optional[EIEIOPrefix]:
         """
         The type of prefix.
 
@@ -153,7 +154,7 @@ class LivePacketGatherParameters(object):
         return self._prefix_type
 
     @property
-    def message_type(self):
+    def message_type(self) -> EIEIOType:
         """
         The type of messages to send.
 
@@ -162,7 +163,7 @@ class LivePacketGatherParameters(object):
         return self._message_type
 
     @property
-    def right_shift(self):
+    def right_shift(self) -> int:
         """
         Shift to apply to keys.
 
@@ -171,7 +172,7 @@ class LivePacketGatherParameters(object):
         return self._right_shift
 
     @property
-    def payload_as_time_stamps(self):
+    def payload_as_time_stamps(self) -> bool:
         """
         Whether the payloads are timestamps.
 
@@ -180,7 +181,7 @@ class LivePacketGatherParameters(object):
         return self._payload_as_time_stamps
 
     @property
-    def use_payload_prefix(self):
+    def use_payload_prefix(self) -> bool:
         """
         Whether to use prefix compaction for payloads.
 
@@ -189,7 +190,7 @@ class LivePacketGatherParameters(object):
         return self._use_payload_prefix
 
     @property
-    def payload_prefix(self):
+    def payload_prefix(self) -> int:
         """
         The payload prefix to remove if applying compaction.
 
@@ -198,7 +199,7 @@ class LivePacketGatherParameters(object):
         return self._payload_prefix
 
     @property
-    def payload_right_shift(self):
+    def payload_right_shift(self) -> int:
         """
         Shift to apply to payloads.
 
@@ -207,7 +208,7 @@ class LivePacketGatherParameters(object):
         return self._payload_right_shift
 
     @property
-    def number_of_packets_sent_per_time_step(self):
+    def number_of_packets_sent_per_time_step(self) -> int:
         """
         The maximum number of packets to send in a timestep.
 
@@ -216,7 +217,7 @@ class LivePacketGatherParameters(object):
         return self._n_packets_per_time_step
 
     @property
-    def label(self):
+    def label(self) -> str:
         """
         A label.
 
@@ -225,7 +226,7 @@ class LivePacketGatherParameters(object):
         return self._label
 
     @property
-    def received_key_mask(self):
+    def received_key_mask(self) -> int:
         """
         A mask to select which keys are dispatched.
 
@@ -234,7 +235,7 @@ class LivePacketGatherParameters(object):
         return self._received_key_mask
 
     @property
-    def translate_keys(self):
+    def translate_keys(self) -> bool:
         """
         Whether to apply translation to keys.
 
@@ -243,7 +244,7 @@ class LivePacketGatherParameters(object):
         return self._translate_keys
 
     @property
-    def translated_key_right_shift(self):
+    def translated_key_right_shift(self) -> int:
         """
         Shift to apply in key translation.
 
@@ -251,7 +252,7 @@ class LivePacketGatherParameters(object):
         """
         return self._translated_key_right_shift
 
-    def get_iptag_resource(self):
+    def get_iptag_resource(self) -> IPtagResource:
         """
         Get a description of the :py:class:`~spinn_machine.tags.IPTag`
         that the LPG for these parameters will require.

@@ -11,21 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import logging
+from typing import Callable, Container, List, Optional
+from spinn_utilities.progress_bar import ProgressBar
 from spinnman.exceptions import (
     SpinnmanException, SpiNNManCoresNotInStateException)
 from spinnman.messages.scp.enums import Signal
 from spinnman.model import ExecutableTargets
-from spinnman.model.enums import ExecutableType
+from spinnman.model.enums import ExecutableType, CPUState
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
 def run_system_application(
-        executable_cores, app_id,
-        read_algorithm_iobuf, check_for_success_function,
-        cpu_end_states, needs_sync_barrier, filename_template,
-        binaries_to_track=None, progress_bar=None, logger=None, timeout=None):
+        executable_cores: ExecutableTargets, app_id: int,
+        read_algorithm_iobuf: bool,
+        check_for_success_function: Callable[[ExecutableTargets], bool],
+        cpu_end_states: Container[CPUState], needs_sync_barrier: bool,
+        filename_template: str, binaries_to_track: Optional[List[str]] = None,
+        progress_bar: Optional[ProgressBar] = None,
+        logger: Optional[logging.Logger] = None,
+        timeout: Optional[float] = None):
     """
     Executes the given _system_ application.
     Used for on-chip expanders, compressors, etc.
@@ -65,7 +71,7 @@ def run_system_application(
         # fire all signals as required
         transceiver.send_signal(app_id, Signal.SYNC0)
 
-    error = None
+    error: Optional[Exception] = None
     binary_start_types = dict()
     if binaries_to_track is None:
         check_targets = executable_cores
@@ -85,8 +91,6 @@ def run_system_application(
         transceiver.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
             progress_bar=progress_bar, timeout=timeout)
-        if progress_bar is not None:
-            progress_bar.end()
         succeeded = True
     except SpiNNManCoresNotInStateException as ex:
         error = ex
@@ -100,7 +104,7 @@ def run_system_application(
         progress_bar.end()
 
     # Check if any cores have not completed successfully
-    if succeeded and check_for_success_function:
+    if succeeded and check_for_success_function is not None:
         succeeded = check_for_success_function(executable_cores)
 
     # if doing iobuf or on failure (succeeded is None is not failure)
@@ -117,7 +121,9 @@ def run_system_application(
         raise error  # pylint: disable=raising-bad-type
 
 
-def _report_iobuf_messages(cores, logger, filename_template):
+def _report_iobuf_messages(
+        cores: ExecutableTargets, logger: Optional[logging.Logger],
+        filename_template: str):
     """
     :param ~spinnman.model.ExecutableTargets cores:
     :param ~logging.Logger logger:

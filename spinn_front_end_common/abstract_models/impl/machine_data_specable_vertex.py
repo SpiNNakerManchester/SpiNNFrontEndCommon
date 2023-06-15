@@ -20,7 +20,8 @@ from spinn_front_end_common.data import FecDataView
 
 
 class MachineDataSpecableVertex(
-        AbstractGeneratesDataSpecification, allow_derivation=True):
+        AbstractGeneratesDataSpecification,
+        allow_derivation=True):  # type: ignore [call-arg]
     """
     Support for a vertex that simplifies generating a data specification.
     """

@@ -14,6 +14,7 @@
 
 import bisect
 import math
+from typing import Dict, Iterable, List, Optional
 from spinnman.messages.eieio.command_messages import HostSendSequencedData
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.messages.eieio import EIEIOType
@@ -66,12 +67,12 @@ class BufferedSendingRegion(object):
         #: The current position in the list of timestamps
         "_current_timestamp_pos")
 
-    def __init__(self):
-        self._buffer = dict()
-        self._timestamps = list()
-        self._current_timestamp_pos = 0
+    def __init__(self) -> None:
+        self._buffer: Dict[int, List[int]] = dict()
+        self._timestamps: List[int] = list()
+        self._current_timestamp_pos: int = 0
 
-    def add_key(self, timestamp, key):
+    def add_key(self, timestamp: int, key: int):
         """
         Add a key to be sent at a given time.
 
@@ -83,7 +84,7 @@ class BufferedSendingRegion(object):
             self._buffer[timestamp] = list()
         self._buffer[timestamp].append(key)
 
-    def add_keys(self, timestamp, keys):
+    def add_keys(self, timestamp: int, keys: Iterable[int]):
         """
         Add a set of keys to be sent at the given time.
 
@@ -94,7 +95,7 @@ class BufferedSendingRegion(object):
             self.add_key(timestamp, key)
 
     @property
-    def n_timestamps(self):
+    def n_timestamps(self) -> int:
         """
         The number of timestamps available.
 
@@ -103,7 +104,7 @@ class BufferedSendingRegion(object):
         return len(self._timestamps)
 
     @property
-    def timestamps(self):
+    def timestamps(self) -> Iterable[int]:
         """
         The timestamps for which there are keys.
 
@@ -111,7 +112,7 @@ class BufferedSendingRegion(object):
         """
         return self._timestamps
 
-    def get_n_keys(self, timestamp):
+    def get_n_keys(self, timestamp: int) -> int:
         """
         Get the number of keys for a given timestamp.
 
@@ -123,7 +124,7 @@ class BufferedSendingRegion(object):
         return 0
 
     @property
-    def is_next_timestamp(self):
+    def is_next_timestamp(self) -> bool:
         """
         Whether the region is empty.
 
@@ -133,7 +134,7 @@ class BufferedSendingRegion(object):
         return self._current_timestamp_pos < len(self._timestamps)
 
     @property
-    def next_timestamp(self):
+    def next_timestamp(self) -> Optional[int]:
         """
         The next timestamp of the data to be sent, or `None` if no more data.
 
@@ -143,11 +144,11 @@ class BufferedSendingRegion(object):
             return self._timestamps[self._current_timestamp_pos]
         return None
 
-    def is_next_key(self, timestamp):
+    def is_next_key(self, timestamp: int) -> bool:
         """
         Determine if there is another key for the given timestamp.
 
-        :param bool timestamp:
+        :param int timestamp:
             the time stamp to check if there's still keys to transmit
         """
         if timestamp in self._buffer:
@@ -155,13 +156,15 @@ class BufferedSendingRegion(object):
         return False
 
     @property
-    def next_key(self):
+    def next_key(self) -> int:
         """
         The next key to be sent.
+        Only call if :py:meth:`is_next_key` returns True.
 
         :rtype: int
         """
         next_timestamp = self.next_timestamp
+        assert next_timestamp is not None
         keys = self._buffer[next_timestamp]
         key = keys.pop()
         if not keys:
@@ -170,7 +173,7 @@ class BufferedSendingRegion(object):
         return key
 
     @property
-    def current_timestamp(self):
+    def current_timestamp(self) -> int:
         """
         The current timestamp in the iterator.
 
@@ -178,13 +181,13 @@ class BufferedSendingRegion(object):
         """
         return self._current_timestamp_pos
 
-    def rewind(self):
+    def rewind(self) -> None:
         """
         Rewind the buffer to initial position.
         """
         self._current_timestamp_pos = 0
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the buffer.
         """

@@ -13,8 +13,11 @@
 # limitations under the License.
 
 from enum import Enum
+from typing import Sequence, Tuple
 from spinn_utilities.abstract_base import abstractproperty
 from spinn_utilities.overrides import overrides
+from spinnman.transceiver import Transceiver
+from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.helpful_functions import (
     get_region_base_address_offset)
 from .abstract_provides_provenance_data_from_machine import (
@@ -24,21 +27,12 @@ from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.helpful_functions import n_word_struct
 from spinn_front_end_common.interface.provenance.provenance_writer import (
     ProvenanceWriter)
-
-
-def add_name(names, name):
-    """
-    :param iterable(str) names:
-    :param str name:
-    :rtype: list(str)
-    """
-    new_names = list(names)
-    new_names.append(name)
-    return new_names
+# mypy: disable-error-code=empty-body
 
 
 class ProvidesProvenanceDataFromMachineImpl(
-        AbstractProvidesProvenanceDataFromMachine, allow_derivation=True):
+        AbstractProvidesProvenanceDataFromMachine,
+        allow_derivation=True):  # type: ignore [call-arg]
     """
     An implementation that gets provenance data from a region of integers on
     the machine.
@@ -76,7 +70,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         "Times_the_callback_queue_was_overloaded"
 
     @abstractproperty
-    def _provenance_region_id(self):
+    def _provenance_region_id(self) -> int:
         """
         The index of the provenance region.
 
@@ -84,14 +78,14 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
 
     @abstractproperty
-    def _n_additional_data_items(self):
+    def _n_additional_data_items(self) -> int:
         """
         The number of extra machine words of provenance that the model reports.
 
         :rtype: int
         """
 
-    def reserve_provenance_data_region(self, spec):
+    def reserve_provenance_data_region(self, spec) -> None:
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification being written.
@@ -102,7 +96,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             label="Provenance", empty=True)
 
     @classmethod
-    def get_provenance_data_size(cls, n_additional_data_items):
+    def get_provenance_data_size(cls, n_additional_data_items: int) -> int:
         """
         :param int n_additional_data_items:
         :rtype: int
@@ -111,7 +105,8 @@ class ProvidesProvenanceDataFromMachineImpl(
             (cls.N_SYSTEM_PROVENANCE_WORDS + n_additional_data_items)
             * BYTES_PER_WORD)
 
-    def _get_provenance_region_address(self, transceiver, placement):
+    def _get_provenance_region_address(
+            self, transceiver: Transceiver, placement: Placement) -> int:
         """
         :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
@@ -127,7 +122,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         return transceiver.read_word(
             placement.x, placement.y, prov_region_entry_address)
 
-    def _read_provenance_data(self, placement):
+    def _read_provenance_data(self, placement: Placement) -> Sequence[int]:
         """
         :param ~pacman.model.placements.Placement placement:
         :rtype: iterable(int)
@@ -143,7 +138,8 @@ class ProvidesProvenanceDataFromMachineImpl(
             self._n_additional_data_items).unpack_from(data)
 
     @staticmethod
-    def _get_provenance_placement_description(placement):
+    def _get_provenance_placement_description(
+            placement: Placement) -> Tuple[str, int, int, int]:
         """
         :param ~pacman.model.placements.Placement placement:
         :returns:
@@ -155,7 +151,9 @@ class ProvidesProvenanceDataFromMachineImpl(
         desc_label = f"{placement.vertex.label} on {x},{y},{p}"
         return desc_label, x, y, p
 
-    def parse_system_provenance_items(self, label, x, y, p, provenance_data):
+    def parse_system_provenance_items(
+            self, label: str, x: int, y: int, p: int,
+            provenance_data: Sequence[int]):
         """
         Given some words of provenance data, convert the portion of them that
         describes the system provenance into proper provenance items.
@@ -247,7 +245,8 @@ class ProvidesProvenanceDataFromMachineImpl(
                     f"time_scale_factor "
                     f"or decrease the number of neurons per core")
 
-    def _get_extra_provenance_words(self, provenance_data):
+    def _get_extra_provenance_words(
+            self, provenance_data: Sequence[int]) -> Sequence[int]:
         """
         Gets the words of provenance data not used for system provenance.
 
@@ -256,7 +255,9 @@ class ProvidesProvenanceDataFromMachineImpl(
         """
         return provenance_data[self.N_SYSTEM_PROVENANCE_WORDS:]
 
-    def parse_extra_provenance_items(self, label, x, y, p, provenance_data):
+    def parse_extra_provenance_items(
+            self, label: str, x: int, y: int, p: int,
+            provenance_data: Sequence[int]):
         # pylint: disable=unused-argument
         """
         Convert the remaining provenance words (those not in the standard set)
@@ -283,7 +284,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine.
         get_provenance_data_from_machine,
         extend_doc=False)
-    def get_provenance_data_from_machine(self, placement):
+    def get_provenance_data_from_machine(self, placement: Placement):
         """
         Retrieve the provenance data.
 

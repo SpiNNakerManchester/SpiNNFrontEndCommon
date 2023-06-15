@@ -14,6 +14,7 @@
 
 import logging
 from threading import Thread
+from typing import Callable, List, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanIOException, SpinnmanInvalidPacketException,
@@ -23,7 +24,8 @@ from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.constants import EIEIO_COMMAND_IDS as CMDS
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from .database_reader import DatabaseReader
-
+_CB = Callable[[], None]
+_DBCB = Callable[[DatabaseReader], None]
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
@@ -53,9 +55,10 @@ class DatabaseConnection(UDPConnection):
         "__running",
         "__start_resume_callback")
 
-    def __init__(self, start_resume_callback_function=None,
-                 stop_pause_callback_function=None, local_host=None,
-                 local_port=NOTIFY_PORT):
+    def __init__(
+            self, start_resume_callback_function: Optional[_CB] = None,
+            stop_pause_callback_function: Optional[_CB] = None,
+            local_host: Optional[str] = None, local_port: int = NOTIFY_PORT):
         """
         :param callable start_resume_callback_function:
             A function to be called when the start message has been received.
@@ -73,14 +76,14 @@ class DatabaseConnection(UDPConnection):
             remote_host=None, remote_port=None)
         thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
             self.local_ip_address, self.local_port), target=self.__run)
-        self.__database_callbacks = list()
+        self.__database_callbacks: List[_DBCB] = list()
         self.__start_resume_callback = start_resume_callback_function
         self.__pause_and_stop_callback = stop_pause_callback_function
         self.__running = False
         thread.daemon = True
         thread.start()
 
-    def add_database_callback(self, database_callback_function):
+    def add_database_callback(self, database_callback_function: _DBCB):
         """
         Add a database callback to be called when the database is ready.
 
@@ -93,7 +96,7 @@ class DatabaseConnection(UDPConnection):
         """
         self.__database_callbacks.append(database_callback_function)
 
-    def __run(self):
+    def __run(self) -> None:
         # pylint: disable=broad-except
         self.__running = True
         logger.info(
@@ -109,7 +112,7 @@ class DatabaseConnection(UDPConnection):
         finally:
             self.__running = False
 
-    def __process_run_cycle(self, timeout):
+    def __process_run_cycle(self, timeout: float):
         """
         Heart of :py:meth:`__run`.
         """
@@ -128,7 +131,7 @@ class DatabaseConnection(UDPConnection):
         if self.__pause_and_stop_callback is not None:
             self.__pause_stop()
 
-    def __read_db(self, toolchain_address, data):
+    def __read_db(self, toolchain_address: Tuple[str, int], data: bytes):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
@@ -147,7 +150,7 @@ class DatabaseConnection(UDPConnection):
         logger.info("Notifying the toolchain that the database has been read")
         self.__send_command(CMDS.DATABASE, toolchain_address)
 
-    def __start_resume(self):
+    def __start_resume(self) -> None:
         logger.info(
             "Waiting for message to indicate that the simulation has "
             "started or resumed")
@@ -158,9 +161,10 @@ class DatabaseConnection(UDPConnection):
                 "expected a start/resume command code now, and did not "
                 "receive it")
         # Call the callback
+        assert self.__start_resume_callback is not None
         self.__start_resume_callback()
 
-    def __pause_stop(self):
+    def __pause_stop(self) -> None:
         logger.info(
             "Waiting for message to indicate that the simulation has "
             "stopped or paused")
@@ -171,15 +175,17 @@ class DatabaseConnection(UDPConnection):
                 "expected a pause/stop command code now, and did not "
                 "receive it")
         # Call the callback
+        assert self.__pause_and_stop_callback is not None
         self.__pause_and_stop_callback()
 
-    def __send_command(self, command, toolchain_address):
+    def __send_command(
+            self, command: CMDS, toolchain_address: Tuple[str, int]):
         self.send_to(EIEIOCommandHeader(command.value).bytestring,
                      toolchain_address)
 
-    def __receive_command(self):
+    def __receive_command(self) -> int:
         return EIEIOCommandHeader.from_bytestring(self.receive(), 0).command
 
-    def close(self):
+    def close(self) -> None:
         self.__running = False
         super().close()
