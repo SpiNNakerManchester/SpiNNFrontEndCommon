@@ -233,7 +233,6 @@ class TestDataSpecification(unittest.TestCase):
         with self.assertRaises(DsDatabaseException):
             db.get_region_pointer(1, 2, 3, 9)
 
-
     def test_write(self):
         db = DsSqlliteDatabase()
         vertex = _TestVertexWithBinary(

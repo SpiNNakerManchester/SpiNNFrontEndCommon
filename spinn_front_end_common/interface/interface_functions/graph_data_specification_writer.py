@@ -181,7 +181,7 @@ class _GraphDataSpecificationWriter(object):
             else:
                 label = f"({label})"
             msg = f"{msg}core {x}:{y}:{p} has a broken reference " \
-                   f"{reference}{label} from region {region} "
+                  f"{reference}{label} from region {region} "
 
         for bad in ds_db.get_double_region():
             x, y, p, region = bad
@@ -190,4 +190,3 @@ class _GraphDataSpecificationWriter(object):
 
         if msg != "":
             raise DataSpecException(msg)
-

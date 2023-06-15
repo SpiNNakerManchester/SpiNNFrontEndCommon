@@ -428,8 +428,6 @@ class DsSqlliteDatabase(SQLiteDB):
         :rtype: int
         :raises DsDatabaseException: if the region is not known
         """
-        next_pointer = (start_address + APP_PTR_TABLE_BYTE_SIZE)
-        to_update = []
         with self.transaction() as cursor:
             cursor.execute(
                 """
@@ -629,7 +627,6 @@ class DsSqlliteDatabase(SQLiteDB):
                 with self.transaction() as cur:
                     job._write_session_credentials_to_db(cur)
 
-
     def set_app_id(self):
         """
         Sets the app id
@@ -643,6 +640,4 @@ class DsSqlliteDatabase(SQLiteDB):
                 VALUES(?)
                 """, (FecDataView.get_app_id(), ))
             if cursor.rowcount == 0:
-                raise DsDatabaseException(
-                    f"Unable to set app id")
-
+                raise DsDatabaseException("Unable to set app id")
