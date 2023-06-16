@@ -146,7 +146,7 @@ class SpallocJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.open_eieio_listener)
     def open_eieio_listener(self):
-        return self._job.open_listener_connection()
+        return self._job.open_eieio_listener_connection()
 
     @property
     @overrides(AbstractMachineAllocationController.proxying)
