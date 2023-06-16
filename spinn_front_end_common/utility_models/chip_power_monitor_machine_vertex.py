@@ -16,13 +16,15 @@ import math
 import logging
 from enum import IntEnum
 import numpy
+from typing import List
 from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
 from data_specification.enums import DataType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import VariableSDRAM
+from pacman.model.resources import AbstractSDRAM, VariableSDRAM
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.data import FecDataView
@@ -69,7 +71,7 @@ class ChipPowerMonitorMachineVertex(
     #: which channel in the recording region has the recorded samples
     _SAMPLE_RECORDING_CHANNEL = 0
 
-    def __init__(self, label, sampling_frequency):
+    def __init__(self, label: str, sampling_frequency: int):
         """
         :param str label: vertex label
         :param int sampling_frequency: how often to sample, in microseconds
@@ -79,7 +81,7 @@ class ChipPowerMonitorMachineVertex(
         self._sampling_frequency = sampling_frequency
 
     @property
-    def sampling_frequency(self):
+    def sampling_frequency(self) -> int:
         """
         How often to sample, in microseconds.
 
@@ -89,11 +91,11 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     @overrides(MachineVertex.sdram_required)
-    def sdram_required(self):
+    def sdram_required(self) -> AbstractSDRAM:
         return self.get_resources(self._sampling_frequency)
 
     @staticmethod
-    def get_resources(sampling_frequency):
+    def get_resources(sampling_frequency: float) -> VariableSDRAM:
         """
         Get the resources used by this vertex.
 
@@ -120,11 +122,11 @@ class ChipPowerMonitorMachineVertex(
         return VariableSDRAM(with_overflow, per_timestep)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return BINARY_FILE_NAME
 
     @staticmethod
-    def binary_file_name():
+    def binary_file_name() -> str:
         """
         Get the filename of the binary.
 
@@ -134,7 +136,7 @@ class ChipPowerMonitorMachineVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement,  # @UnusedVariable
+            self, spec, placement: Placement,  # @UnusedVariable
             ):
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
@@ -200,11 +202,11 @@ class ChipPowerMonitorMachineVertex(
             label="Recording")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self.binary_start_type()
 
     @staticmethod
-    def binary_start_type():
+    def binary_start_type() -> ExecutableType:
         """
         The type of binary that implements this vertex.
 
@@ -214,15 +216,15 @@ class ChipPowerMonitorMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
-    def get_recording_region_base_address(self, placement):
+    def get_recording_region_base_address(self, placement: Placement):
         return locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
-    def get_recorded_region_ids(self):
+    def get_recorded_region_ids(self) -> List[int]:
         return [0]
 
-    def _deduce_sdram_requirements_per_timer_tick(self):
+    def _deduce_sdram_requirements_per_timer_tick(self) -> int:
         """
         Deduce SDRAM usage per timer tick.
 
@@ -235,7 +237,7 @@ class ChipPowerMonitorMachineVertex(
                                recording_time)
         return int(math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY))
 
-    def get_recorded_data(self, placement):
+    def get_recorded_data(self, placement: Placement) -> numpy.ndarray:
         """
         Get data from SDRAM given placement and buffer manager.
         Also arranges for provenance data to be available.

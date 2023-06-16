@@ -11,17 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
 from enum import Enum, IntEnum
 import logging
 import struct
+from typing import Dict, Iterable, Optional, Tuple, ContextManager
+from typing_extensions import Literal
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
-from spinn_machine import CoreSubsets, Router
+from spinn_utilities.config_holder import get_config_bool
+from spinn_machine import Chip, CoreSubsets, MulticastRoutingEntry, Router
 from spinnman.model.enums import ExecutableType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ConstantSDRAM
-from spinn_utilities.config_holder import get_config_bool
+from pacman.model.resources import AbstractSDRAM, ConstantSDRAM
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -34,6 +37,7 @@ from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset, get_region_base_address_offset)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_state_from_failure)
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .data_speed_up_packet_gatherer_machine_vertex import (
     DataSpeedUpPacketGatherMachineVertex as
     Gatherer)
@@ -118,8 +122,9 @@ class ExtraMonitorSupportMachineVertex(
         "_prov_region")
 
     def __init__(
-            self, reinject_point_to_point=False,
-            reinject_nearest_neighbour=False, reinject_fixed_route=False):
+            self, reinject_point_to_point: bool = False,
+            reinject_nearest_neighbour: bool = False,
+            reinject_fixed_route: bool = False):
         """
         :param bool reinject_point_to_point:
             if we reinject point-to-point packets
@@ -135,49 +140,49 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
         # placement holder for ease of access
-        self._placement = None
-        self._app_id = None
+        self._placement: Optional[Placement] = None
+        self._app_id: Optional[int] = None
         self._transaction_id = 0
-        self._prov_region = None
+        self._prov_region: Optional[int] = None
 
     @property
-    def reinject_multicast(self):
+    def reinject_multicast(self) -> bool:
         """
         :rtype: bool
         """
         return self._reinject_multicast
 
     @property
-    def transaction_id(self):
+    def transaction_id(self) -> int:
         return self._transaction_id
 
-    def update_transaction_id(self):
+    def update_transaction_id(self) -> None:
         self._transaction_id = (self._transaction_id + 1) & TRANSACTION_ID_CAP
 
-    def update_transaction_id_from_machine(self):
+    def update_transaction_id_from_machine(self) -> None:
         """
         Looks up from the machine what the current transaction id is
         and updates the extra monitor.
         """
         self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+            self.placement.x, self.placement.y, self.placement.p)
 
     @property
-    def reinject_point_to_point(self):
+    def reinject_point_to_point(self) -> bool:
         """
         :rtype: bool
         """
         return self._reinject_point_to_point
 
     @property
-    def reinject_nearest_neighbour(self):
+    def reinject_nearest_neighbour(self) -> bool:
         """
         :rtype: bool
         """
         return self._reinject_nearest_neighbour
 
     @property
-    def reinject_fixed_route(self):
+    def reinject_fixed_route(self) -> bool:
         """
         :rtype: bool
         """
@@ -185,7 +190,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @property
     @overrides(MachineVertex.sdram_required)
-    def sdram_required(self):
+    def sdram_required(self) -> AbstractSDRAM:
         return ConstantSDRAM(
             _CONFIG_REGION_REINJECTOR_SIZE_IN_BYTES +
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
@@ -199,18 +204,19 @@ class ExtraMonitorSupportMachineVertex(
             _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES)
 
     @property
-    def placement(self):
+    def placement(self) -> Placement:
         """
         :rtype: ~pacman.model.placements.Placement
         """
+        assert self._placement is not None
         return self._placement
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
-    def get_binary_start_type(self):
+    def get_binary_start_type(self) -> ExecutableType:
         return self.static_get_binary_start_type()
 
     @staticmethod
-    def static_get_binary_start_type():
+    def static_get_binary_start_type() -> ExecutableType:
         """
         The type of the binary implementing this vertex.
 
@@ -219,11 +225,11 @@ class ExtraMonitorSupportMachineVertex(
         return ExecutableType.SYSTEM
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
-    def get_binary_file_name(self):
+    def get_binary_file_name(self) -> str:
         return self.static_get_binary_file_name()
 
     @staticmethod
-    def static_get_binary_file_name():
+    def static_get_binary_file_name() -> str:
         """
         The name of the binary implementing this vertex.
 
@@ -232,7 +238,7 @@ class ExtraMonitorSupportMachineVertex(
         return "extra_monitor_support.aplx"
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(self, spec, placement: Placement):
         # storing for future usage
         self._placement = placement
         chip = placement.chip
@@ -261,7 +267,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(Gatherer.TRANSACTION_ID_KEY)
         spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(self, spec, chip):
+    def _generate_reinjection_config(self, spec, chip: Chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip:
@@ -287,7 +293,7 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
-    def _generate_data_speed_up_in_config(self, spec, chip):
+    def _generate_data_speed_up_in_config(self, spec, chip: Chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip: the chip where this monitor will run
@@ -313,17 +319,19 @@ class ExtraMonitorSupportMachineVertex(
             FecDataView.get_data_in_multicast_routing_tables()
         table = data_in_routing_tables.get_routing_table_for_chip(
             chip.x, chip.y)
+        assert table is not None
         spec.write_value(table.number_of_entries)
         for entry in table.multicast_routing_entries:
             spec.write_value(entry.routing_entry_key)
             spec.write_value(entry.mask)
             spec.write_value(self.__encode_route(entry))
 
-    def __encode_route(self, entry):
+    def __encode_route(self, entry: MulticastRoutingEntry) -> int:
         """
         :param ~spinn_machine.MulticastRoutingEntry entry:
         :rtype: int
         """
+        assert self._app_id is not None
         route = self._app_id << _BIT_SHIFT_TO_MOVE_APP_ID
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
@@ -336,24 +344,26 @@ class ExtraMonitorSupportMachineVertex(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region", empty=True)
 
-    def __get_provenance_region_address(self, place):
+    def __get_provenance_region_address(self, place: Placement) -> int:
         """
         :param ~pacman.model.placements.Placement place:
         :rtype: int
         """
+        if self._prov_region is not None:
+            return self._prov_region
+
         txrx = FecDataView.get_transceiver()
-        if self._prov_region is None:
-            region_table_addr = txrx.get_cpu_information_from_core(
-                place.x, place.y, place.p).user[0]
-            region_entry_addr = get_region_base_address_offset(
-                region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
-            self._prov_region, = _ONE_WORD.unpack(txrx.read_memory(
-                place.x, place.y, region_entry_addr, BYTES_PER_WORD))
-        return self._prov_region
+        region_table_addr = txrx.get_cpu_information_from_core(
+            place.x, place.y, place.p).user[0]
+        region_entry_addr = get_region_base_address_offset(
+            region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
+        r: int = txrx.read_word(place.x, place.y, region_entry_addr)
+        self._prov_region = r
+        return r
 
     @overrides(AbstractProvidesProvenanceDataFromMachine.
                get_provenance_data_from_machine)
-    def get_provenance_data_from_machine(self, placement):
+    def get_provenance_data_from_machine(self, placement: Placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
         provenance_address = self.__get_provenance_region_address(placement)
@@ -376,8 +386,17 @@ class ExtraMonitorSupportMachineVertex(
                 placement.x, placement.y,
                 "Number_of_Output_Streamlets", n_out_streams)
 
+    def __recover(self) -> ContextManager[Placement]:
+        """
+        Set up a context to recover what we can on failure.
+        The value of the setup is the placement.
+        """
+        return _Recoverer(self, self.placement)
+
     def set_router_wait1_timeout(
-            self, timeout, extra_monitor_cores_to_set):
+            self, timeout: Tuple[int, int],
+            extra_monitor_cores_to_set: Iterable[
+                ExtraMonitorSupportMachineVertex]):
         """
         Supports setting of the router time outs for a set of chips via their
         extra monitor cores. This sets the timeout for the time between when a
@@ -397,14 +416,13 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set)
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover():
             process.set_wait1_timeout(mantissa, exponent, core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
 
     def set_router_wait2_timeout(
-            self, timeout, extra_monitor_cores_to_set):
+            self, timeout: Tuple[int, int],
+            extra_monitor_cores_to_set: Iterable[
+                ExtraMonitorSupportMachineVertex]):
         """
         Supports setting of the router time outs for a set of chips via their
         extra monitor cores. This sets the timeout for the time between when a
@@ -424,13 +442,11 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set)
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover():
             process.set_wait2_timeout(mantissa, exponent, core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
 
-    def reset_reinjection_counters(self, extra_monitor_cores_to_set):
+    def reset_reinjection_counters(self, extra_monitor_cores_to_set: Iterable[
+            ExtraMonitorSupportMachineVertex]):
         """
         Resets the counters for reinjection.
 
@@ -445,13 +461,11 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set)
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover():
             process.reset_counters(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
 
-    def clear_reinjection_queue(self, extra_monitor_cores_to_set):
+    def clear_reinjection_queue(self, extra_monitor_cores_to_set: Iterable[
+            ExtraMonitorSupportMachineVertex]):
         """
         Clears the queues for reinjection.
 
@@ -464,30 +478,24 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set)
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover():
             process.clear_queue(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
 
-    def get_reinjection_status(self):
+    def get_reinjection_status(self) -> ReInjectionStatus:
         """
         Get the reinjection status from this extra monitor vertex.
 
         :return: the reinjection status for this vertex
         :rtype: ReInjectionStatus
         """
-        placement = self._placement
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover() as placement:
             return process.get_reinjection_status(
                 placement.x, placement.y, placement.p)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, placement)
-            raise
 
-    def get_reinjection_status_for_vertices(self):
+    def get_reinjection_status_for_vertices(self) -> Dict[
+            Chip, ReInjectionStatus]:
         """
         Get the reinjection status from a set of extra monitor cores.
 
@@ -500,8 +508,10 @@ class ExtraMonitorSupportMachineVertex(
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
     def set_reinjection_packets(
-            self, point_to_point=None, multicast=None, nearest_neighbour=None,
-            fixed_route=None):
+            self, point_to_point: Optional[bool] = None,
+            multicast: Optional[bool] = None,
+            nearest_neighbour: Optional[bool] = None,
+            fixed_route: Optional[bool] = None):
         """
         :param point_to_point:
             If point to point should be set, or `None` if left as before
@@ -529,33 +539,24 @@ class ExtraMonitorSupportMachineVertex(
             FecDataView.iterate_monitors())
         process = ReinjectorControlProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
+        with self.__recover():
             process.set_packet_types(
                 core_subsets, self._reinject_point_to_point,
                 self._reinject_multicast, self._reinject_nearest_neighbour,
                 self._reinject_fixed_route)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
 
-    def load_system_mc_routes(self):
+    def load_system_mc_routes(self) -> None:
         """
         Get the extra monitor cores to load up the system-based
         multicast routes (used by the Data In protocol).
-
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset()
         process = LoadMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
-            return process.load_system_mc_routes(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
+        with self.__recover():
+            process.load_system_mc_routes(core_subsets)
 
-    def load_application_mc_routes(self):
+    def load_application_mc_routes(self) -> None:
         """
         Get the extra monitor cores to load up the application-based
         multicast routes (used by the Data In protocol).
@@ -563,14 +564,11 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset()
         process = LoadMCRoutesProcess(
             FecDataView.get_scamp_connection_selector())
-        try:
-            return process.load_application_mc_routes(core_subsets)
-        except:  # noqa: E722
-            emergency_recover_state_from_failure(self, self._placement)
-            raise
+        with self.__recover():
+            process.load_application_mc_routes(core_subsets)
 
     @staticmethod
-    def _convert_vertices_to_core_subset():
+    def _convert_vertices_to_core_subset() -> CoreSubsets:
         """
         Convert vertices into the subset of cores where they've been placed.
 
@@ -582,3 +580,22 @@ class ExtraMonitorSupportMachineVertex(
             placement = FecDataView.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets
+
+
+class _Recoverer:
+    """
+    Helper class that will run the emergency state recovery system if its
+    context body throws.
+    """
+    def __init__(self, vtx: ExtraMonitorSupportMachineVertex,
+                 placement: Placement):
+        self._vtx = vtx
+        self._placement = placement
+
+    def __enter__(self) -> Placement:
+        return self._placement
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> Literal[False]:
+        if exc_val:
+            emergency_recover_state_from_failure(self._vtx, self._placement)
+        return False

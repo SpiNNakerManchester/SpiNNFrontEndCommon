@@ -14,18 +14,22 @@
 
 import sys
 import numpy
-from typing import Optional
+from typing import List, Optional, Union
 from dataclasses import dataclass
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
 from spinnman.messages.eieio import EIEIOPrefix
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
+from pacman.model.graphs.common import Slice
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.partitioner_splitters import AbstractSplitterCommon
+from pacman.model.resources import AbstractSDRAM
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
-    ReverseIPTagMulticastSourceMachineVertex)
+    ReverseIPTagMulticastSourceMachineVertex, _is_array_list)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+_SendBufferTimes = Optional[Union[numpy.ndarray, List[numpy.ndarray]]]
 
 
 @dataclass
@@ -69,7 +73,7 @@ class _EIEIOParameters:
     """
     receive_port: Optional[int] = None
     receive_sdp_port: int = SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value
-    receive_tag: Optional[IPTag] = None
+    receive_tag: Optional[int] = None
     receive_rate: float = 10.0
     virtual_key: Optional[int] = None
     prefix: Optional[int] = None
@@ -90,30 +94,33 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         "__send_buffer_times",)
 
     def __init__(
-            self, n_keys, label=None, max_atoms_per_core=sys.maxsize,
+            self, n_keys: int, label: Optional[str] = None,
+            max_atoms_per_core: int = sys.maxsize,
 
             # Live input parameters
-            receive_port=None,
-            receive_sdp_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
-            receive_tag=None,
-            receive_rate=10,
+            receive_port: Optional[int] = None,
+            receive_sdp_port: int = SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
+            receive_tag: Optional[IPTag] = None,
+            receive_rate: int = 10,
 
             # Key parameters
-            virtual_key=None, prefix=None,
-            prefix_type=None, check_keys=False,
+            virtual_key: Optional[int] = None,
+            prefix: Optional[int] = None,
+            prefix_type: Optional[EIEIOPrefix] = None,
+            check_keys: bool = False,
 
             # Send buffer parameters
-            send_buffer_times=None,
-            send_buffer_partition_id=None,
+            send_buffer_times: _SendBufferTimes = None,
+            send_buffer_partition_id: Optional[str] = None,
 
             # Extra flag for input without a reserved port
-            reserve_reverse_ip_tag=False,
+            reserve_reverse_ip_tag: bool = False,
 
             # Name of partition to inject keys with
-            injection_partition_id=None,
+            injection_partition_id: Optional[str] = None,
 
             # splitter object
-            splitter=None):
+            splitter: Optional[AbstractSplitterCommon] = None):
         """
         :param int n_keys:
             The number of keys to be sent via this multicast source
@@ -172,7 +179,8 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
         # Store the parameters for EIEIO
         self._eieio_params = _EIEIOParameters(
-            receive_port, receive_sdp_port, receive_tag, receive_rate,
+            receive_port, receive_sdp_port,
+            receive_tag.tag if receive_tag else None, receive_rate,
             virtual_key, prefix, prefix_type, check_keys,
             send_buffer_partition_id, reserve_reverse_ip_tag,
             injection_partition_id)
@@ -184,10 +192,11 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         # Store recording parameters
         self._is_recording = False
 
-    def _validate_send_buffer_times(self, send_buffer_times):
+    def _validate_send_buffer_times(
+            self, send_buffer_times: _SendBufferTimes) -> _SendBufferTimes:
         if send_buffer_times is None:
             return None
-        if len(send_buffer_times) and hasattr(send_buffer_times[0], "__len__"):
+        if _is_array_list(send_buffer_times):
             if len(send_buffer_times) != self.__n_atoms:
                 raise ConfigurationException(
                     f"The array or arrays of times {send_buffer_times} does "
@@ -197,18 +206,18 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
 
     @property
     @overrides(ApplicationVertex.n_atoms)
-    def n_atoms(self):
+    def n_atoms(self) -> int:
         return self.__n_atoms
 
     @overrides(LegacyPartitionerAPI.get_sdram_used_by_atoms)
-    def get_sdram_used_by_atoms(self, vertex_slice):
+    def get_sdram_used_by_atoms(self, vertex_slice: Slice) -> AbstractSDRAM:
         return ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
             self._filtered_send_buffer_times(vertex_slice),
             self._is_recording, self._eieio_params.receive_rate,
             vertex_slice.n_atoms)
 
     @property
-    def send_buffer_times(self):
+    def send_buffer_times(self) -> _SendBufferTimes:
         """
         When messages will be sent.
 
@@ -218,22 +227,24 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
         return self.__send_buffer_times
 
     @send_buffer_times.setter
-    def send_buffer_times(self, send_buffer_times):
+    def send_buffer_times(self, send_buffer_times: _SendBufferTimes):
         self.__send_buffer_times = send_buffer_times
         for vertex in self.machine_vertices:
             send_buffer_times_to_set = self.__send_buffer_times
-            if len(self.__send_buffer_times) > 0:
-                if hasattr(self.__send_buffer_times[0], "__len__"):
-                    vertex_slice = vertex.vertex_slice
-                    send_buffer_times_to_set = self.__send_buffer_times[
-                        vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            if _is_array_list(self.__send_buffer_times):
+                vertex_slice = vertex.vertex_slice
+                send_buffer_times_to_set = self.__send_buffer_times[
+                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
             vertex.send_buffer_times = send_buffer_times_to_set
 
-    def enable_recording(self, new_state=True):
+    def enable_recording(self, new_state: bool = True):
         self._is_recording = new_state
 
     @overrides(LegacyPartitionerAPI.create_machine_vertex)
-    def create_machine_vertex(self, vertex_slice, sdram, label=None):
+    def create_machine_vertex(
+            self, vertex_slice: Slice, sdram: AbstractSDRAM,
+            label: Optional[str] = None
+            ) -> ReverseIPTagMulticastSourceMachineVertex:
         send_buffer_times = self._filtered_send_buffer_times(vertex_slice)
         machine_vertex = ReverseIPTagMulticastSourceMachineVertex(
             label=label, app_vertex=self, vertex_slice=vertex_slice,
@@ -245,17 +256,18 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             assert (sdram == machine_vertex.sdram_required)
         return machine_vertex
 
-    def _filtered_send_buffer_times(self, vertex_slice):
+    def _filtered_send_buffer_times(
+            self, vertex_slice: Slice) -> _SendBufferTimes:
         ids = vertex_slice.get_raster_ids()
         send_buffer_times = self.__send_buffer_times
         n_buffer_times = 0
         if send_buffer_times is not None:
             # If there is at least one array element, and that element is
             # itself an array
-            if (len(send_buffer_times) and
-                    hasattr(send_buffer_times[0], "__len__")):
+            if _is_array_list(send_buffer_times):
                 send_buffer_times = send_buffer_times[ids]
             # Check the buffer times are not empty
+            assert send_buffer_times is not None
             for i in send_buffer_times:
                 if hasattr(i, "__len__"):
                     n_buffer_times += len(i)
@@ -266,11 +278,12 @@ class ReverseIpTagMultiCastSource(ApplicationVertex, LegacyPartitionerAPI):
             return None
         return send_buffer_times
 
-    def __repr__(self):
-        return self._label
+    def __repr__(self) -> str:
+        return self._label or "ReverseIPTagMulticastSource"
 
     @overrides(ApplicationVertex.get_fixed_key_and_mask)
-    def get_fixed_key_and_mask(self, partition_id):
+    def get_fixed_key_and_mask(
+            self, partition_id: str) -> Optional[BaseKeyAndMask]:
         if self._eieio_params.virtual_key is None:
             return None
         mask = ReverseIPTagMulticastSourceMachineVertex.calculate_mask(

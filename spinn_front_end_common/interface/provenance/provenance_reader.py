@@ -19,7 +19,7 @@ from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.base_database import BaseDatabase
 _Core = Tuple[int, int, int]
 _MonitorItem = Tuple[int, int, int]
-_RouterItem = Tuple[int, int, float]
+_RouterItem = Tuple[int, int, Union[int, float]]
 
 
 class ProvenanceReader(BaseDatabase):

@@ -405,7 +405,8 @@ class GlobalProvenance(SQLiteDB):
         except IndexError:
             return 0
 
-    def retreive_log_messages(self, min_level=0) -> List[Tuple[int, str]]:
+    def retreive_log_messages(
+            self, min_level: int = 0) -> List[Tuple[int, str]]:
         """
         Retrieves all log messages at or above the min_level
 

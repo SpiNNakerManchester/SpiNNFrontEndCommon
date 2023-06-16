@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import os
+from typing import List
 from pacman.utilities.utility_calls import md5
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
-def get_simulation_header_array(binary_file_name):
+def get_simulation_header_array(binary_file_name: str) -> List[int]:
     """
     Get data to be written to the simulation header.
 
@@ -37,7 +38,8 @@ def get_simulation_header_array(binary_file_name):
         SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value]
 
 
-def get_simulation_header_array_no_timestep(binary_file_name):
+def get_simulation_header_array_no_timestep(
+        binary_file_name: str) -> List[int]:
     """
     Get data to be written to the simulation header.
     Use for binaries that do not want to know the system timestep.

@@ -11,19 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+from typing import Collection, Dict, List, Optional, Set, Tuple, TypeVar
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.partitioner_splitters import AbstractSplitterCommon
-from pacman.model.placements import Placement
+from pacman.model.placements import Placement, Placements
 from pacman.utilities.algorithm_utilities.routing_algorithm_utilities import (
     vertex_chip)
 from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
 from spinn_front_end_common.data import FecDataView
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
+_MV = TypeVar("_MV", bound=MachineVertex)
 
 
-class _LPGSplitter(AbstractSplitterCommon):
+class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
     """
     Splitter for the :py:class:`LivePacketGather` vertex.
     """
@@ -31,12 +37,14 @@ class _LPGSplitter(AbstractSplitterCommon):
         "__m_vertices_by_ethernet",
         "__targeted_lpgs")
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.__m_vertices_by_ethernet = dict()
-        self.__targeted_lpgs = set()
+        self.__m_vertices_by_ethernet: Dict[
+            Tuple[int, int], LivePacketGatherMachineVertex] = dict()
+        self.__targeted_lpgs: Set[Tuple[
+            LivePacketGatherMachineVertex, MachineVertex, str]] = set()
 
-    def create_sys_vertices(self, system_placements):
+    def create_sys_vertices(self, system_placements: Placements):
         """
         Special way of making LPG machine vertices, where one is placed
         on each Ethernet-enabled chip.
@@ -47,8 +55,8 @@ class _LPGSplitter(AbstractSplitterCommon):
         machine = FecDataView.get_machine()
         for eth in machine.ethernet_connected_chips:
             lpg_vtx = LivePacketGatherMachineVertex(
-                self.governed_app_vertex.params, self.governed_app_vertex)
-            self.governed_app_vertex.remember_machine_vertex(lpg_vtx)
+                self._governed_app_vertex.params, self._governed_app_vertex)
+            self._governed_app_vertex.remember_machine_vertex(lpg_vtx)
             p = pick_core_for_system_placement(system_placements, eth)
             system_placements.add_placement(
                 Placement(lpg_vtx, eth.x, eth.y, p))
@@ -70,12 +78,15 @@ class _LPGSplitter(AbstractSplitterCommon):
         return []
 
     @overrides(AbstractSplitterCommon.get_in_coming_vertices)
-    def get_in_coming_vertices(self, partition_id):
-        return self.governed_app_vertex.machine_vertices
+    def get_in_coming_vertices(self, partition_id: str) -> Collection[
+            LivePacketGatherMachineVertex]:
+        return self._governed_app_vertex.machine_vertices
 
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
-            self, source_vertex, partition_id):
+            self, source_vertex: ApplicationVertex[_MV],
+            partition_id: str) -> List[Tuple[
+                LivePacketGatherMachineVertex, List[ApplicationVertex[_MV]]]]:
         # Find the nearest placement for the first machine vertex of the source
         m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
             partition_id)))
@@ -90,7 +101,8 @@ class _LPGSplitter(AbstractSplitterCommon):
         return [(lpg_vertex, [source_vertex])]
 
     @property
-    def targeted_lpgs(self):
+    def targeted_lpgs(self) -> Set[Tuple[
+            LivePacketGatherMachineVertex, MachineVertex, str]]:
         """
         Which LPG machine vertex is targeted by which machine vertex
         and partition.
@@ -103,28 +115,29 @@ class _LPGSplitter(AbstractSplitterCommon):
         return self.__targeted_lpgs
 
     @overrides(AbstractSplitterCommon.get_out_going_vertices)
-    def get_out_going_vertices(self, partition_id):
+    def get_out_going_vertices(self, partition_id: str):
         # There are none!
         return []
 
     @overrides(AbstractSplitterCommon.machine_vertices_for_recording)
-    def machine_vertices_for_recording(self, variable_to_record):
+    def machine_vertices_for_recording(self, variable_to_record: str):
         # Nothing to record here...
         return []
 
     @overrides(AbstractSplitterCommon.reset_called)
-    def reset_called(self):
+    def reset_called(self) -> None:
         self.__m_vertices_by_ethernet = dict()
         self.__targeted_lpgs = set()
 
 
-class LivePacketGather(ApplicationVertex):
+class LivePacketGather(ApplicationVertex[LivePacketGatherMachineVertex]):
     """
     A vertex that gathers and forwards multicast packets to the host.
     """
     __slots__ = ("__params", )
 
-    def __init__(self, params, label=None):
+    def __init__(self, params: LivePacketGatherParameters,
+                 label: Optional[str] = None):
         """
         :param LivePacketGatherParameters params: The parameters object
         :param str label: An optional label
@@ -133,9 +146,9 @@ class LivePacketGather(ApplicationVertex):
         self.__params = params
 
     @property
-    def n_atoms(self):
+    def n_atoms(self) -> int:  # type: ignore[override]
         return 0
 
     @property
-    def params(self):
+    def params(self) -> LivePacketGatherParameters:
         return self.__params

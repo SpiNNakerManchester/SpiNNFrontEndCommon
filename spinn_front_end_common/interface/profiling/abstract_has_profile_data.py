@@ -15,6 +15,9 @@
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.graphs.machine import MachineVertex
+from pacman.model.placements import Placement
+from .profile_data import ProfileData
+# mypy: disable-error-code=empty-body
 
 
 @require_subclass(MachineVertex)
@@ -27,7 +30,7 @@ class AbstractHasProfileData(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def get_profile_data(self, placement):
+    def get_profile_data(self, placement: Placement) -> ProfileData:
         """
         Get the profile data recorded during simulation.
 

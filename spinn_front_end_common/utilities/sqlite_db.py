@@ -92,10 +92,10 @@ class SQLiteDB(AbstractContextManager):
     def __init__(
             self, database_file: Optional[str] = None, *,
             read_only: bool = False, ddl_file: Optional[str] = None,
-            row_factory: Union[
-                type[sqlite3.Row], type[tuple], None] = sqlite3.Row,
-            text_factory: Union[
-                type[memoryview], type[str], None] = memoryview,
+            row_factory: Optional[Union[
+                type[sqlite3.Row], type[tuple]]] = sqlite3.Row,
+            text_factory: Optional[Union[
+                type[memoryview], type[str]]] = memoryview,
             case_insensitive_like: bool = True, timeout: float = 5.0,
             synchronisation=Synchronisation.NORMAL):
         """
@@ -152,9 +152,9 @@ class SQLiteDB(AbstractContextManager):
         # We want to assume control over transactions ourselves
         self.__db.isolation_level = None
 
-        if row_factory:
+        if row_factory is not None:
             self.__db.row_factory = row_factory
-        if text_factory:
+        if text_factory is not None:
             self.__db.text_factory = text_factory
 
         if not read_only and ddl_file:

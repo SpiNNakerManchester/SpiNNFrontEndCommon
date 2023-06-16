@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import sqlite3
+from typing import List, Optional, Tuple
 from spinn_utilities.log_store import LogStore
 from spinn_utilities.overrides import overrides
 from .global_provenance import GlobalProvenance
@@ -22,9 +24,12 @@ class LogStoreDB(LogStore):
     """
     Log message storage mechanism that uses a database.
     """
+    __slots__ = ()
 
     @overrides(LogStore.store_log)
-    def store_log(self, level, message, timestamp=None):
+    def store_log(
+            self, level: int, message: str,
+            timestamp: Optional[datetime] = None):
         try:
             with GlobalProvenance() as db:
                 db.store_log(level, message, timestamp)
@@ -37,10 +42,11 @@ class LogStoreDB(LogStore):
             raise
 
     @overrides(LogStore.retreive_log_messages)
-    def retreive_log_messages(self, min_level=0):
+    def retreive_log_messages(
+            self, min_level: int = 0) -> List[Tuple[int, str]]:
         with GlobalProvenance() as db:
             return db.retreive_log_messages(min_level)
 
     @overrides(LogStore.get_location)
-    def get_location(self):
+    def get_location(self) -> str:
         return GlobalProvenance.get_global_provenace_path()
