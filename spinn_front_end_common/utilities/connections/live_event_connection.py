@@ -287,7 +287,7 @@ class LiveEventConnection(DatabaseConnection):
         if self.__sender_connection is None:
             job = db.get_job()
             if job:
-                self.__sender_connection = job.open_listener_connection()
+                self.__sender_connection = job.open_eieio_listener_connection()
             else:
                 self.__sender_connection = EIEIOConnection()
         for label in self.__send_labels:
@@ -306,7 +306,7 @@ class LiveEventConnection(DatabaseConnection):
         if self.__receiver_connection is None:
             job = db.get_job()
             if job:
-                self.__receiver_connection = job.open_listener_connection()
+                self.__receiver_connection = job.open_udp_listener_connection()
             else:
                 self.__receiver_connection = UDPConnection()
         receivers = set()
