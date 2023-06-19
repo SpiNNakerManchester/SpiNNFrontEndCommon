@@ -2443,8 +2443,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         Continue a simulation that has been started in stepped mode.
         """
         sync_signal = self._data_writer.get_next_sync_signal()
-        transceiver = self._data_writer.get_transceiver()
-        transceiver.send_signal(self._data_writer.get_app_id(), sync_signal)
+        self._data_writer.write_signal(
+            self._data_writer.get_app_id(), sync_signal)
 
     @staticmethod
     def __reset_object(obj):

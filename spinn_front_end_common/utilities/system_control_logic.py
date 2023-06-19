@@ -64,7 +64,7 @@ def run_system_application(
     if needs_sync_barrier:
 
         # fire all signals as required
-        transceiver.send_signal(app_id, Signal.SYNC0)
+        FecDataView.write_signal(app_id, Signal.SYNC0)
 
     error = None
     binary_start_types = dict()

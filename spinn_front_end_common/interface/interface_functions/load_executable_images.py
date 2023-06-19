@@ -102,8 +102,7 @@ def __start_simulation(cores, app_id):
         Possible subset of all ExecutableTargets to start
     :param int app_id:
     """
-    txrx = FecDataView.get_transceiver()
     FecDataView.wait_for_cores_to_be_in_state(
         cores.all_core_subsets, app_id, [CPUState.READY],
         timeout=_APP_READY_TIMEOUT)
-    txrx.send_signal(app_id, Signal.START)
+    FecDataView.write_signal(app_id, Signal.START)

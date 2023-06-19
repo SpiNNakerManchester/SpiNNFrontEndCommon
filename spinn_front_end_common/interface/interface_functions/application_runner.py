@@ -48,10 +48,9 @@ class _ApplicationRunner(object):
     successfully.
     """
 
-    __slots__ = ["__txrx", "__app_id"]
+    __slots__ = ["__app_id"]
 
     def __init__(self):
-        self.__txrx = FecDataView.get_transceiver()
         self.__app_id = FecDataView.get_app_id()
 
     # Wraps up as a PACMAN algorithm
@@ -148,7 +147,7 @@ class _ApplicationRunner(object):
             sync_signal = self._determine_simulation_sync_signals()
 
             # fire all signals as required
-            self.__txrx.send_signal(self.__app_id, sync_signal)
+            FecDataView.write_signal(self.__app_id, sync_signal)
 
     def _wait_for_end(self, timeout=None):
         """
