@@ -71,33 +71,11 @@ def application_finisher():
             for processor in core_subset.processor_ids:
                 if not successful_cores_finished.is_core(
                         core_subset.x, core_subset.y, processor):
-                    _update_provenance_and_exit(
-                        app_id, processor, core_subset)
+                    FecDataView.update_provenance_and_exit(
+                        processor, core_subset)
         time.sleep(0.5)
 
         processors_finished = FecDataView.read_core_state_count(
             app_id, CPUState.FINISHED)
 
     progress.end()
-
-
-def _update_provenance_and_exit(app_id, processor, core_subset):
-    """
-    :param int processor:
-    :param ~.CoreSubset core_subset:
-    """
-    byte_data = _ONE_WORD.pack(
-        SDP_RUNNING_MESSAGE_CODES
-        .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
-    # Send these signals to make sure the application isn't stuck
-    txrx = FecDataView.get_transceiver()
-    txrx.send_signal(app_id, Signal.SYNC0)
-    txrx.send_signal(app_id, Signal.SYNC1)
-    txrx.send_sdp_message(SDPMessage(
-        sdp_header=SDPHeader(
-            flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
-            destination_cpu=processor,
-            destination_chip_x=core_subset.x,
-            destination_chip_y=core_subset.y),
-        data=byte_data))
