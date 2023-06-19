@@ -18,7 +18,7 @@ import numpy
 from pacman.model.partitioner_interfaces import LegacyPartitionerAPI
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinnman.model.enums import SDP_PORTS
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
