@@ -132,7 +132,7 @@ class _ApplicationRunner(object):
         :type timeout: float or None
         """
         for ex_type, cores in FecDataView.get_executable_types().items():
-            self.__txrx.wait_for_cores_to_be_in_state(
+            FecDataView.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
     def _send_sync_signal(self):
@@ -156,7 +156,7 @@ class _ApplicationRunner(object):
         :type timeout: float or None
         """
         for ex_type, cores in FecDataView.get_executable_types().items():
-            self.__txrx.wait_for_cores_to_be_in_state(
+            FecDataView.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
     def _determine_simulation_sync_signals(self):

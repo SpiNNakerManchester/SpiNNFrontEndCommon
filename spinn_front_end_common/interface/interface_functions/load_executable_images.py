@@ -44,7 +44,7 @@ def load_sys_images():
                   "Loading system executables onto the machine")
     try:
         _, cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
-        FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
+        FecDataView.wait_for_cores_to_be_in_state(
             cores.all_core_subsets, FecDataView.get_app_id(),
             [CPUState.RUNNING], timeout=10)
     except SpiNNManCoresNotInStateException as e:
@@ -103,7 +103,7 @@ def __start_simulation(cores, app_id):
     :param int app_id:
     """
     txrx = FecDataView.get_transceiver()
-    txrx.wait_for_cores_to_be_in_state(
+    FecDataView.wait_for_cores_to_be_in_state(
         cores.all_core_subsets, app_id, [CPUState.READY],
         timeout=_APP_READY_TIMEOUT)
     txrx.send_signal(app_id, Signal.START)

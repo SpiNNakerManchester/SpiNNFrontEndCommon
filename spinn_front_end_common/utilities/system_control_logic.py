@@ -83,7 +83,7 @@ def run_system_application(
     succeeded = False
     core_state_string = None
     try:
-        transceiver.wait_for_cores_to_be_in_state(
+        FecDataView.wait_for_cores_to_be_in_state(
             check_targets.all_core_subsets, app_id, cpu_end_states,
             progress_bar=progress_bar, timeout=timeout)
         if progress_bar is not None:
