@@ -64,7 +64,8 @@ def application_finisher():
                 f"{total_processors} processors went into an error state "
                 "when shutting down")
 
-        successful_cores_finished = FecDataView.read_cores_in_state(
+        txrx = FecDataView.get_transceiver()
+        successful_cores_finished = txrx.get_cores_in_state(
             all_core_subsets, CPUState.FINISHED)
 
         for core_subset in all_core_subsets:
@@ -90,7 +91,7 @@ def _update_provenance_and_exit(app_id, processor, core_subset):
         SDP_RUNNING_MESSAGE_CODES
         .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
     # Send these signals to make sure the application isn't stuck
-    txrx = FecDataView.get_transceive()
+    txrx = FecDataView.get_transceiver()
     txrx.send_signal(app_id, Signal.SYNC0)
     txrx.send_signal(app_id, Signal.SYNC1)
     txrx.send_sdp_message(SDPMessage(
