@@ -63,8 +63,7 @@ def application_finisher():
                 f"{total_processors} processors went into an error state "
                 "when shutting down")
 
-        txrx = FecDataView.get_transceiver()
-        successful_cores_finished = txrx.get_cores_in_state(
+        successful_cores_finished = FecDataView.read_cores_in_state(
             all_core_subsets, CPUState.FINISHED)
 
         for core_subset in all_core_subsets:
