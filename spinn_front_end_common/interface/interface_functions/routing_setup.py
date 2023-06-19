@@ -39,7 +39,7 @@ def routing_setup():
     for router_table in progress.over(routing_tables):
         transceiver.clear_multicast_routes(
             router_table.x, router_table.y)
-        transceiver.clear_router_diagnostic_counters(
+        FecDataView.clear_router_diagnostic_counters(
             router_table.x, router_table.y)
 
         # set the router diagnostic for user 3 to catch local default

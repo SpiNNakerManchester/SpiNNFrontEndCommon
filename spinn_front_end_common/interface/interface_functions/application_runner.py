@@ -83,7 +83,7 @@ class _ApplicationRunner(object):
         # clear away any router diagnostics that have been set due to all
         # loading applications
         for chip in FecDataView.get_machine().chips:
-            self.__txrx.clear_router_diagnostic_counters(chip.x, chip.y)
+            FecDataView.clear_router_diagnostic_counters(chip.x, chip.y)
 
         # wait till external app is ready for us to start if required
         notification_interface.wait_for_confirmation()
