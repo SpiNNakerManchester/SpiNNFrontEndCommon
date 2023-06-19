@@ -35,7 +35,6 @@ def application_finisher():
     :raises ExecutableFailedToStopException:
     """
     app_id = FecDataView.get_app_id()
-    txrx = FecDataView.get_transceiver()
     all_core_subsets = FecDataView.get_executable_types()[
         ExecutableType.USES_SIMULATION_INTERFACE]
     total_processors = len(all_core_subsets)
@@ -45,7 +44,7 @@ def application_finisher():
         "Turning off all the cores within the simulation")
 
     # check that the right number of processors are finished
-    processors_finished = txrx.get_core_state_count(
+    processors_finished = FecDataView.read_core_state_count(
         app_id, CPUState.FINISHED)
     finished_cores = processors_finished
 
@@ -54,9 +53,9 @@ def application_finisher():
             progress.update(processors_finished - finished_cores)
             finished_cores = processors_finished
 
-        processors_rte = txrx.get_core_state_count(
+        processors_rte = FecDataView.read_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
-        processors_watchdogged = txrx.get_core_state_count(
+        processors_watchdogged = FecDataView.read_core_state_count(
             app_id, CPUState.WATCHDOG)
 
         if processors_rte > 0 or processors_watchdogged > 0:
@@ -65,7 +64,7 @@ def application_finisher():
                 f"{total_processors} processors went into an error state "
                 "when shutting down")
 
-        successful_cores_finished = txrx.get_cores_in_state(
+        successful_cores_finished = FecDataView.read_cores_in_state(
             all_core_subsets, CPUState.FINISHED)
 
         for core_subset in all_core_subsets:
@@ -73,18 +72,17 @@ def application_finisher():
                 if not successful_cores_finished.is_core(
                         core_subset.x, core_subset.y, processor):
                     _update_provenance_and_exit(
-                        txrx, app_id, processor, core_subset)
+                        app_id, processor, core_subset)
         time.sleep(0.5)
 
-        processors_finished = txrx.get_core_state_count(
+        processors_finished = FecDataView.read_core_state_count(
             app_id, CPUState.FINISHED)
 
     progress.end()
 
 
-def _update_provenance_and_exit(txrx, app_id, processor, core_subset):
+def _update_provenance_and_exit(app_id, processor, core_subset):
     """
-    :param ~spinnman.transceiver.Transceiver txrx:
     :param int processor:
     :param ~.CoreSubset core_subset:
     """
@@ -92,6 +90,7 @@ def _update_provenance_and_exit(txrx, app_id, processor, core_subset):
         SDP_RUNNING_MESSAGE_CODES
         .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
     # Send these signals to make sure the application isn't stuck
+    txrx = FecDataView.get_transceive()
     txrx.send_signal(app_id, Signal.SYNC0)
     txrx.send_signal(app_id, Signal.SYNC1)
     txrx.send_sdp_message(SDPMessage(

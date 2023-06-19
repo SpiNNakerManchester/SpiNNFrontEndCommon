@@ -30,11 +30,11 @@ def _emergency_state_check():
     try:
         app_id = FecDataView.get_app_id()
         txrx = FecDataView.get_transceiver()
-        rte_count = txrx.get_core_state_count(
+        rte_count = FecDataView.read_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        watchdog_count = FecDataView.read_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cores_in_state(
+            states = FecDataView.read_core_state_count(
                 None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
             logger.warning(
                 "unexpected core states (rte={}, wdog={})",
@@ -49,7 +49,7 @@ def _emergency_state_check():
         for chip in machine.chips:
             for p in chip.processors:
                 try:
-                    info = txrx.get_cpu_information_from_core(
+                    info = FecDataView.read_cpu_information_from_core(
                         chip.x, chip.y, p)
                     if info.state in (
                             CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):

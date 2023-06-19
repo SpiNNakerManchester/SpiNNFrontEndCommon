@@ -428,10 +428,9 @@ class BufferManager(object):
         :param x: The X coordinate of the chip containing the data
         :param y: The Y coordinate of the chip containing the data
         """
-        transceiver = FecDataView.get_transceiver()
-        n_regions = transceiver.read_word(x, y, addr)
+        n_regions = FecDataView.read_word(x, y, addr)
         n_bytes = get_recording_header_size(n_regions)
-        data = transceiver.read_memory(
+        data = FecDataView.read_memory(
             x, y, addr + BYTES_PER_WORD, n_bytes - BYTES_PER_WORD)
         data_type = _RecordingRegion * n_regions
         regions = data_type.from_buffer_copy(data)

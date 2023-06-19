@@ -53,7 +53,7 @@ class _ChipProvenanceUpdater(object):
 
     def _run(self):
         # check that the right number of processors are in sync
-        processors_completed = self.__txrx.get_core_state_count(
+        processors_completed = FecDataView.read_core_state_count(
             self.__app_id, CPUState.FINISHED)
         total_processors = len(self.__all_cores)
         left_to_do_cores = total_processors - processors_completed
@@ -62,11 +62,11 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = self.__txrx.get_cores_in_state(
+        error_cores = FecDataView.read_core_state_count(
             self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__txrx.get_cores_in_state(
+        watchdog_cores = FecDataView.read_core_state_count(
             self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = self.__txrx.get_cores_in_state(
+        idle_cores = FecDataView.read_core_state_count(
             self.__all_cores, CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
@@ -94,13 +94,13 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cores_not_in_state(
+            unsuccessful_cores = FecDataView.read_core_state_count(
                 self.__all_cores, CPUState.FINISHED)
 
             for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(x, y, p)
 
-            processors_completed = self.__txrx.get_core_state_count(
+            processors_completed = FecDataView.read_core_state_count(
                 self.__app_id, CPUState.FINISHED)
 
             left_over_now = total_processors - processors_completed

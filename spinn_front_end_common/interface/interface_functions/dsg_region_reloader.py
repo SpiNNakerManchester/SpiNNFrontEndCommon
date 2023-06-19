@@ -102,7 +102,7 @@ def regenerate_data_spec(placement, data_dir):
         pass
 
     # Read the region table for the placement
-    regions_base_address = txrx.get_cpu_information_from_core(
+    regions_base_address = FecDataView.read_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
     start_region = get_region_base_address_offset(regions_base_address, 0)
     ptr_table = _get_ptr_table(

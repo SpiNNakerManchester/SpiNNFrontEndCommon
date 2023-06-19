@@ -112,7 +112,7 @@ def locate_memory_region_for_placement(placement, region):
     :rtype: int
     """
     transceiver = FecDataView.get_transceiver()
-    regions_base_address = transceiver.get_cpu_information_from_core(
+    regions_base_address = FecDataView.read_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
