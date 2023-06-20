@@ -66,12 +66,15 @@ def application_finisher():
         successful_cores_finished = FecDataView.read_cores_in_state(
             all_core_subsets, CPUState.FINISHED)
 
+        FecDataView.write_signal(app_id, Signal.SYNC0)
+        FecDataView.write_signal(app_id, Signal.SYNC1)
+
         for core_subset in all_core_subsets:
             for processor in core_subset.processor_ids:
                 if not successful_cores_finished.is_core(
                         core_subset.x, core_subset.y, processor):
-                    FecDataView.update_provenance_and_exit(
-                        processor, core_subset)
+                    FecDataView.write_update_provenance_and_exit(
+                        core_subset.x, core_subset.y, processor)
         time.sleep(0.5)
 
         processors_finished = FecDataView.read_core_state_count(

@@ -40,7 +40,7 @@ class _ChipProvenanceUpdater(object):
     Forces all cores to generate provenance data, and then exit.
     """
 
-    __slots__ = ["__all_cores", "__app_id", "__txrx"]
+    __slots__ = ["__all_cores", "__app_id"]
 
     def __init__(self, all_core_subsets):
         """
@@ -48,7 +48,6 @@ class _ChipProvenanceUpdater(object):
         """
         self.__all_cores = all_core_subsets
         self.__app_id = FecDataView.get_app_id()
-        self.__txrx = FecDataView.get_transceiver()
 
     def _run(self):
         # check that the right number of processors are in sync
@@ -97,7 +96,7 @@ class _ChipProvenanceUpdater(object):
                 self.__all_cores, CPUState.FINISHED)
 
             for (x, y, p) in unsuccessful_cores.keys():
-                self._send_chip_update_provenance_and_exit(x, y, p)
+                FecDataView.write_update_provenance_and_exit(x, y, p)
 
             processors_completed = FecDataView.read_core_state_count(
                 self.__app_id, CPUState.FINISHED)
@@ -112,19 +111,3 @@ class _ChipProvenanceUpdater(object):
             logger.error("Unable to Finish getting provenance data. "
                          "Abandoned after too many retries. "
                          "Board may be left in an unstable state!")
-
-    def _send_chip_update_provenance_and_exit(self, x, y, p):
-        """
-        :param int x:
-        :param int y:
-        :param int p:
-        """
-        cmd = SDP_RUNNING_MESSAGE_CODES.SDP_UPDATE_PROVENCE_REGION_AND_EXIT
-        port = SDP_PORTS.RUNNING_COMMAND_SDP_PORT
-
-        self.__txrx.send_sdp_message(SDPMessage(
-            SDPHeader(
-                flags=SDPFlag.REPLY_NOT_EXPECTED,
-                destination_port=port.value, destination_cpu=p,
-                destination_chip_x=x, destination_chip_y=y),
-            data=_ONE_WORD.pack(cmd.value)))
