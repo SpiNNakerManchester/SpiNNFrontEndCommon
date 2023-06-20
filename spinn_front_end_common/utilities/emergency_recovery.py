@@ -58,7 +58,7 @@ def _emergency_state_check():
                     errors.append((chip.x, chip.y, p))
         if len(infos):
             logger.warning(txrx.get_core_status_string(infos))
-        if len(len(errors) > 10):
+        if len(errors) > 10:
             logger.warning(
                 "Could not read information from {} cores", len(errors))
         else:
