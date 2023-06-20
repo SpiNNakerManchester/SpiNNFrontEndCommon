@@ -21,8 +21,8 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.eieio.command_messages import EventStopRequest
 from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (

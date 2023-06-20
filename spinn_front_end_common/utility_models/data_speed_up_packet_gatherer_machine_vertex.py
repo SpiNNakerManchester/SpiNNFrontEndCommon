@@ -425,7 +425,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="mc_key_map")
         spec.reserve_memory_region(
             region=_DATA_REGIONS.PROVENANCE_REGION,
-            size=_PROVENANCE_DATA_SIZE, label="Provenance", empty=True)
+            size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

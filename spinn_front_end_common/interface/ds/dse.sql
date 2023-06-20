@@ -18,44 +18,134 @@
 
 -- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
+PRAGMA foreign_keys = ON;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the ethernets.
 CREATE TABLE IF NOT EXISTS ethernet(
-    ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
     ethernet_x INTEGER NOT NULL,
     ethernet_y INTEGER NOT NULL,
-    ip_address TEXT UNIQUE NOT NULL);
--- Every ethernet has a unique chip location in virtual space.
-CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
-    ethernet_x ASC, ethernet_y ASC);
-
+    ip_address TEXT UNIQUE NOT NULL,
+    PRIMARY KEY (ethernet_x, ethernet_y));
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the cores and the DSE info to write to them.
-CREATE TABLE IF NOT EXISTS core(
-    core_id INTEGER PRIMARY KEY AUTOINCREMENT,
+-- A table describing the chips and their ethernet.
+CREATE TABlE IF NOT EXISTS chip(
     x INTEGER NOT NULL,
     y INTEGER NOT NULL,
-    processor INTEGER NOT NULL,
-    ethernet_id INTEGER NOT NULL
-        REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
-    is_system INTEGER DEFAULT 0,
-    app_id INTEGER,
-    content BLOB,
+    ethernet_x INTEGER NOT NULL,
+    ethernet_y INTEGER NOT NULL,
+    PRIMARY KEY (x, y),
+    FOREIGN KEY (ethernet_x, ethernet_y)
+        REFERENCES ethernet(ethernet_x, ethernet_y)
+    );
+
+CREATE VIEW IF NOT EXISTS chip_view AS
+    SELECT x, y, ethernet_x, ethernet_y, ip_address
+    FROM ethernet NATURAL JOIN chip;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the cores.
+CREATE TABLE IF NOT EXISTS core(
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    is_system INTEGER NOT NULL,
     start_address INTEGER,
-    memory_used INTEGER,
-    memory_written INTEGER);
--- Every processor has a unique ID
-CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
-    x ASC, y ASC, processor ASC);
+    memory_written INTEGER,
+    PRIMARY KEY (x, y, p),
+    FOREIGN KEY (x, y) REFERENCES chip(x, y)
+);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-    SELECT ethernet_id, core_id,
-        ethernet_x, ethernet_y, ip_address,
-        x, y, processor, is_system, app_id, content,
-        start_address, memory_used, memory_written
-    FROM ethernet NATURAL JOIN core;
+    SELECT x, y, p, start_address, is_system,
+           ethernet_x, ethernet_y, ip_address
+    FROM core NATURAL JOIN chip_view;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the regions.
+CREATE TABLE IF NOT EXISTS region(
+    region_num INTEGER NOT NULL,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    reference_num INTEGER,
+    content BLOB,
+    content_debug TEXT,
+    size INT NOT NULL,
+    pointer INTEGER,
+    region_label TEXT,
+    PRIMARY KEY (x, y, p, region_num),
+    FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
+
+-- -- Every reference is unique per core
+CREATE UNIQUE INDEX IF NOT EXISTS reference_in_sanity ON region(
+    x ASC, Y ASC, p ASC, reference_num ASC);
+
+CREATE VIEW IF NOT EXISTS content_size_view AS
+SELECT x,y,p, sum(COALESCE(length(content), 0)) as contents_size
+FROM region
+GROUP BY x, y, p;
+
+CREATE VIEW IF NOT EXISTS region_size_view AS
+SELECT x,y,p, sum(size) as regions_size
+FROM region
+GROUP BY x, y, p;
+
+CREATE VIEW IF NOT EXISTS region_size_ethernet_view AS
+SELECT x,y,p, sum(size) as regions_size, ethernet_x, ethernet_y, is_system
+FROM chip NATURAL JOIN core NATURAL JOIN region
+GROUP BY x, y, p;
+
+CREATE VIEW IF NOT EXISTS core_summary_view AS
+SELECT core.x, core.y, core.p, start_address,
+       contents_size, COALESCE(contents_size + 392, 392) as to_write,
+       regions_size, COALESCE(regions_size + 392, 392) as malloc_size
+FROM core NATURAL JOIN chip
+LEFT JOIN content_size_view
+ON core.x = content_size_view.x AND core.y = content_size_view.y AND core.p = content_size_view.p
+LEFT JOIN region_size_view
+ON core.x = region_size_view.x AND core.y = region_size_view.y AND core.p = region_size_view.p;
+
+-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+-- A table describing the references.
+CREATE TABLE IF NOT EXISTS reference (
+    reference_num INTEGER NOT NULL,
+    region_num INTEGER NOT NULL,
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    p INTEGER NOT NULL,
+    ref_label TEXT,
+    PRIMARY KEY (x, y, p, region_num),
+    FOREIGN KEY (x, y, p) REFERENCES core(x, y, p));
+
+-- -- Every reference is unique per core
+CREATE UNIQUE INDEX IF NOT EXISTS reference_out_sanity ON reference(
+    x ASC, Y ASC, p ASC, reference_num ASC);
+
+CREATE VIEW IF NOT EXISTS linked_reference_view AS
+SELECT reference.reference_num, reference.x as x, reference.y as y,
+       reference.p as ref_p, reference.region_num as ref_region, ref_label,
+       region.p as act_p, region.region_num as act_region, region_label,
+       region.size,  pointer
+FROM reference LEFT JOIN region
+ON reference.reference_num = region.reference_num
+    AND reference.x = region.x
+    AND reference.y = region.y;
+
+CREATE VIEW IF NOT EXISTS pointer_content_view AS
+SELECT x, y, p, region_num, pointer, content FROM
+	(SELECT reference.x, reference.y, reference.p, reference.region_num, pointer, NULL as content
+	FROM reference LEFT JOIN region
+	ON reference.reference_num = region.reference_num
+		AND reference.x = region.x
+		AND reference.y = region.y)
+UNION
+SELECT x, y, p, region_num, pointer, content FROM region;
+
+CREATE TABLE IF NOT EXISTS app_id (
+    app_id INTEGER NOT NULL
+);
 
 -- Information about how to access the connection proxying
 -- WARNING! May include credentials

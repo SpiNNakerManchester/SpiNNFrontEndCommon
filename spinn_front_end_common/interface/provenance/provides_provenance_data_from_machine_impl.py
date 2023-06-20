@@ -99,7 +99,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         spec.reserve_memory_region(
             self._provenance_region_id,
             self.get_provenance_data_size(self._n_additional_data_items),
-            label="Provenance", empty=True)
+            label="Provenance")
 
     @classmethod
     def get_provenance_data_size(cls, n_additional_data_items):

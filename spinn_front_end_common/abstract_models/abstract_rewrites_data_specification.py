@@ -14,10 +14,11 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
-from pacman.model.graphs.machine import MachineVertex
+from .abstract_generates_data_specification import (
+    AbstractGeneratesDataSpecification)
 
 
-@require_subclass(MachineVertex)
+@require_subclass(AbstractGeneratesDataSpecification)
 class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     """
     Indicates an object that allows data to be changed after run,
