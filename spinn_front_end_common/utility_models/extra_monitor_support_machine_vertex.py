@@ -342,7 +342,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         spec.reserve_memory_region(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
-            label="provenance collection region", empty=True)
+            label="provenance collection region")
 
     def __get_provenance_region_address(self, txrx, place):
         """
