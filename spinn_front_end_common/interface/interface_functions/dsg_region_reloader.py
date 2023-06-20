@@ -81,8 +81,6 @@ def regenerate_data_spec(placement, data_dir):
     if not vertex.reload_required():
         return False
 
-    txrx = FecDataView.get_transceiver()
-
     # build the writers for the reports and data
     spec_file, spec = get_data_spec_and_file_writer_filename(
         placement.x, placement.y, placement.p, data_dir)
@@ -105,9 +103,7 @@ def regenerate_data_spec(placement, data_dir):
     regions_base_address = FecDataView.read_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
     start_region = get_region_base_address_offset(regions_base_address, 0)
-    ptr_table = _get_ptr_table(
-        txrx, placement, regions_base_address, start_region)
-
+    ptr_table = _get_ptr_table(placement, regions_base_address, start_region)
     # Get the data spec executor pointer table; note that this will not
     # have the right pointers since not all regions will be regenerated
     # but the checksum and size will be updated there
@@ -128,26 +124,24 @@ def regenerate_data_spec(placement, data_dir):
                 raise SpinnFrontEndException(
                     f"Region {i} of {vertex} has grown from {old_size} bytes "
                     f"to {new_size} bytes and will overwrite the next region!")
-            txrx.write_memory(
+            FecDataView.write_memory(
                 placement.x, placement.y, ptr_table[i]["pointer"],
                 region.region_data[:region.max_write_pointer])
             # Update the checksum and size of the region
             reg = get_region_base_address_offset(regions_base_address, i)
             byte_offset = (reg - start_region) + chk_off
             addr = reg + chk_off
-            txrx.write_memory(
+            FecDataView.write_memory(
                 placement.x, placement.y, addr,
                 ds_ptr_table_bytes[byte_offset:], chk_size)
     vertex.set_reload_required(False)
     return True
 
 
-def _get_ptr_table(txrx, placement, regions_base_address, start_region):
+def _get_ptr_table(placement, regions_base_address, start_region):
     """
     Read the pointer table.
 
-    :param ~spinnman.transceiver.Transceiver txrx:
-        The transceiver to read with
     :param ~pacman.model.placements.Placement placement:
         Where to read the pointer table from
     :param int regions_base_address: The start of memory for the given core
@@ -158,7 +152,7 @@ def _get_ptr_table(txrx, placement, regions_base_address, start_region):
     # Read the pointer table from the machine
     table_size = get_region_base_address_offset(
         regions_base_address, MAX_MEM_REGIONS) - start_region
-    ptr_table = numpy.frombuffer(txrx.read_memory(
+    ptr_table = numpy.frombuffer(FecDataView.read_memory(
             placement.x, placement.y, start_region, table_size),
         dtype=DataSpecificationExecutor.TABLE_TYPE)
 

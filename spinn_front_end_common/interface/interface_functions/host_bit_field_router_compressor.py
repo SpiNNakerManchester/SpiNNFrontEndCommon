@@ -425,7 +425,7 @@ class _HostBasedBitFieldRouterCompressor(object):
 
             # from filter_region_t read how many bitfields there are
             # n_filters then array of filters
-            n_filters = FecDataView.get_transceiver().read_word(
+            n_filters = FecDataView.read_word(
                 chip_x, chip_y, bit_field_base_address, BYTES_PER_WORD)
             reading_address = bit_field_base_address + BYTES_PER_WORD
 
