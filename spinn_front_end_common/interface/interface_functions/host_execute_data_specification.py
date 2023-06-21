@@ -138,8 +138,7 @@ class _HostExecuteDataSpecification(object):
 
         # allocate and set user 0 before loading data
 
-        transceiver = FecDataView.get_transceiver()
-        writer = transceiver.write_memory
+        writer = FecDataView.write_memory
         core_infos = dsg_targets.get_core_infos(is_system)
         if is_system:
             type_str = "system"
