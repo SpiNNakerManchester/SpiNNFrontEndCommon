@@ -109,7 +109,7 @@ def run_system_application(
         _report_iobuf_messages(executable_cores, logger, filename_template)
 
     # stop anything that's associated with the compressor binary
-    transceiver.stop_application(app_id)
+    FecDataView.write_stop_application(app_id)
     FecDataView.free_id(app_id)
 
     if error is not None:

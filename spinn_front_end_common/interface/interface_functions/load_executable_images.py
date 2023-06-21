@@ -71,7 +71,7 @@ def __load_images(filter_predicate, label):
         progress.end()
     except Exception as e:
         try:
-            FecDataView.get_transceiver().stop_application(
+            FecDataView.write_stop_application(
                 FecDataView.get_app_id())
         except Exception:  # pylint: disable=broad-except
             # Ignore this, this was just an attempt at recovery

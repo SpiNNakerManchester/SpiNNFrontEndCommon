@@ -218,7 +218,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         This clears all data that if no longer valid after a hard reset
         """
         if self._data_writer.has_transceiver():
-            self._data_writer.get_transceiver().stop_application(
+            self._data_writer.write_stop_application(
                 self._data_writer.get_app_id())
         self.__close_allocation_controller()
         self._data_writer.hard_reset()
@@ -447,7 +447,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # application
         if (self._data_writer.get_requires_data_generation() and
                 self._data_writer.has_transceiver()):
-            self._data_writer.get_transceiver().stop_application(
+            self._data_writer.write.stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
@@ -2319,8 +2319,8 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # stop the transceiver and allocation controller
         if self._data_writer.has_transceiver():
-            transceiver = self._data_writer.get_transceiver()
-            transceiver.stop_application(self._data_writer.get_app_id())
+            self._data_writer.write_stop_application(
+                self._data_writer.get_app_id())
 
         self.__close_allocation_controller()
         self._data_writer.clear_notification_protocol()

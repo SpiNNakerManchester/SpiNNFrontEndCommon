@@ -188,7 +188,8 @@ class _MachineBitFieldRouterCompressor(object):
             logger.exception(transceiver.get_core_status_string(
                 e.failed_core_states()))
             try:
-                transceiver.stop_application(routing_table_compressor_app_id)
+                FecDataView.write_stop_application(
+                    routing_table_compressor_app_id)
             except Exception:  # pylint: disable=broad-except
                 logger.warning("Could not stop compressor!")
             raise e
