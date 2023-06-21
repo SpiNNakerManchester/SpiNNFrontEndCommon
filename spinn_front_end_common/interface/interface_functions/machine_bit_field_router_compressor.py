@@ -383,7 +383,7 @@ class _MachineBitFieldRouterCompressor(object):
                     routing_table_compressor_app_id, progress_bar, cores,
                     matrix_addresses_and_size[(table.x, table.y)])
 
-                comms_sdram = transceiver.malloc_sdram(
+                comms_sdram = FecDataView.malloc_sdram(
                     table.x, table.y, SIZE_OF_COMMS_SDRAM,
                     routing_table_compressor_app_id,
                     BIT_FIELD_COMMS_SDRAM_TAG)
@@ -474,7 +474,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # get sdram address on chip
         try:
-            sdram_address = transceiver.malloc_sdram(
+            sdram_address = FecDataView.malloc_sdram(
                 chip_x, chip_y, len(address_data),
                 routing_table_compressor_app_id,
                 BIT_FIELD_USABLE_SDRAM_TAG)
@@ -486,7 +486,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size)
 
         # write sdram
-        transceiver.write_memory(
+        FecDataView.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
         # get the only processor on the chip
@@ -496,7 +496,7 @@ class _MachineBitFieldRouterCompressor(object):
         # update user 2 with location
         user3_address = transceiver.get_user_3_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        FecDataView.write_memory(
             chip_x, chip_y, user3_address, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
@@ -550,7 +550,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # get sdram address on chip
         try:
-            sdram_address = transceiver.malloc_sdram(
+            sdram_address = FecDataView.malloc_sdram(
                 chip_x, chip_y, len(address_data),
                 routing_table_compressor_app_id,
                 BIT_FIELD_ADDRESSES_SDRAM_TAG)
@@ -560,7 +560,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(address_data))
 
         # write sdram
-        transceiver.write_memory(
+        FecDataView.write_memory(
             chip_x, chip_y, sdram_address, address_data, len(address_data))
 
         # get the only processor on the chip
@@ -572,7 +572,7 @@ class _MachineBitFieldRouterCompressor(object):
         # update user 2 with location
         user2_address = transceiver.get_user_2_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        FecDataView.write_memory(
             chip_x, chip_y, user2_address, sdram_address)
 
     def _load_routing_table_data(
@@ -599,7 +599,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # go to spinnman and ask for a memory region of that size per chip.
         try:
-            base_address = transceiver.malloc_sdram(
+            base_address = FecDataView.malloc_sdram(
                 table.x, table.y, len(routing_table_data),
                 routing_table_compressor_app_id,
                 BIT_FIELD_ROUTING_TABLE_SDRAM_TAG)
@@ -609,7 +609,7 @@ class _MachineBitFieldRouterCompressor(object):
                 matrix_addresses_and_size, len(routing_table_data))
 
         # write SDRAM requirements per chip
-        transceiver.write_memory(
+        FecDataView.write_memory(
             table.x, table.y, base_address, routing_table_data)
 
         # get the only processor on the chip
@@ -619,7 +619,7 @@ class _MachineBitFieldRouterCompressor(object):
         # update user 1 with location
         user1_address = transceiver.get_user_1_register_address_from_core(
             processor_id)
-        transceiver.write_memory(
+        FecDataView.write_memory(
             table.x, table.y, user1_address, base_address)
 
         # update progress bar

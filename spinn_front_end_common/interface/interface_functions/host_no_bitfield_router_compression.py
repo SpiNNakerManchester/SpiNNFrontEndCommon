@@ -149,16 +149,15 @@ class Compression(object):
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the pacman router table instance
         """
-        transceiver = FecDataView.get_transceiver()
         data = self._build_data(table)
 
         # go to spinnman and ask for a memory region of that size per chip.
-        base_address = transceiver.malloc_sdram(
+        base_address = FecDataView.malloc_sdram(
             table.x, table.y, len(data), self._compressor_app_id,
             COMPRESSOR_SDRAM_TAG)
 
         # write SDRAM requirements per chip
-        transceiver.write_memory(table.x, table.y, base_address, data)
+        FecDataView.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(self, executable_targets):
         """

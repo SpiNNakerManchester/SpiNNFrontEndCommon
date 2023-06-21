@@ -243,7 +243,7 @@ class _HostExecuteDataSpecification(object):
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate
-        start_address = FecDataView.get_transceiver().malloc_sdram(
+        start_address = FecDataView.malloc_sdram(
             x, y, size, FecDataView.get_app_id(),
             tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
