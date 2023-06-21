@@ -29,24 +29,21 @@ def read_routing_tables_from_machine():
         routing_tables, "Reading Routing Tables from Machine")
     machine_routing_tables = MulticastRoutingTables()
     app_id = FecDataView.get_app_id()
-    transceiver = FecDataView.get_transceiver()
     for routing_table in progress.over(routing_tables):
         # get multicast entries from machine
-        machine_routing_table = _read_routing_table(
-            transceiver, routing_table, app_id)
+        machine_routing_table = _read_routing_table(routing_table, app_id)
         machine_routing_tables.add_routing_table(machine_routing_table)
 
     return machine_routing_tables
 
 
-def _read_routing_table(transceiver, table, app_id):
+def _read_routing_table(table, app_id):
     """
-    :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~.UnCompressedMulticastRoutingTable table:
     :param int app_id:
     """
     machine_routing_table = CompressedMulticastRoutingTable(table.x, table.y)
-    for routing_entry in transceiver.get_multicast_routes(
+    for routing_entry in FecDataView.read_multicast_routes(
             table.x, table.y, app_id):
         machine_routing_table.add_multicast_routing_entry(routing_entry)
     return machine_routing_table
