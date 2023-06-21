@@ -70,8 +70,7 @@ class _RouterProvenanceGatherer(object):
         x = table.x
         y = table.y
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(x, y)
+            diagnostics = FecDataView.read_router_diagnostics(x, y)
         except SpinnmanException:
             logger.warning(
                 "Could not read routing diagnostics from {}, {}",
@@ -87,8 +86,7 @@ class _RouterProvenanceGatherer(object):
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
         """
         try:
-            transceiver = FecDataView.get_transceiver()
-            diagnostics = transceiver.get_router_diagnostics(chip.x, chip.y)
+            diagnostics = FecDataView.read_router_diagnostics(chip.x, chip.y)
         except SpinnmanException:
             # There could be issues with unused chips - don't worry!
             return
