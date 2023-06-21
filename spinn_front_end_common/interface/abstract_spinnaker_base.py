@@ -37,8 +37,6 @@ from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 
-from data_specification import __version__ as data_spec_version
-
 from spalloc_client import __version__ as spalloc_version
 
 from pacman import __version__ as pacman_version
@@ -769,7 +767,6 @@ class AbstractSpinnakerBase(ConfigHandler):
             db.insert_version("spalloc_version", spalloc_version)
             db.insert_version("spinnman_version", spinnman_version)
             db.insert_version("pacman_version", pacman_version)
-            db.insert_version("data_specification_version", data_spec_version)
             db.insert_version("front_end_common_version", fec_version)
             db.insert_version("numpy_version", numpy_version)
             db.insert_version("scipy_version", scipy_version)
