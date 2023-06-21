@@ -172,15 +172,7 @@ class Compression(object):
             y = core_subset.y
             for p in core_subset.processor_ids:
                 # Read the result from specified register
-                if self.__result_register == 0:
-                    result = transceiver.read_user_0(x, y, p)
-                elif self.__result_register == 1:
-                    result = transceiver.read_user_1(x, y, p)
-                elif self.__result_register == 2:
-                    result = transceiver.read_user_2(x, y, p)
-                else:
-                    raise ValueError(
-                        "Incorrect register {self.__result_register}")
+                result = FecDataView.read_user(self.__result_register, x, y, p)
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self.__failures.append((x, y))

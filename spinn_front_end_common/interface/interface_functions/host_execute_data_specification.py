@@ -22,8 +22,6 @@ from spinn_front_end_common.utilities.constants import (
     APPDATA_MAGIC_NUM, APP_PTR_TABLE_BYTE_SIZE, BYTES_PER_WORD,
     CORE_DATA_SDRAM_BASE_TAG, DSE_VERSION, MAX_MEM_REGIONS, TABLE_TYPE)
 from spinn_front_end_common.utilities.exceptions import DataSpecException
-from spinn_front_end_common.utilities.helpful_functions import (
-    write_address_to_user0)
 from spinn_front_end_common.utilities.emergency_recovery import (
     emergency_recover_states_from_failure)
 
@@ -247,6 +245,6 @@ class _HostExecuteDataSpecification(object):
             tag=CORE_DATA_SDRAM_BASE_TAG + p)
 
         # set user 0 register appropriately to the application data
-        write_address_to_user0(x, y, p, start_address)
+        FecDataView.write_user(0, x, y, p, start_address)
 
         return start_address

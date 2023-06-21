@@ -340,8 +340,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         Looks up from the machine what the current transaction ID is
         and updates the data speed up gatherer.
         """
-        self._transaction_id = FecDataView.get_transceiver().read_user_1(
-            self._placement.x, self._placement.y, self._placement.p)
+        self._transaction_id = FecDataView.read_user(
+            1, self._placement.x, self._placement.y, self._placement.p)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

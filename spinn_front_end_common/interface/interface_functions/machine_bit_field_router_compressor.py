@@ -163,7 +163,7 @@ class _MachineBitFieldRouterCompressor(object):
 
         # load data into sdram
         on_host_chips = self._load_data(
-            addresses, transceiver, routing_table_compressor_app_id,
+            addresses, routing_table_compressor_app_id,
             routing_tables, app_id,
             compress_as_much_as_possible, progress_bar,
             compressor_executable_targets,
@@ -313,7 +313,6 @@ class _MachineBitFieldRouterCompressor(object):
         :param str sorter_binary_path: the path to the sorter binary
         :rtype: bool
         """
-        transceiver = FecDataView.get_transceiver()
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
         result = True
@@ -323,13 +322,8 @@ class _MachineBitFieldRouterCompressor(object):
 
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                user_1_base_address = \
-                    transceiver.get_user_1_register_address_from_core(p)
-                user_2_base_address = \
-                    transceiver.get_user_2_register_address_from_core(p)
-                result = transceiver.read_word(x, y, user_1_base_address)
-                bit_fields_merged = transceiver.read_word(
-                    x, y, user_2_base_address)
+                result = FecDataView.read_user(1, x, y, p)
+                bit_fields_merged = FecDataView.read_user(2, x, y, p)
 
                 if result != self.SUCCESS:
                     host_chips.add((x, y))
@@ -338,7 +332,7 @@ class _MachineBitFieldRouterCompressor(object):
         return result
 
     def _load_data(
-            self, addresses, transceiver, routing_table_compressor_app_id,
+            self, addresses, routing_table_compressor_app_id,
             routing_tables, app_id,
             compress_as_much_as_possible, progress_bar, cores,
             matrix_addresses_and_size,
@@ -349,7 +343,6 @@ class _MachineBitFieldRouterCompressor(object):
 
         :param dict(tuple(int,int),tuple(int,int)) addresses:
             the addresses for bitfields in SDRAM
-        :param ~.Transceiver transceiver: the spinnMan instance
         :param routing_table_compressor_app_id:
             the app_id for the system application
         :param ~.MulticastRoutingTables routing_tables:
@@ -379,8 +372,8 @@ class _MachineBitFieldRouterCompressor(object):
         for table in routing_tables.routing_tables:
             try:
                 self._load_routing_table_data(
-                    table, app_id, transceiver,
-                    routing_table_compressor_app_id, progress_bar, cores,
+                    table, app_id, routing_table_compressor_app_id,
+                    progress_bar, cores,
                     matrix_addresses_and_size[(table.x, table.y)])
 
                 comms_sdram = FecDataView.malloc_sdram(
@@ -389,7 +382,7 @@ class _MachineBitFieldRouterCompressor(object):
                     BIT_FIELD_COMMS_SDRAM_TAG)
 
                 self._load_address_data(
-                    addresses, table.x, table.y, transceiver,
+                    addresses, table.x, table.y,
                     routing_table_compressor_app_id,
                     cores, matrix_addresses_and_size[(table.x, table.y)],
                     bit_field_compressor_executable_path,
@@ -398,21 +391,18 @@ class _MachineBitFieldRouterCompressor(object):
 
                 self._load_usable_sdram(
                     matrix_addresses_and_size[(table.x, table.y)], table.x,
-                    table.y, transceiver, routing_table_compressor_app_id,
-                    cores)
+                    table.y, routing_table_compressor_app_id, cores)
 
                 self._load_compressor_data(
-                    table.x, table.y, transceiver,
-                    bit_field_compressor_executable_path, cores,
-                    compress_as_much_as_possible, comms_sdram)
+                    table.x, table.y, bit_field_compressor_executable_path,
+                    cores, compress_as_much_as_possible, comms_sdram)
             except CantFindSDRAMToUseException:
                 run_by_host.append((table.x, table.y))
 
         return run_by_host
 
     def _load_compressor_data(
-            self, chip_x, chip_y, transceiver,
-            bit_field_compressor_executable_path, cores,
+            self, chip_x, chip_y, bit_field_compressor_executable_path, cores,
             compress_as_much_as_possible, comms_sdram):
         """
         Updates the user addresses for the compressor cores with the
@@ -420,7 +410,6 @@ class _MachineBitFieldRouterCompressor(object):
 
         :param int chip_x: chip X coordinate
         :param int chip_y: chip Y coordinate
-        :param ~spinnman.transceiver.Transceiver transceiver: SpiNNMan instance
         :param str bit_field_compressor_executable_path:
             path for the compressor binary
         :param bool compress_as_much_as_possible:
@@ -432,29 +421,21 @@ class _MachineBitFieldRouterCompressor(object):
             bit_field_compressor_executable_path)
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
-            user1_address = \
-                transceiver.get_user_1_register_address_from_core(processor_id)
-            user2_address = \
-                transceiver.get_user_2_register_address_from_core(processor_id)
-            user3_address = \
-                transceiver.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
             time_per_iteration = get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
-            transceiver.write_memory(
-                chip_x, chip_y, user1_address,
+            FecDataView.write_user(1, chip_x, chip_y, processor_id,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            transceiver.write_memory(
-                chip_x, chip_y, user2_address,
+            FecDataView.write_user(2, chip_x, chip_y, processor_id,
                 int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
-            transceiver.write_memory(
-                chip_x, chip_y, user3_address, comms_sdram)
+            FecDataView.write_user(
+                3, chip_x, chip_y, processor_id, comms_sdram)
 
     def _load_usable_sdram(
-            self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
+            self, matrix_addresses_and_size, chip_x, chip_y,
             routing_table_compressor_app_id, cores):
         """
         loads the addresses of borrowable SDRAM.
@@ -463,8 +444,6 @@ class _MachineBitFieldRouterCompressor(object):
             SDRAM usable and sizes
         :param int chip_x: X coordinate of the chip to consider here
         :param int chip_y: Y coordinate of the chip to consider here
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnman instance
         :param int routing_table_compressor_app_id: system app_id.
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
@@ -493,11 +472,9 @@ class _MachineBitFieldRouterCompressor(object):
         processor_id = list(cores.all_core_subsets.get_core_subset_for_chip(
             chip_x, chip_y).processor_ids)[0]
 
-        # update user 2 with location
-        user3_address = transceiver.get_user_3_register_address_from_core(
-            processor_id)
-        FecDataView.write_memory(
-            chip_x, chip_y, user3_address, sdram_address)
+        # update user 3 with location
+        FecDataView.write_user(
+            3, chip_x, chip_y, processor_id, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """
@@ -514,7 +491,7 @@ class _MachineBitFieldRouterCompressor(object):
         return data
 
     def _load_address_data(
-            self, addresses, chip_x, chip_y, transceiver,
+            self, addresses, chip_x, chip_y,
             routing_table_compressor_app_id, cores, matrix_addresses_and_size,
             bit_field_compressor_executable_path,
             bit_field_sorter_executable_path, comms_sdram, retry_count):
@@ -525,8 +502,6 @@ class _MachineBitFieldRouterCompressor(object):
             the addresses to load
         :param int chip_x: the chip x to consider here
         :param int chip_y: the chip y to consider here
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the transceiver instance
         :param int routing_table_compressor_app_id: system app_id.
         :param ~spinnman.model.ExecutableTargets cores:
             the cores that compressor will run on
@@ -569,16 +544,12 @@ class _MachineBitFieldRouterCompressor(object):
         processor_id = list(sorter_cores.get_core_subset_for_chip(
             chip_x, chip_y).processor_ids)[0]
 
-        # update user 2 with location
-        user2_address = transceiver.get_user_2_register_address_from_core(
-            processor_id)
-        FecDataView.write_memory(
-            chip_x, chip_y, user2_address, sdram_address)
+        FecDataView.write_user(
+            2, chip_x, chip_y, processor_id, sdram_address)
 
     def _load_routing_table_data(
-            self, table, app_id, transceiver,
-            routing_table_compressor_app_id, progress_bar, cores,
-            matrix_addresses_and_size):
+            self, table, app_id, routing_table_compressor_app_id,
+            progress_bar, cores, matrix_addresses_and_size):
         """
         loads the routing table data.
 
@@ -586,8 +557,6 @@ class _MachineBitFieldRouterCompressor(object):
         :type table:
             ~pacman.model.routing_tables.AbstractMulticastRoutingTable
         :param int app_id: application app_id
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            transceiver instance
         :param ~spinn_utilities.progress_bar.ProgressBar progress_bar:
             progress bar
         :param int routing_table_compressor_app_id: system app_id
@@ -617,10 +586,8 @@ class _MachineBitFieldRouterCompressor(object):
             table.x, table.y).processor_ids)[0]
 
         # update user 1 with location
-        user1_address = transceiver.get_user_1_register_address_from_core(
-            processor_id)
-        FecDataView.write_memory(
-            table.x, table.y, user1_address, base_address)
+        FecDataView.write_user(
+            1, table.x, table.y, processor_id, base_address)
 
         # update progress bar
         progress_bar.update()

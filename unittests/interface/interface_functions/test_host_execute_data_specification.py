@@ -60,8 +60,10 @@ class _MockTransceiver(Transceiver):
         self._next_address += size
         return address
 
-    def get_user_0_register_address_from_core(self, p):
-        return self._user_0_addresses[p]
+    def get_user_register_address_from_core(self, user, p):
+        if user == 0:
+            return self._user_0_addresses[p]
+        raise NotImplementedError(f"user=")
 
     @overrides(Transceiver.write_memory)
     def write_memory(
