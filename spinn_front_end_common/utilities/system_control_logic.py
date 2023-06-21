@@ -91,8 +91,7 @@ def run_system_application(
         succeeded = True
     except SpiNNManCoresNotInStateException as ex:
         error = ex
-        core_state_string = transceiver.get_core_status_string(
-            ex.failed_core_states())
+        core_state_string = ex.failed_core_states().get_status_string()
     except SpinnmanException as ex:
         # Delay the exception until iobuf is ready
         error = ex

@@ -185,8 +185,7 @@ class _MachineBitFieldRouterCompressor(object):
                 [bit_field_sorter_executable_path], progress_bar,
                 logger=logger)
         except SpiNNManCoresNotInStateException as e:
-            logger.exception(transceiver.get_core_status_string(
-                e.failed_core_states()))
+            logger.exception(e.failed_core_states().get_status_string())
             try:
                 FecDataView.write_stop_application(
                     routing_table_compressor_app_id)
