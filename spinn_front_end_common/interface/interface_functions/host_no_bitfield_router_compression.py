@@ -166,7 +166,6 @@ class Compression(object):
 
         :param ~spinnman.model.ExecutableTargets executable_targets:
         """
-        transceiver = FecDataView.get_transceiver()
         for core_subset in executable_targets.all_core_subsets:
             x = core_subset.x
             y = core_subset.y
