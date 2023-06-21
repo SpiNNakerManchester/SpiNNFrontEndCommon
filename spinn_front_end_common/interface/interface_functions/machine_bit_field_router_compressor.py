@@ -132,7 +132,6 @@ class _MachineBitFieldRouterCompressor(object):
         view = FecDataView()
         app_id = FecDataView.get_app_id()
         routing_tables = FecDataView.get_uncompressed()
-        transceiver = FecDataView.get_transceiver()
         if len(routing_tables.routing_tables) == 0:
             return ExecutableTargets()
 
@@ -232,8 +231,8 @@ class _MachineBitFieldRouterCompressor(object):
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:
                 if table.multicast_routing_entries:
-                    transceiver.clear_multicast_routes(table.x, table.y)
-                    transceiver.load_multicast_routes(
+                    FecDataView.write_clear_multicast_routes(table.x, table.y)
+                    FecDataView.write_multicast_routes(
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
 

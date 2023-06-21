@@ -37,7 +37,7 @@ def routing_setup():
     # Clear the routing table for each router that needs to be set up
     # and set up the diagnostics
     for router_table in progress.over(routing_tables):
-        transceiver.clear_multicast_routes(
+        FecDataView.write_clear_multicast_routes(
             router_table.x, router_table.y)
         FecDataView.clear_router_diagnostic_counters(
             router_table.x, router_table.y)

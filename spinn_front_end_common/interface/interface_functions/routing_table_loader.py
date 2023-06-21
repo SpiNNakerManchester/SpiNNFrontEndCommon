@@ -28,9 +28,8 @@ def routing_table_loader(router_tables):
     # load each router table that is needed for the application to run into
     # the chips SDRAM
     app_id = FecDataView.get_app_id()
-    transceiver = FecDataView.get_transceiver()
     for table in progress.over(router_tables.routing_tables):
         if (table.number_of_entries):
-            transceiver.load_multicast_routes(
+            FecDataView.write_multicast_routes(
                 table.x, table.y, table.multicast_routing_entries,
                 app_id)
