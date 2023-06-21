@@ -20,7 +20,6 @@ from spinn_utilities.config_holder import get_config_int
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
-from data_specification.enums import DataType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import VariableSDRAM
 from spinn_front_end_common.abstract_models import (
@@ -30,6 +29,7 @@ from spinn_front_end_common.interface.buffer_management import (
     recording_utilities)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.ds import DataType
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)

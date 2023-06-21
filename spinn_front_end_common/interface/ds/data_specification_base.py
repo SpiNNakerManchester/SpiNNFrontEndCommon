@@ -14,7 +14,7 @@
 
 import numpy
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-from data_specification.enums.data_type import DataType
+from .data_type import DataType
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 BYTES_PER_WORD = 4
 

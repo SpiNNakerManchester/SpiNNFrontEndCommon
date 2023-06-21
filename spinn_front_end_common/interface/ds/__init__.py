@@ -14,8 +14,9 @@
 
 from .data_specification_generator import DataSpecificationGenerator
 from .data_specification_reloader import DataSpecificationReloader
+from .data_type import DataType
 from .ds_sqllite_database import DsSqlliteDatabase
 
 __all__ = [
     "DataSpecificationGenerator", "DataSpecificationReloader",
-    "DsSqlliteDatabase"]
+    "DataType", "DsSqlliteDatabase"]
