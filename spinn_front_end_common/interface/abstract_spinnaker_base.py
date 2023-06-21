@@ -77,7 +77,7 @@ from spinn_front_end_common.interface.interface_functions import (
     chip_provenance_updater, chip_runtime_updater, compute_energy_used,
     create_notification_protocol, database_interface,
     reload_dsg_regions, energy_provenance_reporter,
-    execute_application_data_specs, execute_system_data_specs,
+    load_application_data_specs, load_system_data_specs,
     graph_binary_gatherer, graph_data_specification_writer,
     graph_provenance_gatherer,
     host_based_bit_field_router_compressor, hbp_allocator,
@@ -1354,10 +1354,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         """
         Runs, times, and logs the GraphDataSpecificationWriter.
 
-        Sets the dsg_targets data
+        Creates and fills the data spec database
         """
         with FecTimer("Graph data specification writer", TimerWork.OTHER):
-            self._data_writer.set_dsg_targets(
+            self._data_writer.set_ds_database(
                 graph_data_specification_writer())
 
     def _do_data_generation(self):
@@ -1707,15 +1707,15 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_fixed_routes()
 
-    def _execute_system_data_specification(self):
+    def _execute_load_system_data_specification(self):
         """
-        Runs, times and logs the execute_system_data_specs if required.
+        Runs, times and logs the load_system_data_specs if required.
         """
         with FecTimer(
-                "Execute system data specification", TimerWork.OTHER) as timer:
+                "Load system data specification", TimerWork.OTHER) as timer:
             if timer.skip_if_virtual_board():
                 return None
-            execute_system_data_specs()
+            load_system_data_specs()
 
     def _execute_load_system_executable_images(self):
         """
@@ -1727,18 +1727,19 @@ class AbstractSpinnakerBase(ConfigHandler):
                 return
             load_sys_images()
 
-    def _execute_application_data_specification(self):
+    def _execute_load_application_data_specification(self):
         """
-        Runs, times and logs :py:meth:`execute_application_data_specs`
+        Runs, times and logs :py:meth:`load_application_data_specs`
         if required.
 
         :return: map of placement and DSG data, and loaded data flag.
         :rtype: dict(tuple(int,int,int),DataWritten) or DsWriteInfo
         """
-        with FecTimer("Host data specification", TimerWork.LOADING) as timer:
+        with FecTimer("Load Application data specification",
+                      TimerWork.LOADING) as timer:
             if timer.skip_if_virtual_board():
                 return
-            return execute_application_data_specs()
+            return load_application_data_specs()
 
     def _execute_tags_from_machine_report(self):
         """
@@ -1864,10 +1865,10 @@ class AbstractSpinnakerBase(ConfigHandler):
         self._execute_control_sync(False)
         if self._data_writer.get_requires_mapping():
             self._execute_load_fixed_routes()
-        self._execute_system_data_specification()
+        self._execute_load_system_data_specification()
         self._execute_load_system_executable_images()
         self._execute_load_tags()
-        self._execute_application_data_specification()
+        self._execute_load_application_data_specification()
 
         self._do_extra_load_algorithms()
         compressed = self._do_delayed_compression(compressor, compressed)
