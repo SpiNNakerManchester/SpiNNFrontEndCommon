@@ -22,11 +22,8 @@ from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 def sdram_outgoing_partition_allocator():
     if FecDataView.has_transceiver():
-        transceiver = FecDataView.get_transceiver()
         virtual_usage = None
     else:
-        # Ok if transceiver = None
-        transceiver = None
         virtual_usage = defaultdict(int)
 
     progress_bar = ProgressBar(
@@ -61,10 +58,10 @@ def sdram_outgoing_partition_allocator():
                     f"partition {sdram_partition}")
 
             # allocate
-            if transceiver is not None:
+            if FecDataView.has_transceiver():
                 tag = next_tag[placement.x, placement.y]
                 next_tag[placement.x, placement.y] = tag + 1
-                sdram_base_address = transceiver.malloc_sdram(
+                sdram_base_address = FecDataView.malloc_sdram(
                     placement.x, placement.y, total_sdram,
                     FecDataView.get_app_id(), tag)
             else:
