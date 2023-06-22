@@ -83,7 +83,6 @@ def locate_memory_region_for_placement(placement, region):
     :return: the address
     :rtype: int
     """
-    transceiver = FecDataView.get_transceiver()
     regions_base_address = FecDataView.read_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
@@ -91,7 +90,7 @@ def locate_memory_region_for_placement(placement, region):
     element_addr = get_region_base_address_offset(regions_base_address, region)
 
     # Get the actual address of the region
-    return transceiver.read_word(placement.x, placement.y, element_addr)
+    return FecDataView.read_word(placement.x, placement.y, element_addr)
 
 
 def convert_string_into_chip_and_core_subset(cores):
