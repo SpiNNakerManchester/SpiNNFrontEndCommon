@@ -40,8 +40,12 @@ class _MockTransceiver(Transceiver):
                 count += 1
         return count
 
-    @overrides(Transceiver.get_cores_in_state)
-    def get_cores_in_state(self, all_core_subsets, states):
+    def get_cpu_info(self, core_subsets):
+        core_states = self._core_states[self._current_state]
+        self._current_state += 1
+        return core_states
+
+    def Xget_cores_in_state(self, all_core_subsets, states):
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
         for core_subset in all_core_subsets:

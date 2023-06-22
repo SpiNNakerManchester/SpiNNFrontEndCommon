@@ -37,7 +37,7 @@ def run_system_application(
     :param bool read_algorithm_iobuf: whether to report IOBUFs
     :param callable check_for_success_function:
         function used to check success;
-        expects `executable_cores`, `transceiver` as inputs
+        expects `executable_cores` as inputs
     :param set(~spinnman.model.enums.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
@@ -58,7 +58,6 @@ def run_system_application(
     :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
-    transceiver = FecDataView.get_transceiver()
     # load the executable
     _load_application(executable_cores, app_id)
 
@@ -151,25 +150,24 @@ def _load_application(executable_targets, app_id):
     :param int app_id: The app_id to give this application
     """
     # Execute each of the binaries and get them in to a "wait" state
-    transceiver = FecDataView.get_transceiver()
     for binary in executable_targets.binaries:
         core_subsets = executable_targets.get_cores_for_binary(binary)
-        transceiver.execute_flood(
+        FecDataView.write_flood(
             core_subsets, binary, app_id, wait=True, is_filename=True)
 
     # Sleep to allow cores to get going
     time.sleep(0.5)
 
     # Check that the binaries have reached a wait state
-    count = transceiver.get_core_state_count(app_id, CPUState.READY)
+    count = FecDataView.read_core_state_count(app_id, CPUState.READY)
     if count < executable_targets.total_processors:
-        cores_ready = transceiver.get_cores_not_in_state(
+        cores_ready = FecDataView.read_cores_not_in_state(
             executable_targets.all_core_subsets, [CPUState.READY])
         if len(cores_ready) > 0:
             raise SpinnmanException(
                 f"Only {count} of {executable_targets.total_processors} "
                 "cores reached ready state: "
-                f"{transceiver.get_core_status_string(cores_ready)}")
+                f"{cores_ready.get_status_string()}")
 
     # Send a signal telling the application to start
-    transceiver.send_signal(app_id, Signal.START)
+    FecDataView.write_signal(app_id, Signal.START)
