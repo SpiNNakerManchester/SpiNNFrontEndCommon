@@ -28,9 +28,7 @@ def routing_setup():
     .. note::
         This does not load any routes into them.
 
-    :param ~spinnman.transceiver.Transceiver transceiver:
     """
-    transceiver = FecDataView.get_transceiver()
     routing_tables = FecDataView.get_uncompressed().routing_tables
     progress = ProgressBar(len(routing_tables), "Preparing Routing Tables")
 
@@ -46,17 +44,15 @@ def routing_setup():
         # routed packets. This can only occur when the source router
         # has no router entry, and therefore should be detected a bad
         # dropped packet.
-        __set_router_diagnostic_filters(
-            router_table.x, router_table.y, transceiver)
+        __set_router_diagnostic_filters(router_table.x, router_table.y)
 
 
-def __set_router_diagnostic_filters(x, y, transceiver):
+def __set_router_diagnostic_filters(x, y):
     """
     :param int x:
     :param int y:
-    :param ~.Transceiver transceiver:
     """
-    transceiver.set_router_diagnostic_filter(
+    FecDataView.write_router_diagnostic_filter(
         x, y, ROUTER_REGISTER_REGISTERS.USER_3.value,
         DiagnosticFilter(
             enable_interrupt_on_counter_event=False,
@@ -69,7 +65,7 @@ def __set_router_diagnostic_filters(x, y, transceiver):
             emergency_routing_statuses=[],
             packet_types=[DiagnosticFilterPacketType.MULTICAST]))
 
-    transceiver.set_router_diagnostic_filter(
+    FecDataView.write_router_diagnostic_filter(
         x, y, ROUTER_REGISTER_REGISTERS.USER_2.value,
         DiagnosticFilter(
             enable_interrupt_on_counter_event=False,
