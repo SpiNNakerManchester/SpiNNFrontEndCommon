@@ -447,7 +447,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         # application
         if (self._data_writer.get_requires_data_generation() and
                 self._data_writer.has_transceiver()):
-            self._data_writer.write.stop_application(
+            self._data_writer.write_stop_application(
                 self._data_writer.get_app_id())
             self._data_writer.reset_sync_signal()
         # build the graphs to modify with system requirements
