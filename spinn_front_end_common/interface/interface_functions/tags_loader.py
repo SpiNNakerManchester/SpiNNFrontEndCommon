@@ -24,10 +24,9 @@ def tags_loader():
     # clear all the tags from the Ethernet connection, as nothing should
     # be allowed to use it (no two apps should use the same Ethernet
     # connection at the same time)
-    transceiver = FecDataView.get_transceiver()
     progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
     for tag_id in progress.over(range(MAX_TAG_ID)):
-        transceiver.clear_ip_tag(tag_id)
+        FecDataView.write_clear_ip_tag(tag_id)
 
     # Use tags object to supply tag info if it is supplied
     tags = FecDataView.get_tags()
@@ -38,7 +37,7 @@ def tags_loader():
     progress = ProgressBar(
         len(iptags) + len(reverse_iptags), "Loading Tags")
     for ip_tag in progress.over(iptags, False):
-        transceiver.set_ip_tag(ip_tag)
+        FecDataView.write_ip_tag(ip_tag)
     for reverse_ip_tag in progress.over(reverse_iptags, False):
-        transceiver.set_reverse_ip_tag(reverse_ip_tag)
+        FecDataView.write_reverse_ip_tag(reverse_ip_tag)
     progress.end()
