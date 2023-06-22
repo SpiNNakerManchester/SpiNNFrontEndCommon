@@ -70,19 +70,18 @@ def get_profiling_data(profile_region, tag_labels, placement):
     :param ~pacman.model.placements.Placement placement: placement
     :rtype: ProfileData
     """
-    txrx = FecDataView.get_transceiver()
     profile_data = ProfileData(tag_labels)
 
     address = locate_memory_region_for_placement(
         placement=placement, region=profile_region)
 
     # Read the profiling data size
-    words_written = txrx.read_word(placement.x, placement.y, address)
+    words_written = FecDataView.read_word(placement.x, placement.y, address)
 
     # Read the profiling data
     if words_written != 0:
         address += _BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION
-        profile_data.add_data(txrx.read_memory(
+        profile_data.add_data(FecDataView.read_memory(
             placement.x, placement.y, address, words_written * BYTES_PER_WORD))
 
     return profile_data

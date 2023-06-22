@@ -111,9 +111,8 @@ class ProvidesProvenanceDataFromMachineImpl(
             (cls.N_SYSTEM_PROVENANCE_WORDS + n_additional_data_items)
             * BYTES_PER_WORD)
 
-    def _get_provenance_region_address(self, transceiver, placement):
+    def _get_provenance_region_address(self, placement):
         """
-        :param ~spinnman.transceiver.Transceiver transceiver:
         :param ~pacman.model.placements.Placement placement:
         :rtype: int
         """
@@ -124,7 +123,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         # Get the provenance region base address
         prov_region_entry_address = get_region_base_address_offset(
             region_table_address, self._provenance_region_id)
-        return transceiver.read_word(
+        return FecDataView.read_word(
             placement.x, placement.y, prov_region_entry_address)
 
     def _read_provenance_data(self, placement):
@@ -132,10 +131,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         :param ~pacman.model.placements.Placement placement:
         :rtype: iterable(int)
         """
-        transceiver = FecDataView.get_transceiver()
-        provenance_address = self._get_provenance_region_address(
-            transceiver, placement)
-        data = transceiver.read_memory(
+        provenance_address = self._get_provenance_region_address(placement)
+        data = FecDataView.read_memory(
             placement.x, placement.y, provenance_address,
             self.get_provenance_data_size(self._n_additional_data_items))
         return n_word_struct(
