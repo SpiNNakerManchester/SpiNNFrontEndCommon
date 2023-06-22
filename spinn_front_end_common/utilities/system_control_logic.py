@@ -37,7 +37,7 @@ def run_system_application(
     :param bool read_algorithm_iobuf: whether to report IOBUFs
     :param callable check_for_success_function:
         function used to check success;
-        expects `executable_cores`, `transceiver` as inputs
+        expects `executable_cores` as inputs
     :param set(~spinnman.model.enums.CPUState) cpu_end_states:
         the states that a successful run is expected to terminate in
     :param bool needs_sync_barrier: whether a sync barrier is needed
@@ -58,7 +58,6 @@ def run_system_application(
     :raise SpinnmanException:
         If one should arise from the underlying SpiNNMan calls
     """
-    transceiver = FecDataView.get_transceiver()
     # load the executable
     _load_application(executable_cores, app_id)
 
