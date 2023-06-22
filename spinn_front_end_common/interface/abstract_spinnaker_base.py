@@ -2235,7 +2235,7 @@ class AbstractSpinnakerBase(ConfigHandler):
 
             # Extract any written provenance data
             try:
-                finished_cores = self._data_writer.get_cores_in_state(
+                finished_cores = self._data_writer.read_cores_in_state(
                     non_rte_core_subsets, CPUState.FINISHED)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:

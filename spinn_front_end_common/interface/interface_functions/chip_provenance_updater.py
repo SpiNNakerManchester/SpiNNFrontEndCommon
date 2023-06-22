@@ -58,11 +58,11 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = FecDataView.read_core_state_count(
+        error_cores = FecDataView.read_cores_in_state(
             self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = FecDataView.read_core_state_count(
+        watchdog_cores = FecDataView.read_cores_in_state(
             self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = FecDataView.read_core_state_count(
+        idle_cores = FecDataView.read_cores_in_state(
             self.__all_cores, CPUState.IDLE)
 
         if error_cores or watchdog_cores or idle_cores:
@@ -90,7 +90,7 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = FecDataView.read_core_state_count(
+            unsuccessful_cores = FecDataView.read_cores_in_state(
                 self.__all_cores, CPUState.FINISHED)
 
             for (x, y, p) in unsuccessful_cores.keys():
