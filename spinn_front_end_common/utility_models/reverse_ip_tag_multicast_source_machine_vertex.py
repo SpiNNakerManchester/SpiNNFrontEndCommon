@@ -575,8 +575,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if self._send_buffer_size:
                 spec.reserve_memory_region(
                     region=self._REGIONS.SEND_BUFFER,
-                    size=self._send_buffer_size, label="SEND_BUFFER",
-                    empty=True)
+                    size=self._send_buffer_size, label="SEND_BUFFER")
 
         self.reserve_provenance_data_region(spec)
 
