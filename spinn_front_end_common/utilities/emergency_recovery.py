@@ -29,7 +29,6 @@ def _emergency_state_check():
     # pylint: disable=broad-except
     try:
         app_id = FecDataView.get_app_id()
-        txrx = FecDataView.get_transceiver()
         rte_count = FecDataView.read_core_state_count(
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = FecDataView.read_core_state_count(
@@ -44,10 +43,9 @@ def _emergency_state_check():
     except Exception:
         logger.exception(
             "Could not read the status count - going to individual cores")
-        machine = txrx.get_machine_details()
         infos = CPUInfos()
         errors = list()
-        for chip in machine.chips:
+        for chip in FecDataView.get_machine():
             for p in chip.processors:
                 try:
                     info = FecDataView.read_cpu_information_from_core(
