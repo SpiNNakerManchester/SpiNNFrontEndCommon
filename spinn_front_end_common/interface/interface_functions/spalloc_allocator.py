@@ -18,6 +18,7 @@ from typing import Dict, Tuple, Optional
 from spinn_utilities.config_holder import get_config_str_list, get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+from spinn_utilities.typing.coords import XY
 from spalloc_client import Job
 from spalloc_client.states import JobState
 from spinn_utilities.abstract_context_manager import AbstractContextManager
@@ -229,7 +230,7 @@ _MACHINE_VERSION = 5
 
 
 def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
-        str, int, None, bool, bool, Dict[Tuple[int, int], str],
+        str, int, None, bool, bool, Dict[XY, str],
         MachineAllocationController]:
     """
     Request a machine from a SPALLOC server that will fit the given
@@ -271,7 +272,7 @@ def spalloc_allocator(bearer_token: Optional[str] = None) -> Tuple[
 def _allocate_job_new(
         spalloc_server: str, n_boards: int,
         bearer_token: Optional[str] = None) -> Tuple[
-            str, Dict[Tuple[int, int], str], MachineAllocationController]:
+            str, Dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an new-style spalloc server that will fit the
     given number of boards.
@@ -310,7 +311,7 @@ def _allocate_job_new(
 
 
 def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
-        str, Dict[Tuple[int, int], str], MachineAllocationController]:
+        str, Dict[XY, str], MachineAllocationController]:
     """
     Request a machine from an old-style spalloc server that will fit the
     requested number of boards.
@@ -340,7 +341,7 @@ def _allocate_job_old(spalloc_server: str, n_boards: int) -> Tuple[
 
 
 def _launch_checked_job_old(n_boards: int, spalloc_kwargs: dict) -> Tuple[
-        Job, str, Dict[Tuple[int, int], str]]:
+        Job, str, Dict[XY, str]]:
     """
     :rtype: tuple(~.Job, str, dict(tuple(int,int),str))
     """

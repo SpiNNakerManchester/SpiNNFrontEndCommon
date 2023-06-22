@@ -26,6 +26,7 @@ from spinn_front_end_common.utilities.emergency_recovery import (
 
 # 10 seconds is lots of time to wait for the application to become ready!
 _APP_READY_TIMEOUT = 10.0
+_running_state = frozenset([CPUState.RUNNING])
 
 
 def load_app_images() -> None:
@@ -48,7 +49,7 @@ def load_sys_images() -> None:
         cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
         FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
             cores.all_core_subsets, FecDataView.get_app_id(),
-            [CPUState.RUNNING], timeout=10)
+            _running_state, timeout=10)
     except SpiNNManCoresNotInStateException as e:
         emergency_recover_states_from_failure()
         raise e

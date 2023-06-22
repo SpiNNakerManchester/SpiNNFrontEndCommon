@@ -22,6 +22,7 @@ from spinn_utilities.config_holder import (
     get_config_int, get_config_str)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
+from spinn_utilities.typing.coords import XY
 from spinn_machine import Chip, FixedRouteEntry, CoreSubsets
 from spinnman.data.spinnman_data_writer import SpiNNManDataWriter
 from spinnman.messages.scp.enums.signal import Signal
@@ -336,8 +337,7 @@ class FecDataWriter(PacmanDataWriter, SpiNNManDataWriter, FecDataView):
 
     def set_system_multicast_routing_data(
             self, data: Tuple[
-                MulticastRoutingTables, Dict[Tuple[int, int], int],
-                Dict[Tuple[int, int], int]]):
+                MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]):
         """
         Sets the system_multicast_routing_data.
 

@@ -17,15 +17,16 @@ import json
 import logging
 import os
 import subprocess
-from typing import Dict, List, Optional, Union, cast
+from typing import Dict, Iterable, List, Optional, cast
 from spinn_utilities.config_holder import get_config_str
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.json import JsonArray, JsonObject
 from spinn_machine import Chip
 from spinn_machine.tags import IPTag
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
-from pacman.model.placements import Placement, Placements
+from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
     import write_json_machine  # Argh! Mypy
 from spinn_front_end_common.utilities.exceptions import (
@@ -35,9 +36,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferDatabase
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
-_JsonValue = Union[int, float, str, None, "_JsonObject", "_JsonArray"]
-_JsonObject = Dict[str, _JsonValue]
-_JsonArray = List[_JsonValue]
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -184,7 +182,7 @@ class JavaCaller(object):
                 progress_bar=False, validate=False)
         return self._machine_json_path
 
-    def set_placements(self, used_placements: Placements):
+    def set_placements(self, used_placements: Iterable[Placement]):
         """
         Passes in the placements leaving this class to decide pass it to
         Java.
@@ -221,7 +219,7 @@ class JavaCaller(object):
         :rtype: dict
         """
         vertex = placement.vertex
-        json_placement: _JsonObject = {
+        json_placement: JsonObject = {
             "x": placement.x,
             "y": placement.y,
             "p": placement.p,
@@ -233,7 +231,7 @@ class JavaCaller(object):
         if isinstance(vertex, AbstractReceiveBuffersToHost) and \
                 vertex.get_recorded_region_ids():
             self._recording = True
-            json_vertex = cast(_JsonObject, json_placement["vertex"])
+            json_vertex = cast(JsonObject, json_placement["vertex"])
             # Replace fields in template above
             json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
             json_vertex["recordingRegionBaseAddress"] = \
@@ -241,7 +239,7 @@ class JavaCaller(object):
 
         return json_placement
 
-    def _json_iptag(self, iptag: IPTag) -> _JsonObject:
+    def _json_iptag(self, iptag: IPTag) -> JsonObject:
         """
         :param ~pacman.model.tags.IPTag iptag:
         :rtype: dict
@@ -256,8 +254,9 @@ class JavaCaller(object):
             "tagID": iptag.tag,
             "trafficIdentifier": iptag.traffic_identifier}
 
-    def _placements_grouped(self, recording_placements: Placements) -> Dict[
-            Chip, Dict[Chip, List[Placement]]]:
+    def _placements_grouped(
+            self, recording_placements: Iterable[Placement]) -> Dict[
+                Chip, Dict[Chip, List[Placement]]]:
         """
         :param ~pacman.model.placements.Placements recording_placementss:
         :rtype: dict(Chip,dict(Chip,~pacman.model.placements.Placement))
@@ -274,7 +273,8 @@ class JavaCaller(object):
                     by_ethernet[ethernet][chip].append(placement)
         return by_ethernet
 
-    def _write_gather(self, used_placements: Placements, path: str) -> str:
+    def _write_gather(
+            self, used_placements: Iterable[Placement], path: str) -> str:
         """
         :param ~pacman.model.placements.Placements used_placements:
             placements that are being used. May not be all placements
@@ -287,17 +287,17 @@ class JavaCaller(object):
         assert self._monitor_cores is not None
 
         placements_by_ethernet = self._placements_grouped(used_placements)
-        json_obj: _JsonArray = list()
+        json_obj: JsonArray = list()
         for ethernet in self._chip_by_ethernet:
             by_chip = placements_by_ethernet[ethernet]
-            json_gather: _JsonObject = {
+            json_gather: JsonObject = {
                 "x": ethernet.x,
                 "y": ethernet.y,
                 "p": self._gatherer_cores[ethernet],
                 "iptag": self._json_iptag(self._gatherer_iptags[ethernet])}
-            json_chips: _JsonArray = list()
+            json_chips: JsonArray = list()
             for chip in self._chip_by_ethernet[ethernet]:
-                json_chip: _JsonObject = {
+                json_chip: JsonObject = {
                     "x": chip.x,
                     "y": chip.y,
                     "p": self._monitor_cores[chip]}
@@ -317,7 +317,8 @@ class JavaCaller(object):
 
         return path
 
-    def _write_placements(self, used_placements: Placements, path: str) -> str:
+    def _write_placements(
+            self, used_placements: Iterable[Placement], path: str) -> str:
         """
         :param ~pacman.model.placements.Placements placements:
             Placements that are being used. May not be all placements
@@ -325,7 +326,7 @@ class JavaCaller(object):
         :rtype: str
         """
         # Read back the regions
-        json_obj: _JsonArray = list()
+        json_obj: JsonArray = list()
         for placement in used_placements:
             if not isinstance(placement.vertex, AbstractVirtual):
                 json_p = self._json_placement(placement)

@@ -15,10 +15,11 @@
 import logging
 import sys
 from threading import Thread
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from spinn_utilities.typing.coords import XY
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
@@ -42,7 +43,7 @@ class MachineAllocationController(
         "__connection_data")
 
     def __init__(self, thread_name: str, hostname: Optional[str] = None,
-                 connection_data: Optional[Dict[Tuple[int, int], str]] = None):
+                 connection_data: Optional[Dict[XY, str]] = None):
         """
         :param str thread_name:
         """
@@ -93,7 +94,7 @@ class MachineAllocationController(
         txrx.discover_scamp_connections()
         return txrx
 
-    def __host(self, chip_x: int, chip_y: int):
+    def __host(self, chip_x: int, chip_y: int) -> Optional[str]:
         if not self.__connection_data:
             return None
         return self.__connection_data.get((chip_x, chip_y))
@@ -118,5 +119,5 @@ class MachineAllocationController(
         return EIEIOConnection(remote_host=host, remote_port=SCP_SCAMP_PORT)
 
     @overrides(AbstractMachineAllocationController.open_eieio_listener)
-    def open_eieio_listener(self):
+    def open_eieio_listener(self) -> EIEIOConnection:
         return EIEIOConnection()

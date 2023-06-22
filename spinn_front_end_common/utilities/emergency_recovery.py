@@ -22,6 +22,7 @@ from .iobuf_extractor import IOBufExtractor
 from spinn_front_end_common.data import FecDataView
 
 logger = FormatAdapter(logging.getLogger(__name__))
+_bad_states = frozenset((CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG))
 
 
 def _emergency_state_check() -> None:
@@ -33,8 +34,7 @@ def _emergency_state_check() -> None:
             app_id, CPUState.RUN_TIME_EXCEPTION)
         watchdog_count = txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
         if rte_count or watchdog_count:
-            states = txrx.get_cores_in_state(
-                None, [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG])
+            states = txrx.get_cores_in_state(None, _bad_states)
             logger.warning(
                 "unexpected core states (rte={}, wdog={})",
                 rte_count, watchdog_count)
@@ -50,8 +50,7 @@ def _emergency_state_check() -> None:
                 try:
                     info = txrx.get_cpu_information_from_core(
                         chip.x, chip.y, p)
-                    if info.state in (
-                            CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG):
+                    if info.state in _bad_states:
                         infos.add_processor(chip.x, chip.y, p, info)
                 except Exception:
                     errors.append((chip.x, chip.y, p))

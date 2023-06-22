@@ -18,12 +18,14 @@ from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.application import ApplicationEdge, ApplicationVertex
 from pacman.model.graphs.application.abstract import (
     AbstractOneAppOneMachineVertex)
+from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models import MultiCastCommand
 
 
-class CommandSender(AbstractOneAppOneMachineVertex):
+class CommandSender(
+        AbstractOneAppOneMachineVertex[CommandSenderMachineVertex]):
     """
     A utility for sending commands to a vertex (possibly an external device)
     at fixed times in the simulation or in response to simulation events
@@ -36,6 +38,7 @@ class CommandSender(AbstractOneAppOneMachineVertex):
         """
         super().__init__(
             CommandSenderMachineVertex(label, self), label)
+        self.splitter = SplitterOneAppOneMachine()
 
     def add_commands(
             self, start_resume_commands: Iterable[MultiCastCommand],

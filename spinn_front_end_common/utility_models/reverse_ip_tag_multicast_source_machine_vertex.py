@@ -57,10 +57,11 @@ from spinn_front_end_common.interface.buffer_management.recording_utilities \
     import (get_recording_header_array, get_recording_header_size,
             get_recording_data_constant_size)
 if TYPE_CHECKING:
+    from typing_extensions import TypeAlias
     from .reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
     from .reverse_ip_tag_multi_cast_source import _EIEIOParameters as Params
-    _SBT = Union[numpy.ndarray, List[numpy.ndarray]]
-    _SendBufferTimes = Optional[_SBT]
+    _SBT: TypeAlias = Union[numpy.ndarray, List[numpy.ndarray]]
+    _SendBufferTimes: TypeAlias = Optional[_SBT]
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

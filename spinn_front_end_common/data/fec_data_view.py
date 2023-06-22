@@ -18,6 +18,7 @@ from typing import (
     Dict, Iterable, Iterator, Optional, Set, Tuple, Union, cast, TYPE_CHECKING)
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.socket_address import SocketAddress
+from spinn_utilities.typing.coords import XY
 from spinn_machine import CoreSubsets, Chip, FixedRouteEntry
 from spinnman.data import SpiNNManDataView
 from spinnman.model import ExecutableTargets
@@ -158,8 +159,7 @@ class _FecDataModel(object):
         self._buffer_manager: Optional[BufferManager] = None
         self._allocation_controller: Optional[
             AbstractMachineAllocationController] = None
-        self._data_in_multicast_key_to_chip_map: Optional[
-            Dict[Tuple[int, int], int]] = None
+        self._data_in_multicast_key_to_chip_map: Optional[Dict[XY, int]] = None
         self._data_in_multicast_routing_tables: Optional[
             MulticastRoutingTables] = None
         self._database_file_path: Optional[str] = None
@@ -176,7 +176,7 @@ class _FecDataModel(object):
         self._monitor_map: Optional[Dict[
             Chip, ExtraMonitorSupportMachineVertex]] = None
         self._system_multicast_router_timeout_keys: Optional[
-            Dict[Tuple[int, int], int]] = None
+            Dict[XY, int]] = None
         self._soft_reset()
         self._clear_notification_protocol()
 
@@ -671,8 +671,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
     # system multicast routing data
 
     @classmethod
-    def get_data_in_multicast_key_to_chip_map(
-            cls) -> Dict[Tuple[int, int], int]:
+    def get_data_in_multicast_key_to_chip_map(cls) -> Dict[XY, int]:
         """
         Retrieve the data_in_multicast_key_to_chip_map if known.
         Keys are the coordinates of chips.
@@ -702,8 +701,7 @@ class FecDataView(PacmanDataView, SpiNNManDataView):
         return cls.__fec_data._data_in_multicast_routing_tables
 
     @classmethod
-    def get_system_multicast_router_timeout_keys(
-            cls) -> Dict[Tuple[int, int], int]:
+    def get_system_multicast_router_timeout_keys(cls) -> Dict[XY, int]:
         """
         Retrieve the system_multicast_router_timeout_keys if known.
         Keys are the coordinates of chips.

@@ -441,6 +441,7 @@ class BufferManager(object):
         :param addr: The recording region base address
         :param x: The X coordinate of the chip containing the data
         :param y: The Y coordinate of the chip containing the data
+        :return: (size, address, missing flag) for each region
         """
         transceiver = FecDataView.get_transceiver()
         n_regions = transceiver.read_word(x, y, addr)

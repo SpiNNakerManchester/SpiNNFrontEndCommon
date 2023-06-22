@@ -190,10 +190,10 @@ class Plotter(object):
         # Import here because otherwise CI fails
         # pylint: disable=import-error
         if not cls.__pyplot:
-            import matplotlib.pyplot as plot
+            import matplotlib.pyplot as plot  # type: ignore[import]
             cls.__pyplot = plot
         if not cls.__seaborn:
-            import seaborn
+            import seaborn  # type: ignore[import]
             cls.__seaborn = seaborn
         return cls.__pyplot, cls.__seaborn
 

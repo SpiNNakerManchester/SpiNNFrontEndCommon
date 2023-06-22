@@ -16,6 +16,7 @@ import functools
 import logging
 import struct
 from typing import Dict, List, Tuple
+from typing_extensions import TypeAlias
 from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
@@ -52,6 +53,11 @@ from .load_executable_images import filter_targets
 from .host_bit_field_router_compressor import (
     generate_key_to_atom_map, generate_report_path,
     HostBasedBitFieldRouterCompressor)
+
+#: An address of a piece of memory (SDRAM?) and its size
+_RamChunk: TypeAlias = Tuple[int, int]
+#: An address and the core to which it is assigned
+_RamAssignment: TypeAlias = Tuple[int, int]
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -199,7 +205,7 @@ class _MachineBitFieldRouterCompressor(object):
                     self._check_bit_field_router_compressor_for_success,
                     host_chips=on_host_chips,
                     sorter_binary_path=sorter_executable_path),
-                [CPUState.FINISHED], True,
+                frozenset([CPUState.FINISHED]), True,
                 "bit_field_compressor_on_{}_{}_{}.txt",
                 [sorter_executable_path], progress_bar,
                 logger=logger)
@@ -342,10 +348,10 @@ class _MachineBitFieldRouterCompressor(object):
         return result
 
     def _load_data(
-            self, addresses: Dict[Chip, List[Tuple[int, int]]],
+            self, addresses: Dict[Chip, List[_RamAssignment]],
             compressor_app_id: int, routing_tables: MulticastRoutingTables,
             progress_bar, cores: ExecutableTargets,
-            matrix_addresses_and_size: Dict[Chip, List[Tuple[int, int]]],
+            matrix_addresses_and_size: Dict[Chip, List[_RamChunk]],
             compressor_executable_path: str,
             sorter_executable_path: str):
         """
@@ -430,7 +436,7 @@ class _MachineBitFieldRouterCompressor(object):
             self.__txrx.write_user_3(chip_x, chip_y, processor_id, comms_sdram)
 
     def _load_usable_sdram(
-            self, sizes_and_address: List[Tuple[int, int]],
+            self, sizes_and_address: List[_RamChunk],
             chip: Chip, compressor_app_id, cores):
         """
         loads the addresses of borrowable SDRAM.
@@ -464,7 +470,7 @@ class _MachineBitFieldRouterCompressor(object):
             self.__txrx.write_user_3(chip.x, chip.y, p, sdram_address)
 
     def _generate_chip_matrix_data(
-            self, borrowable_spaces: List[Tuple[int, int]]) -> bytes:
+            self, borrowable_spaces: List[_RamChunk]) -> bytes:
         """
         Generate the data for the chip matrix data.
 
@@ -485,9 +491,9 @@ class _MachineBitFieldRouterCompressor(object):
         return bytes(data)
 
     def _load_address_data(
-            self, region_addresses: Dict[Chip, List[Tuple[int, int]]],
+            self, region_addresses: Dict[Chip, List[_RamAssignment]],
             chip: Chip, compressor_app_id: int, cores: ExecutableTargets,
-            borrowable_spaces: List[Tuple[int, int]],
+            borrowable_spaces: List[_RamChunk],
             compressor_executable_path: str,
             sorter_executable_path: str, comms_sdram: int):
         """
@@ -537,7 +543,7 @@ class _MachineBitFieldRouterCompressor(object):
     def _load_routing_table_data(
             self, table: AbstractMulticastRoutingTable,
             compressor_app_id: int, cores: ExecutableTargets,
-            borrowable_spaces: List[Tuple[int, int]]):
+            borrowable_spaces: List[_RamChunk]):
         """
         loads the routing table data.
 
@@ -572,7 +578,9 @@ class _MachineBitFieldRouterCompressor(object):
                 table.x, table.y).processor_ids:
             self.__txrx.write_user_1(table.x, table.y, p, base_address)
 
-    def _build_routing_table_data(self, app_id, routing_table):
+    def _build_routing_table_data(
+            self, app_id: int,
+            routing_table: AbstractMulticastRoutingTable) -> bytes:
         """
         Builds routing data as needed for the compressor cores.
 
@@ -596,12 +604,11 @@ class _MachineBitFieldRouterCompressor(object):
                 entry.routing_entry_key, entry.mask,
                 Router.convert_routing_table_entry_to_spinnaker_route(entry),
                 get_defaultable_source_id(entry=entry))
-        return bytearray(data)
+        return bytes(data)
 
     @staticmethod
     def _borrow_from_matrix_addresses(
-            borrowable_spaces: List[Tuple[int, int]],
-            size_to_borrow: int) -> int:
+            borrowable_spaces: List[_RamChunk], size_to_borrow: int) -> int:
         """
         Borrows memory from synaptic matrix as needed.
 
@@ -624,9 +631,8 @@ class _MachineBitFieldRouterCompressor(object):
     def _add_to_addresses(
             self, vertex: AbstractSupportsBitFieldRoutingCompression,
             placement: Placement,
-            region_addresses: Dict[Chip, List[Tuple[int, int]]],
-            sdram_block_addresses_and_sizes: Dict[
-                Chip, List[Tuple[int, int]]]):
+            region_addresses: Dict[Chip, List[_RamAssignment]],
+            sdram_block_addresses_and_sizes: Dict[Chip, List[_RamChunk]]):
         """
         Adds data about the API-based vertex.
 
@@ -658,8 +664,8 @@ class _MachineBitFieldRouterCompressor(object):
             key=lambda data: data[0])
 
     def _generate_addresses(self, progress_bar: ProgressBar) -> Tuple[
-            Dict[Chip, List[Tuple[int, int]]],
-            Dict[Chip, List[Tuple[int, int]]]]:
+            Dict[Chip, List[_RamAssignment]],
+            Dict[Chip, List[_RamChunk]]]:
         """
         Generates the bitfield SDRAM addresses.
 
@@ -673,21 +679,21 @@ class _MachineBitFieldRouterCompressor(object):
         # data holders
         region_addresses: Dict[Chip, List[Tuple[int, int]]] = defaultdict(list)
         sdram_block_addresses_and_sizes: Dict[
-            Chip, List[Tuple[int, int]]] = defaultdict(list)
+            Chip, List[_RamChunk]] = defaultdict(list)
 
         for app_vertex in progress_bar.over(
                 FecDataView.iterate_vertices(), finish_at_end=False):
             for m_vertex in app_vertex.machine_vertices:
+                placement = FecDataView.get_placement_of_vertex(m_vertex)
                 if isinstance(
                         m_vertex, AbstractSupportsBitFieldRoutingCompression):
-                    placement = FecDataView.get_placement_of_vertex(m_vertex)
                     self._add_to_addresses(
                         m_vertex, placement, region_addresses,
                         sdram_block_addresses_and_sizes)
         return region_addresses, sdram_block_addresses_and_sizes
 
     def _generate_chip_data(
-            self, address_list: List[Tuple[int, int]],
+            self, address_list: List[_RamAssignment],
             cores: CoreSubset, comms_sdram: int) -> bytes:
         """
         Generate the region_addresses_t data.

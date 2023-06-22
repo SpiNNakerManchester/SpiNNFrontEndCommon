@@ -14,12 +14,13 @@
 
 import os
 from typing import Iterable, List, Optional, Sequence, Tuple, Union, cast
+from typing_extensions import TypeAlias
+from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.base_database import BaseDatabase
-_Core = Tuple[int, int, int]
-_MonitorItem = Tuple[int, int, int]
-_RouterItem = Tuple[int, int, Union[int, float]]
+_MonitorItem: TypeAlias = Tuple[int, int, int]
+_RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
 
 
 class ProvenanceReader(BaseDatabase):
@@ -152,7 +153,7 @@ class ProvenanceReader(BaseDatabase):
             f"{ cast(str, row[0]) }: { cast(int, row[1]) }"
             for row in self.run_query(query, [int(x), int(y)]))
 
-    def get_cores_with_provenace(self) -> List[_Core]:
+    def get_cores_with_provenace(self) -> List[XYP]:
         """
         Gets the cores with provenance.
 
@@ -164,7 +165,7 @@ class ProvenanceReader(BaseDatabase):
             FROM core_provenance_view
             group by x, y, p
             """
-        return cast(List[_Core], self.run_query(query))
+        return cast(List[XYP], self.run_query(query))
 
     def get_router_by_chip(
             self, description: str) -> Optional[List[_RouterItem]]:

@@ -259,7 +259,7 @@ class IOBufExtractor(object):
         :param ~.CoreSubsets core_subsets:
         :rtype: list(~.IOBuffer)
         """
-        io_buffers = []
+        io_buffers: List[IOBuffer] = []
         for core_subset in core_subsets:
             for p in core_subset.processor_ids:
                 cs = CoreSubsets()

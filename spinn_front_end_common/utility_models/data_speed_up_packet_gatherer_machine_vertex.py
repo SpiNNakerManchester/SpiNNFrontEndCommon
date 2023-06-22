@@ -989,7 +989,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             try:
                 transceiver = FecDataView.get_transceiver()
                 error_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, {CPUState.RUNNING})
+                    core_subsets, frozenset((CPUState.RUNNING,)))
                 if error_cores:
                     log.error("Cores in an unexpected state: {}", error_cores)
             except Exception:  # pylint: disable=broad-except

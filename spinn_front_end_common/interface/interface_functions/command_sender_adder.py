@@ -11,10 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Dict, Iterable, List, Optional
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import Chip
+from spinn_machine.link_data_objects import AbstractLinkData
 from pacman.model.graphs.application import ApplicationVirtualVertex
-from pacman.model.placements import Placement
-from pacman.model.partitioner_splitters import SplitterOneAppOneMachine
+from pacman.model.placements import Placement, Placements
 from spinn_front_end_common.data.fec_data_view import FecDataView
 from spinn_front_end_common.abstract_models import (
     AbstractSendMeMulticastCommandsVertex)
@@ -23,7 +25,7 @@ from spinn_front_end_common.utilities.utility_calls import (
     pick_core_for_system_placement)
 
 
-def add_command_senders(system_placements):
+def add_command_senders(system_placements: Placements) -> List[CommandSender]:
     """
     Add command senders
 
@@ -39,14 +41,14 @@ class CommandSenderAdder(object):
         "__general_command_sender",
         "__system_placements")
 
-    def __init__(self, system_placements):
+    def __init__(self, system_placements: Placements):
         self.__system_placements = system_placements
 
         # Keep track of command senders by which chip they are on
-        self.__command_sender_for_chip = dict()
-        self.__general_command_sender = None
+        self.__command_sender_for_chip: Dict[Chip, CommandSender] = dict()
+        self.__general_command_sender: Optional[CommandSender] = None
 
-    def add_command_senders(self):
+    def add_command_senders(self) -> Iterable[CommandSender]:
         """
         Add the needed command senders.
 
@@ -73,10 +75,11 @@ class CommandSenderAdder(object):
         if self.__general_command_sender is not None:
             yield self.__general_command_sender
 
-    def __get_command_sender(self, link_data):
+    def __get_command_sender(
+            self, link_data: Optional[AbstractLinkData]) -> CommandSender:
         if link_data is None:
             if self.__general_command_sender is None:
-                self.__general_command_sender = self.__new_command_sender(
+                self.__general_command_sender = CommandSender(
                     "General command sender")
             return self.__general_command_sender
 
@@ -85,15 +88,9 @@ class CommandSenderAdder(object):
 
         command_sender = self.__command_sender_for_chip.get(chip)
         if command_sender is None:
-            command_sender = self.__new_command_sender(
-                f"Command Sender on {x}, {y}")
+            command_sender = CommandSender(f"Command Sender on {x}, {y}")
             self.__command_sender_for_chip[chip] = command_sender
             p = pick_core_for_system_placement(self.__system_placements, chip)
             self.__system_placements.add_placement(
                 Placement(command_sender.machine_vertex, x, y, p))
-        return command_sender
-
-    def __new_command_sender(self, label):
-        command_sender = CommandSender(label)
-        command_sender.splitter = SplitterOneAppOneMachine()
         return command_sender

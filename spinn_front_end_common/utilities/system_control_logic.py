@@ -11,9 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import logging
-from typing import Callable, Container, List, Optional
+from typing import Callable, FrozenSet, List, Optional
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions import (
     SpinnmanException, SpiNNManCoresNotInStateException)
 from spinnman.messages.scp.enums import Signal
@@ -27,10 +27,10 @@ def run_system_application(
         executable_cores: ExecutableTargets, app_id: int,
         read_algorithm_iobuf: bool,
         check_for_success_function: Callable[[ExecutableTargets], bool],
-        cpu_end_states: Container[CPUState], needs_sync_barrier: bool,
+        cpu_end_states: FrozenSet[CPUState], needs_sync_barrier: bool,
         filename_template: str, binaries_to_track: Optional[List[str]] = None,
         progress_bar: Optional[ProgressBar] = None,
-        logger: Optional[logging.Logger] = None,
+        logger: Optional[FormatAdapter] = None,
         timeout: Optional[float] = None):
     """
     Executes the given _system_ application.
@@ -122,7 +122,7 @@ def run_system_application(
 
 
 def _report_iobuf_messages(
-        cores: ExecutableTargets, logger: Optional[logging.Logger],
+        cores: ExecutableTargets, logger: Optional[FormatAdapter],
         filename_template: str):
     """
     :param ~spinnman.model.ExecutableTargets cores:
@@ -136,6 +136,6 @@ def _report_iobuf_messages(
     error_entries, warn_entries = iobuf_reader.extract_iobuf()
     if logger is not None:
         for entry in warn_entries:
-            logger.warn(entry)
+            logger.warn("{}", entry)
         for entry in error_entries:
-            logger.error(entry)
+            logger.error("{}", entry)

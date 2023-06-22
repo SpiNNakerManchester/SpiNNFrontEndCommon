@@ -13,7 +13,7 @@
 # limitations under the License.
 from collections import defaultdict
 import logging
-from typing import Dict, Tuple, Set, Optional
+from typing import Dict, Tuple, Set, Optional, cast
 from spinn_utilities.log import FormatAdapter
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
@@ -177,7 +177,9 @@ class _SystemMulticastRoutingGenerator(object):
             placement.p of the monitor vertex if applicable
         :param int link_id: If of the link out if applicable
         """
-        table = self._routing_tables.get_routing_table_for_chip(chip.x, chip.y)
+        table = cast(
+            Optional[UnCompressedMulticastRoutingTable],
+            self._routing_tables.get_routing_table_for_chip(chip.x, chip.y))
         if table is None:
             table = UnCompressedMulticastRoutingTable(chip.x, chip.y)
             self._routing_tables.add_routing_table(table)
