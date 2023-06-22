@@ -424,11 +424,12 @@ class _MachineBitFieldRouterCompressor(object):
             time_per_iteration = get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
-            FecDataView.write_user(1, chip_x, chip_y, processor_id,
+            FecDataView.write_user(
+                1, chip_x, chip_y, processor_id,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
             FecDataView.write_user(2, chip_x, chip_y, processor_id,
-                int(compress_as_much_as_possible))
+                                   int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
             FecDataView.write_user(
                 3, chip_x, chip_y, processor_id, comms_sdram)

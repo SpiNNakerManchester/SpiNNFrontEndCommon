@@ -58,6 +58,7 @@ def read_data(x, y, address, length, data_format):
     data = FecDataView.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
+
 def get_region_base_address_offset(app_data_base_address, region):
     """
     Find the address of the of a given region for the DSG.

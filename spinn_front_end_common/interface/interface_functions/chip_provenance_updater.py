@@ -17,9 +17,7 @@ import logging
 from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
-from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
-from spinnman.model.enums import (
-    CPUState, SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
+from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
