@@ -214,7 +214,7 @@ class IOBufExtractor(object):
         if self._recovery_mode:
             io_buffers = self.__recover_iobufs(core_subsets)
         else:
-            io_buffers = list(FecDataView.get_transceiver().get_iobuf(
+            io_buffers = list(FecDataView.read_iobuf(
                 core_subsets))
 
         # write iobuf
@@ -260,8 +260,7 @@ class IOBufExtractor(object):
                 cs = CoreSubsets()
                 cs.add_processor(core_subset.x, core_subset.y, p)
                 try:
-                    transceiver = FecDataView.get_transceiver()
-                    io_buffers.extend(transceiver.get_iobuf(cs))
+                    io_buffers.extend(FecDataView.read_iobuf(cs))
                 except Exception as e:  # pylint: disable=broad-except
                     io_buffers.append(IOBuffer(
                         core_subset.x, core_subset.y, p,
