@@ -413,8 +413,10 @@ class DataType(Enum):
         return self._numpy_typename
 
     def closest_representable_value(self, value):
-        """ Returns the closest value to the given value that can be
-            represented by this type
+        """
+        Returns the closest value to the given value that can be represented
+        by this type
+
         :param value:
         :type value: float or in
         :rtype: float
@@ -422,8 +424,10 @@ class DataType(Enum):
         return self.decode_from_int(self.encode_as_int(value))
 
     def closest_representable_value_above(self, value):
-        """ Returns the closest value above the given value that can be
-            represented by this type
+        """
+        Returns the closest value above the given value that can be
+        represented by this type.
+
         :param value:
         :type value: float or in
         :rtype: float
@@ -457,7 +461,9 @@ class DataType(Enum):
         return value
 
     def decode_from_int(self, value):
-        """ Decode a single value represented as an int according to this type.
+        """
+        Decode a single value represented as an int according to this type.
+
         :param int array:
         :rtype: float or int
         """
