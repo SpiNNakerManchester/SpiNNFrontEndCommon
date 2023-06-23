@@ -26,7 +26,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10", "3.11"]
+        python-version: [3.8, 3.9, "3.10", "3.11"]
 
     steps:
     - name: Checkout
@@ -48,7 +48,7 @@ jobs:
       uses: ./support/actions/install-spinn-deps
       with:
         repositories:
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
         install: true
 
     - name: Setup
@@ -95,7 +95,7 @@ jobs:
       uses: ./support/actions/install-spinn-deps
       with:
         repositories:
-          SpiNNUtils SpiNNMachine SpiNNMan PACMAN DataSpecification spalloc
+          SpiNNUtils SpiNNMachine SpiNNMan PACMAN spalloc
         install: true
     - name: Setup
       uses: ./support/actions/run-install
