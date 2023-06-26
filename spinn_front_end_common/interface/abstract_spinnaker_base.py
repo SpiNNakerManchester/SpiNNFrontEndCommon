@@ -2329,14 +2329,13 @@ class AbstractSpinnakerBase(ConfigHandler):
     def __clear(self):
         if not self._data_writer.has_transceiver():
             return
-        transceiver = self._data_writer.get_transceiver()
 
         if get_config_bool("Machine", "clear_tags"):
             for ip_tag in self._data_writer.get_tags().ip_tags:
-                transceiver.clear_ip_tag(
+                FecDataView.write_clear_ip_tag(
                     ip_tag.tag, board_address=ip_tag.board_address)
             for reverse_ip_tag in self._data_writer.get_tags().reverse_ip_tags:
-                transceiver.clear_ip_tag(
+                FecDataView.write_clear_ip_tag(
                     reverse_ip_tag.tag,
                     board_address=reverse_ip_tag.board_address)
 
