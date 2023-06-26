@@ -1265,8 +1265,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             seq_num_offset += length_left_in_packet
 
             # build SDP message and send it to the core
-            transceiver = FecDataView.get_transceiver()
-            transceiver.send_sdp_message(self.__make_sdp_message(
+            FecDataView.write_sdp_message(self.__make_sdp_message(
                 placement, SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP, data))
 
             # sleep for ensuring core doesn't lose packets
