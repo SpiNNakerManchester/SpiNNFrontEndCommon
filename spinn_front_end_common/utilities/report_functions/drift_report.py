@@ -58,18 +58,17 @@ def drift_report():
     progress = ProgressBar(n_chips, "Writing clock drift report")
 
     # iterate over ethernet chips and then the chips on that board
-    txrx = FecDataView.get_transceiver()
     with open(directory_name, "a", encoding="utf-8") as writer:
         for eth_chip in eth_chips:
             if ethernet_only:
-                drift = txrx.get_clock_drift(eth_chip.x, eth_chip.y)
+                drift = FecDataView.read_clock_drift(eth_chip.x, eth_chip.y)
                 writer.write(f'"{drift}",')
                 progress.update()
             else:
                 last_drift = None
                 for chip in machine.get_chips_by_ethernet(
                         eth_chip.x, eth_chip.y):
-                    drift = txrx.get_clock_drift(chip.x, chip.y)
+                    drift = FecDataView.read_clock_drift(chip.x, chip.y)
                     writer.write(f'"{drift}",')
                     if last_drift is None:
                         last_drift = drift
