@@ -1294,7 +1294,7 @@ class AbstractSpinnakerBase(ConfigHandler):
         with FecTimer("Control Sync", TimerWork.CONTROL) as timer:
             if timer.skip_if_virtual_board():
                 return
-            self._data_writer.get_transceiver().control_sync(do_sync)
+            self._data_writer.write_control_sync(do_sync)
 
     def _do_mapping(self, total_run_time):
         """
