@@ -45,7 +45,7 @@ class _MockTransceiver(Transceiver):
         self._current_state += 1
         return core_states
 
-    def Xget_cores_in_state(self, all_core_subsets, states):
+    def get_cores_in_state(self, all_core_subsets, states):
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
         for core_subset in all_core_subsets:
