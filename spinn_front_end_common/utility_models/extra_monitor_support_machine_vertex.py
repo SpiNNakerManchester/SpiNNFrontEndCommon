@@ -344,9 +344,8 @@ class ExtraMonitorSupportMachineVertex(
             region=_DSG_REGIONS.PROVENANCE_AREA, size=_PROVENANCE_FORMAT.size,
             label="provenance collection region")
 
-    def __get_provenance_region_address(self, txrx, place):
+    def __get_provenance_region_address(self, place):
         """
-        :param ~spinnman.transceiver.Transceiver txrx:
         :param ~pacman.model.placements.Placement place:
         :rtype: int
         """
@@ -355,7 +354,7 @@ class ExtraMonitorSupportMachineVertex(
                 place.x, place.y, place.p).user[0]
             region_entry_addr = get_region_base_address_offset(
                 region_table_addr, _DSG_REGIONS.PROVENANCE_AREA)
-            self._prov_region, = _ONE_WORD.unpack(txrx.read_memory(
+            self._prov_region, = _ONE_WORD.unpack(FecDataView.read_memory(
                 place.x, place.y, region_entry_addr, BYTES_PER_WORD))
         return self._prov_region
 
@@ -364,10 +363,8 @@ class ExtraMonitorSupportMachineVertex(
     def get_provenance_data_from_machine(self, placement):
         # No standard provenance region, so no standard provenance data
         # But we do have our own.
-        transceiver = FecDataView.get_transceiver()
-        provenance_address = self.__get_provenance_region_address(
-            transceiver, placement)
-        data = transceiver.read_memory(
+        provenance_address = self.__get_provenance_region_address(placement)
+        data = FecDataView.read_memory(
             placement.x, placement.y, provenance_address,
             _PROVENANCE_FORMAT.size)
         (n_sdp_packets, n_in_streams, n_out_streams, n_router_changes) = \
@@ -446,8 +443,6 @@ class ExtraMonitorSupportMachineVertex(
         """
         Resets the counters for reinjection.
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         :param extra_monitor_cores_to_set:
             which monitors control the routers to reset the counters of
         :type extra_monitor_cores_to_set:
@@ -559,8 +554,6 @@ class ExtraMonitorSupportMachineVertex(
         Get the extra monitor cores to load up the system-based
         multicast routes (used by the Data In protocol).
 
-        :param ~spinnman.transceiver.Transceiver transceiver:
-            the spinnMan interface
         """
         core_subsets = self._convert_vertices_to_core_subset()
         process = LoadSystemMCRoutesProcess(
