@@ -23,7 +23,6 @@ def fixed_route_from_machine_report():
     """
     file_name = os.path.join(
         FecDataView.get_run_dir_path(), "fixed_route_routers")
-    transceiver = FecDataView.get_transceiver()
     machine = FecDataView.get_machine()
 
     progress = ProgressBar(machine.n_chips, "Writing fixed route report")
@@ -32,7 +31,7 @@ def fixed_route_from_machine_report():
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
-            fixed_route = transceiver.read_fixed_route(
+            fixed_route = FecDataView.read_fixed_route(
                 chip.x, chip.y, app_id)
             f.write("{: <3s}:{: <3s} contains route {: <10s} {}\n".format(
                 str(chip.x), str(chip.y),
