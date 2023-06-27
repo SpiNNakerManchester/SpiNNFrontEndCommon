@@ -164,7 +164,7 @@ def _load_application(executable_targets, app_id):
     # Check that the binaries have reached a wait state
     count = transceiver.get_core_state_count(app_id, CPUState.READY)
     if count < executable_targets.total_processors:
-        cores_ready = transceiver.get_cpu_information(
+        cores_ready = transceiver.get_cpu_infos(
             executable_targets.all_core_subsets, [CPUState.READY], False)
         if len(cores_ready) > 0:
             raise SpinnmanException(

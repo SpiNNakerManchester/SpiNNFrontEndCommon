@@ -40,13 +40,14 @@ class _MockTransceiver(Transceiver):
                 count += 1
         return count
 
-    def get_cpu_information(
-            self, all_core_subsets=None, states=None, include=True):
+    @overrides(Transceiver.get_cpu_infos)
+    def get_cpu_infos(
+            self, core_subsets=None, states=None, include=True):
         if states is None or not include:
             raise NotImplementedError("oops")
         cores_in_state = CPUInfos()
         core_states = self._core_states[self._current_state]
-        for core_subset in all_core_subsets:
+        for core_subset in core_subsets:
             x = core_subset.x
             y = core_subset.y
 
