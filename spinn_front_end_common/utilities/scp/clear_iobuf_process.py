@@ -48,9 +48,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
     """
     def __init__(self, connection_selector):
         """
-        :param connection_selector:
-        :type connection_selector:
-            ~spinnman.processes.abstract_multi_connection_process_connection_selector.AbstractMultiConnectionProcessConnectionSelector
+        :param ~spinnman.processes.ConnectionSelector connection_selector:
         """
         super().__init__(connection_selector)
         self._progress = None
