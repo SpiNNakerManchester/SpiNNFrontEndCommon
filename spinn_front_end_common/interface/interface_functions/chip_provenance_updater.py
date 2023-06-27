@@ -62,12 +62,12 @@ class _ChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.RUN_TIME_EXCEPTION)
-        watchdog_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.WATCHDOG)
-        idle_cores = self.__txrx.get_cores_in_state(
-            self.__all_cores, CPUState.IDLE)
+        error_cores = self.__txrx.get_cpu_information(
+            self.__all_cores, CPUState.RUN_TIME_EXCEPTION, True)
+        watchdog_cores = self.__txrx.get_cpu_information(
+            self.__all_cores, CPUState.WATCHDOG, True)
+        idle_cores = self.__txrx.get_cpu_information(
+            self.__all_cores, CPUState.IDLE, True)
 
         if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
@@ -94,8 +94,8 @@ class _ChipProvenanceUpdater(object):
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:
             attempts += 1
-            unsuccessful_cores = self.__txrx.get_cores_not_in_state(
-                self.__all_cores, CPUState.FINISHED)
+            unsuccessful_cores = self.__txrx.get_cpu_information(
+                self.__all_cores, CPUState.FINISHED, False)
 
             for (x, y, p) in unsuccessful_cores.keys():
                 self._send_chip_update_provenance_and_exit(x, y, p)

@@ -2204,8 +2204,8 @@ class AbstractSpinnakerBase(ConfigHandler):
         if not unsuccessful_cores:
             for executable_type, core_subsets in \
                     self._data_writer.get_executable_types().items():
-                failed_cores = transceiver.get_cores_not_in_state(
-                    core_subsets, executable_type.end_state)
+                failed_cores = transceiver.get_cpu_information(
+                    core_subsets, executable_type.end_state, False)
                 for (x, y, p) in failed_cores:
                     unsuccessful_cores.add_processor(
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
@@ -2237,8 +2237,8 @@ class AbstractSpinnakerBase(ConfigHandler):
             # Extract any written provenance data
             try:
                 transceiver = self._data_writer.get_transceiver()
-                finished_cores = transceiver.get_cores_in_state(
-                    non_rte_core_subsets, CPUState.FINISHED)
+                finished_cores = transceiver.get_cpu_information(
+                    non_rte_core_subsets, CPUState.FINISHED, True)
                 finished_placements = Placements()
                 for (x, y, p) in finished_cores:
                     try:
