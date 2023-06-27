@@ -18,7 +18,6 @@ Utility calls for interpreting bits of the DSG
 
 import io
 import os
-import tempfile
 import threading
 from typing import (
     Callable, Iterable, Optional, Union, TextIO, Tuple, TypeVar)
@@ -30,10 +29,8 @@ from spinnman.utilities.utility_functions import (
     reprogram_tag, reprogram_tag_to_listener)
 from spinnman.spalloc import SpallocEIEIOListener, SpallocEIEIOConnection
 from pacman.model.placements import Placements
-from data_specification.constants import (
+from spinn_front_end_common.utilities.constants import (
     APP_PTR_TABLE_HEADER_BYTE_SIZE, APP_PTR_TABLE_REGION_BYTE_SIZE)
-from data_specification.data_specification_generator import (
-    DataSpecificationGenerator)
 from spinn_front_end_common.data import FecDataView
 
 # used to stop file conflicts
@@ -80,45 +77,9 @@ _RPT_TMPL = "dataSpec_{}_{}_{}.txt"
 _RPT_DIR = "data_spec_text_files"
 
 
-def get_data_spec_and_file_writer_filename(
-        processor_chip_x: int, processor_chip_y: int, processor_id: int,
-        application_run_time_report_folder: str = "TEMP") -> Tuple[
-            str, DataSpecificationGenerator]:
-    """
-    Encapsulates the creation of the DSG writer and the file paths.
-
-    :param int processor_chip_x: X coordinate of the chip
-    :param int processor_chip_y: Y coordinate of the chip
-    :param int processor_id: The processor ID
-    :param str application_run_time_report_folder:
-        The folder to contain the resulting specification files; if ``TEMP``
-        then a temporary directory is used.
-    :return: the filename of the data writer and the data specification object
-    :rtype: tuple(str, ~data_specification.DataSpecificationGenerator)
-    """
-    # pylint: disable=too-many-arguments
-    if application_run_time_report_folder == "TEMP":
-        application_run_time_report_folder = tempfile.gettempdir()
-
-    filename = os.path.join(
-        application_run_time_report_folder, _DAT_TMPL.format(
-            processor_chip_x, processor_chip_y, processor_id))
-    data_writer = io.FileIO(filename, "wb")
-
-    # check if text reports are needed and if so initialise the report
-    # writer to send down to DSG
-    report_writer = get_report_writer(
-        processor_chip_x, processor_chip_y, processor_id)
-
-    # build the file writer for the spec
-    spec = DataSpecificationGenerator(data_writer, report_writer)
-
-    return filename, spec
-
-
 def get_report_writer(
         processor_chip_x: int, processor_chip_y: int,
-        processor_id: int) -> Optional[TextIO]:
+        processor_id: int, use_run_number: bool = False) -> Optional[TextIO]:
     """
     Check if text reports are needed, and if so initialise the report
     writer to send down to DSG.
@@ -126,6 +87,8 @@ def get_report_writer(
     :param int processor_chip_x: X coordinate of the chip
     :param int processor_chip_y: Y coordinate of the chip
     :param int processor_id: The processor ID
+    :param bool use_run_number:
+        If set the directory will include the run number
     :return: the report_writer_object, or `None` if not reporting
     :rtype: ~io.FileIO or None
     """
@@ -133,8 +96,11 @@ def get_report_writer(
     if not get_config_bool("Reports", "write_text_specs"):
         return None
     # initialise the report writer to send down to DSG
+    dir_name = _RPT_DIR
+    if use_run_number:
+        dir_name += str(FecDataView.get_run_number())
     new_report_directory = os.path.join(
-        FecDataView.get_run_dir_path(), _RPT_DIR)
+        FecDataView.get_run_dir_path(), dir_name)
     _mkdir(new_report_directory)
     name = os.path.join(new_report_directory, _RPT_TMPL.format(
         processor_chip_x, processor_chip_y, processor_id))

@@ -16,6 +16,7 @@ import logging
 import os
 from typing import Dict, List, Optional, Tuple, cast, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import Machine
 from pacman.utilities.utility_calls import get_field_based_keys
 from pacman.model.graphs import AbstractVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -63,7 +64,7 @@ class DatabaseWriter(SQLiteDB):
             os.remove(self._database_path)
 
         super().__init__(self._database_path, ddl_file=init_sql_path)
-        self.__machine_to_id: Dict[None, int] = dict()
+        self.__machine_to_id: Dict[Machine, int] = dict()
         self.__vertex_to_id: Dict[AbstractVertex, int] = dict()
 
         # set up checks

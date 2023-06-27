@@ -29,10 +29,10 @@ def memory_map_on_host_report():
     try:
         with open(file_name, "w", encoding="utf-8") as f:
             f.write("On host data specification executor\n")
-            for key, start_address, memory_used, memory_written in \
-                    FecDataView.get_dsg_targets().info_iteritems():
+            for xyp, start_address, memory_used, memory_written in \
+                    FecDataView.get_dsg_targets().get_info_for_cores():
                 f.write(
-                    f"{key}: ('start_address': {start_address}, "
+                    f"{xyp}: ('start_address': {start_address}, "
                     f"hex:{hex(start_address)}), "
                     f"'memory_used': {memory_used}, "
                     f"'memory_written': {memory_written}\n")

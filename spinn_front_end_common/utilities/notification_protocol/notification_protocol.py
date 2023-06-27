@@ -124,7 +124,6 @@ class NotificationProtocol(AbstractContextManager):
                     "application on {}:{} about the simulation ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
-    # noinspection PyPep8
     def send_read_notification(self) -> None:
         """
         Sends notifications to all devices which have expressed an

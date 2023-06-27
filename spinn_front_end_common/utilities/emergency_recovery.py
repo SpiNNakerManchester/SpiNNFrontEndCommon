@@ -46,7 +46,8 @@ def _emergency_state_check() -> None:
         infos = CPUInfos()
         errors: List[Tuple[int, int, int]] = list()
         for chip in machine.chips:
-            for p in chip.processors:
+            for processor in chip.processors:
+                p = processor.processor_id
                 try:
                     info = txrx.get_cpu_information_from_core(
                         chip.x, chip.y, p)

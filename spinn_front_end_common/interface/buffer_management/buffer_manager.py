@@ -24,8 +24,8 @@ from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.placements import Placement
-from data_specification.constants import BYTES_PER_WORD
 from spinn_front_end_common.data import FecDataView
+from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import (
     BufferableRegionTooSmall, SpinnFrontEndException)
 from spinn_front_end_common.utilities.helpful_functions import (

@@ -14,10 +14,10 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
-from pacman.model.graphs.machine import MachineVertex
+from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 
 
-@require_subclass(MachineVertex)
+@require_subclass(AbstractHasAssociatedBinary)
 class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     """
     A machine vertex that generates a data specification that describes what

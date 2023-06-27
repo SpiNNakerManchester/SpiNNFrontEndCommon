@@ -18,7 +18,8 @@ import logging
 import time
 import struct
 from enum import Enum, IntEnum
-from typing import Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING
+from typing import (
+    BinaryIO, Iterable, List, Optional, Set, Tuple, Union, TYPE_CHECKING)
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
@@ -390,7 +391,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         machine = FecDataView.get_machine()
         spec.switch_write_focus(_DATA_REGIONS.CHIP_TO_KEY_SPACE)
         chip_xys_on_board = list(machine.get_existing_xys_on_board(
-            machine.get_chip_at(placement.x, placement.y)))
+            machine[placement.x, placement.y]))
 
         # write how many chips to read
         spec.write_value(len(chip_xys_on_board))
@@ -439,7 +440,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="mc_key_map")
         spec.reserve_memory_region(
             region=_DATA_REGIONS.PROVENANCE_REGION,
-            size=_PROVENANCE_DATA_SIZE, label="Provenance", empty=True)
+            size=_PROVENANCE_DATA_SIZE, label="Provenance")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self) -> str:
@@ -487,7 +488,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def send_data_into_spinnaker(
             self, x: int, y: int, base_address: int,
-            data: Union[bytes, str], *,
+            data: Union[BinaryIO, bytes, str, int], *,
             n_bytes: Optional[int] = None, offset: int = 0,
             cpu: int = 0):  # pylint: disable=unused-argument
         """
@@ -513,9 +514,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                 # n_bytes=None already means 'read everything'
                 data = reader.read(n_bytes)
             # Number of bytes to write is now length of buffer we have
+            if n_bytes is None:
+                n_bytes = len(data)
+            else:
+                n_bytes = min(n_bytes, len(data))
+        elif not isinstance(data, (bytes, bytearray)):
+            raise ValueError("that type of data not supported")
+        if n_bytes is None:
             n_bytes = len(data)
-        elif n_bytes is None:
-            n_bytes = len(data)
+        if n_bytes < 0:
+            raise ValueError("cannot write a negative amount of data")
 
         destination = FecDataView.get_chip_at(x, y)
         # start time recording
@@ -1136,6 +1144,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # can assume one link, as its a minimum spanning tree going to
             # the root
             link = chip.router.get_link(next(iter(entry.link_ids)))
+            assert link is not None
             chip = FecDataView.get_chip_at(
                 link.destination_x, link.destination_y)
             routers.append((link.destination_x, link.destination_y))
