@@ -13,8 +13,9 @@
 # limitations under the License.
 
 import decimal
-import struct
 from enum import Enum
+import struct
+from typing import Union, cast
 import numpy as np
 
 
@@ -42,300 +43,329 @@ class DataType(Enum):
         representability and lack of hardware/library support.
     """
     #: 8-bit unsigned integer
-    UINT8 = (0,
-             1,
-             decimal.Decimal("0"),
-             decimal.Decimal("255"),
-             decimal.Decimal("1"),
-             "B",
-             False,
-             int,
-             np.uint8,
-             "8-bit unsigned integer")
+    UINT8: 'DataType' = cast('DataType', (
+        0,
+        1,
+        decimal.Decimal("0"),
+        decimal.Decimal("255"),
+        decimal.Decimal("1"),
+        "B",
+        False,
+        int,
+        np.uint8,
+        "8-bit unsigned integer"))
     #: 16-bit unsigned integer
-    UINT16 = (1,
-              2,
-              decimal.Decimal("0"),
-              decimal.Decimal("65535"),
-              decimal.Decimal("1"),
-              "H",
-              False,
-              int,
-              np.uint16,
-              "16-bit unsigned integer")
+    UINT16: 'DataType' = cast('DataType', (
+        1,
+        2,
+        decimal.Decimal("0"),
+        decimal.Decimal("65535"),
+        decimal.Decimal("1"),
+        "H",
+        False,
+        int,
+        np.uint16,
+        "16-bit unsigned integer"))
     #: 32-bit unsigned integer
-    UINT32 = (2,
-              4,
-              decimal.Decimal("0"),
-              decimal.Decimal("4294967295"),
-              decimal.Decimal("1"),
-              "I",
-              False,
-              int,
-              np.uint32,
-              "32-bit unsigned integer")
+    UINT32: 'DataType' = cast('DataType', (
+        2,
+        4,
+        decimal.Decimal("0"),
+        decimal.Decimal("4294967295"),
+        decimal.Decimal("1"),
+        "I",
+        False,
+        int,
+        np.uint32,
+        "32-bit unsigned integer"))
     #: 64-bit unsigned integer
-    UINT64 = (3,
-              8,
-              decimal.Decimal("0"),
-              decimal.Decimal("18446744073709551615"),
-              decimal.Decimal("1"),
-              "Q",
-              False,
-              int,
-              np.uint64,
-              "64-bit unsigned integer")
+    UINT64: 'DataType' = cast('DataType', (
+        3,
+        8,
+        decimal.Decimal("0"),
+        decimal.Decimal("18446744073709551615"),
+        decimal.Decimal("1"),
+        "Q",
+        False,
+        int,
+        np.uint64,
+        "64-bit unsigned integer"))
     #: 8-bit signed integer
-    INT8 = (4,
-            1,
-            decimal.Decimal("-128"),
-            decimal.Decimal("127"),
-            decimal.Decimal("1"),
-            "b",
-            False,
-            int,
-            np.int8,
-            "8-bit signed integer")
+    INT8: 'DataType' = cast('DataType', (
+        4,
+        1,
+        decimal.Decimal("-128"),
+        decimal.Decimal("127"),
+        decimal.Decimal("1"),
+        "b",
+        False,
+        int,
+        np.int8,
+        "8-bit signed integer"))
     #: 16-bit signed integer
-    INT16 = (5,
-             2,
-             decimal.Decimal("-32768"),
-             decimal.Decimal("32767"),
-             decimal.Decimal("1"),
-             "h",
-             False,
-             int,
-             np.int16,
-             "16-bit signed integer")
+    INT16: 'DataType' = cast('DataType', (
+        5,
+        2,
+        decimal.Decimal("-32768"),
+        decimal.Decimal("32767"),
+        decimal.Decimal("1"),
+        "h",
+        False,
+        int,
+        np.int16,
+        "16-bit signed integer"))
     #: 32-bit signed integer
-    INT32 = (6,
-             4,
-             decimal.Decimal("-2147483648"),
-             decimal.Decimal("2147483647"),
-             decimal.Decimal("1"),
-             "i",
-             False,
-             int,
-             np.int32,
-             "32-bit signed integer")
+    INT32: 'DataType' = cast('DataType', (
+        6,
+        4,
+        decimal.Decimal("-2147483648"),
+        decimal.Decimal("2147483647"),
+        decimal.Decimal("1"),
+        "i",
+        False,
+        int,
+        np.int32,
+        "32-bit signed integer"))
     #: 64-bit signed integer
-    INT64 = (7,
-             8,
-             decimal.Decimal("-9223372036854775808"),
-             decimal.Decimal("9223372036854775807"),
-             decimal.Decimal("1"),
-             "q",
-             False,
-             int,
-             np.int64,
-             "64-bit signed integer")
+    INT64: 'DataType' = cast('DataType', (
+        7,
+        8,
+        decimal.Decimal("-9223372036854775808"),
+        decimal.Decimal("9223372036854775807"),
+        decimal.Decimal("1"),
+        "q",
+        False,
+        int,
+        np.int64,
+        "64-bit signed integer"))
     #: 8.8 unsigned fixed point number
-    U88 = (8,
-           2,
-           decimal.Decimal("0"),
-           decimal.Decimal("255.99609375"),
-           decimal.Decimal("256"),
-           "H",
-           True,
-           None,
-           np.uint16,
-           "8.8 unsigned fixed point number")
+    U88: 'DataType' = cast('DataType', (
+        8,
+        2,
+        decimal.Decimal("0"),
+        decimal.Decimal("255.99609375"),
+        decimal.Decimal("256"),
+        "H",
+        True,
+        None,
+        np.uint16,
+        "8.8 unsigned fixed point number"))
     #: 16.16 unsigned fixed point number
-    U1616 = (9,
-             4,
-             decimal.Decimal("0"),
-             decimal.Decimal("65535.9999847"),
-             decimal.Decimal("65536"),
-             "I",
-             True,
-             None,
-             np.uint32,
-             "16.16 unsigned fixed point number")
+    U1616: 'DataType' = cast('DataType', (
+        9,
+        4,
+        decimal.Decimal("0"),
+        decimal.Decimal("65535.9999847"),
+        decimal.Decimal("65536"),
+        "I",
+        True,
+        None,
+        np.uint32,
+        "16.16 unsigned fixed point number"))
     #: 32.32 unsigned fixed point number
     #: (use *not* recommended: representability)
-    U3232 = (10,
-             8,
-             decimal.Decimal("0"),
-             decimal.Decimal("4294967295.99999999976716935634613037109375"),
-             decimal.Decimal("4294967296"),
-             "Q",
-             True,
-             None,
-             np.uint64,
-             "32.32 unsigned fixed point number")  # rounding problem for max
+    U3232: 'DataType' = cast('DataType', (
+        10,
+        8,
+        decimal.Decimal("0"),
+        decimal.Decimal("4294967295.99999999976716935634613037109375"),
+        decimal.Decimal("4294967296"),
+        "Q",
+        True,
+        None,
+        np.uint64,
+        "32.32 unsigned fixed point number"))  # rounding problem for max
     #: 8.7 signed fixed point number
-    S87 = (11,
-           2,
-           decimal.Decimal("-256"),
-           decimal.Decimal("255.9921875"),
-           decimal.Decimal("128"),
-           "h",
-           True,
-           None,
-           np.int16,
-           "8.7 signed fixed point number")
+    S87: 'DataType' = cast('DataType', (
+        11,
+        2,
+        decimal.Decimal("-256"),
+        decimal.Decimal("255.9921875"),
+        decimal.Decimal("128"),
+        "h",
+        True,
+        None,
+        np.int16,
+        "8.7 signed fixed point number"))
     #: 16.15 signed fixed point number
-    S1615 = (12,
-             4,
-             decimal.Decimal("-65536"),
-             decimal.Decimal("65535.999969482421875"),
-             decimal.Decimal("32768"),
-             "i",
-             True,
-             None,
-             np.int32,
-             "16.15 signed fixed point number")
+    S1615: 'DataType' = cast('DataType', (
+        12,
+        4,
+        decimal.Decimal("-65536"),
+        decimal.Decimal("65535.999969482421875"),
+        decimal.Decimal("32768"),
+        "i",
+        True,
+        None,
+        np.int32,
+        "16.15 signed fixed point number"))
     #: 32.31 signed fixed point number
     #: (use *not* recommended: representability)
-    S3231 = (13,
-             8,
-             decimal.Decimal("-4294967296"),
-             decimal.Decimal("4294967295.9999999995343387126922607421875"),
-             decimal.Decimal("2147483648"),
-             "q",
-             True,
-             None,
-             np.int64,
-             "32.31 signed fixed point number")  # rounding problem for max
+    S3231: 'DataType' = cast('DataType', (
+        13,
+        8,
+        decimal.Decimal("-4294967296"),
+        decimal.Decimal("4294967295.9999999995343387126922607421875"),
+        decimal.Decimal("2147483648"),
+        "q",
+        True,
+        None,
+        np.int64,
+        "32.31 signed fixed point number"))  # rounding problem for max
     #: 32-bit floating point number
-    FLOAT_32 = (14,
-                4,
-                decimal.Decimal("-3.4028234e38"),
-                decimal.Decimal("3.4028234e38"),
-                decimal.Decimal("1"),
-                "f",
-                False,
-                float,
-                np.float32,
-                "32-bit floating point number")
+    FLOAT_32: 'DataType' = cast('DataType', (
+        14,
+        4,
+        decimal.Decimal("-3.4028234e38"),
+        decimal.Decimal("3.4028234e38"),
+        decimal.Decimal("1"),
+        "f",
+        False,
+        float,
+        np.float32,
+        "32-bit floating point number"))
     #: 64-bit floating point number
     #: (use *not* recommended: hardware/library support inadequate)
-    FLOAT_64 = (15,
-                8,
-                decimal.Decimal("-1.7976931348623157e+308"),
-                decimal.Decimal("1.7976931348623157e+308"),
-                decimal.Decimal("1"),
-                "d",
-                False,
-                float,
-                np.float64,
-                "64-bit floating point number")
+    FLOAT_64: 'DataType' = cast('DataType', (
+        15,
+        8,
+        decimal.Decimal("-1.7976931348623157e+308"),
+        decimal.Decimal("1.7976931348623157e+308"),
+        decimal.Decimal("1"),
+        "d",
+        False,
+        float,
+        np.float64,
+        "64-bit floating point number"))
     #: 0.8 unsigned fixed point number
-    U08 = (16,
-           1,
-           decimal.Decimal("0"),
-           decimal.Decimal("0.99609375"),
-           decimal.Decimal("256"),
-           "B",
-           True,
-           None,
-           np.uint16,
-           "0.8 unsigned fixed point number")
+    U08: 'DataType' = cast('DataType', (
+        16,
+        1,
+        decimal.Decimal("0"),
+        decimal.Decimal("0.99609375"),
+        decimal.Decimal("256"),
+        "B",
+        True,
+        None,
+        np.uint16,
+        "0.8 unsigned fixed point number"))
     #: 0.16 unsigned fixed point number
-    U016 = (17,
-            2,
-            decimal.Decimal("0"),
-            decimal.Decimal("0.999984741211"),
-            decimal.Decimal("65536"),
-            "H",
-            True,
-            None,
-            np.uint16,
-            "0.16 unsigned fixed point number")
+    U016: 'DataType' = cast('DataType', (
+        17,
+        2,
+        decimal.Decimal("0"),
+        decimal.Decimal("0.999984741211"),
+        decimal.Decimal("65536"),
+        "H",
+        True,
+        None,
+        np.uint16,
+        "0.16 unsigned fixed point number"))
     #: 0.32 unsigned fixed point number
-    U032 = (18,
-            4,
-            decimal.Decimal("0"),
-            decimal.Decimal("0.99999999976716935634613037109375"),
-            decimal.Decimal("4294967296"),
-            "I",
-            True,
-            None,
-            np.uint32,
-            "0.32 unsigned fixed point number")
+    U032: 'DataType' = cast('DataType', (
+        18,
+        4,
+        decimal.Decimal("0"),
+        decimal.Decimal("0.99999999976716935634613037109375"),
+        decimal.Decimal("4294967296"),
+        "I",
+        True,
+        None,
+        np.uint32,
+        "0.32 unsigned fixed point number"))
     #: 0.64 unsigned fixed point number
     #: (use *not* recommended: representability)
-    U064 = (19,
-            8,
-            decimal.Decimal("0"),
-            decimal.Decimal(
-                "0.9999999999999999999457898913757247782996273599565029"),
-            decimal.Decimal("18446744073709551616"),
-            "Q",
-            True,
-            None,
-            np.uint64,
-            "0.64 unsigned fixed point number")  # rounding problem for max
+    U064: 'DataType' = cast('DataType', (
+        19,
+        8,
+        decimal.Decimal("0"),
+        decimal.Decimal(
+            "0.9999999999999999999457898913757247782996273599565029"),
+        decimal.Decimal("18446744073709551616"),
+        "Q",
+        True,
+        None,
+        np.uint64,
+        "0.64 unsigned fixed point number"))  # rounding problem for max
     #: 0.7 signed fixed point number
-    S07 = (20,
-           1,
-           decimal.Decimal("-1"),
-           decimal.Decimal("0.9921875"),
-           decimal.Decimal("128"),
-           "b",
-           True,
-           None,
-           np.int8,
-           "0.7 signed fixed point number")
+    S07: 'DataType' = cast('DataType', (
+        20,
+        1,
+        decimal.Decimal("-1"),
+        decimal.Decimal("0.9921875"),
+        decimal.Decimal("128"),
+        "b",
+        True,
+        None,
+        np.int8,
+        "0.7 signed fixed point number"))
     #: 0.15 signed fixed point number
-    S015 = (21,
-            2,
-            decimal.Decimal("-1"),
-            decimal.Decimal("0.999969482421875"),
-            decimal.Decimal("32768"),
-            "h",
-            True,
-            None,
-            np.int16,
-            "0.15 signed fixed point number")
+    S015: 'DataType' = cast('DataType', (
+        21,
+        2,
+        decimal.Decimal("-1"),
+        decimal.Decimal("0.999969482421875"),
+        decimal.Decimal("32768"),
+        "h",
+        True,
+        None,
+        np.int16,
+        "0.15 signed fixed point number"))
     #: 0.32 signed fixed point number
-    S031 = (22,
-            4,
-            decimal.Decimal("-1"),
-            decimal.Decimal("0.99999999976716935634613037109375"),
-            decimal.Decimal("2147483648"),
-            "i",
-            True,
-            None,
-            np.int32,
-            "0.32 signed fixed point number")
+    S031: 'DataType' = cast('DataType', (
+        22,
+        4,
+        decimal.Decimal("-1"),
+        decimal.Decimal("0.99999999976716935634613037109375"),
+        decimal.Decimal("2147483648"),
+        "i",
+        True,
+        None,
+        np.int32,
+        "0.32 signed fixed point number"))
     #: 0.63 signed fixed point number
     #: (use *not* recommended: representability)
-    S063 = (23,
-            8,
-            decimal.Decimal("-1"),
-            decimal.Decimal(
-                "0.9999999999999999998915797827514495565992547199130058"),
-            decimal.Decimal("9223372036854775808"),
-            "q",
-            True,
-            None,
-            np.int64,
-            "0.63 signed fixed point number")  # rounding problem for max
+    S063: 'DataType' = cast('DataType', (
+        23,
+        8,
+        decimal.Decimal("-1"),
+        decimal.Decimal(
+            "0.9999999999999999998915797827514495565992547199130058"),
+        decimal.Decimal("9223372036854775808"),
+        "q",
+        True,
+        None,
+        np.int64,
+        "0.63 signed fixed point number"))  # rounding problem for max
 
     def __new__(cls, value, size, min_val, max_val, scale, struct_encoding,
                 apply_scale, force_cast, numpy_typename, doc=""):
         # pylint: disable=protected-access, too-many-arguments
         obj = object.__new__(cls)
         obj._value_ = value
-        obj.__doc__ = doc
-        obj._size = size
-        obj._min = min_val
-        obj._max = max_val
-        obj._scale = scale
-        obj._struct_encoding = struct_encoding
-        obj._numpy_typename = numpy_typename
-        obj._apply_scale = apply_scale
-        obj._force_cast = force_cast
-        obj._struct = struct.Struct("<" + struct_encoding)
+        return obj
+
+    def __init__(self, value, size, min_val, max_val, scale, struct_encoding,
+                 apply_scale, force_cast, numpy_typename, doc=""):
+        # pylint: disable=protected-access, too-many-arguments
+        self._value_ = value
+        self.__doc__ = doc
+        self._size = size
+        self._min = min_val
+        self._max = max_val
+        self._scale = scale
+        self._struct_encoding = struct_encoding
+        self._numpy_typename = numpy_typename
+        self._apply_scale = apply_scale
+        self._force_cast = force_cast
+        self._struct = struct.Struct("<" + struct_encoding)
         if size == 1:
             struct_encoding += "xxx"
         elif size == 2:
             struct_encoding += "xx"
-        return obj
 
     @property
-    def size(self):
+    def size(self) -> int:
         """
         The size in bytes of the type.
 
@@ -344,7 +374,7 @@ class DataType(Enum):
         return self._size
 
     @property
-    def min(self):
+    def min(self) -> decimal.Decimal:
         """
         The minimum possible value for the type.
 
@@ -353,7 +383,7 @@ class DataType(Enum):
         return self._min
 
     @property
-    def max(self):
+    def max(self) -> decimal.Decimal:
         """
         The maximum possible value for the type.
 
@@ -361,24 +391,24 @@ class DataType(Enum):
         """
         return self._max
 
-    def check_value(self, value):
+    def check_value(self, value: Union[int, float]):
         """
         Check the value against the allowed min and max
 
         :type value: float or int
         :raises ValueError: If the value is outside of min to max
         """
-        if value < self._min:
+        if value < self.min:
             raise ValueError(
-                f"Value {value} is smaller than the minimum {self._min} "
+                f"Value {value} is smaller than the minimum {self.min} "
                 f"allowed for a {self}")
-        if value > self._max:
+        if value > self.max:
             raise ValueError(
-                f"Value {value} is greater than the maximum {self._max} "
+                f"Value {value} is greater than the maximum {self.max} "
                 f"allowed for a {self}")
 
     @property
-    def scale(self):
+    def scale(self) -> decimal.Decimal:
         """
         The scale of the input value to convert it in integer.
 
@@ -387,7 +417,7 @@ class DataType(Enum):
         return self._scale
 
     @property
-    def struct_encoding(self):
+    def struct_encoding(self) -> str:
         """
         The encoding string used for struct. Scaling may also be required.
 
@@ -396,13 +426,13 @@ class DataType(Enum):
         return self._struct_encoding
 
     @property
-    def numpy_typename(self):
+    def numpy_typename(self) -> type:
         """
         The corresponding numpy type, if one exists.
         """
         return self._numpy_typename
 
-    def encode_as_int(self, value):
+    def encode_as_int(self, value: Union[int, float]) -> int:
         """
         Returns the value as an integer, according to this type.
 
@@ -423,9 +453,9 @@ class DataType(Enum):
             return int(round(decimal.Decimal(str(value)) * self._scale))
         if self._force_cast is not None:
             return self._force_cast(value)
-        return value
+        return cast(int, value)
 
-    def encode_as_numpy_int(self, value):
+    def encode_as_numpy_int(self, value: Union[int, float]) -> np.uint32:
         """
         Returns the value as a numpy integer, according to this type.
 
@@ -438,7 +468,7 @@ class DataType(Enum):
         """
         return np.round(self.encode_as_int(value)).astype(self.struct_encoding)
 
-    def encode_as_numpy_int_array(self, array):
+    def encode_as_numpy_int_array(self, array: np.ndarray) -> np.ndarray:
         """
         Returns the numpy array as an integer numpy array, according to
         this type.
@@ -459,7 +489,7 @@ class DataType(Enum):
                 "uint32")
         return np.array(array)
 
-    def as_bytes(self, value):
+    def as_bytes(self, value: Union[int, float]) -> bytes:
         """
         Encode the Python value as bytes with NO padding.
 
@@ -469,7 +499,7 @@ class DataType(Enum):
         """
         return self._struct.pack(self.encode_as_int(value))
 
-    def decode_numpy_array(self, array):
+    def decode_numpy_array(self, array: np.ndarray) -> np.ndarray:
         """
         Decode the numpy array of SpiNNaker values according to this type.
 
@@ -478,14 +508,14 @@ class DataType(Enum):
         """
         return array / float(self._scale)
 
-    def decode_array(self, values):
+    def decode_array(self, values: bytes) -> np.ndarray:
         """
         Decodes a byte array into iterable of this type.
 
         :param values: the bytes to decode into this given data type
         :rtype: numpy array
         """
-        array = np.asarray(values, dtype="uint8").view(
+        array: np.ndarray = np.asarray(values, dtype="uint8").view(
             dtype=self.numpy_typename)
         if self._apply_scale:
             return array / float(self.scale)
