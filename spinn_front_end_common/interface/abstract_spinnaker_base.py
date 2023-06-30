@@ -25,6 +25,8 @@ import requests
 from threading import Condition
 from numpy import __version__ as numpy_version
 
+import ebrains_drive
+
 from spinn_utilities import __version__ as spinn_utils_version
 from spinn_utilities.config_holder import (
     get_config_bool, get_config_int, get_config_str, set_config)
@@ -287,10 +289,12 @@ class AbstractSpinnakerBase(ConfigHandler):
         cwd = os.getcwd()
         match_obj = SHARED_PATH.match(cwd)
         if match_obj:
-            return {"collab": match_obj.group(SHARED_GROUP)}
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_GROUP))
         match_obj = SHARED_WITH_PATH.match(cwd)
         if match_obj:
-            return {"collab": match_obj.group(SHARED_WITH_GROUP)}
+            return self.__get_collab_id_from_folder(
+                match_obj.group(SHARED_WITH_GROUP))
 
         # Try to use the config to get a group
         group = get_config_str("Machine", "spalloc_group")
@@ -299,6 +303,24 @@ class AbstractSpinnakerBase(ConfigHandler):
 
         # Nothing ventured, nothing gained
         return {}
+
+    def __get_collab_id_from_folder(self, folder):
+        """ Currently hacky way to get the EBRAINS collab id from the
+            drive folder, replicated from the NMPI collab template.
+        """
+        ebrains_drive_client = ebrains_drive.connect(token=self.__bearer_token)
+        repo_by_title = ebrains_drive_client.repos.get_repos_by_name(folder)
+        if len(repo_by_title) != 1:
+            logger.warning(f"The repository for collab {folder} could not be"
+                           " found; continuing as if not in a collaboratory")
+            return {}
+        # Owner is formatted as collab-<collab_id>-<permission>, and we want
+        # to extract the <collab-id>
+        owner = repo_by_title[0].owner
+        collab_id = owner[:owner.rindex("-")]
+        collab_id = collab_id[collab_id.find("-") + 1:]
+        logger.info(f"Requesting job in collaboratory {collab_id}")
+        return {"collab": collab_id}
 
     def exception_handler(self, exc_type, value, traceback_obj):
         """
