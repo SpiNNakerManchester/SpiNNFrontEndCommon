@@ -13,7 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 from typing import Iterable, List, TYPE_CHECKING
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 if TYPE_CHECKING:
     from spinn_front_end_common.utility_models import MultiCastCommand
 # mypy: disable-error-code=empty-body
@@ -32,7 +32,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
 
     __slots__ = ()
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def start_resume_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when starting or resuming simulation.
@@ -41,7 +42,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def pause_stop_commands(self) -> Iterable[MultiCastCommand]:
         """
         The commands needed when pausing or stopping simulation.
@@ -50,7 +52,8 @@ class AbstractSendMeMulticastCommandsVertex(object, metaclass=AbstractBase):
             iterable(~spinn_front_end_common.utility_models.MultiCastCommand)
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def timed_commands(self) -> List[MultiCastCommand]:
         """
         The commands to be sent at given times in the simulation.

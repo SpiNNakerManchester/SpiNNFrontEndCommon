@@ -20,7 +20,7 @@ import os
 import pathlib
 import sqlite3
 import struct
-from typing import Optional, Union
+from typing import Optional, Type, Union
 from typing_extensions import Literal
 from spinn_utilities.abstract_context_manager import AbstractContextManager
 from spinn_utilities.logger_utils import warn_once
@@ -93,9 +93,9 @@ class SQLiteDB(AbstractContextManager):
             self, database_file: Optional[str] = None, *,
             read_only: bool = False, ddl_file: Optional[str] = None,
             row_factory: Optional[Union[
-                type[sqlite3.Row], type[tuple]]] = sqlite3.Row,
+                Type[sqlite3.Row], Type[tuple]]] = sqlite3.Row,
             text_factory: Optional[Union[
-                type[memoryview], type[str]]] = memoryview,
+                Type[memoryview], Type[str]]] = memoryview,
             case_insensitive_like: bool = True, timeout: float = 5.0,
             synchronisation=Synchronisation.NORMAL):
         """

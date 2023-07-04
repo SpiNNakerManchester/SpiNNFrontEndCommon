@@ -108,8 +108,8 @@ def get_report_writer(
 
 
 def parse_old_spalloc(
-        spalloc_server: str, spalloc_port: int = 22244,
-        spalloc_user: str = "unknown user") -> Tuple[str, int, str]:
+        spalloc_server: str, spalloc_port: Optional[int] = 22244,
+        spalloc_user: Optional[str] = "unknown user") -> Tuple[str, int, str]:
     """
     Parse a URL to the old-style service. This may take the form:
 

@@ -14,7 +14,7 @@
 
 from enum import Enum
 from typing import Sequence, Tuple
-from spinn_utilities.abstract_base import abstractproperty
+from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
 from spinnman.transceiver import Transceiver
 from pacman.model.placements import Placement
@@ -69,7 +69,8 @@ class ProvidesProvenanceDataFromMachineImpl(
     _TIMES_CALLBACK_QUEUE_OVERLOADED = \
         "Times_the_callback_queue_was_overloaded"
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def _provenance_region_id(self) -> int:
         """
         The index of the provenance region.
@@ -77,7 +78,8 @@ class ProvidesProvenanceDataFromMachineImpl(
         :rtype: int
         """
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def _n_additional_data_items(self) -> int:
         """
         The number of extra machine words of provenance that the model reports.

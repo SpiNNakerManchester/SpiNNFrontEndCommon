@@ -26,7 +26,8 @@ from spinn_front_end_common.utilities.utility_objs import (
     LivePacketGatherParameters)
 from spinn_front_end_common.data import FecDataView
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-_MV = TypeVar("_MV", bound=MachineVertex)
+#: :meta private:
+MV = TypeVar("MV", bound=MachineVertex)
 
 
 class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
@@ -84,9 +85,9 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
 
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
-            self, source_vertex: ApplicationVertex[_MV],
+            self, source_vertex: ApplicationVertex[MV],
             partition_id: str) -> List[Tuple[
-                LivePacketGatherMachineVertex, List[ApplicationVertex[_MV]]]]:
+                LivePacketGatherMachineVertex, List[ApplicationVertex[MV]]]]:
         # Find the nearest placement for the first machine vertex of the source
         m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
             partition_id)))

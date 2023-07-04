@@ -11,8 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from typing import Dict
-from spinn_utilities.abstract_base import abstractproperty
+from typing import Collection, Dict
+from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 from spinn_front_end_common.interface.buffer_management.storage_objects \
@@ -31,7 +31,8 @@ class SendsBuffersFromHostPreBufferedImpl(
 
     __slots__ = ()
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def send_buffers(self) -> Dict[int, BufferedSendingRegion]:
         """
         The buffer for each region that has keys to send.
@@ -45,7 +46,7 @@ class SendsBuffersFromHostPreBufferedImpl(
         return self.send_buffers is not None
 
     @overrides(AbstractSendsBuffersFromHost.get_regions)
-    def get_regions(self) -> int:
+    def get_regions(self) -> Collection[int]:
         return self.send_buffers.keys()
 
     @overrides(AbstractSendsBuffersFromHost.is_next_timestamp)

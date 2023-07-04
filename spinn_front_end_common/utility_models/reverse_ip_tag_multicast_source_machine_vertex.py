@@ -18,7 +18,7 @@ import struct
 import numpy
 from enum import IntEnum
 from typing import (
-    Collection, Dict, List, Optional, Tuple, Union, TYPE_CHECKING)
+    Collection, Dict, List, Optional, Sequence, Union, TYPE_CHECKING)
 from typing_extensions import TypeGuard
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
@@ -799,7 +799,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Tuple[int, int, int, int, int]):
+            provenance_data: Sequence[int]):
         n_rcv, n_snt, bad_key, bad_pkt, late = provenance_data
 
         with ProvenanceWriter() as db:

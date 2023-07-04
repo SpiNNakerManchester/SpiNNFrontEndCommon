@@ -14,7 +14,7 @@
 from __future__ import annotations
 from enum import IntEnum
 from typing import (
-    Callable, Dict, Iterable, List, Set, Sized, Tuple, TypeVar,
+    Callable, Dict, Iterable, List, Sequence, Set, Sized, Tuple, Type, TypeVar,
     TYPE_CHECKING)
 from spinn_utilities.overrides import overrides
 from spinnman.model.enums import ExecutableType
@@ -38,9 +38,12 @@ from pacman.model.graphs.abstract_edge import AbstractEdge
 if TYPE_CHECKING:
     from .command_sender import CommandSender
     from .multi_cast_command import MultiCastCommand
-    _V = TypeVar("_V", bound=AbstractVertex)
-    _E = TypeVar("_E", bound=AbstractEdge)
-    _CS = TypeVar("_CS", CommandSender, "CommandSenderMachineVertex")
+#: :meta private:
+V = TypeVar("V", bound=AbstractVertex)
+#: :meta private:
+E = TypeVar("E", bound=AbstractEdge)
+#: :meta private:
+CS = TypeVar("CS", 'CommandSender', "CommandSenderMachineVertex")
 
 
 class CommandSenderMachineVertex(
@@ -334,8 +337,8 @@ class CommandSenderMachineVertex(
         return ExecutableType.USES_SIMULATION_INTERFACE
 
     def get_edges_and_partitions(
-            self, pre_vertex: _CS, vertex_type: type[_V],
-            edge_type: Callable[[_CS, _V], _E]) -> Tuple[List[_E], List[str]]:
+            self, pre_vertex: CS, vertex_type: Type[V],
+            edge_type: Callable[[CS, V], E]) -> Tuple[List[E], List[str]]:
         """
         Construct edges from this vertex to the vertices that this vertex
         knows how to target (and has keys allocated for).
@@ -354,7 +357,7 @@ class CommandSenderMachineVertex(
         :return: edges, partition IDs
         :rtype: tuple(list(~pacman.model.graphs.AbstractEdge), list(str))
         """
-        edges: List[_E] = list()
+        edges: List[E] = list()
         partition_ids: List[str] = list()
         unique_keys = uniquifier()
         for vertex in self._vertex_to_key_map:
@@ -380,7 +383,7 @@ class CommandSenderMachineVertex(
                parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Tuple[int]):
+            provenance_data: Sequence[int]):
         # pylint: disable=unused-argument
         n_commands_sent, = provenance_data
         with ProvenanceWriter() as db:

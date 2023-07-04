@@ -152,6 +152,7 @@ class IOBufExtractor(object):
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # bit of both
+        assert self.__binary_types is not None
         progress = self.__progress(self.__executable_targets.binaries)
         binaries = FecDataView.get_executable_paths(self.__binary_types)
         iocores = convert_string_into_chip_and_core_subset(self.__from_cores)
@@ -191,6 +192,7 @@ class IOBufExtractor(object):
         error_entries: List[str] = list()
         warn_entries: List[str] = list()
         # some binaries
+        assert self.__binary_types is not None
         binaries = FecDataView.get_executable_paths(self.__binary_types)
         progress = self.__progress(binaries)
         for binary in progress.over(binaries):

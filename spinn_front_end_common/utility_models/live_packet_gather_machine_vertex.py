@@ -14,7 +14,7 @@
 from __future__ import annotations
 from enum import IntEnum
 import struct
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Sequence, Tuple, TYPE_CHECKING
 from spinn_utilities.overrides import overrides
 from spinn_machine.tags import IPTag
 from pacman.model.graphs.machine import MachineVertex
@@ -118,7 +118,7 @@ class LivePacketGatherMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.parse_extra_provenance_items)
     def parse_extra_provenance_items(
             self, label: str, x: int, y: int, p: int,
-            provenance_data: Tuple[int, int, int, int]):
+            provenance_data: Sequence[int]):
         (lost, lost_payload, events, messages) = provenance_data
 
         with ProvenanceWriter() as db:

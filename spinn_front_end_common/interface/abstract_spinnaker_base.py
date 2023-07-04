@@ -37,7 +37,8 @@ from spinnman.exceptions import SpiNNManCoresNotInStateException
 from spinnman.model.cpu_infos import CPUInfos
 from spinnman.model.enums import CPUState, ExecutableType
 
-from spalloc_client import __version__ as spalloc_version
+from spalloc_client import (  # type: ignore[import]
+    __version__ as spalloc_version)
 
 from pacman import __version__ as pacman_version
 from pacman.exceptions import PacmanPlaceException
