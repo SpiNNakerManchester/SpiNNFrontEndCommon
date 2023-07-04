@@ -12,10 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Iterable, Optional
 from spinn_utilities.abstract_base import abstractmethod
 from spinn_utilities.overrides import overrides
+from spinn_machine.tags import IPTag, ReverseIPTag
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractGeneratesDataSpecification)
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.data import FecDataView
 
 
@@ -28,7 +32,8 @@ class MachineDataSpecableVertex(
     __slots__ = ()
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         tags = FecDataView.get_tags()
         iptags = tags.get_ip_tags_for_vertex(placement.vertex)
         reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
@@ -37,7 +42,9 @@ class MachineDataSpecableVertex(
 
     @abstractmethod
     def generate_machine_data_specification(
-            self, spec, placement, iptags, reverse_iptags):
+            self, spec: DataSpecificationGenerator, placement: Placement,
+            iptags: Optional[Iterable[IPTag]],
+            reverse_iptags: Optional[Iterable[ReverseIPTag]]):
         """
         :param ~data_specification.DataSpecificationGenerator spec:
             The data specification to write into.

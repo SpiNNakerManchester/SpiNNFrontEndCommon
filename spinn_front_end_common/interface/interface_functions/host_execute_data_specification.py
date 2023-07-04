@@ -47,7 +47,7 @@ def execute_application_data_specs() -> None:
     """
     specifier = _HostExecuteDataSpecification()
     uses_advanced_monitors = get_config_bool(
-        "Machine", "enable_advanced_monitor_support")
+        "Machine", "enable_advanced_monitor_support") or False
     # Allow config to override
     if get_config_bool(
             "Machine", "disable_advanced_monitor_usage_for_data_in"):

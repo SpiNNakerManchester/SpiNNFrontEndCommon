@@ -95,7 +95,7 @@ class BufferManager(object):
 
     def __init__(self) -> None:
         self.__enable_monitors: bool = get_config_bool(
-            "Machine", "enable_advanced_monitor_support")
+            "Machine", "enable_advanced_monitor_support") or False
         # Set of vertices with buffers to be sent
         self._sender_vertices: Set[AbstractSendsBuffersFromHost] = set()
 

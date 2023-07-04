@@ -14,6 +14,8 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+from pacman.model.placements import Placement
+from spinn_front_end_common.interface.ds import DataSpecificationReloader
 from .abstract_generates_data_specification import (
     AbstractGeneratesDataSpecification)
 
@@ -28,7 +30,8 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def regenerate_data_specification(self, spec, placement):
+    def regenerate_data_specification(
+            self, spec: DataSpecificationReloader, placement: Placement):
         """
         Regenerate the data specification, only generating regions that
         have changed and need to be reloaded.
@@ -40,15 +43,16 @@ class AbstractRewritesDataSpecification(object, metaclass=AbstractBase):
         """
 
     @abstractmethod
-    def reload_required(self):
+    def reload_required(self) -> bool:
         """
         Return true if any data region needs to be reloaded.
 
         :rtype: bool
         """
+        raise NotImplementedError
 
     @abstractmethod
-    def set_reload_required(self, new_value):
+    def set_reload_required(self, new_value: bool):
         """
         Indicate that the regions have been reloaded.
 

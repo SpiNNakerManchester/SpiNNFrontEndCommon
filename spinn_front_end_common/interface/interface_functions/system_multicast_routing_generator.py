@@ -15,6 +15,7 @@ from collections import defaultdict
 import logging
 from typing import Dict, Tuple, Set, Optional, cast
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
 from pacman.exceptions import (PacmanRoutingException)
 from pacman.model.routing_tables import (
     MulticastRoutingTables, UnCompressedMulticastRoutingTable)
@@ -62,12 +63,11 @@ class _SystemMulticastRoutingGenerator(object):
         """
         self._machine = FecDataView.get_machine()
         self._routing_tables = MulticastRoutingTables()
-        self._key_to_destination_map: Dict[Tuple[int, int], int] = dict()
-        self._time_out_keys_by_board: Dict[Tuple[int, int], int] = dict()
+        self._key_to_destination_map: Dict[XY, int] = dict()
+        self._time_out_keys_by_board: Dict[XY, int] = dict()
 
     def generate_system_routes(self) -> Tuple[
-            MulticastRoutingTables, Dict[Tuple[int, int], int],
-            Dict[Tuple[int, int], int]]:
+            MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]:
         """
         :return: routing tables, destination-to-key map,
             board-location-to-timeout-key map
@@ -101,10 +101,10 @@ class _SystemMulticastRoutingGenerator(object):
         :rtype: dict(Chip, tuple(Chip, int))
         """
         tree: Dict[Chip, Tuple[Chip, int]] = dict()
-        to_reach: Set[Chip] = set(self._machine.get_chips_by_ethernet(
+        to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)
-        found: Set[Chip] = {ethernet_chip}
+        found = {ethernet_chip}
         while to_reach:
             just_reached: Set[Chip]
             just_reached, found = found, set()
@@ -112,9 +112,9 @@ class _SystemMulticastRoutingGenerator(object):
                 # Check links starting with the most direct from 0,0
                 for link_id in self.__LINK_ORDER:
                     # Get potential destination
-                    dest_xy = self._machine.xy_over_link(
-                        chip.x, chip.y, link_id)
-                    destination = self._machine.get_chip_at(*dest_xy)
+                    destination = self._machine.get_chip_at(
+                        *self._machine.xy_over_link(
+                            chip.x, chip.y, link_id))
                     # If destination is useful and link exists
                     if destination in to_reach and (
                             chip.router.is_link(link_id)):
@@ -128,11 +128,12 @@ class _SystemMulticastRoutingGenerator(object):
 
     def _logging_retry(
             self, ethernet_chip: Chip) -> Dict[Chip, Tuple[Chip, int]]:
+        # pylint: disable=unsubscriptable-object
         tree: Dict[Chip, Tuple[Chip, int]] = dict()
-        to_reach: Set[Chip] = set(self._machine.get_chips_by_ethernet(
+        to_reach = set(self._machine.get_chips_by_ethernet(
             ethernet_chip.x, ethernet_chip.y))
         to_reach.remove(ethernet_chip)
-        found: Set[Chip] = {ethernet_chip}
+        found = {ethernet_chip}
         logger.warning("In _logging_retry")
         for chip in to_reach:
             logger.warning("Still need to reach {}:{}", chip.x, chip.y)
@@ -143,11 +144,11 @@ class _SystemMulticastRoutingGenerator(object):
                 # Check links starting with the most direct from 0,0
                 for link_id in self.__LINK_ORDER:
                     # Get potential destination
-                    dest_xy = self._machine.xy_over_link(
-                        chip.x, chip.y, link_id)
-                    destination: Chip = self._machine.get_chip_at(*dest_xy)
+                    destination = self._machine.get_chip_at(
+                        *self._machine.xy_over_link(
+                            chip.x, chip.y, link_id))
                     # If it is useful
-                    if destination in to_reach:
+                    if destination and destination in to_reach:
                         logger.warning(
                             "Could reach ({},{}) over {}",
                             destination.x, destination.y, link_id)
