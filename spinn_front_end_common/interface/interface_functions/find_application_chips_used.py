@@ -14,7 +14,10 @@
 
 from collections import defaultdict
 import sys
+from typing import Dict, Tuple
+from spinn_utilities.typing.coords import XY
 from spinnman.model.enums import ExecutableType
+from pacman.model.placements import Placements
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
@@ -23,7 +26,7 @@ class FindApplicationChipsUsed(object):
     Builds a set of stats on how many chips were used for application cores.
     """
 
-    def __call__(self, placements):
+    def __call__(self, placements: Placements) -> Tuple[int, int, int, float]:
         """
         Finds how many application chips there were and the cost on each chip
 
@@ -53,12 +56,12 @@ class FindApplicationChipsUsed(object):
         average = total / n_chips_used
         return n_chips_used, high, low, average
 
-    def _get_chips_used(self, placements):
+    def _get_chips_used(self, placements: Placements) -> Dict[XY, int]:
         """
         :param ~.Placements placements:
         :rtype: dict(tuple(int,int), int)
         """
-        chips_used = defaultdict(int)
+        chips_used: Dict[XY, int] = defaultdict(int)
         for placement in placements:
             # find binary type if applicable
             binary_start_type = None

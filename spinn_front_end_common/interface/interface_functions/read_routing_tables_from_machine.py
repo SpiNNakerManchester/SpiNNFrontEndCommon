@@ -12,13 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables import MulticastRoutingTables
-from pacman.model.routing_tables.compressed_multicast_routing_table import (
-    CompressedMulticastRoutingTable)
+from spinnman.transceiver import Transceiver
+from pacman.model.routing_tables import (
+    AbstractMulticastRoutingTable, CompressedMulticastRoutingTable,
+    MulticastRoutingTables)
 from spinn_front_end_common.data import FecDataView
 
 
-def read_routing_tables_from_machine():
+def read_routing_tables_from_machine() -> MulticastRoutingTables:
     """
     Reads compressed routing tables from a SpiNNaker machine.
 
@@ -39,7 +40,9 @@ def read_routing_tables_from_machine():
     return machine_routing_tables
 
 
-def _read_routing_table(transceiver, table, app_id):
+def _read_routing_table(
+        transceiver: Transceiver, table: AbstractMulticastRoutingTable,
+        app_id: int) -> CompressedMulticastRoutingTable:
     """
     :param ~spinnman.transceiver.Transceiver transceiver:
     :param ~.UnCompressedMulticastRoutingTable table:

@@ -34,6 +34,9 @@ from spinn_front_end_common.abstract_models.impl import (
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.utility_calls import parse_old_spalloc
+from spinnman.transceiver import Transceiver
+from spinnman.connections.udp_packet_connections import (
+    SCAMPConnection, EIEIOConnection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _MACHINE_VERSION = 5  # Spalloc only ever works with v5 boards
@@ -76,7 +79,7 @@ class SpallocJobController(MachineAllocationController):
         super().__init__("SpallocJobController")
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time):
+    def extend_allocation(self, new_total_run_time: float):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -109,7 +112,7 @@ class SpallocJobController(MachineAllocationController):
         return self._state != SpallocState.DESTROYED
 
     @overrides(MachineAllocationController._teardown)
-    def _teardown(self):
+    def _teardown(self) -> None:
         if not self._exited:
             self.__closer.close()
             self._job.destroy()
@@ -117,7 +120,7 @@ class SpallocJobController(MachineAllocationController):
         super()._teardown()
 
     @overrides(AbstractMachineAllocationController.create_transceiver)
-    def create_transceiver(self):
+    def create_transceiver(self) -> Optional[Transceiver]:
         """
         .. note::
             This allocation controller proxies the transceiver's connections
@@ -132,7 +135,9 @@ class SpallocJobController(MachineAllocationController):
         return txrx
 
     @overrides(AbstractMachineAllocationController.open_sdp_connection)
-    def open_sdp_connection(self, chip_x, chip_y, udp_port=SCP_SCAMP_PORT):
+    def open_sdp_connection(
+            self, chip_x: int, chip_y: int,
+            udp_port: int = SCP_SCAMP_PORT) -> SCAMPConnection:
         """
         .. note::
             This allocation controller proxies connections via Spalloc. This
@@ -142,16 +147,17 @@ class SpallocJobController(MachineAllocationController):
         return self._job.connect_to_board(chip_x, chip_y, udp_port)
 
     @overrides(AbstractMachineAllocationController.open_eieio_connection)
-    def open_eieio_connection(self, chip_x, chip_y):
+    def open_eieio_connection(
+            self, chip_x: int, chip_y: int) -> EIEIOConnection:
         return self._job.open_eieio_connection(chip_x, chip_y, SCP_SCAMP_PORT)
 
     @overrides(AbstractMachineAllocationController.open_eieio_listener)
-    def open_eieio_listener(self):
+    def open_eieio_listener(self) -> EIEIOConnection:
         return self._job.open_eieio_listener_connection()
 
     @property
     @overrides(AbstractMachineAllocationController.proxying)
-    def proxying(self):
+    def proxying(self) -> bool:
         return self.__use_proxy
 
     @overrides(MachineAllocationController.make_report)
@@ -179,12 +185,12 @@ class _OldSpallocJobController(MachineAllocationController):
         super().__init__("SpallocJobController", host)
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
-    def extend_allocation(self, new_total_run_time):
+    def extend_allocation(self, new_total_run_time: float):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
     @overrides(AbstractMachineAllocationController.close)
-    def close(self):
+    def close(self) -> None:
         super().close()
         self._job.destroy()
 

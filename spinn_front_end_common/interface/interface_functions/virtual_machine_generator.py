@@ -19,7 +19,7 @@ from spinn_machine import json_machine, virtual_machine, Machine
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def virtual_machine_generator():
+def virtual_machine_generator() -> Machine:
     """
     Generates a virtual machine with given dimensions and configuration.
 
@@ -60,6 +60,7 @@ def virtual_machine_generator():
             raise ValueError(f"Unknown version {version}")
 
     if json_path is None:
+        assert width is not None and height is not None
         machine = virtual_machine(
             width=width, height=height,
             n_cpus_per_chip=Machine.max_cores_per_chip(),

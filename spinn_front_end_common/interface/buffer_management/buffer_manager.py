@@ -321,35 +321,22 @@ class BufferManager(object):
         FecDataView.write_memory(
             placement.x, placement.y, region_base_address, all_data)
 
-    def __get_recording_placements(self) -> List[Placement]:
-        """
-        :rtype: list(~.Placement)
-        """
-        recording_placements = list()
-        for placement in FecDataView.iterate_placements_by_vertex_type(
-                AbstractReceiveBuffersToHost):
-            recording_placements.append(placement)
-        return recording_placements
-
     def get_placement_data(self) -> None:
-        if self._java_caller is not None:
-            self.__get_data_for_placements_using_java()
-        else:
-            recording_placements = self.__get_recording_placements()
-            if get_config_bool(
-                    "Machine", "enable_advanced_monitor_support"):
-                self.__python_get_data_for_placements_with_monitors(
-                    recording_placements)
-            else:
-                self.__python_get_data_for_placements(recording_placements)
-
-    def __get_data_for_placements_using_java(self) -> None:
-        assert self._java_caller is not None
-        logger.info("Starting buffer extraction using Java")
-        self._java_caller.set_placements(
+        """
+        Retrieve the data from placed vertices.
+        """
+        recording_placements = list(
             FecDataView.iterate_placements_by_vertex_type(
                 AbstractReceiveBuffersToHost))
-        self._java_caller.get_all_data()
+        if self._java_caller is not None:
+            logger.info("Starting buffer extraction using Java")
+            self._java_caller.set_placements(recording_placements)
+            self._java_caller.get_all_data()
+        elif self.__enable_monitors:
+            self.__python_get_data_for_placements_with_monitors(
+                recording_placements)
+        else:
+            self.__python_get_data_for_placements(recording_placements)
 
     def __python_get_data_for_placements_with_monitors(
             self, recording_placements: List[Placement]):
@@ -410,8 +397,7 @@ class BufferManager(object):
             return db.get_region_data(
                 placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retreive_by_placement(
-            self, db: BufferDatabase, placement: Placement):
+    def _retreive_by_placement(self, db: BufferDatabase, placement: Placement):
         """
         Retrieve the data for a vertex; must be locked first.
 

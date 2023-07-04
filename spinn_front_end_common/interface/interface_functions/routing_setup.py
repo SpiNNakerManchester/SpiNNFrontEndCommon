@@ -19,9 +19,10 @@ from spinnman.model.enums import (
     DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
     DiagnosticFilterSource)
 from spinn_front_end_common.data import FecDataView
+from spinnman.transceiver import Transceiver
 
 
-def routing_setup():
+def routing_setup() -> None:
     """
     Initialises the routing diagnostic filters.
 
@@ -40,7 +41,7 @@ def routing_setup():
         _set_router_diagnostic_filters(table.x, table.y, transceiver)
 
 
-def _set_router_diagnostic_filters(x, y, transceiver):
+def _set_router_diagnostic_filters(x: int, y: int, transceiver: Transceiver):
     """
     :param int x:
     :param int y:

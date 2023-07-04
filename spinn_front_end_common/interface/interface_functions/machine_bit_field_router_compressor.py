@@ -15,7 +15,7 @@
 import functools
 import logging
 import struct
-from typing import Dict, List, Tuple
+from typing import Dict, List, Sequence, Tuple
 from typing_extensions import TypeAlias
 from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
@@ -224,7 +224,9 @@ class _MachineBitFieldRouterCompressor(object):
 
         return compressor_executable_targets
 
-    def _on_host_compress(self, on_host_chips, routing_tables):
+    def _on_host_compress(
+            self, on_host_chips: Sequence[Chip],
+            routing_tables: MulticastRoutingTables):
         """
         :param iterable(Chip) on_host_chips:
         :param MulticastRoutingTables routing_tables:
@@ -234,7 +236,8 @@ class _MachineBitFieldRouterCompressor(object):
         else:
             report_folder_path = None
 
-        most_costly_cores = defaultdict(lambda: defaultdict(int))
+        most_costly_cores: Dict[Chip, Dict[int, int]] = defaultdict(
+            lambda: defaultdict(int))
         for partition in FecDataView.iterate_partitions():
             for edge in partition.edges:
                 sttr = edge.pre_vertex.splitter
@@ -252,9 +255,10 @@ class _MachineBitFieldRouterCompressor(object):
             compressor = HostBasedBitFieldRouterCompressor(
                 key_atom_map, report_folder_path, most_costly_cores)
             for chip in progress.over(on_host_chips, False):
-                compressor.compress_bitfields(
-                    routing_tables.get_routing_table_for_chip(chip.x, chip.y),
-                    compressed_tables)
+                table = routing_tables.get_routing_table_for_chip(
+                    chip.x, chip.y)
+                if table:
+                    compressor.compress_bitfields(table, compressed_tables)
 
             # load host compressed routing tables
             for table in compressed_tables.routing_tables:
@@ -264,8 +268,9 @@ class _MachineBitFieldRouterCompressor(object):
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=self.__app_id)
 
-    def _generate_core_subsets(self, routing_tables, progress_bar) -> Tuple[
-            ExecutableTargets, str, str]:
+    def _generate_core_subsets(
+            self, routing_tables: MulticastRoutingTables,
+            progress_bar: ProgressBar) -> Tuple[ExecutableTargets, str, str]:
         """
         Generates the core subsets for the binaries.
 
@@ -318,7 +323,8 @@ class _MachineBitFieldRouterCompressor(object):
         return (executable_targets, sorter_aplx, compressor_aplx)
 
     def _check_bit_field_router_compressor_for_success(
-            self, executable_targets, host_chips, sorter_binary_path):
+            self, executable_targets: ExecutableTargets,
+            host_chips: List[Chip], sorter_binary_path: str) -> bool:
         """
         Goes through the cores checking for cores that have failed to
         generate the compressed routing tables with bitfield.
@@ -333,7 +339,7 @@ class _MachineBitFieldRouterCompressor(object):
         transceiver = FecDataView.get_transceiver()
         sorter_cores = executable_targets.get_cores_for_binary(
             sorter_binary_path)
-        result = True
+        success = True
         for core_subset in sorter_cores:
             x, y = core_subset.x, core_subset.y
             for p in core_subset.processor_ids:
@@ -342,10 +348,10 @@ class _MachineBitFieldRouterCompressor(object):
                 bit_fields_merged = transceiver.read_user_2(x, y, p)
 
                 if result != self.SUCCESS:
-                    host_chips.add(FecDataView.get_chip_at(x, y))
-                    result = False
+                    host_chips.append(FecDataView.get_chip_at(x, y))
+                    success = False
                 generate_provenance_item(x, y, bit_fields_merged)
-        return result
+        return success
 
     def _load_data(
             self, addresses: Dict[Chip, List[_RamAssignment]],
@@ -353,7 +359,7 @@ class _MachineBitFieldRouterCompressor(object):
             progress_bar, cores: ExecutableTargets,
             matrix_addresses_and_size: Dict[Chip, List[_RamChunk]],
             compressor_executable_path: str,
-            sorter_executable_path: str):
+            sorter_executable_path: str) -> List[Chip]:
         """
         load all data onto the chip.
 
@@ -437,7 +443,7 @@ class _MachineBitFieldRouterCompressor(object):
 
     def _load_usable_sdram(
             self, sizes_and_address: List[_RamChunk],
-            chip: Chip, compressor_app_id, cores):
+            chip: Chip, compressor_app_id: int, cores: ExecutableTargets):
         """
         loads the addresses of borrowable SDRAM.
 

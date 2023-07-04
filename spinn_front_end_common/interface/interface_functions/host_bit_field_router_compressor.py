@@ -12,23 +12,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import defaultdict
 import functools
 import math
 import os
 import struct
-from collections import defaultdict
+from typing import Dict, List, Optional, Tuple, cast
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.ordered_set import OrderedSet
-from spinn_machine import Machine, MulticastRoutingEntry
+from spinn_machine import Machine, MulticastRoutingEntry, Chip
 from pacman.exceptions import (
     PacmanAlgorithmFailedToGenerateOutputsException,
     PacmanElementAllocationException, MinimisationFailedError)
 from pacman.model.routing_tables import (
-    MulticastRoutingTables, UnCompressedMulticastRoutingTable,
-    CompressedMulticastRoutingTable)
+    AbstractMulticastRoutingTable, MulticastRoutingTables,
+    UnCompressedMulticastRoutingTable, CompressedMulticastRoutingTable)
 from pacman.utilities.algorithm_utilities.routes_format import format_route
+from pacman.operations.router_compressors import RTEntry
+from pacman.operations.router_compressors.pair_compressor import (
+    _PairCompressor)
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.data import FecDataView
@@ -38,13 +42,11 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.report_functions.\
     bit_field_compressor_report import (
         generate_provenance_item)
-from pacman.operations.router_compressors.pair_compressor import (
-    _PairCompressor)
 
 _REPORT_FOLDER_NAME = "router_compressor_with_bitfield"
 
 
-def host_based_bit_field_router_compressor():
+def host_based_bit_field_router_compressor() -> MulticastRoutingTables:
     """
     Entry point when using the PACMANAlgorithmExecutor.
 
@@ -69,7 +71,8 @@ def host_based_bit_field_router_compressor():
 
     key_atom_map = generate_key_to_atom_map()
 
-    most_costly_cores = defaultdict(lambda: defaultdict(int))
+    most_costly_cores: Dict[Chip, Dict[int, int]] = defaultdict(
+        lambda: defaultdict(int))
     for partition in FecDataView.iterate_partitions():
         for edge in partition.edges:
             splitter = edge.post_vertex.splitter
@@ -89,7 +92,7 @@ def host_based_bit_field_router_compressor():
     return compressed_pacman_router_tables
 
 
-def generate_report_path():
+def generate_report_path() -> str:
     """
     :rtype: str
     """
@@ -100,7 +103,7 @@ def generate_report_path():
     return report_folder_path
 
 
-def generate_key_to_atom_map():
+def generate_key_to_atom_map() -> Dict[int, int]:
     """
     *THIS IS NEEDED* due to the link from key to edge being lost.
 
@@ -109,37 +112,16 @@ def generate_key_to_atom_map():
     """
     # build key to n atoms map
     routing_infos = FecDataView.get_routing_infos()
-    key_to_n_atoms_map = dict()
+    key_to_n_atoms_map: Dict[int, int] = dict()
     for partition in FecDataView.iterate_partitions():
         for vertex in partition.pre_vertex.splitter.get_out_going_vertices(
                 partition.identifier):
             key = routing_infos.get_first_key_from_pre_vertex(
                 vertex, partition.identifier)
-            key_to_n_atoms_map[key] = vertex.vertex_slice.n_atoms
+            if key is not None:
+                s = vertex.vertex_slice
+                key_to_n_atoms_map[key] = s.n_atoms if s else 0
     return key_to_n_atoms_map
-
-
-def _start_compression_selection_process(
-        router_table, report_folder_path,
-        most_costly_cores, compressed_pacman_router_tables, key_atom_map):
-    """
-    Entrance method for doing on host compression. Can be used as a
-    public method for other compressors.
-
-    :param router_table: the routing table in question to compress
-    :type router_table:
-        ~pacman.model.routing_tables.UnCompressedMulticastRoutingTable
-    :param report_folder_path: the report folder base address
-    :type report_folder_path: str or None
-    :param dict(Chip, dict(int, int)) most_costly_cores:
-        Map of chip to processors to count of incoming on processor
-    :param dict(int,int) key_atom_map: key to atoms map
-        should be allowed to handle per time step
-    """
-    HostBasedBitFieldRouterCompressor(
-        key_atom_map, report_folder_path,
-        most_costly_cores).compress_bitfields(
-            router_table, compressed_pacman_router_tables)
 
 
 class _BitFieldData(object):
@@ -152,7 +134,7 @@ class _BitFieldData(object):
         "n_atoms_address",
         # Word that holds merged: 1; all_ones: 1; n_atoms: 30;
         "n_atoms_word",
-        # P cooridnate of processor this applies to
+        # P coordinate of processor this applies to
         "processor_id",
         # index of this entry in the "sorted_list"
         "sort_index",
@@ -161,8 +143,9 @@ class _BitFieldData(object):
         # The number of atoms per core
         "n_atoms_per_core")
 
-    def __init__(self, processor_id, bit_field, master_pop_key,
-                 n_atoms_address, n_atoms_word, core_shift, n_atoms_per_core):
+    def __init__(self, processor_id: int, bit_field: Tuple[int, ...],
+                 master_pop_key: int, n_atoms_address: int, n_atoms_word: int,
+                 core_shift: int, n_atoms_per_core: int):
         self.processor_id = processor_id
         self.bit_field = bit_field
         self.master_pop_key = master_pop_key
@@ -170,12 +153,12 @@ class _BitFieldData(object):
         self.n_atoms_word = n_atoms_word
         self.core_shift = core_shift
         self.n_atoms_per_core = n_atoms_per_core
-        self.sort_index = None
+        self.sort_index = 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.processor_id} {self.master_pop_key} {self.bit_field}"
 
-    def bit_field_as_bit_array(self):
+    def bit_field_as_bit_array(self) -> List[int]:
         """
         Convert the bitfield into an array of bits like bit_field.c
         """
@@ -257,8 +240,9 @@ class HostBasedBitFieldRouterCompressor(object):
     # Number of bits per word as an int
     _BITS_PER_WORD = 32
 
-    def __init__(self, key_to_n_atom_map, report_folder_path,
-                 most_costly_cores):
+    def __init__(self, key_to_n_atom_map: Dict[int, int],
+                 report_folder_path: Optional[str],
+                 most_costly_cores: Dict[Chip, Dict[int, int]]):
         """
         :param dict(int,int) key_to_n_atom_map: key to atoms map
         :param report_folder_path: the report folder base address
@@ -266,31 +250,34 @@ class HostBasedBitFieldRouterCompressor(object):
         :param dict(Chip,dict(int,int)) most_costly_cores:
             Map of chip to processors to count of incoming on processor
         """
-        self._best_routing_entries = None
+        self._best_routing_entries: List[RTEntry] = []
         self._best_midpoint = -1
-        self._bit_fields_by_key = None
-        self._compression_attempts = dict()
-        self._n_bitfields = None
+        self._bit_fields_by_key: Dict[int, List[_BitFieldData]] = {}
+        self._compression_attempts: Dict[int, str] = dict()
+        self._n_bitfields: int = 0
         self.__key_atom_map = key_to_n_atom_map
         self.__core_cost_map = most_costly_cores
         self.__report_folder = report_folder_path
 
-    def get_bit_field_sdram_base_addresses(self, chip_x, chip_y):
+    def get_bit_field_sdram_base_addresses(
+            self, chip_x: int, chip_y: int) -> Dict[int, int]:
         """
         :param int chip_x:
         :param int chip_y:
         """
         # locate the bitfields in a chip level scope
-        base_addresses = dict()
+        base_addresses: Dict[int, int] = dict()
         for placement in FecDataView.iterate_placements_by_xy_and_type(
                 chip_x, chip_y, AbstractSupportsBitFieldRoutingCompression):
-            vertex = placement.vertex
+            vertex = cast(
+                AbstractSupportsBitFieldRoutingCompression, placement.vertex)
             base_addresses[placement.p] = vertex.bit_field_base_address(
-                FecDataView.get_placement_of_vertex(vertex))
+                FecDataView.get_placement_of_vertex(placement.vertex))
         return base_addresses
 
     def compress_bitfields(
-            self, router_table, compressed_pacman_router_tables):
+            self, router_table: AbstractMulticastRoutingTable,
+            compressed_pacman_router_tables: MulticastRoutingTables):
         """
         Entrance method for doing on host compression. Can be used as a
         public method for other compressors.
@@ -304,11 +291,11 @@ class HostBasedBitFieldRouterCompressor(object):
             ~pacman.model.routing_tables.MulticastRoutingTables
         """
         # Init the per-attempt data
-        self._best_routing_entries = None
+        self._best_routing_entries = []
         self._best_midpoint = -1
-        self._bit_fields_by_key = None
-        self._compression_attempts = dict()
-        self._n_bitfields = None
+        self._bit_fields_by_key = {}
+        self._compression_attempts = {}
+        self._n_bitfields = 0
         # Find the processors that have bitfield data and where it is
         bit_field_chip_base_addresses = (
             self.get_bit_field_sdram_base_addresses(
@@ -326,9 +313,10 @@ class HostBasedBitFieldRouterCompressor(object):
         best_router_table = CompressedMulticastRoutingTable(
             router_table.x, router_table.y)
 
-        for entry in self._best_routing_entries:
-            best_router_table.add_multicast_routing_entry(
-                entry.to_MulticastRoutingEntry())
+        if self._best_routing_entries:
+            for entry in self._best_routing_entries:
+                best_router_table.add_multicast_routing_entry(
+                    entry.to_MulticastRoutingEntry())
 
         compressed_pacman_router_tables.add_routing_table(best_router_table)
 
@@ -348,7 +336,9 @@ class HostBasedBitFieldRouterCompressor(object):
         generate_provenance_item(
             router_table.x, router_table.y, self._best_midpoint)
 
-    def _convert_bitfields_into_router_table(self, router_table, mid_point):
+    def _convert_bitfields_into_router_table(
+            self, router_table: AbstractMulticastRoutingTable,
+            mid_point: int) -> UnCompressedMulticastRoutingTable:
         """
         Converts the bitfield into router table entries for compression,
         based off the entry located in the original router table.
@@ -394,7 +384,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # return the bitfield tables and the reduced original table
         return new_table
 
-    def _bit_for_neuron_id(self, bit_field, neuron_id):
+    def _bit_for_neuron_id(self, bit_field: List[int], neuron_id: int) -> int:
         """
         Locate the bit for the neuron in the bitfield.
 
@@ -406,7 +396,9 @@ class HostBasedBitFieldRouterCompressor(object):
         word_id, bit_in_word = divmod(neuron_id, self._BITS_PER_WORD)
         return (bit_field[word_id] >> bit_in_word) & self._BIT_MASK
 
-    def _read_in_bit_fields(self, chip_x, chip_y, chip_base_addresses):
+    def _read_in_bit_fields(
+            self, chip_x: int, chip_y: int,
+            chip_base_addresses: Dict[int, int]):
         """
         Read in the bitfields from the cores.
 
@@ -428,7 +420,7 @@ class HostBasedBitFieldRouterCompressor(object):
             reading_address = base_address + BYTES_PER_WORD
 
             # read in each bitfield
-            for _ in range(0, n_filters):
+            for _ in range(n_filters):
                 master_pop_key, n_atoms_word, n_per_core_word, read_pointer = \
                     self._FOUR_WORDS.unpack(FecDataView.read_memory(
                         chip_x, chip_y, reading_address, BYTES_PER_4_WORDS))
@@ -467,8 +459,8 @@ class HostBasedBitFieldRouterCompressor(object):
             processor_coverage_by_bitfield)
 
     def _order_bit_fields(
-            self, bit_fields_by_coverage, chip,
-            processor_coverage_by_bitfield):
+            self, bit_fields_by_coverage: Dict[int, List[_BitFieldData]],
+            chip: Chip, processor_coverage_by_bitfield: Dict[int, List[int]]):
         """
         Order the bit fields by redundancy setting the sorted index.
 
@@ -490,8 +482,8 @@ class HostBasedBitFieldRouterCompressor(object):
         # only add bit fields from the worst affected cores, which will
         # build as more and more are taken to make the worst a collection
         # instead of a individual
-        cores_to_add_for = OrderedSet()
-        for worst_core_idx in range(0, len(cores) - 1):
+        cores_to_add_for: OrderedSet[int] = OrderedSet()
+        for worst_core_idx in range(len(cores) - 1):
             worst_core = cores[worst_core_idx]
             # determine how many of the worst to add before it balances with
             # next one
@@ -507,7 +499,7 @@ class HostBasedBitFieldRouterCompressor(object):
             # cycle till at least the diff is covered
             covered = 0
             for redundant_count in coverage:
-                to_delete = list()
+                to_delete: List[_BitFieldData] = list()
                 for bit_field_data in bit_fields_by_coverage[redundant_count]:
                     if bit_field_data.processor_id in cores_to_add_for:
                         if covered < diff:
@@ -527,7 +519,8 @@ class HostBasedBitFieldRouterCompressor(object):
 
         self._n_bitfields = sort_index
 
-    def _start_binary_search(self, router_table):
+    def _start_binary_search(
+            self, router_table: AbstractMulticastRoutingTable):
         """
         Start binary search of the merging of bitfield to router table.
 
@@ -548,7 +541,9 @@ class HostBasedBitFieldRouterCompressor(object):
         find_max_success(self._n_bitfields, functools.partial(
             self._binary_search_check, routing_table=router_table))
 
-    def _binary_search_check(self, mid_point, routing_table):
+    def _binary_search_check(
+            self, mid_point: int,
+            routing_table: AbstractMulticastRoutingTable) -> bool:
         """
         Check function for fix max success.
 
@@ -576,7 +571,9 @@ class HostBasedBitFieldRouterCompressor(object):
             self._compression_attempts[mid_point] = "Exception"
             return False
 
-    def _run_algorithm(self, router_table):
+    def _run_algorithm(
+            self, router_table: AbstractMulticastRoutingTable
+            ) -> List[RTEntry]:
         """
         Attempts to covert the mega router tables into 1 router table.
 
@@ -593,10 +590,10 @@ class HostBasedBitFieldRouterCompressor(object):
         if len(compressed_entries) > Machine.ROUTER_ENTRIES:
             raise MinimisationFailedError(
                 f"Compression failed as {len(compressed_entries)} "
-                f"entires found")
+                f"entries found")
         return compressed_entries
 
-    def _remove_merged_bitfields_from_cores(self, chip_x, chip_y):
+    def _remove_merged_bitfields_from_cores(self, chip_x: int, chip_y: int):
         """
         Goes to SDRAM and removes said merged entries from the cores'
         bitfield region.
@@ -604,6 +601,7 @@ class HostBasedBitFieldRouterCompressor(object):
         :param int chip_x: the chip x coordinate from which this happened
         :param int chip_y: the chip y coordinate from which this happened
         """
+        assert self._bit_fields_by_key is not None
         for entries in self._bit_fields_by_key.values():
             for entry in entries:
                 if entry.sort_index < self._best_midpoint:
@@ -612,7 +610,8 @@ class HostBasedBitFieldRouterCompressor(object):
                     FecDataView.write_memory(
                         chip_x, chip_y, entry.n_atoms_address, n_atoms_word)
 
-    def _create_table_report(self, router_table, report_out):
+    def _create_table_report(
+            self, router_table: AbstractMulticastRoutingTable, report_out):
         """
         Create the report entry.
 
@@ -635,11 +634,10 @@ class HostBasedBitFieldRouterCompressor(object):
                 n_packets_filtered += sum(as_array)
                 merged_by_core[bf_data.processor_id].append(bf_data)
 
-        percentage_done = 100
+        percentage_done = 100.0
         if n_possible_bit_fields != 0:
             percentage_done = (
-                (100.0 / float(n_possible_bit_fields)) *
-                float(n_bit_fields_merged))
+                (100.0 / n_possible_bit_fields) * n_bit_fields_merged)
 
         report_out.write(
             f"\nTable {router_table.x}:{router_table.y} has integrated "

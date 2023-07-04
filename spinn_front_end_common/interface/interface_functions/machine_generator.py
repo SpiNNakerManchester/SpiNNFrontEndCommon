@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import re
-
+import time
+from typing import Dict, List, Optional, Tuple, Union
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
+from spinn_machine import Machine
 from spinnman.constants import POWER_CYCLE_WAIT_TIME_IN_SECONDS
-from spinnman.transceiver import create_transceiver_from_hostname
+from spinnman.transceiver import create_transceiver_from_hostname, Transceiver
 from spinnman.model import BMPConnectionData
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import time
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -44,8 +46,9 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 
 def machine_generator(
-        bmp_details, board_version, auto_detect_bmp,
-        scamp_connection_data, reset_machine_on_start_up):
+        bmp_details: str, board_version: int, auto_detect_bmp: bool,
+        scamp_connection_data: Optional[Dict[XY, str]],
+        reset_machine_on_start_up: bool) -> Tuple[Machine, Transceiver]:
     """
     Makes a transceiver and a machine object.
 
@@ -60,9 +63,6 @@ def machine_generator(
     :type scamp_connection_data:
         dict((int,int), str) or None
     :param bool reset_machine_on_start_up:
-    :param MachineAllocationController allocation_controller:
-        The allocation controller; in some cases, we delegate the creation of
-        the transceiver to it.
     :return: Transceiver, and description of machine it is connected to
     :rtype: tuple(~spinn_machine.Machine,
         ~spinnman.transceiver.Transceiver)
@@ -102,7 +102,8 @@ def machine_generator(
     return txrx.get_machine_details(), txrx
 
 
-def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
+def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame: str) -> Tuple[
+        Union[int, str], Union[int, str], str, Optional[str]]:
     """
     :param str bmp_cabinet_and_frame:
     :rtype: tuple(int or str, int or str, str, str or None)
@@ -124,7 +125,7 @@ def _parse_bmp_cabinet_and_frame(bmp_cabinet_and_frame):
     return split_string[0], split_string[1], host[0], host[1]
 
 
-def _parse_bmp_boards(bmp_boards):
+def _parse_bmp_boards(bmp_boards: str) -> List[int]:
     """
     :param str bmp_boards:
     :rtype: list(int)
@@ -139,7 +140,7 @@ def _parse_bmp_boards(bmp_boards):
     return [int(board) for board in bmp_boards.split(",")]
 
 
-def _parse_bmp_connection(bmp_detail):
+def _parse_bmp_connection(bmp_detail: str) -> BMPConnectionData:
     """
     Parses one item of BMP connection data. Maximal format:
     `cabinet;frame;host,port/boards`
@@ -151,15 +152,17 @@ def _parse_bmp_connection(bmp_detail):
     :rtype: ~.BMPConnectionData
     """
     pieces = bmp_detail.split("/")
-    (cabinet, frame, hostname, port_num) = \
+    (cabinet, frame, hostname, port) = \
         _parse_bmp_cabinet_and_frame(pieces[0])
     # if there is no split, then assume its one board, located at 0
     boards = [0] if len(pieces) == 1 else _parse_bmp_boards(pieces[1])
-    port_num = None if port_num is None else int(port_num)
-    return BMPConnectionData(cabinet, frame, hostname, boards, port_num)
+    port_num = None if port is None else int(port)
+    return BMPConnectionData(
+        int(cabinet), int(frame), hostname, boards, port_num)
 
 
-def _parse_bmp_details(bmp_string):
+def _parse_bmp_details(
+        bmp_string: Optional[str]) -> Optional[List[BMPConnectionData]]:
     """
     Take a BMP line (a colon-separated list) and split it into the
     BMP connection data.

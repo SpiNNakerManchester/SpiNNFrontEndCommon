@@ -13,14 +13,20 @@
 # limitations under the License.
 
 from collections import defaultdict
+from typing import Dict, Optional, cast
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.typing.coords import XY
+from spinnman.transceiver import Transceiver
+from pacman.model.graphs import AbstractSingleSourcePartition
 from pacman.model.graphs.machine import SourceSegmentedSDRAMMachinePartition
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.constants import SDRAM_EDGE_BASE_TAG
 
 
-def sdram_outgoing_partition_allocator():
+def sdram_outgoing_partition_allocator() -> None:
+    virtual_usage: Optional[Dict[XY, int]]
+    transceiver: Optional[Transceiver]
     if FecDataView.has_transceiver():
         transceiver = FecDataView.get_transceiver()
         virtual_usage = None
@@ -35,7 +41,7 @@ def sdram_outgoing_partition_allocator():
             "Allocating SDRAM for SDRAM outgoing egde partitions"))
 
     # Keep track of SDRAM tags used
-    next_tag = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
+    next_tag: Dict[XY, int] = defaultdict(lambda: SDRAM_EDGE_BASE_TAG)
 
     for vertex in progress_bar.over(FecDataView.iterate_vertices()):
         for sdram_partition in vertex.splitter.get_internal_sdram_partitions():
@@ -47,7 +53,9 @@ def sdram_outgoing_partition_allocator():
                     next(iter(sdram_partition.pre_vertices)))
             else:
                 placement = FecDataView.get_placement_of_vertex(
-                    sdram_partition.pre_vertex)
+                    # tricky!
+                    cast(AbstractSingleSourcePartition,
+                         sdram_partition).pre_vertex)
 
             # total sdram
             total_sdram = sdram_partition.total_sdram_requirements()
@@ -66,6 +74,7 @@ def sdram_outgoing_partition_allocator():
                     placement.x, placement.y, total_sdram,
                     FecDataView.get_app_id(), tag)
             else:
+                assert virtual_usage is not None
                 sdram_base_address = virtual_usage[placement.x, placement.y]
                 virtual_usage[placement.x, placement.y] += total_sdram
 

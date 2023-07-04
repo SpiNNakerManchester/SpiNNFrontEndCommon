@@ -17,6 +17,7 @@ import logging
 from time import sleep
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
 from spinn_front_end_common.data import FecDataView
@@ -40,7 +41,7 @@ class _ChipProvenanceUpdater(object):
     """
     __slots__ = ("__all_cores", "__app_id", "__txrx")
 
-    def __init__(self, all_core_subsets):
+    def __init__(self, all_core_subsets: CoreSubsets):
         """
         :param ~spinn_machine.CoreSubsets all_core_subsets:
         """
@@ -48,7 +49,7 @@ class _ChipProvenanceUpdater(object):
         self.__app_id = FecDataView.get_app_id()
         self.__txrx = FecDataView.get_transceiver()
 
-    def update_all_provenance(self):
+    def update_all_provenance(self) -> None:
         # check that the right number of processors are in sync
         processors_completed = self.__txrx.get_core_state_count(
             self.__app_id, CPUState.FINISHED)
@@ -78,7 +79,8 @@ class _ChipProvenanceUpdater(object):
                 total_processors, processors_completed, progress)
 
     def _update_provenance(
-            self, total_processors, processors_completed, progress):
+            self, total_processors: int, processors_completed: int,
+            progress: ProgressBar):
         """
         :param int total_processors:
         :param int processors_completed:
@@ -108,7 +110,8 @@ class _ChipProvenanceUpdater(object):
                          "Abandoned after too many retries. "
                          "Board may be left in an unstable state!")
 
-    def _send_chip_update_provenance_and_exit(self, x, y, p):
+    def _send_chip_update_provenance_and_exit(
+            self, x: int, y: int, p: int):
         """
         :param int x:
         :param int y:

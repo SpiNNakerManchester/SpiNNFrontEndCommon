@@ -13,11 +13,17 @@
 # limitations under the License.
 
 import logging
+from typing import Dict, Optional, Set
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from spinn_utilities.typing.coords import XY
+from spinn_machine import Chip
 from spinnman.exceptions import SpinnmanException
+from spinnman.model import RouterDiagnostics
+from pacman.model.routing_tables import AbstractMulticastRoutingTable
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -32,7 +38,7 @@ class _RouterProvenanceGatherer(object):
     """
     __slots__ = ()
 
-    def add_router_provenance_data(self):
+    def add_router_provenance_data(self) -> None:
         """
         Writes the provenance data of the router diagnostics
         """
@@ -40,10 +46,10 @@ class _RouterProvenanceGatherer(object):
             + FecDataView.get_machine().n_chips + 1
         progress = ProgressBar(count, "Getting Router Provenance")
 
-        seen_chips = set()
+        seen_chips: Set[XY] = set()
 
         # get all extra monitor core data if it exists
-        reinjection_data = None
+        reinjection_data: Optional[Dict[Chip, ReInjectionStatus]] = None
         if FecDataView.has_monitors():
             monitor = FecDataView.get_monitor_by_xy(0, 0)
             reinjection_data = monitor.get_reinjection_status_for_vertices()
@@ -61,11 +67,13 @@ class _RouterProvenanceGatherer(object):
                 self._add_unseen_router_chip_diagnostic(
                     chip, reinjection_data)
 
-    def __get_router_diagnostics(self, chip):
+    def __get_router_diagnostics(self, chip: Chip) -> RouterDiagnostics:
         return FecDataView.get_transceiver().get_router_diagnostics(
             chip.x, chip.y)
 
-    def _add_router_table_diagnostic(self, table, reinjection_data):
+    def _add_router_table_diagnostic(
+            self, table: AbstractMulticastRoutingTable,
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]) -> XY:
         """
         :param ~.AbstractMulticastRoutingTable table:
         :param dict(tuple(int,int),ReInjectionStatus) reinjection_data:
@@ -81,9 +89,11 @@ class _RouterProvenanceGatherer(object):
             return (-1, -1)  # Not a chip location
         status = self.__get_status(reinjection_data, chip)
         self.__router_diagnostics(chip, diagnostics, status, True, table)
-        return chip
+        return chip.x, chip.y
 
-    def _add_unseen_router_chip_diagnostic(self, chip, reinjection_data):
+    def _add_unseen_router_chip_diagnostic(
+            self, chip: Chip,
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]]):
         """
         :param ~.Chip chip:
         :param dict(Chip,ReInjectionStatus) reinjection_data:
@@ -100,7 +110,9 @@ class _RouterProvenanceGatherer(object):
             self.__router_diagnostics(chip, diagnostics, status, False, None)
 
     @staticmethod
-    def __get_status(reinjection_data, chip):
+    def __get_status(
+            reinjection_data: Optional[Dict[Chip, ReInjectionStatus]],
+            chip: Chip) -> Optional[ReInjectionStatus]:
         """
         :param dict(Chip,ReInjectionStatus) reinjection_data:
         :param Chip chip:
@@ -108,7 +120,10 @@ class _RouterProvenanceGatherer(object):
         """
         return reinjection_data.get(chip) if reinjection_data else None
 
-    def __router_diagnostics(self, chip, diagnostics, status, expected, table):
+    def __router_diagnostics(
+            self, chip: Chip, diagnostics: RouterDiagnostics,
+            status: Optional[ReInjectionStatus], expected: bool,
+            table: Optional[AbstractMulticastRoutingTable]):
         """
         Describes the router diagnostics for one router.
 
@@ -125,7 +140,7 @@ class _RouterProvenanceGatherer(object):
         # simplify the if by making components of it outside.
         has_dropped = (diagnostics.n_dropped_multicast_packets > 0)
         has_reinjection = status is not None
-        missing_stuff = has_reinjection and ((
+        missing_stuff = status is not None and ((
             status.n_dropped_packets + status.n_missed_dropped_packets +
             status.n_dropped_packet_overflows + status.n_reinjected_packets +
             status.n_processor_dumps + status.n_link_dumps) <

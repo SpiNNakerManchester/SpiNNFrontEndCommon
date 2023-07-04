@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from __future__ import annotations
-from typing import Collection, Dict, List, Optional, Set, Tuple, TypeVar
+from typing import Collection, Dict, Optional, Set, Sequence, Tuple, TypeVar
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
@@ -86,8 +86,9 @@ class _LPGSplitter(AbstractSplitterCommon["LivePacketGather"]):
     @overrides(AbstractSplitterCommon.get_source_specific_in_coming_vertices)
     def get_source_specific_in_coming_vertices(
             self, source_vertex: ApplicationVertex[MV],
-            partition_id: str) -> List[Tuple[
-                LivePacketGatherMachineVertex, List[ApplicationVertex[MV]]]]:
+            partition_id: str) -> Sequence[Tuple[
+                LivePacketGatherMachineVertex,
+                Sequence[ApplicationVertex[MV]]]]:
         # Find the nearest placement for the first machine vertex of the source
         m_vertex = next(iter(source_vertex.splitter.get_out_going_vertices(
             partition_id)))

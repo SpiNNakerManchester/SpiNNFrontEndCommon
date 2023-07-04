@@ -34,8 +34,8 @@ def load_app_images() -> None:
     Go through the executable targets and load each binary to everywhere
     and then send a start request to the cores that actually use it.
     """
-    __load_images(lambda ty: ty is not ExecutableType.SYSTEM,
-                  "Loading executables onto the machine")
+    _load_images(lambda ty: ty is not ExecutableType.SYSTEM,
+                 "Loading executables onto the machine")
 
 
 def load_sys_images() -> None:
@@ -43,8 +43,8 @@ def load_sys_images() -> None:
     Go through the executable targets and load each binary to everywhere
     and then send a start request to the cores that actually use it.
     """
-    __load_images(lambda ty: ty is ExecutableType.SYSTEM,
-                  "Loading system executables onto the machine")
+    _load_images(lambda ty: ty is ExecutableType.SYSTEM,
+                 "Loading system executables onto the machine")
     try:
         cores = filter_targets(lambda ty: ty is ExecutableType.SYSTEM)
         FecDataView.get_transceiver().wait_for_cores_to_be_in_state(
@@ -55,7 +55,7 @@ def load_sys_images() -> None:
         raise e
 
 
-def __load_images(
+def _load_images(
         filter_predicate: Callable[[ExecutableType], bool], label: str):
     """
     :param callable(ExecutableType,bool) filter_predicate:
@@ -69,7 +69,7 @@ def __load_images(
             for binary in cores.binaries:
                 progress.update(flood_fill_binary_to_spinnaker(binary))
 
-            __start_simulation(cores, FecDataView.get_app_id())
+            _start_simulation(cores, FecDataView.get_app_id())
             progress.update()
     except Exception as e:
         try:
@@ -98,7 +98,7 @@ def filter_targets(
     return cores
 
 
-def __start_simulation(cores, app_id):
+def _start_simulation(cores: ExecutableTargets, app_id: int):
     """
     :param ~.ExecutableTargets cores:
         Possible subset of all ExecutableTargets to start
@@ -106,6 +106,6 @@ def __start_simulation(cores, app_id):
     """
     txrx = FecDataView.get_transceiver()
     txrx.wait_for_cores_to_be_in_state(
-        cores.all_core_subsets, app_id, [CPUState.READY],
+        cores.all_core_subsets, app_id, frozenset([CPUState.READY]),
         timeout=_APP_READY_TIMEOUT)
     txrx.send_signal(app_id, Signal.START)

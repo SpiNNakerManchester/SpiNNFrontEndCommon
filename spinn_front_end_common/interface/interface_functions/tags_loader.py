@@ -17,7 +17,7 @@ from spinnman.constants import MAX_TAG_ID
 from spinn_front_end_common.data import FecDataView
 
 
-def tags_loader():
+def tags_loader() -> None:
     """
     Loads tags onto the machine.
     """

@@ -14,8 +14,10 @@
 
 import os
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.placements import Placement
 from spinn_front_end_common.data import FecDataView
-from spinn_front_end_common.interface.profiling import AbstractHasProfileData
+from spinn_front_end_common.interface.profiling import (
+    AbstractHasProfileData, ProfileData)
 
 
 _FMT_A = "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
@@ -23,7 +25,7 @@ _FMT_B = "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
 _FMT_C = "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
 
 
-def profile_data_gatherer():
+def profile_data_gatherer() -> None:
     """
     Gets all the profiling data recorded by vertices and writes it to files.
     """
@@ -40,7 +42,7 @@ def profile_data_gatherer():
                 _write(placement, profile_data, provenance_file_path)
 
 
-def _write(p, profile_data, directory):
+def _write(p: Placement, profile_data: ProfileData, directory: str):
     """
     :param ~.Placement p:
     :param ProfileData profile_data:
