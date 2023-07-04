@@ -31,6 +31,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
     from spinn_front_end_common.utilities.utility_objs import (
         LivePacketGatherParameters)
@@ -157,7 +158,8 @@ class LivePacketGatherMachineVertex(
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator,
+            placement: Placement):  # @UnusedVariable
         tags = FecDataView.get_tags().get_ip_tags_for_vertex(self)
         assert tags is not None
 
@@ -171,7 +173,7 @@ class LivePacketGatherMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _reserve_memory_regions(self, spec):
+    def _reserve_memory_regions(self, spec: DataSpecificationGenerator):
         """
         Reserve SDRAM space for memory areas.
 
@@ -189,7 +191,8 @@ class LivePacketGatherMachineVertex(
             label='config')
         self.reserve_provenance_data_region(spec)
 
-    def _write_configuration_region(self, spec, iptags: List[IPTag]):
+    def _write_configuration_region(
+            self, spec: DataSpecificationGenerator, iptags: List[IPTag]):
         """
         Write the configuration region to the spec.
 
@@ -206,7 +209,7 @@ class LivePacketGatherMachineVertex(
         spec.write_value(self._lpg_params.key_prefix or 0)
         spec.write_value(self._lpg_params.prefix_type.value
                          if self._lpg_params.prefix_type else 0)
-        spec.write_value(self._lpg_params.message_type.value
+        spec.write_value(self._lpg_params.message_type.encoded_value
                          if self._lpg_params.message_type else 0)
         spec.write_value(self._lpg_params.right_shift)
         spec.write_value(int(self._lpg_params.payload_as_time_stamps))

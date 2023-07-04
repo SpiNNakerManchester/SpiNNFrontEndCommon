@@ -27,7 +27,7 @@ class DataSpecificationGenerator(DataSpecificationBase):
     Used to generate the data specification data in the database
     """
 
-    __slots__ = []
+    __slots__ = ()
 
     def __init__(
             self, x: int, y: int, p: int,

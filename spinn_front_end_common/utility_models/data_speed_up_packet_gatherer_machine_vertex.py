@@ -49,6 +49,7 @@ from spinn_front_end_common.utilities.utility_calls import (
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.scp import ReinjectorControlProcess
 from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
     from .extra_monitor_support_machine_vertex import \
         ExtraMonitorSupportMachineVertex
@@ -356,7 +357,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ExecutableType.SYSTEM
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement: Placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         # pylint: disable=unsubscriptable-object
         # update my placement for future knowledge
         self.__placement = placement
@@ -423,7 +425,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             raise SpinnFrontEndException("placement not known")
         return self.__placement
 
-    def _reserve_memory_regions(self, spec):
+    def _reserve_memory_regions(self, spec: DataSpecificationGenerator):
         """
         Writes the DSG regions memory sizes. Static so that it can be used
         by the application vertex.

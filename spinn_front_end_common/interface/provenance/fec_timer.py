@@ -69,7 +69,7 @@ class FecTimer(object):
         else:
             cls._provenance_path = None
         cls._print_timings = get_config_bool(
-            "Reports", "display_algorithm_timings")
+            "Reports", "display_algorithm_timings") or False
 
     def __init__(self, algorithm: str, work: TimerWork):
         self._start_time: Optional[int] = None

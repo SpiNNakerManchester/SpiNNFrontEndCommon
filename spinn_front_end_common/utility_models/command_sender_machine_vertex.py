@@ -35,6 +35,7 @@ from spinn_front_end_common.utilities.constants import (
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_calls import uniquifier
 from pacman.model.graphs.abstract_edge import AbstractEdge
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 if TYPE_CHECKING:
     from .command_sender import CommandSender
     from .multi_cast_command import MultiCastCommand
@@ -182,7 +183,8 @@ class CommandSenderMachineVertex(
 
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement: Placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         routing_infos = FecDataView.get_routing_infos()
         av = self.app_vertex
         assert av is not None
@@ -231,7 +233,9 @@ class CommandSenderMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _write_basic_commands(self, commands: List[MultiCastCommand], spec):
+    def _write_basic_commands(
+            self, commands: List[MultiCastCommand],
+            spec: DataSpecificationGenerator):
         """
         :param list(MultiCastCommand) commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -244,7 +248,8 @@ class CommandSenderMachineVertex(
             self.__write_command(command, spec)
 
     def _write_timed_commands(
-            self, timed_commands: List[MultiCastCommand], spec):
+            self, timed_commands: List[MultiCastCommand],
+            spec: DataSpecificationGenerator):
         """
         :param list(MultiCastCommand) timed_commands:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -253,11 +258,13 @@ class CommandSenderMachineVertex(
 
         # write commands
         for command in timed_commands:
-            spec.write_value(command.time)
+            spec.write_value(command.time or 0)
             self.__write_command(command, spec)
 
     @classmethod
-    def __write_command(cls, command: MultiCastCommand, spec):
+    def __write_command(
+            cls, command: MultiCastCommand,
+            spec: DataSpecificationGenerator):
         """
         :param MultiCastCommand command:
         :param ~data_specification.DataSpecificationGenerator spec:
@@ -267,13 +274,13 @@ class CommandSenderMachineVertex(
             spec.write_value(cls._HAS_PAYLOAD)
         else:
             spec.write_value(cls._HAS_NO_PAYLOAD)
-        spec.write_value(command.payload if command.is_payload else 0)
+        spec.write_value(command.payload or 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
 
     def _reserve_memory_regions(
-            self, spec, time_command_size: int, start_command_size: int,
-            end_command_size: int):
+            self, spec: DataSpecificationGenerator, time_command_size: int,
+            start_command_size: int, end_command_size: int):
         """
         Reserve SDRAM space for memory areas:
 

@@ -28,13 +28,15 @@ from pacman.model.graphs import AbstractVirtual
 from spinn_front_end_common.data import FecDataView
 from pacman.model.placements import Placement
 from spinn_front_end_common.utilities.report_functions.write_json_machine \
-    import write_json_machine  # Argh! Mypy
+    import (
+        write_json_machine)  # Argh! Mypy
 from spinn_front_end_common.utilities.exceptions import (
     ConfigurationException, SpinnFrontEndException)
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferDatabase
+    import (
+        BufferDatabase)
 from spinn_front_end_common.interface.ds import DsSqlliteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -77,7 +79,10 @@ class JavaCaller(object):
         :raise ConfigurationException: if simple parameter checking fails.
         """
         self._recording: Optional[bool] = None
-        self._java_call = get_config_str("Java", "java_call")
+        java_call = get_config_str("Java", "java_call")
+        if java_call is None:
+            raise ConfigurationException("undefined java_call")
+        self._java_call = java_call
         result = subprocess.call([self._java_call, '-version'])
         if result != 0:
             raise ConfigurationException(
@@ -92,16 +97,18 @@ class JavaCaller(object):
         self._monitor_cores: Optional[Dict[Chip, int]] = None
         self._gatherer_iptags: Optional[Dict[Chip, IPTag]] = None
         self._gatherer_cores: Optional[Dict[Chip, int]] = None
-        self._java_properties = get_config_str("Java", "java_properties")
+        java_properties = get_config_str("Java", "java_properties")
         self._chip_by_ethernet: Optional[Dict[Chip, List[Chip]]] = None
-        if self._java_properties is not None:
-            self._java_properties = self._java_properties.split()
+        if java_properties is not None:
+            self._java_properties = java_properties.split()
             # pylint: disable=not-an-iterable
             for _property in self._java_properties:
                 if _property[:2] != "-D":
                     raise ConfigurationException(
                         "Java Properties must start with -D "
                         f"found at {_property}")
+        else:
+            self._java_properties = []
 
     def _find_java_jar(self) -> None:
         java_spinnaker_path = get_config_str("Java", "java_spinnaker_path")
@@ -167,8 +174,8 @@ class JavaCaller(object):
         self._chip_by_ethernet = defaultdict(list)
         machine = FecDataView.get_machine()
         for chip in machine.chips:
-            ethernet = machine.get_chip_at(
-                chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+            ethernet = machine[  # pylint: disable=unsubscriptable-object
+                chip.nearest_ethernet_x, chip.nearest_ethernet_y]
             self._chip_by_ethernet[ethernet].append(chip)
 
     def _machine_json(self) -> str:

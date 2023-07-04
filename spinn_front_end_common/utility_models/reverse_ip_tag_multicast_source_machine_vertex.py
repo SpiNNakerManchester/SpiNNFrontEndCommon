@@ -42,6 +42,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BufferedSendingRegion)
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from spinn_front_end_common.interface.provenance import ProvenanceWriter
 from spinn_front_end_common.utilities.constants import (
     SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES, BYTES_PER_WORD)
@@ -559,7 +560,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         self._is_recording = new_state
 
-    def _reserve_regions(self, spec) -> None:
+    def _reserve_regions(self, spec: DataSpecificationGenerator):
         """
         :param ~.DataSpecificationGenerator spec:
         """
@@ -610,7 +611,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec) -> None:
+    def _write_configuration(self, spec: DataSpecificationGenerator):
         """
         :param ~.DataSpecificationGenerator spec:
         """
@@ -642,7 +643,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         else:
             spec.write_value(data=1)
             spec.write_value(data=self._virtual_key)
-            spec.write_value(data=self._mask)
+            spec.write_value(data=self._mask or 0)
 
         # Write send buffer data
         if self._send_buffer_times is not None:
@@ -671,11 +672,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
              int(math.ceil(max_offset))) % _MAX_OFFSET_MODULO)
         ReverseIPTagMulticastSourceMachineVertex._n_data_specs += 1
 
-    @overrides(
-        AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"routing_info"})
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(
-            self, spec, placement: Placement):  # @UnusedVariable
+            self, spec: DataSpecificationGenerator,
+            placement: Placement):  # @UnusedVariable
         self.update_virtual_key()
 
         # Reserve regions

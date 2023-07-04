@@ -26,7 +26,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
     Base class for all vertex data specification creation
     """
 
-    __slots__ = [
+    __slots__ = (
         "_x",
         "_y",
         "_p",
@@ -35,8 +35,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         "_ds_db",
         "_report_writer",
         "_region_num",
-        "_size"
-    ]
+        "_size")
 
     def __init__(self, x: int, y: int, p: int, ds_db: DsSqlliteDatabase,
                  report_writer: Optional[TextIO] = None):

@@ -14,6 +14,8 @@
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
+from pacman.model.placements import Placement
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
 
 
@@ -26,7 +28,8 @@ class AbstractGeneratesDataSpecification(object, metaclass=AbstractBase):
     __slots__ = ()
 
     @abstractmethod
-    def generate_data_specification(self, spec, placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         """
         Generate a data specification.
 

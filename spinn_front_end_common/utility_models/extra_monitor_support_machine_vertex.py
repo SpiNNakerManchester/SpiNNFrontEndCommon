@@ -43,6 +43,7 @@ from .data_speed_up_packet_gatherer_machine_vertex import (
     Gatherer)
 from spinn_front_end_common.interface.provenance import (
     AbstractProvidesProvenanceDataFromMachine, ProvenanceWriter)
+from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -134,8 +135,8 @@ class ExtraMonitorSupportMachineVertex(
         """
         super().__init__("SYSTEM:ExtraMonitor")
 
-        self._reinject_multicast = get_config_bool(
-            "Machine", "enable_reinjection")
+        multicast = get_config_bool("Machine", "enable_reinjection")
+        self._reinject_multicast = multicast if multicast is not None else True
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
@@ -238,7 +239,8 @@ class ExtraMonitorSupportMachineVertex(
         return "extra_monitor_support.aplx"
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement: Placement):
+    def generate_data_specification(
+            self, spec: DataSpecificationGenerator, placement: Placement):
         # storing for future usage
         self._placement = placement
         chip = placement.chip
@@ -252,7 +254,8 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_provenance_area(spec)
         spec.end_specification()
 
-    def _generate_data_speed_up_out_config(self, spec):
+    def _generate_data_speed_up_out_config(
+            self, spec: DataSpecificationGenerator):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         """
@@ -267,7 +270,8 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(Gatherer.TRANSACTION_ID_KEY)
         spec.write_value(Gatherer.END_FLAG_KEY)
 
-    def _generate_reinjection_config(self, spec, chip: Chip):
+    def _generate_reinjection_config(
+            self, spec: DataSpecificationGenerator, chip: Chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip:
@@ -293,7 +297,8 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(router_timeout_keys[
             chip.nearest_ethernet_x, chip.nearest_ethernet_y])
 
-    def _generate_data_speed_up_in_config(self, spec, chip: Chip):
+    def _generate_data_speed_up_in_config(
+            self, spec: DataSpecificationGenerator, chip: Chip):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         :param ~.Chip chip: the chip where this monitor will run
@@ -336,7 +341,7 @@ class ExtraMonitorSupportMachineVertex(
         route |= Router.convert_routing_table_entry_to_spinnaker_route(entry)
         return route
 
-    def _generate_provenance_area(self, spec):
+    def _generate_provenance_area(self, spec: DataSpecificationGenerator):
         """
         :param ~.DataSpecificationGenerator spec: spec file
         """
