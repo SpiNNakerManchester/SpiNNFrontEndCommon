@@ -130,12 +130,12 @@ class DsSqlliteDatabase(SQLiteDB):
         :param bool is_system: if True returns systenm cores
             otherwise application cores
         :return:
-            list(database_id, x, y, p, ethernet_x, ethernet_y)
+            (x, y, p, ethernet_x, ethernet_y)
             for each system or app core
         :rtype: list(int, int, int, int, int, int)
         """
+        core_infos: List[Tuple[int, int, int, int, int]] = []
         with self.transaction() as cursor:
-            core_infos = []
             for row in cursor.execute(
                     """
                     SELECT x, y, p, ethernet_x, ethernet_y
@@ -300,8 +300,8 @@ class DsSqlliteDatabase(SQLiteDB):
         .. note::
             Do not use the database for anything else while iterating.
 
-        :return: x, y, p
-        :rtype: iterable(tuple(int, int, int))
+        :return: x, y, p, region
+        :rtype: iterable(tuple(int, int, int, int))
         """
         with self.transaction() as cursor:
             for row in cursor.execute(

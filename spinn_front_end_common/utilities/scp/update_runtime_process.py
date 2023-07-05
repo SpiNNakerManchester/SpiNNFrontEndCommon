@@ -13,20 +13,22 @@
 # limitations under the License.
 
 import struct
+from spinn_utilities.overrides import overrides
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
-from spinnman.processes import AbstractMultiConnectionProcess
+from spinnman.processes import (
+    AbstractMultiConnectionProcess, ConnectionSelector)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
-from spinn_utilities.overrides import overrides
 
 
-class _UpdateRuntimeRequest(AbstractSCPRequest):
-    def __init__(
-            self, x, y, p, current_time, run_time, infinite_run, n_sync_steps):
+class _UpdateRuntimeRequest(AbstractSCPRequest[CheckOKResponse]):
+    def __init__(self, x: int, y: int, p: int, current_time: int,
+                 run_time: int, infinite_run: bool, n_sync_steps: int):
         """
         :param int x:
         :param int y:
@@ -46,7 +48,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
                 destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
             SCPRequestHeader(
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE),
-            argument_1=run_time, argument_2=infinite_run,
+            argument_1=run_time, argument_2=int(infinite_run),
             argument_3=current_time,
             data=struct.pack("<I", int(n_sync_steps)))
 
@@ -57,7 +59,7 @@ class _UpdateRuntimeRequest(AbstractSCPRequest):
             SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE.value)
 
 
-class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
+class UpdateRuntimeProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     How to update the target running time of a set of cores.
 
@@ -65,19 +67,20 @@ class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
         The cores must be using the simulation interface.
     """
 
-    def __init__(self, connection_selector):
+    def __init__(self, connection_selector: ConnectionSelector):
         """
         :param ~spinnman.processes.ConnectionSelector connection_selector:
         """
         super().__init__(connection_selector)
         self._progress = None
 
-    def __receive_response(self, _response):
+    def __receive_response(self, _response: CheckOKResponse):
         if self._progress:
             self._progress.update()
 
-    def update_runtime(self, current_time, run_time, infinite_run,
-                       core_subsets, n_cores, n_sync_steps):
+    def update_runtime(
+            self, current_time: int, run_time: int, infinite_run: bool,
+            core_subsets: CoreSubsets, n_cores: int, n_sync_steps: int):
         """
         :param int current_time:
         :param int run_time:

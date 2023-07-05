@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import ctypes
+import difflib
+import logging
 from typing import Dict, Iterable, List, Optional, Set, Tuple, cast
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
@@ -165,11 +166,32 @@ class BufferManager(object):
         else:
             return extra_mon_data
 
-    def _verify_data(self, extra_mon_data, txrx_data):
-        for index, (extra_mon_element, txrx_element) in enumerate(
-                zip(extra_mon_data, txrx_data)):
-            if extra_mon_element != txrx_element:
-                raise ValueError(f"WRONG (at index {index})")
+    @staticmethod
+    def _verify_data(extra_mon_data: bytes, txrx_data: bytes):
+        sm = difflib.SequenceMatcher(a=extra_mon_data, b=txrx_data)
+        failed_index = -1
+        for (tag, i1, i2, j1, j2) in sm.get_opcodes():
+            if tag == 'replace':
+                if failed_index < 0:
+                    failed_index = i1
+                logger.error(
+                    "data differs at {}..{}: got {} instead of {}",
+                    i1, i2, repr(txrx_data[j1:j2]),
+                    repr(extra_mon_data[i1:i2]))
+            elif tag == 'insert':
+                if failed_index < 0:
+                    failed_index = i1
+                logger.error(
+                    "data differs at {}: extra {}",
+                    i1, repr(txrx_data[j1:j2]))
+            elif tag == 'delete':
+                if failed_index < 0:
+                    failed_index = i1
+                logger.error(
+                    "data differs at {}: lost {}",
+                    i1, repr(extra_mon_data[i1:i2]))
+        if failed_index >= 0:
+            raise ValueError(f"WRONG (at index {failed_index})")
 
     def load_initial_buffers(self) -> None:
         """

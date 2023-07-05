@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import struct
-from typing import List, Tuple
+from typing import Sequence, Tuple
 from .dpri_flags import DPRIFlags
 
 _PATTERN = struct.Struct("<IIIIIIIIII")
@@ -222,11 +222,11 @@ class ReInjectionStatus(object):
         return self._flag_set(DPRIFlags.FIXED_ROUTE)
 
     @property
-    def links_dropped_from(self) -> List[int]:
+    def links_dropped_from(self) -> Sequence[int]:
         return [
             link for link in range(6) if self._link_proc_bits & (1 << link)]
 
     @property
-    def processors_dropped_from(self) -> List[int]:
+    def processors_dropped_from(self) -> Sequence[int]:
         return [
             p for p in range(18) if self._link_proc_bits & (1 << p + 6)]

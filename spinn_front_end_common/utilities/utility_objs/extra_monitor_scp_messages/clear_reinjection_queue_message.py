@@ -21,14 +21,14 @@ from spinn_front_end_common.utilities.constants import SDP_PORTS
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
-class ClearReinjectionQueueMessage(AbstractSCPRequest):
+class ClearReinjectionQueueMessage(AbstractSCPRequest[CheckOKResponse]):
     """
     An SCP Request to set the dropped packet reinjected packet types.
     """
 
     __slots__ = ()
 
-    def __init__(self, x, y, p):
+    def __init__(self, x: int, y: int, p: int):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -45,6 +45,6 @@ class ClearReinjectionQueueMessage(AbstractSCPRequest):
             SCPRequestHeader(command=ReinjectorSCPCommands.CLEAR))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "Set reinjected packet types", ReinjectorSCPCommands.CLEAR)

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
 from spinn_utilities.overrides import overrides
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import (
@@ -24,13 +25,14 @@ from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
-class GetReinjectionStatusMessage(AbstractSCPRequest):
+class GetReinjectionStatusMessage(
+        AbstractSCPRequest['GetReinjectionStatusMessageResponse']):
     """
     An SCP Request to get the status of the dropped packet reinjection.
     """
     __slots__ = ()
 
-    def __init__(self, x, y, p):
+    def __init__(self, x: int, y: int, p: int):
         """
         :param int x: The x-coordinate of a chip, between 0 and 255
         :param int y: The y-coordinate of a chip, between 0 and 255
@@ -47,7 +49,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
             SCPRequestHeader(command=ReinjectorSCPCommands.GET_STATUS))
 
     @overrides(AbstractSCPRequest.get_scp_response)
-    def get_scp_response(self):
+    def get_scp_response(self) -> 'GetReinjectionStatusMessageResponse':
         return GetReinjectionStatusMessageResponse(
             ReinjectorSCPCommands.GET_STATUS)
 
@@ -58,13 +60,13 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     """
     __slots__ = ("_reinjection_status", "_command_code")
 
-    def __init__(self, command_code):
+    def __init__(self, command_code: ReinjectorSCPCommands):
         super().__init__()
-        self._reinjection_status = None
+        self._reinjection_status: Optional[ReInjectionStatus] = None
         self._command_code = command_code
 
     @overrides(AbstractSCPResponse.read_data_bytestring)
-    def read_data_bytestring(self, data, offset):
+    def read_data_bytestring(self, data: bytes, offset: int):
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(
@@ -73,5 +75,6 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         self._reinjection_status = ReInjectionStatus(data, offset)
 
     @property
-    def reinjection_functionality_status(self):
+    def reinjection_functionality_status(self) -> ReInjectionStatus:
+        assert self._reinjection_status is not None, "response not yet read"
         return self._reinjection_status

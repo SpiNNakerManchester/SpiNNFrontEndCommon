@@ -16,7 +16,7 @@ import functools
 import logging
 import struct
 from typing import Dict, List, Sequence, Tuple
-from typing_extensions import TypeAlias
+from typing_extensions import NewType
 from collections import defaultdict
 from spinn_utilities.config_holder import get_config_bool, get_config_int
 from spinn_utilities.log import FormatAdapter
@@ -31,9 +31,7 @@ from pacman.model.placements import Placement
 from pacman.model.routing_tables import (
     MulticastRoutingTables, AbstractMulticastRoutingTable)
 from pacman.operations.router_compressors.ordered_covering_router_compressor\
-    import (
-        get_generality as
-        ordered_covering_generality)
+    import get_generality as generality
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsBitFieldRoutingCompression)
 from spinn_front_end_common.data import FecDataView
@@ -54,10 +52,11 @@ from .host_bit_field_router_compressor import (
     generate_key_to_atom_map, generate_report_path,
     HostBasedBitFieldRouterCompressor)
 
+# Special types to stop these two from getting mixed up and reduce my confusion
 #: An address of a piece of memory (SDRAM?) and its size
-_RamChunk: TypeAlias = Tuple[int, int]
+_RamChunk = NewType("_RamChunk", Tuple[int, int])
 #: An address and the core to which it is assigned
-_RamAssignment: TypeAlias = Tuple[int, int]
+_RamAssignment = NewType("_RamAssignment", Tuple[int, int])
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -127,8 +126,8 @@ class _MachineBitFieldRouterCompressor(object):
         "failed to complete when running on chip"
 
     def __init__(
-            self, compressor_aplx, compressor_type,
-            compress_as_much_as_possible=False):
+            self, compressor_aplx: str, compressor_type: str,
+            compress_as_much_as_possible: bool = False):
         """
         :param str compressor_aplx:
         :param str compressor_type:
@@ -143,14 +142,14 @@ class _MachineBitFieldRouterCompressor(object):
         # Read the config once
         self._time_per_iteration = get_config_int(
             "Mapping",
-            "router_table_compression_with_bit_field_iteration_time")
+            "router_table_compression_with_bit_field_iteration_time") or 1000
         self._threshold_percentage = get_config_int(
             "Mapping",
             "router_table_compression_with_bit_field_acceptance_threshold")
         self._retry_count = get_config_int(
             "Mapping", "router_table_compression_with_bit_field_retry_count")
         self._report_iobuf = get_config_bool(
-            "Reports", "write_compressor_iobuf")
+            "Reports", "write_compressor_iobuf") or False
         self._write_report = get_config_bool(
             "Reports", "write_router_compression_with_bitfield_report")
 
@@ -356,7 +355,7 @@ class _MachineBitFieldRouterCompressor(object):
     def _load_data(
             self, addresses: Dict[Chip, List[_RamAssignment]],
             compressor_app_id: int, routing_tables: MulticastRoutingTables,
-            progress_bar, cores: ExecutableTargets,
+            progress_bar: ProgressBar, cores: ExecutableTargets,
             matrix_addresses_and_size: Dict[Chip, List[_RamChunk]],
             compressor_executable_path: str,
             sorter_executable_path: str) -> List[Chip]:
@@ -601,7 +600,7 @@ class _MachineBitFieldRouterCompressor(object):
         # sort entries based on generality
         sorted_routing_table = sorted(
             routing_table.multicast_routing_entries,
-            key=lambda rt_entry: ordered_covering_generality(
+            key=lambda rt_entry: generality(
                 rt_entry.routing_entry_key, rt_entry.mask))
 
         # write byte array for the sorted table
@@ -630,7 +629,7 @@ class _MachineBitFieldRouterCompressor(object):
         for pos, (base_address, size) in enumerate(borrowable_spaces):
             if size >= size_to_borrow:
                 new_size = size - size_to_borrow
-                borrowable_spaces[pos] = (base_address, new_size)
+                borrowable_spaces[pos] = _RamChunk((base_address, new_size))
                 return base_address
         raise CantFindSDRAMToUseException()
 
@@ -657,21 +656,22 @@ class _MachineBitFieldRouterCompressor(object):
         chip = placement.chip
         # store the region sdram address's
         bit_field_sdram_address = vertex.bit_field_base_address(placement)
-        region_addresses[chip].append((bit_field_sdram_address, placement.p))
+        region_addresses[chip].append(
+            _RamAssignment((bit_field_sdram_address, placement.p)))
 
         # store the available space from the matrix to borrow
         blocks = vertex.regeneratable_sdram_blocks_and_sizes(placement)
 
         for (address, size) in blocks:
             if size > self._MIN_SIZE_FOR_HEAP:
-                sdram_block_addresses_and_sizes[chip].append((address, size))
+                sdram_block_addresses_and_sizes[chip].append(
+                    _RamChunk((address, size)))
         sorted(
             sdram_block_addresses_and_sizes[chip],
             key=lambda data: data[0])
 
     def _generate_addresses(self, progress_bar: ProgressBar) -> Tuple[
-            Dict[Chip, List[_RamAssignment]],
-            Dict[Chip, List[_RamChunk]]]:
+            Dict[Chip, List[_RamAssignment]], Dict[Chip, List[_RamChunk]]]:
         """
         Generates the bitfield SDRAM addresses.
 
@@ -683,7 +683,7 @@ class _MachineBitFieldRouterCompressor(object):
             dict(Chip,list(tuple(int,int))))
         """
         # data holders
-        region_addresses: Dict[Chip, List[Tuple[int, int]]] = defaultdict(list)
+        region_addresses: Dict[Chip, List[_RamAssignment]] = defaultdict(list)
         sdram_block_addresses_and_sizes: Dict[
             Chip, List[_RamChunk]] = defaultdict(list)
 

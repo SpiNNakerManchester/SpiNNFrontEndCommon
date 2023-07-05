@@ -55,12 +55,14 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
         self._region_num: Optional[int] = None
         self._size: Optional[int] = None
 
-    def _report(self, *args):
+    def _report(self, *args) -> None:
         if self._report_writer is not None:
-            text = "".join(str(arg) for arg in args if arg is not None) + "\n"
+            text = "".join(
+                (repr(arg) if isinstance(arg, bytes) else str(arg))
+                for arg in args if arg is not None) + "\n"
             self._report_writer.write(text)
 
-    def _flush(self):
+    def _flush(self) -> None:
         if self._report_writer is not None:
             self._report_writer.flush()
 
@@ -158,7 +160,7 @@ class DataSpecificationBase(object, metaclass=AbstractBase):
 
         as_bytes = data_type.as_bytes(data)
         self._report("WRITE data=", data, ", dataType=", data_type.name,
-                     " as ", repr(as_bytes))
+                     " as ", as_bytes)
         if len(as_bytes) > data_type.size:
             self._flush()
             raise ValueError(

@@ -33,7 +33,8 @@ ROUTING_MASK = 0xFFFFFFF8
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def system_multicast_routing_generator():
+def system_multicast_routing_generator() -> Tuple[
+        MulticastRoutingTables, Dict[XY, int], Dict[XY, int]]:
     """
     Generates routing table entries used by the data-in processes with the
     extra monitor cores.

@@ -18,7 +18,7 @@ from spinn_front_end_common.interface.provenance import (
     AbstractProvidesLocalProvenanceData)
 
 
-def graph_provenance_gatherer():
+def graph_provenance_gatherer() -> None:
     """
     Gets provenance information from the graph.
     """

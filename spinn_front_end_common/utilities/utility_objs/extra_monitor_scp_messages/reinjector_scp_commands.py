@@ -26,13 +26,3 @@ class ReinjectorSCPCommands(Enum):
     RESET_COUNTERS = 4
     EXIT = 5
     CLEAR = 6
-
-    def __new__(cls, value, doc=""):
-        # pylint: disable=protected-access, unused-argument
-        obj = object.__new__(cls)
-        obj._value_ = value
-        return obj
-
-    def __init__(self, value, doc=""):
-        self._value_ = value
-        self.__doc__ = doc

@@ -81,7 +81,7 @@ class _HostExecuteDataSpecification(object):
             # reset router tables
             receiver.load_application_routing_tables()
 
-    def __java_app(self, use_monitors):
+    def __java_app(self, use_monitors: bool):
         """
         :param bool use_monitors:
         """

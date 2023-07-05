@@ -12,18 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets
 from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import CheckOKResponse
 from spinnman.processes import AbstractMultiConnectionProcess
+from spinnman.processes import ConnectionSelector
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 
 
-class _ClearIOBUFRequest(AbstractSCPRequest):
-    def __init__(self, x, y, p):
+class _ClearIOBUFRequest(AbstractSCPRequest[CheckOKResponse]):
+    def __init__(self, x: int, y: int, p: int):
         super().__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
@@ -33,31 +36,32 @@ class _ClearIOBUFRequest(AbstractSCPRequest):
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE),
             argument_3=int(True))
 
-    def get_scp_response(self):
+    def get_scp_response(self) -> CheckOKResponse:
         return CheckOKResponse(
             "clear iobuf",
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
 
 
-class ClearIOBUFProcess(AbstractMultiConnectionProcess):
+class ClearIOBUFProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     How to clear the IOBUF buffers of a set of cores.
 
     .. note::
         The cores must be using the simulation interface.
     """
-    def __init__(self, connection_selector):
+    def __init__(self, connection_selector: ConnectionSelector):
         """
         :param ~spinnman.processes.ConnectionSelector connection_selector:
         """
         super().__init__(connection_selector)
-        self._progress = None
+        self._progress: Optional[ProgressBar] = None
 
-    def __receive_response(self, _response):
+    def __receive_response(self, _response: CheckOKResponse):
         if self._progress:
             self._progress.update()
 
-    def clear_iobuf(self, core_subsets, n_cores=None):
+    def clear_iobuf(self, core_subsets: CoreSubsets,
+                    n_cores: Optional[int] = None):
         """
         :param ~spinn_machine.CoreSubsets core_subsets:
         :param int n_cores: Defaults to the number of cores in `core_subsets`.

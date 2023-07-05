@@ -12,19 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from spinn_machine import CoreSubsets
 from spinnman.processes import AbstractMultiConnectionProcess
+from spinnman.messages.scp.impl import CheckOKResponse
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_messages import (
         LoadApplicationMCRoutesMessage, LoadSystemMCRoutesMessage)
 
 
-class LoadMCRoutesProcess(AbstractMultiConnectionProcess):
+class LoadMCRoutesProcess(AbstractMultiConnectionProcess[CheckOKResponse]):
     """
     How to send messages to load the saved multicast routing tables.
     """
     __slots__ = ()
 
-    def load_application_mc_routes(self, core_subsets):
+    def load_application_mc_routes(self, core_subsets: CoreSubsets):
         """
         Load the saved application multicast routes.
 
@@ -37,7 +39,7 @@ class LoadMCRoutesProcess(AbstractMultiConnectionProcess):
                     self._send_request(LoadApplicationMCRoutesMessage(
                         core_subset.x, core_subset.y, processor_id))
 
-    def load_system_mc_routes(self, core_subsets):
+    def load_system_mc_routes(self, core_subsets: CoreSubsets):
         """
         Load the saved system multicast routes.
 

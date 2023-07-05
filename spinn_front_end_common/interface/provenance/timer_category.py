@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from enum import auto, Enum
+from typing import cast
 
 
 class TimerCategory(Enum):
@@ -21,24 +22,21 @@ class TimerCategory(Enum):
 
     """
     # Category Constants
-    WAITING = (auto(), "Waiting")
-    SETTING_UP = (auto(), "In Setup")
-    RUN_OTHER = (auto(), "In run other")
-    GET_MACHINE = (auto(), "Turning on Machine")
-    LOADING = (auto(), "Loading Stage")
-    DATA_GENERATION = (auto(), "data_generation")
-    MAPPING = (auto(), "Mapping Stage")
-    RUN_LOOP = (auto(), "Running Stage")
-    RESETTING = (auto(), "Resetting")
-    SHUTTING_DOWN = (auto(), "Shutting down")
+    WAITING = cast('TimerCategory', (auto(), "Waiting"))
+    SETTING_UP = cast('TimerCategory', (auto(), "In Setup"))
+    RUN_OTHER = cast('TimerCategory', (auto(), "In run other"))
+    GET_MACHINE = cast('TimerCategory', (auto(), "Turning on Machine"))
+    LOADING = cast('TimerCategory', (auto(), "Loading Stage"))
+    DATA_GENERATION = cast('TimerCategory', (auto(), "data_generation"))
+    MAPPING = cast('TimerCategory', (auto(), "Mapping Stage"))
+    RUN_LOOP = cast('TimerCategory', (auto(), "Running Stage"))
+    RESETTING = cast('TimerCategory', (auto(), "Resetting"))
+    SHUTTING_DOWN = cast('TimerCategory', (auto(), "Shutting down"))
 
-    def __new__(cls, value, category_name):
-        # pylint: disable=protected-access
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj._category_name = category_name
-        return obj
+    def __init__(self, value: 'TimerCategory', category_name: str):
+        self._value_ = value
+        self._category_name = category_name
 
     @property
-    def category_name(self):
+    def category_name(self) -> str:
         return self._category_name

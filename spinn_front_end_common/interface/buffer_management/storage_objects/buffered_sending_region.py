@@ -33,7 +33,7 @@ _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
                         _HEADER_SIZE)) // _N_BYTES_PER_KEY
 
 
-def get_n_bytes(n_keys):
+def get_n_bytes(n_keys: int) -> int:
     """
     Get the number of bytes used by a given number of keys.
 

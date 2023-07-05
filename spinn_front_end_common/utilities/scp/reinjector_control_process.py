@@ -14,13 +14,16 @@
 import functools
 import logging
 import traceback
+from typing import Dict
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import Chip, CoreSubsets, CoreSubset
 from spinnman.processes import AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
     import (
         ClearReinjectionQueueMessage, ResetCountersMessage,
         GetReinjectionStatusMessage, SetReinjectionPacketTypesMessage,
-        SetRouterTimeoutMessage)
+        SetRouterTimeoutMessage, GetReinjectionStatusMessageResponse)
 from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -31,7 +34,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
     """
     __slots__ = ()
 
-    def clear_queue(self, core_subsets):
+    def clear_queue(self, core_subsets: CoreSubsets):
         """
         Clear the reinjection queue.
 
@@ -43,7 +46,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                     self._send_request(ClearReinjectionQueueMessage(
                         core_subset.x, core_subset.y, processor_id))
 
-    def reset_counters(self, core_subsets):
+    def reset_counters(self, core_subsets: CoreSubsets):
         """
         Reset the packet counters.
 
@@ -56,7 +59,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                         core_subset.x, core_subset.y, processor_id))
 
     @staticmethod
-    def __handle_response(result, response):
+    def __handle_response(
+            result: Dict[Chip, ReInjectionStatus],
+            response: GetReinjectionStatusMessageResponse):
         """
         :param dict result:
         :param GetReinjectionStatusMessageResponse response:
@@ -67,7 +72,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
             header.source_chip_x, header.source_chip_y)
         result[chip] = status
 
-    def get_reinjection_status(self, x, y, p):
+    def get_reinjection_status(
+            self, x: int, y: int, p: int) -> ReInjectionStatus:
         """
         Get the reinjection status of a particular monitor.
 
@@ -77,21 +83,22 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         :rtype: ReInjectionStatus
         """
         chip = FecDataView.get_chip_at(x, y)
-        status = dict()
+        status: Dict[Chip, ReInjectionStatus] = dict()
         with self._collect_responses():
             self._send_request(
                 GetReinjectionStatusMessage(x, y, p),
                 functools.partial(self.__handle_response, status))
         return status[chip]
 
-    def get_reinjection_status_for_core_subsets(self, core_subsets):
+    def get_reinjection_status_for_core_subsets(
+            self, core_subsets: CoreSubsets) -> Dict[Chip, ReInjectionStatus]:
         """
         Get the reinjection status of a collection of monitors.
 
         :param ~spinn_machine.CoreSubsets core_subsets:
         :rtype: dict(~spinn_machine.Chip, ReInjectionStatus)
         """
-        status = dict()
+        status: Dict[Chip, ReInjectionStatus] = dict()
         with self._collect_responses(check_error=False):
             for core_subset in core_subsets.core_subsets:
                 for processor_id in core_subset.processor_ids:
@@ -104,8 +111,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                 traceback.print_exception(type(e), e, tb)
         return status
 
-    def set_packet_types(self, core_subsets, point_to_point, multicast,
-                         nearest_neighbour, fixed_route):
+    def set_packet_types(
+            self, core_subsets: CoreSubsets, point_to_point: bool,
+            multicast: bool, nearest_neighbour: bool, fixed_route: bool):
         """
         Set what types of packets should be reinjected.
 
@@ -123,7 +131,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                         core_subset.x, core_subset.y, processor_id, multicast,
                         point_to_point, fixed_route, nearest_neighbour))
 
-    def set_wait1_timeout(self, mantissa, exponent, core_subsets):
+    def set_wait1_timeout(
+            self, mantissa: int, exponent: int, core_subsets: CoreSubsets):
         """
         The wait1 timeout is the time from when a packet is received to
         when emergency routing becomes enabled.
@@ -138,7 +147,8 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                 self.__set_timeout(
                     core_subset, processor_id, mantissa, exponent, wait=1)
 
-    def set_wait2_timeout(self, mantissa, exponent, core_subsets):
+    def set_wait2_timeout(
+            self, mantissa: int, exponent: int, core_subsets: CoreSubsets):
         """
         The wait2 timeout is the time from when a packet has emergency
         routing enabled for it to when it is dropped.
@@ -153,7 +163,9 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
                 self.__set_timeout(
                     core_subset, processor_id, mantissa, exponent, wait=2)
 
-    def __set_timeout(self, core, processor_id, mantissa, exponent, *, wait):
+    def __set_timeout(
+            self, core: CoreSubset, processor_id: int,
+            mantissa: int, exponent: int, *, wait: int):
         """
         Set a timeout for a router controlled by an extra monitor on a core.
         This is not a parallelised operation in order to aid debugging when
@@ -163,7 +175,7 @@ class ReinjectorControlProcess(AbstractMultiConnectionProcess):
         :param int processor_id:
         :param int mantissa:
         :param int exponent:
-        :param int wait:
+        :param int wait: Which wait to set
         """
         with self._collect_responses():
             self._send_request(SetRouterTimeoutMessage(

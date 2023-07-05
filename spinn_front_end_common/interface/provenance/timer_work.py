@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from enum import auto, Enum
+from typing import cast
 
 
 class TimerWork(Enum):
@@ -20,28 +21,25 @@ class TimerWork(Enum):
     Different Work types an Algorithm could be doing
     """
 
-    OTHER = (auto(), "Other")
-    GET_MACHINE = (auto(), "Turning on Machine")
-    LOADING = (auto(), "Loading Stage")
+    OTHER = cast('TimerWork', (auto(), "Other"))
+    GET_MACHINE = cast('TimerWork', (auto(), "Turning on Machine"))
+    LOADING = cast('TimerWork', (auto(), "Loading Stage"))
     # LOADING
-    BITFIELD = (auto(), "BitField work")
+    BITFIELD = cast('TimerWork', (auto(), "BitField work"))
     # Only for on Machine Compression
-    COMPRESSING = (auto(), "Compressing")
-    CONTROL = (auto(), "Control")
-    SYNAPSE = (auto(), "Expanding Synapse")
-    RUNNING = (auto(), "Running")
-    EXTRACTING = (auto(), "Extracting")
+    COMPRESSING = cast('TimerWork', (auto(), "Compressing"))
+    CONTROL = cast('TimerWork', (auto(), "Control"))
+    SYNAPSE = cast('TimerWork', (auto(), "Expanding Synapse"))
+    RUNNING = cast('TimerWork', (auto(), "Running"))
+    EXTRACTING = cast('TimerWork', (auto(), "Extracting"))
     # TODO is in right to treat this separately
-    EXTRACT_DATA = (auto(), "Extracting")
-    REPORT = (auto(), "Reporting")
+    EXTRACT_DATA = cast('TimerWork', (auto(), "Extracting"))
+    REPORT = cast('TimerWork', (auto(), "Reporting"))
 
-    def __new__(cls, value, work_name):
-        # pylint: disable=protected-access
-        obj = object.__new__(cls)
-        obj._value_ = value
-        obj._work_name = work_name
-        return obj
+    def __init__(self, value: 'TimerWork', work_name: str):
+        self._value_ = value
+        self._work_name = work_name
 
     @property
-    def work_name(self):
+    def work_name(self) -> str:
         return self._work_name

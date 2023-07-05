@@ -46,8 +46,7 @@ class ProfileData(object):
         "_tag_labels",
 
         # The maximum time recorded
-        "_max_time"
-    )
+        "_max_time")
 
     def __init__(self, tag_labels: Mapping[int, str]):
         """

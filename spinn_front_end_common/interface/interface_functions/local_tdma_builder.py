@@ -14,6 +14,7 @@
 
 import logging
 import math
+from typing import Any, Optional, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.config_holder import get_config_float, get_config_int
 from spinn_front_end_common.abstract_models.impl.\
@@ -29,7 +30,7 @@ FRACTION_OF_TIME_FOR_SPIKE_SENDING = 0.8
 FRACTION_OF_TIME_STEP_BEFORE_SPIKE_SENDING = 0.1
 
 
-def local_tdma_builder():
+def local_tdma_builder() -> None:
     """
     Builds a localised TDMA.
 
@@ -132,8 +133,10 @@ def local_tdma_builder():
 
 
 def __auto_config_times(
-        app_machine_quantity, clocks_between_cores, clocks_for_sending,
-        app_vertex, clocks_waiting):
+        app_machine_quantity: Optional[int],
+        clocks_between_cores: Optional[int], clocks_for_sending: int,
+        app_vertex: TDMAAwareApplicationVertex, clocks_waiting: int) -> Tuple[
+            int, int]:
     n_cores = app_vertex.get_n_cores()
     n_phases = app_vertex.get_n_phases()
 
@@ -145,33 +148,36 @@ def __auto_config_times(
     # Overall time of the TDMA window minus initial offset
     overall_clocks_available = clocks_for_sending - clocks_waiting
 
-    # Easier bool compares
-    core_set = clocks_between_cores is not None
-    app_set = app_machine_quantity is not None
-
-    # Adjust time between cores to fit time scale
-    if not core_set and app_set:
+    if clocks_between_cores is None:
+        if app_machine_quantity is None:
+            raise ConfigurationException("impossible TDMA configuration")
+        # Adjust time between cores to fit time scale
         n_slots = int(math.ceil(n_cores / app_machine_quantity))
-        clocks_per_phase = int(math.ceil(overall_clocks_available / n_phases))
-        clocks_between_cores = clocks_per_phase / n_slots
+        clocks_per_phase = int(math.ceil(
+            overall_clocks_available / n_phases))
+        clocks_between_cores = int(clocks_per_phase / n_slots)
         logger.debug(
             "adjusted clocks between cores is {}",
             clocks_between_cores)
-    # Adjust cores at same time to fit time between cores.
-    elif core_set and not app_set:
-        clocks_per_phase = int(math.ceil(overall_clocks_available / n_phases))
+        return app_machine_quantity, clocks_between_cores
+    else:
+        if app_machine_quantity is not None:
+            return app_machine_quantity, clocks_between_cores
+        # Adjust cores at same time to fit time between cores.
+        clocks_per_phase = int(math.ceil(
+            overall_clocks_available / n_phases))
         max_slots = int(clocks_per_phase // clocks_between_cores)
         app_machine_quantity = int(math.ceil(n_cores / max_slots))
         logger.debug(
             "Adjusted the number of cores of a app vertex that "
             "can fire at the same time to {}",
             app_machine_quantity)
-
-    return app_machine_quantity, clocks_between_cores
+        return app_machine_quantity, clocks_between_cores
 
 
 def __generate_initial_offset(
-        index, length, clocks_between_cores, clocks_waiting):
+        index: int, length: int, clocks_between_cores: int,
+        clocks_waiting: int) -> int:
     """
     Calculates from the app vertex index the initial offset for the
     TDMA between all cores.
@@ -194,7 +200,8 @@ def __generate_initial_offset(
 
 
 def __generate_times(
-        app_vertex, app_machine_quantity, clocks_between_cores):
+        app_vertex: TDMAAwareApplicationVertex, app_machine_quantity: int,
+        clocks_between_cores: int) -> Tuple[int, int, int]:
     """
     Generates the number of phases needed for this app vertex, as well as the
     number of slots and the time between spikes for this app vertex, given the
@@ -220,16 +227,15 @@ def __generate_times(
 
 
 def __get_fraction_of_sending(
-        n_phases, clocks_between_phases, clocks_for_sending):
+        n_phases: int, clocks_between_phases: int,
+        clocks_for_sending: int) -> float:
     """
     Get the fraction of the send.
 
     :param int n_phases:
         the max number of phases this TDMA needs for a given app vertex
-    :param int time_between_phases: the time between phases.
-    :param float fraction_of_sending:
-        fraction of time step for sending packets
-    :param str label: the app vertex we're considering at this point
+    :param int clocks_between_phases: the time between phases, in clocks.
+    :param int clocks_for_sending: the time to do a send, in clocks
     :rtype: float
     """
     # figure how much time this TDMA needs
@@ -237,14 +243,14 @@ def __get_fraction_of_sending(
     return total_clocks_needed / clocks_for_sending
 
 
-def __check_at_most_one(name_1, value_1, name_2, value_2):
+def __check_at_most_one(name_1: str, value_1: Any, name_2: str, value_2: Any):
     if value_1 is not None and value_2 is not None:
         raise ConfigurationException(
             f"Both {name_1} and {name_2} have been specified; "
             "please choose just one")
 
 
-def __check_only_one(name_1, value_1, name_2, value_2):
+def __check_only_one(name_1: str, value_1: Any, name_2: str, value_2: Any):
     """
     Checks that exactly one of the values is not `None`.
     """
@@ -254,7 +260,8 @@ def __check_only_one(name_1, value_1, name_2, value_2):
             f"Exactly one of {name_1} and {name_2} must be specified")
 
 
-def __config_values(clocks_per_cycle):
+def __config_values(clocks_per_cycle: int) -> Tuple[
+        Optional[int], Optional[int], int, int, int]:
     """
     Read the configuration for the right parameters and combinations.
 
@@ -282,7 +289,7 @@ def __config_values(clocks_per_cycle):
             " must be specified or else app_machine_quantity must be"
             " specified")
     if time_between_cores is not None:
-        clocks_between_cores = time_between_cores * CLOCKS_PER_US
+        clocks_between_cores = int(time_between_cores * CLOCKS_PER_US)
 
     # time spend sending
     fraction_of_sending = get_config_float(
@@ -295,12 +302,13 @@ def __config_values(clocks_per_cycle):
     if fraction_of_sending is not None:
         clocks_for_sending = int(round(
             clocks_per_cycle * fraction_of_sending))
+    assert clocks_for_sending is not None
 
     # time waiting before sending
     fraction_of_waiting = get_config_float(
         "Simulation", "fraction_of_time_before_sending")
     clocks_waiting = get_config_int(
-        "Simulation", "clock_cycles_before_sending")
+        "Simulation", "clock_cycles_before_sending") or 600
     __check_only_one(
         "fraction_of_time_before_sending", fraction_of_waiting,
         "clock_cycles_before_sending", clocks_waiting)
@@ -317,6 +325,8 @@ def __config_values(clocks_per_cycle):
         "clock_cycles_for_offset", clocks_initial)
     if fraction_initial is not None:
         clocks_initial = int(round(clocks_per_cycle * fraction_initial))
+    elif clocks_initial is None:
+        clocks_initial = 1000
 
     # check fractions less than 1.
     if (clocks_for_sending + clocks_waiting + clocks_initial >

@@ -346,7 +346,7 @@ class JavaCaller(object):
 
         return path
 
-    def _run_java(self, *args: str):
+    def _run_java(self, *args: str) -> int:
         """
         Does the actual running of `JavaSpiNNaker`. Arguments are those that
         will be processed by the `main` method on the Java side.

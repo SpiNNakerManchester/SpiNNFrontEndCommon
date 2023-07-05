@@ -247,7 +247,8 @@ class SQLiteDB(AbstractContextManager):
             raise AttributeError("database has been closed")
         return self.__db
 
-    def transaction(self, isolation_level=Isolation.DEFERRED) -> _DbWrapper:
+    def transaction(self, isolation_level=Isolation.DEFERRED
+                    ) -> ACMBase[sqlite3.Cursor]:
         """
         Get a context manager that manages a transaction on the database.
         The value of the context manager is a :py:class:`~sqlite3.Cursor`.
@@ -275,7 +276,7 @@ class SQLiteDB(AbstractContextManager):
         return _DbWrapper(self.__db, isolation_level)
 
 
-class _DbWrapper(ACMBase):
+class _DbWrapper(ACMBase[sqlite3.Cursor]):
     """
     Transaction handling wrapper.
 

@@ -19,6 +19,9 @@ from spinn_utilities.typing.coords import XYP
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import PROVENANCE_DB
 from spinn_front_end_common.utilities.base_database import BaseDatabase
+
+#: Basic types supported natively by SQLite
+_SqliteTypes: TypeAlias = Union[str, int, float, bytes, None]
 _MonitorItem: TypeAlias = Tuple[int, int, int]
 _RouterItem: TypeAlias = Tuple[int, int, Union[int, float]]
 
@@ -73,9 +76,8 @@ class ProvenanceReader(BaseDatabase):
         super().__init__(provenance_data_path, read_only=True,
                          row_factory=None, text_factory=None)
 
-    def run_query(self, query: str,
-                  params: Iterable[Union[str, int, float, bytes, None]] = ()
-                  ) -> List[Sequence[Union[str, int, float, bytes, None]]]:
+    def run_query(self, query: str, params: Iterable[_SqliteTypes] = ()
+                  ) -> List[Sequence[_SqliteTypes]]:
         """
         Opens a connection to the database, runs a query, extracts the results
         and closes the connection.
@@ -103,11 +105,8 @@ class ProvenanceReader(BaseDatabase):
             statement
         :rtype: list(tuple or ~sqlite3.Row)
         """
-        results = []
         with self.transaction() as cur:
-            for row in cur.execute(query, list(params)):
-                results.append(row)
-        return results
+            return list(cur.execute(query, list(params)))
 
     def cores_with_late_spikes(self) -> List[Tuple[int, int, int, int]]:
         """
@@ -221,7 +220,7 @@ class ProvenanceReader(BaseDatabase):
         return [cast(str, msg) for msg, in self.run_query(query, [])]
 
     @staticmethod
-    def demo():
+    def demo() -> None:
         """
         A demonstration of how to use this class.
 

@@ -14,12 +14,15 @@
 
 import logging
 import struct
+from typing import List
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.typing.coords import XY
 from spinn_machine import CoreSubsets, Router
 from spinnman.model import ExecutableTargets
 from spinnman.model.enums import CPUState, ExecutableType
+from pacman.model.routing_tables import AbstractMulticastRoutingTable
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.utilities.system_control_logic import (
@@ -27,13 +30,13 @@ from spinn_front_end_common.utilities.system_control_logic import (
 from spinn_front_end_common.utilities.helpful_functions import (
     get_defaultable_source_id)
 from spinn_front_end_common.utilities.constants import COMPRESSOR_SDRAM_TAG
+
 _FOUR_WORDS = struct.Struct("<IIII")
 _THREE_WORDS = struct.Struct("<III")
-
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def pair_compression():
+def pair_compression() -> None:
     """
     Load routing tables and compress then using the Pair Algorithm.
 
@@ -48,7 +51,7 @@ def pair_compression():
     compression.compress()
 
 
-def ordered_covering_compression():
+def ordered_covering_compression() -> None:
     """
     Load routing tables and compress then using the unordered Algorithm.
 
@@ -80,7 +83,8 @@ class Compression(object):
         "_routing_tables",
         "__failures")
 
-    def __init__(self, binary_path, progress_text, result_register):
+    def __init__(
+            self, binary_path: str, progress_text: str, result_register: int):
         """
         :param str binary_path: What binary to run
         :param ~spinn_machine.Machine machine: The machine model
@@ -95,11 +99,11 @@ class Compression(object):
         self._compress_only_when_needed = None
         self._routing_tables = FecDataView.get_precompressed()
         self._progresses_text = progress_text
-        self._compressor_app_id = None
-        self.__failures = []
+        self._compressor_app_id = -1
+        self.__failures: List[XY] = []
         self.__result_register = result_register
 
-    def compress(self):
+    def compress(self) -> None:
         """
         Apply the on-machine compression algorithm.
 
@@ -126,15 +130,14 @@ class Compression(object):
 
         run_system_application(
             executable_targets, self._compressor_app_id,
-            get_config_bool("Reports", "write_compressor_iobuf"),
-            self._check_for_success,
-            [CPUState.FINISHED], False, "compressor_on_{}_{}_{}.txt",
-            [self._binary_path], progress_bar)
+            get_config_bool("Reports", "write_compressor_iobuf") or False,
+            self._check_for_success, frozenset([CPUState.FINISHED]), False,
+            "compressor_on_{}_{}_{}.txt", [self._binary_path], progress_bar)
         if self.__failures:
             raise SpinnFrontEndException(
                 f"The router compressor failed on {self.__failures}")
 
-    def _load_routing_table(self, table):
+    def _load_routing_table(self, table: AbstractMulticastRoutingTable):
         """
         :param pacman.model.routing_tables.AbstractMulticastRoutingTable table:
             the router table to load
@@ -150,7 +153,8 @@ class Compression(object):
         # write SDRAM requirements per chip
         transceiver.write_memory(table.x, table.y, base_address, data)
 
-    def _check_for_success(self, executable_targets):
+    def _check_for_success(
+            self, executable_targets: ExecutableTargets) -> bool:
         """
         Goes through the cores checking for cores that have failed to compress
         the routing tables to the level where they fit into the router.
@@ -176,7 +180,7 @@ class Compression(object):
                     self.__failures.append((x, y))
         return len(self.__failures) == 0
 
-    def _load_executables(self):
+    def _load_executables(self) -> ExecutableTargets:
         """
         Plans the loading of the router compressor onto the chips.
 
@@ -188,12 +192,13 @@ class Compression(object):
         # build core subsets
         core_subsets = CoreSubsets()
         for routing_table in self._routing_tables.routing_tables:
-            # get the first none monitor core
+            # get the first non-monitor core
             processor = routing_table.chip.get_first_none_monitor_processor()
 
             # add to the core subsets
-            core_subsets.add_processor(
-                routing_table.x, routing_table.y, processor.processor_id)
+            if processor:
+                core_subsets.add_processor(
+                    routing_table.x, routing_table.y, processor.processor_id)
 
         # build executable targets
         executable_targets = ExecutableTargets()
@@ -202,7 +207,7 @@ class Compression(object):
 
         return executable_targets
 
-    def _build_data(self, table):
+    def _build_data(self, table: AbstractMulticastRoutingTable) -> bytes:
         """
         Convert the router table into the data needed by the router
         compressor C code.
@@ -219,7 +224,7 @@ class Compression(object):
         if self._compress_only_when_needed is None:
             data += _THREE_WORDS.pack(
                 FecDataView.get_app_id(),
-                int(self._compress_as_much_as_possible),
+                int(self._compress_as_much_as_possible or False),
                 # Write the size of the table
                 table.number_of_entries)
         else:

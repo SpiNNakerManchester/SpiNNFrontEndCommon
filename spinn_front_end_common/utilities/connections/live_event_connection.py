@@ -16,7 +16,8 @@ import logging
 import struct
 from threading import Thread, Condition
 from time import sleep
-from typing import Callable, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import (
+    Callable, Dict, Iterable, List, Optional, Set, Tuple, Union, cast)
 from typing_extensions import TypeGuard
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.data_messages import (
@@ -143,7 +144,7 @@ class LiveEventConnection(DatabaseConnection):
             list(send_labels) if send_labels is not None else None)
         self.__sender_connection: Optional[EIEIOConnection] = None
         self.__send_address_details: Dict[str, Tuple[
-            int, int, int, Optional[str]]] = dict()
+            int, int, int, str]] = dict()
         # Also used by SpynnakerPoissonControlConnection
         self._atom_id_to_key: Dict[str, Dict[int, int]] = dict()
         self.__key_to_atom_id_and_label: Dict[int, Tuple[int, int]] = dict()
@@ -234,9 +235,7 @@ class LiveEventConnection(DatabaseConnection):
         self.__live_event_callbacks[label_id].append(
             (live_event_callback, translate_key))
 
-    def add_start_callback(
-            self, label: str,
-            start_callback: Callable[[str, LiveEventConnection], None]):
+    def add_start_callback(self, label: str, start_callback: _Callback):
         """
         Add a callback for the start of the simulation.
 
@@ -326,8 +325,8 @@ class LiveEventConnection(DatabaseConnection):
             self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(label)
             vertex_sizes[label] = len(self._atom_id_to_key[label])
 
-    def __init_receivers(self, db: DatabaseReader,
-                         vertex_sizes: Dict[str, int]):
+    def __init_receivers(
+            self, db: DatabaseReader, vertex_sizes: Dict[str, int]):
         """
         :param DatabaseReader db:
         :param dict(str,int) vertex_sizes:
@@ -374,7 +373,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_input_details(
             self, db_reader: DatabaseReader, send_label: str) -> Tuple[
-                int, int, int, Optional[str]]:
+                int, int, int, str]:
         """
         :param DatabaseReader db_reader:
         :param str send_label:
@@ -383,6 +382,9 @@ class LiveEventConnection(DatabaseConnection):
         x, y, p = db_reader.get_placements(send_label)[0]
 
         ip_address = db_reader.get_ip_address(x, y)
+        if ip_address is None:
+            raise ConfigurationException(
+                f"Ethernet-enabled chip without IP address at {x},{y}")
         return x, y, p, ip_address
 
     def __get_live_output_details(
@@ -412,9 +414,7 @@ class LiveEventConnection(DatabaseConnection):
             self.__receiver_connection.close()
             self.__receiver_connection = None
 
-    def __launch_thread(
-            self, kind, label: str,
-            callback: Callable[[str, LiveEventConnection], None]):
+    def __launch_thread(self, kind: str, label: str, callback: _Callback):
         thread = Thread(
             target=callback, args=(label, self),
             name=(f"{kind} callback thread for live_event_connection "
@@ -444,14 +444,17 @@ class LiveEventConnection(DatabaseConnection):
             if self.__is_running:
                 self.__send_tag_messages_now()
 
-    def __send_tag_messages_now(self):
+    def __send_tag_messages_now(self) -> None:
+        if self.__receiver_connection is None:
+            return
+        rc = (cast(SpallocEIEIOListener, self.__receiver_connection)
+              if _is_spalloc_eieio(self.__receiver_connection) else None)
         for (x, y, tag, board_address) in self.__receiver_details:
             with self.__expect_scp_response_lock:
                 self.__scp_response_received = None
                 self.__expect_scp_response = True
-                if _is_spalloc_eieio(self.__receiver_connection):
-                    self.__receiver_connection.update_tag(
-                        x, y, tag, do_receive=False)
+                if rc:
+                    rc.update_tag(x, y, tag, do_receive=False)
                     # No port trigger necessary; proxied already
                 else:
                     reprogram_tag_to_listener(
@@ -603,7 +606,8 @@ class LiveEventConnection(DatabaseConnection):
 
             self._send(message, x, y, p, ip_address)
 
-    def send_event_with_payload(self, label: str, atom_id: int, payload: int):
+    def send_event_with_payload(
+            self, label: str, atom_id: int, payload: int):
         """
         Send an event with a payload from a single atom.
 
@@ -615,7 +619,8 @@ class LiveEventConnection(DatabaseConnection):
         self.send_events_with_payloads(label, [(atom_id, payload)])
 
     def send_events_with_payloads(
-            self, label: str, atom_ids_and_payloads: List[Tuple[int, int]]):
+            self, label: str,
+            atom_ids_and_payloads: List[Tuple[int, int]]):
         """
         Send a number of events with payloads.
 
@@ -640,7 +645,8 @@ class LiveEventConnection(DatabaseConnection):
 
             self._send(message, x, y, p, ip_address)
 
-    def send_eieio_message(self, message: AbstractEIEIOMessage, label: str):
+    def send_eieio_message(
+            self, message: AbstractEIEIOMessage, label: str):
         """
         Send an EIEIO message (using one-way the live input) to the
         vertex with the given label.
@@ -655,7 +661,8 @@ class LiveEventConnection(DatabaseConnection):
         x, y, p, ip_address = target
         self._send(message, x, y, p, ip_address)
 
-    def _send(self, message: AbstractEIEIOMessage, x, y, p, ip_address):
+    def _send(self, message: AbstractEIEIOMessage, x: int, y: int, p: int,
+              ip_address: str):
         """
         Send an EIEIO message to a particular core.
 
