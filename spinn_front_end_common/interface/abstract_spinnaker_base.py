@@ -2211,7 +2211,7 @@ class AbstractSpinnakerBase(ConfigHandler):
                         x, y, p, failed_cores.get_cpu_info(x, y, p))
 
         # Print the details of error cores
-        logger.error(transceiver.get_core_status_string(unsuccessful_cores))
+        logger.error(unsuccessful_cores.get_status_string())
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
