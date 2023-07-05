@@ -13,9 +13,11 @@
 # limitations under the License.
 
 import logging
+from typing import Optional, Set, Tuple
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.database import DatabaseWriter
 from spinn_front_end_common.abstract_models import (
     AbstractSupportsDatabaseInjection)
@@ -24,7 +26,7 @@ from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime):
+def database_interface(runtime: int) -> Optional[str]:
     """
     :param int runtime:
     :return: where the database is located, if one is made
@@ -48,7 +50,7 @@ def database_interface(runtime):
         return writer.database_path
 
 
-def _write_to_db(w, runtime):
+def _write_to_db(w: DatabaseWriter, runtime: int):
     """
     :param DatabaseWriter w:
     :param int runtime:
@@ -69,7 +71,7 @@ def _write_to_db(w, runtime):
 
         if get_config_bool(
                 "Database", "create_routing_info_to_neuron_id_mapping"):
-            machine_vertices = {
+            machine_vertices: Set[Tuple[MachineVertex, str]] = {
                 (vertex, vertex.injection_partition_id)
                 for vertex in FecDataView.iterate_machine_vertices()
                 if isinstance(vertex, AbstractSupportsDatabaseInjection)

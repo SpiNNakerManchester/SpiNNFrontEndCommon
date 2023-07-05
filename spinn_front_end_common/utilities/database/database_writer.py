@@ -14,7 +14,7 @@
 
 import logging
 import os
-from typing import Dict, List, Optional, Tuple, cast, TYPE_CHECKING
+from typing import Dict, Iterable, List, Optional, Tuple, cast, TYPE_CHECKING
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import Machine
 from pacman.utilities.utility_calls import get_field_based_keys
@@ -231,7 +231,8 @@ class DatabaseWriter(SQLiteDB):
                     for ipt, vert in tags.ip_tags_vertices))
 
     def create_atom_to_event_id_mapping(
-            self, machine_vertices: List[Tuple[MachineVertex, str]]):
+            self, machine_vertices: Optional[
+                Iterable[Tuple[MachineVertex, str]]]):
         """
         :param machine_vertices:
         :type machine_vertices:

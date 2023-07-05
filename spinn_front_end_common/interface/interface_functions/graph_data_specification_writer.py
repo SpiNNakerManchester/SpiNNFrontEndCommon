@@ -14,10 +14,13 @@
 
 from collections import defaultdict
 import logging
-
+from typing import Iterable, List, Sequence, Optional
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
+from pacman.model.graphs import AbstractVertex
+from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import MultiRegionSDRAM, ConstantSDRAM
+from pacman.model.placements import Placement
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.data import FecDataView
@@ -57,7 +60,7 @@ class _GraphDataSpecificationWriter(object):
         self._sdram_usage = defaultdict(lambda: 0)
         self._vertices_by_chip = defaultdict(list)
 
-    def run(self, placement_order=None):
+    def run(self, placement_order: Optional[Sequence[Placement]] = None):
         """
         :param list(~pacman.model.placements.Placement) placement_order:
             the optional order in which placements should be examined
@@ -72,16 +75,18 @@ class _GraphDataSpecificationWriter(object):
         ds_db.write_session_credentials_to_db()
         ds_db. set_app_id()
 
+        placements: Iterable[Placement]
         if placement_order is None:
-            placement_order = FecDataView.iterate_placemements()
+            placements = FecDataView.iterate_placemements()
             n_placements = FecDataView.get_n_placements()
         else:
+            placements = placement_order
             n_placements = len(placement_order)
 
         progress = ProgressBar(n_placements, "Generating data specifications")
-        vertices_to_reset = list()
+        vertices_to_reset: List[AbstractRewritesDataSpecification] = list()
 
-        for placement in progress.over(placement_order):
+        for placement in progress.over(placements):
             # Try to generate the data spec for the placement
             vertex = placement.vertex
             generated = self.__generate_data_spec_for_vertices(
@@ -102,14 +107,16 @@ class _GraphDataSpecificationWriter(object):
                     vertices_to_reset.append(vertex.app_vertex)
 
         # Ensure that the vertices know their regions have been reloaded
-        for vertex in vertices_to_reset:
-            vertex.set_reload_required(False)
+        for rewriter in vertices_to_reset:
+            rewriter.set_reload_required(False)
 
         self._run_check_queries(ds_db)
 
         return ds_db
 
-    def __generate_data_spec_for_vertices(self, pl, vertex, ds_db):
+    def __generate_data_spec_for_vertices(
+            self, pl: Placement, vertex: AbstractVertex,
+            ds_db: DsSqlliteDatabase) -> bool:
         """
         :param ~.Placement pl: placement of machine graph to cores
         :param ~.AbstractVertex vertex: the specific vertex to write DSG for.
@@ -122,9 +129,7 @@ class _GraphDataSpecificationWriter(object):
         if not isinstance(vertex, AbstractGeneratesDataSpecification):
             return False
 
-        x = pl.x
-        y = pl.y
-        p = pl.p
+        x, y, p = pl.x, pl.y, pl.p
 
         report_writer = get_report_writer(x, y, p)
         spec = DataSpecificationGenerator(
@@ -136,21 +141,23 @@ class _GraphDataSpecificationWriter(object):
         # Check the memory usage
         total_size = ds_db.get_total_regions_size(x, y, p)
         region_size = APP_PTR_TABLE_BYTE_SIZE + total_size
+        total_est_size = 0
 
         # Check per-region memory usage if possible
-        sdram = vertex.sdram_required
-        if isinstance(sdram, MultiRegionSDRAM):
-            region_sizes = ds_db.get_region_sizes(x, y, p)
-            for i, size in region_sizes.items():
-                est_size = sdram.regions.get(i, ConstantSDRAM(0))
-                est_size = est_size.get_total_sdram(
-                    FecDataView.get_max_run_time_steps())
-                if size > est_size:
-                    # pylint: disable=logging-too-many-args
-                    logger.warning(
-                        "Region {} of vertex {} is bigger than expected: "
-                        "{} estimated vs. {} actual",
-                        i, vertex.label, est_size, size)
+        if isinstance(vertex, MachineVertex):
+            sdram = vertex.sdram_required
+            if isinstance(sdram, MultiRegionSDRAM):
+                region_sizes = ds_db.get_region_sizes(x, y, p)
+                for i, size in region_sizes.items():
+                    est_size = sdram.regions.get(i, ConstantSDRAM(0))
+                    est_size = est_size.get_total_sdram(
+                        FecDataView.get_max_run_time_steps())
+                    total_est_size += est_size
+                    if size > est_size:
+                        logger.warning(
+                            "Region {} of vertex {} is bigger than expected: "
+                            "{} estimated vs. {} actual",
+                            i, vertex.label, est_size, size)
 
         self._vertices_by_chip[x, y].append(vertex)
         self._sdram_usage[x, y] += total_size
@@ -162,7 +169,7 @@ class _GraphDataSpecificationWriter(object):
         # what each core within the chip uses and its original estimate.
         memory_usage = "\n".join(
             "    {}: {} (total={}, estimated={})".format(
-                vert, region_size, sum(region_size),
+                vert, region_size, total_est_size,
                 vert.sdram_required.get_total_sdram(
                     FecDataView.get_max_run_time_steps()))
             for vert in self._vertices_by_chip[x, y])
@@ -171,21 +178,19 @@ class _GraphDataSpecificationWriter(object):
             f"Too much SDRAM has been used on {x}, {y}.  Vertices and"
             f" their usage on that chip is as follows:\n{memory_usage}")
 
-    def _run_check_queries(self, ds_db):
+    def _run_check_queries(self, ds_db: DsSqlliteDatabase):
         msg = ""
-        for bad in ds_db.get_unlinked_references():
-            x, y, p, region, reference, label = bad
-            if label is None:
+        for x, y, p, region, reference, lbl in ds_db.get_unlinked_references():
+            if lbl is None:
                 label = ""
             else:
-                label = f"({label})"
-            msg = f"{msg}core {x}:{y}:{p} has a broken reference " \
-                  f"{reference}{label} from region {region} "
+                label = f"({lbl})"
+            msg += f"core {x}:{y}:{p} has a broken reference " \
+                f"{reference}{label} from region {region} "
 
-        for bad in ds_db.get_double_region():
-            x, y, p, region = bad
-            msg = f"{msg}core {x}:{y}:{p} {region} " \
-                  f"has both a region reserve and a reference "
+        for x, y, p, region in ds_db.get_double_region():
+            msg += f"core {x}:{y}:{p} {region} " \
+                "has both a region reserve and a reference "
 
         if msg != "":
             raise DataSpecException(msg)

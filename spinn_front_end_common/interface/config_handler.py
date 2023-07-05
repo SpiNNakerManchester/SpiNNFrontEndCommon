@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 import traceback
+from typing import Optional, Type, Union
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.config_holder import (
     config_options, load_config, get_config_bool, get_config_int,
@@ -53,7 +54,7 @@ class ConfigHandler(object):
         # The writer and therefore view of the global data
         "_data_writer", )
 
-    def __init__(self, data_writer_cls=None):
+    def __init__(self, data_writer_cls: Optional[Type[FecDataWriter]] = None):
         """
         :param FecDataWriter data_writer:
             The Global data writer object
@@ -75,7 +76,7 @@ class ConfigHandler(object):
         if max_machine_core is not None:
             Machine.set_max_cores_per_chip(max_machine_core)
 
-    def _debug_configs(self):
+    def _debug_configs(self) -> None:
         """
         Adjusts and checks the configuration based on mode and
         `reports_enabled`.
@@ -106,13 +107,13 @@ class ConfigHandler(object):
                 logger.info("[Reports]write_energy_report has been set to "
                             "False as using virtual boards")
 
-    def _previous_handler(self):
+    def _previous_handler(self) -> None:
         self._error_on_previous("loading_algorithms")
         self._error_on_previous("application_to_machine_graph_algorithms")
         self._error_on_previous("machine_graph_to_machine_algorithms")
         self._error_on_previous("machine_graph_to_virtual_machine_algorithms")
 
-    def _error_on_previous(self, option):
+    def _error_on_previous(self, option) -> None:
         try:
             get_config_str_list("Mapping", option)
         except NoOptionError:
@@ -123,7 +124,7 @@ class ConfigHandler(object):
             "See https://spinnakermanchester.github.io/common_pages/"
             "Algorithms.html.")
 
-    def _adjust_config(self, runtime):
+    def _adjust_config(self, runtime: Union[int, bool, None]):
         """
         Adjust and checks the configuration based on runtime
 
@@ -138,7 +139,8 @@ class ConfigHandler(object):
                             "False as runtime is set to forever")
 
     def _remove_excess_folders(
-            self, max_kept, starting_directory, remove_errored_folders):
+            self, max_kept: int, starting_directory: str,
+            remove_errored_folders: Optional[bool]):
         try:
             files_in_report_folder = os.listdir(starting_directory)
 
@@ -182,12 +184,12 @@ class ConfigHandler(object):
             # process in the same folder, but we shouldn't die because of it
             pass
 
-    def _set_up_report_specifics(self):
+    def _set_up_report_specifics(self) -> None:
         # clear and clean out folders considered not useful anymore
         report_dir_path = self._data_writer.get_report_dir_path()
         if os.listdir(report_dir_path):
             self._remove_excess_folders(
-                get_config_int("Reports", "max_reports_kept"),
+                get_config_int("Reports", "max_reports_kept") or 0,
                 report_dir_path,
                 get_config_bool("Reports", "remove_errored_folders"))
 
@@ -202,22 +204,23 @@ class ConfigHandler(object):
             f.write("Traceback of setup call:\n")
             traceback.print_stack(file=f)
 
-    def __write_named_file(self, file_name):
+    def __write_marker_file(self, file_name: str):
         app_file_name = os.path.join(
             self._data_writer.get_timestamp_dir_path(), file_name)
         with open(app_file_name, "w", encoding="utf-8") as f:
+            # TODO What should this file contain?
             f.writelines("file_name")
 
-    def write_finished_file(self):
+    def write_finished_file(self) -> None:
         """
         Write a finished file that allows file removal to only remove
         folders that are finished.
         """
-        self.__write_named_file(FINISHED_FILENAME)
+        self.__write_marker_file(FINISHED_FILENAME)
 
-    def write_errored_file(self):
+    def write_errored_file(self) -> None:
         """
         Writes an ``errored`` file that allows file removal to only remove
         folders that have errors if requested to do so
         """
-        self.__write_named_file(ERRORED_FILENAME)
+        self.__write_marker_file(ERRORED_FILENAME)

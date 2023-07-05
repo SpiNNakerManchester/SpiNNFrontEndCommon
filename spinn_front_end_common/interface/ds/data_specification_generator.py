@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Optional, cast
+from typing import Optional, Union, cast
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.constants import BYTES_PER_WORD
 from spinn_front_end_common.utilities.exceptions import DataSpecException
 from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification,
     AbstractRewritesDataSpecification, AbstractHasAssociatedBinary)
 from .data_specification_base import DataSpecificationBase
 from .ds_sqllite_database import DsSqlliteDatabase
@@ -31,7 +32,9 @@ class DataSpecificationGenerator(DataSpecificationBase):
 
     def __init__(
             self, x: int, y: int, p: int,
-            vertex: AbstractRewritesDataSpecification,
+            vertex: Union[
+                AbstractGeneratesDataSpecification,
+                AbstractRewritesDataSpecification],
             ds_db: DsSqlliteDatabase, report_writer=None):
         """
         :param int x:

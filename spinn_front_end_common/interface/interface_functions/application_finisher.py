@@ -15,9 +15,11 @@
 import struct
 import time
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState, ExecutableType
+from spinnman.transceiver import Transceiver
 from spinn_front_end_common.data import FecDataView
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
@@ -27,7 +29,7 @@ from spinn_front_end_common.utilities.exceptions import (
 _ONE_WORD = struct.Struct("<I")
 
 
-def application_finisher():
+def application_finisher() -> None:
     """
     Handles finishing the running of an application, collecting the
     status of the cores that the application was running on.
@@ -60,7 +62,7 @@ def application_finisher():
                 app_id, CPUState.FINISHED)
 
 
-def _detect_fails(txrx, app_id, n_cores):
+def _detect_fails(txrx: Transceiver, app_id: int, n_cores: int):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     :param int app_id:
@@ -75,7 +77,7 @@ def _detect_fails(txrx, app_id, n_cores):
             "into an error state when shutting down")
 
 
-def _detect_finished(txrx, app_id, all_cores):
+def _detect_finished(txrx: Transceiver, app_id: int, all_cores: CoreSubsets):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     :param int app_id:
@@ -92,7 +94,9 @@ def _detect_finished(txrx, app_id, all_cores):
                     txrx, app_id, processor, core_subset)
 
 
-def _update_provenance_and_exit(txrx, app_id, processor, core_subset):
+def _update_provenance_and_exit(
+        txrx: Transceiver, app_id: int, processor: int,
+        core_subset: CoreSubset):
     """
     :param ~spinnman.transceiver.Transceiver txrx:
     :param int processor:

@@ -15,7 +15,7 @@
 import logging
 import os
 import re
-from typing import List, Optional, Pattern, Set, Sized, Tuple, Union
+from typing import List, Optional, Pattern, Sequence, Set, Sized, Tuple, Union
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
@@ -90,7 +90,7 @@ class IOBufExtractor(object):
         except KeyError:
             pass
 
-    def extract_iobuf(self) -> Tuple[List[str], List[str]]:
+    def extract_iobuf(self) -> Tuple[Sequence[str], Sequence[str]]:
         """
         Perform the extraction of IOBUF.
 

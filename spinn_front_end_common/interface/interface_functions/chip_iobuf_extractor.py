@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Sequence, Tuple
 from spinn_front_end_common.utilities.iobuf_extractor import IOBufExtractor
 
 
-def chip_io_buf_extractor():
+def chip_io_buf_extractor() -> Tuple[Sequence[str], Sequence[str]]:
     """
     Extract the logging output buffers from the machine, and separates
     lines based on their prefix.

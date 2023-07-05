@@ -31,7 +31,7 @@ _ONE_WORD = struct.Struct("<I")
 _LIMIT = 10
 
 
-def chip_provenance_updater(all_core_subsets):
+def chip_provenance_updater(all_core_subsets: CoreSubsets):
     _ChipProvenanceUpdater(all_core_subsets).update_all_provenance()
 
 

@@ -16,7 +16,7 @@ import logging
 import numpy
 import math
 import scipy.stats  # type: ignore[import]
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Mapping, Tuple
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
 
@@ -49,7 +49,7 @@ class ProfileData(object):
         "_max_time"
     )
 
-    def __init__(self, tag_labels: Dict[int, str]):
+    def __init__(self, tag_labels: Mapping[int, str]):
         """
         :param list(str) tag_labels: A list of labels indexed by tag ID
         """

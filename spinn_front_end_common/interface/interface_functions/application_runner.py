@@ -14,6 +14,7 @@
 
 import logging
 import time
+from typing import Optional
 from spinn_utilities.log import FormatAdapter
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import ExecutableType
@@ -27,7 +28,8 @@ SAFETY_FINISH_TIME = 0.1
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def application_runner(runtime, time_threshold, run_until_complete):
+def application_runner(
+        runtime: int, time_threshold: int, run_until_complete: bool):
     """
     Ensures all cores are initialised correctly, ran, and completed
     successfully.
@@ -48,11 +50,13 @@ class _ApplicationRunner(object):
 
     __slots__ = ("__txrx", "__app_id")
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__txrx = FecDataView.get_transceiver()
         self.__app_id = FecDataView.get_app_id()
 
-    def run_app(self, runtime, time_threshold, run_until_complete=False):
+    def run_app(
+            self, runtime: int, time_threshold: int,
+            run_until_complete: bool = False):
         """
         :param int runtime:
         :param int time_threshold:
@@ -101,7 +105,9 @@ class _ApplicationRunner(object):
             # Send stop notification to external applications
             notification_interface.send_stop_pause_notification()
 
-    def _run_wait(self, run_until_complete, runtime, time_threshold):
+    def _run_wait(
+            self, run_until_complete: bool, runtime: int,
+            time_threshold: float):
         """
         :param bool run_until_complete:
         :param int runtime:
@@ -121,7 +127,7 @@ class _ApplicationRunner(object):
             logger.info("Application started; waiting until finished")
             self._wait_for_end()
 
-    def _wait_for_start(self, timeout=None):
+    def _wait_for_start(self, timeout: Optional[float] = None):
         """
         :param timeout:
         :type timeout: float or None
@@ -130,7 +136,7 @@ class _ApplicationRunner(object):
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.start_state, timeout=timeout)
 
-    def _send_sync_signal(self):
+    def _send_sync_signal(self) -> None:
         """
         Let apps that use the simulation interface or sync signals commence
         running their main processing loops. This is done with a very fast
@@ -142,10 +148,11 @@ class _ApplicationRunner(object):
             # locate all signals needed to set off executables
             sync_signal = self._determine_simulation_sync_signals()
 
-            # fire all signals as required
-            self.__txrx.send_signal(self.__app_id, sync_signal)
+            if sync_signal is not None:
+                # fire all signals as required
+                self.__txrx.send_signal(self.__app_id, sync_signal)
 
-    def _wait_for_end(self, timeout=None):
+    def _wait_for_end(self, timeout: Optional[float] = None):
         """
         :param timeout:
         :type timeout: float or None
@@ -154,7 +161,7 @@ class _ApplicationRunner(object):
             self.__txrx.wait_for_cores_to_be_in_state(
                 cores, self.__app_id, ex_type.end_state, timeout=timeout)
 
-    def _determine_simulation_sync_signals(self):
+    def _determine_simulation_sync_signals(self) -> Optional[Signal]:
         """
         Determines the start states, and creates core subsets of the
         states for further checks.
