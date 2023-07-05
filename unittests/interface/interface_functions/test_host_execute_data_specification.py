@@ -39,14 +39,9 @@ class _MockTransceiver(Transceiver):
     """
     # pylint: disable=unused-argument
 
-    def __init__(self, user_0_addresses):
-        """
-
-        :param user_0_addresses: dict of (x, y, p) to user_0_address
-        """
+    def __init__(self):
         self._regions_written = list()
         self._next_address = 0
-        self._user_0_addresses = user_0_addresses
 
     @property
     def regions_written(self):
@@ -59,11 +54,6 @@ class _MockTransceiver(Transceiver):
         address = self._next_address
         self._next_address += size
         return address
-
-    def __get_user_register_address_from_core(self, user, p):
-        if user != 0:
-            raise NotImplementedError("Oops")
-        return self._user_0_addresses[p]
 
     @overrides(Transceiver.write_memory)
     def write_memory(
@@ -102,7 +92,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
 
         vertex = _TestVertexWithBinary(
@@ -142,7 +132,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(regions[2][0], header_and_table_size + 200)
 
         # User 0 write address
-        self.assertEqual(regions[0][0], 1000)
+        self.assertEqual(regions[0][0], 3842011248)
 
         # Size of header and table
         self.assertEqual(len(regions[3][1]), header_and_table_size)
@@ -169,8 +159,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multi_spec_with_references(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000, 2: 3000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
 
         db = DsSqlliteDatabase()
@@ -220,9 +209,15 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Find the base addresses
         base_addresses = dict()
         for base_addr, data in regions:
-            if base_addr != 0 and base_addr % 1000 == 0:
-                base_addresses[(base_addr // 1000) - 1] = struct.unpack(
-                    "<I", data)[0]
+            # user 0 p 0
+            if base_addr == 3842011248:
+                base_addresses[0] = struct.unpack("<I", data)[0]
+            # user 0 p 1
+            if base_addr == 3842011376:
+                base_addresses[1] = struct.unpack("<I", data)[0]
+            # user 0 p 2
+            if base_addr == 3842011504:
+                base_addresses[2] = struct.unpack("<I", data)[0]
 
         # Find the headers
         header_data = dict()
@@ -238,8 +233,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multispec_with_reference_error(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
@@ -269,8 +263,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multispec_with_double_reference(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000, 1: 2000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         vertex = _TestVertexWithBinary(
             "binary", ExecutableType.USES_SIMULATION_INTERFACE)
@@ -284,8 +277,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_multispec_with_wrong_chip_reference(self):
         writer = FecDataWriter.mock()
-        transceiver = _MockTransceiver(
-            user_0_addresses={0: 1000})
+        transceiver = _MockTransceiver()
         writer.set_transceiver(transceiver)
         writer.set_placements(Placements([]))
         vertex = _TestVertexWithBinary(
