@@ -685,17 +685,17 @@ def _search_route(source_vertex, key_and_mask):
     machine = FecDataView.get_machine()
     text = ""
     if isinstance(source_vertex, MachineSpiNNakerLinkVertex):
-        text = "        Virtual SpiNNaker Link on -> "
         slink = machine.get_spinnaker_link_with_id(
             source_vertex.spinnaker_link_id)
         x = slink.connected_chip_x
         y = slink.connected_chip_y
+        text = f"        Virtual SpiNNaker Link {x}:{y} -> "
     elif isinstance(source_vertex, MachineFPGAVertex):
-        text = "        Virtual FPGA Link on -> "
         flink = machine.get_fpga_link_with_id(
             source_vertex.fpga_id, source_vertex.fpga_link_id)
         x = flink.connected_chip_x
         y = flink.connected_chip_y
+        text = f"        Virtual FPGA Link {x}:{y}-> "
     else:
         source_placement = FecDataView.get_placement_of_vertex(source_vertex)
         x = source_placement.x
