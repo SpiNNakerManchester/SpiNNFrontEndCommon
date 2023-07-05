@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import struct
 import logging
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.messages.spinnaker_boot import SystemVariableDefinition
 from spinn_utilities.config_holder import get_config_bool
 from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.data import FecDataView
