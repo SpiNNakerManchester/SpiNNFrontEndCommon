@@ -322,13 +322,8 @@ class _MachineBitFieldRouterCompressor(object):
 
             for p in core_subset.processor_ids:
                 # Read the result from USER1/USER2 registers
-                user_1_base_address = \
-                    transceiver.get_user_1_register_address_from_core(p)
-                user_2_base_address = \
-                    transceiver.get_user_2_register_address_from_core(p)
-                result = transceiver.read_word(x, y, user_1_base_address)
-                bit_fields_merged = transceiver.read_word(
-                    x, y, user_2_base_address)
+                result = transceiver.read_user(1, x, y, p)
+                bit_fields_merged = transceiver.read_user(2, x, y, p)
 
                 if result != self.SUCCESS:
                     host_chips.add((x, y))
@@ -431,26 +426,20 @@ class _MachineBitFieldRouterCompressor(object):
             bit_field_compressor_executable_path)
         for processor_id in compressor_cores.get_core_subset_for_chip(
                 chip_x, chip_y).processor_ids:
-            user1_address = \
-                transceiver.get_user_1_register_address_from_core(processor_id)
-            user2_address = \
-                transceiver.get_user_2_register_address_from_core(processor_id)
-            user3_address = \
-                transceiver.get_user_3_register_address_from_core(processor_id)
             # user 1 the time per compression attempt
             time_per_iteration = get_config_int(
                 "Mapping",
                 "router_table_compression_with_bit_field_iteration_time")
-            transceiver.write_memory(
-                chip_x, chip_y, user1_address,
+            transceiver.write_user(
+                1, chip_x, chip_y, processor_id,
                 int(time_per_iteration * SECOND_TO_MICRO_SECOND))
             # user 2 Compress as much as needed flag
-            transceiver.write_memory(
-                chip_x, chip_y, user2_address,
+            transceiver.write_user(
+                2, chip_x, chip_y, processor_id,
                 int(compress_as_much_as_possible))
             # user 3 the comms_sdram area
-            transceiver.write_memory(
-                chip_x, chip_y, user3_address, comms_sdram)
+            transceiver.write_user(
+                3, chip_x, chip_y, processor_id, comms_sdram)
 
     def _load_usable_sdram(
             self, matrix_addresses_and_size, chip_x, chip_y, transceiver,
@@ -492,11 +481,9 @@ class _MachineBitFieldRouterCompressor(object):
         processor_id = list(cores.all_core_subsets.get_core_subset_for_chip(
             chip_x, chip_y).processor_ids)[0]
 
-        # update user 2 with location
-        user3_address = transceiver.get_user_3_register_address_from_core(
-            processor_id)
-        transceiver.write_memory(
-            chip_x, chip_y, user3_address, sdram_address)
+        # update user 3 with location
+        transceiver.write_user(
+            3, chip_x, chip_y, processor_id, sdram_address)
 
     def _generate_chip_matrix_data(self, list_of_sizes_and_address):
         """
@@ -569,10 +556,8 @@ class _MachineBitFieldRouterCompressor(object):
             chip_x, chip_y).processor_ids)[0]
 
         # update user 2 with location
-        user2_address = transceiver.get_user_2_register_address_from_core(
-            processor_id)
-        transceiver.write_memory(
-            chip_x, chip_y, user2_address, sdram_address)
+        transceiver.write_user(
+            2, chip_x, chip_y, processor_id, sdram_address)
 
     def _load_routing_table_data(
             self, table, app_id, transceiver,
@@ -616,10 +601,8 @@ class _MachineBitFieldRouterCompressor(object):
             table.x, table.y).processor_ids)[0]
 
         # update user 1 with location
-        user1_address = transceiver.get_user_1_register_address_from_core(
-            processor_id)
-        transceiver.write_memory(
-            table.x, table.y, user1_address, base_address)
+        transceiver.write_user(
+            1, table.x, table.y, processor_id, base_address)
 
         # update progress bar
         progress_bar.update()
