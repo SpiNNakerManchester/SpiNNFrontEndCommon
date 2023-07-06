@@ -162,7 +162,7 @@ class DatabaseWriter(SQLiteDB):
         self.__vertex_to_id[m_vertex] = m_vertex_id
         return m_vertex_id
 
-    def add_system_params(self, runtime: Optional[int]):
+    def add_system_params(self, runtime: Optional[float]):
         """
         Write system parameters into the database.
 

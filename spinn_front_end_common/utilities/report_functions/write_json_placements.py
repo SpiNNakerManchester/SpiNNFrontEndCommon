@@ -26,7 +26,7 @@ _PLACEMENTS_FILENAME = "placements.json"
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def write_json_placements():
+def write_json_placements() -> None:
     """
     Runs the code to write the placements in JSON.
     """

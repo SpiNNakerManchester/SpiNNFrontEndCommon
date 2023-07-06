@@ -111,7 +111,7 @@ class _HBPJobController(MachineAllocationController):
         return bool(self._check_lease(self._WAIT_TIME_MS)["allocated"])
 
 
-def hbp_allocator(total_run_time: int) -> Tuple[
+def hbp_allocator(total_run_time: Optional[float]) -> Tuple[
         str, int, Optional[JsonObject], bool, bool, None,
         MachineAllocationController]:
     """
@@ -142,7 +142,7 @@ def hbp_allocator(total_run_time: int) -> Tuple[
         False, False, None, hbp_job_controller)
 
 
-def _get_machine(url: str, total_run_time: int) -> JsonObject:
+def _get_machine(url: str, total_run_time: Optional[float]) -> JsonObject:
     """
     :param str url:
     :param int total_run_time:

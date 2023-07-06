@@ -46,8 +46,8 @@ POWER_CYCLE_FAILURE_WARNING = (
 
 
 def machine_generator(
-        bmp_details: str, board_version: int, auto_detect_bmp: bool,
-        scamp_connection_data: Optional[Dict[XY, str]],
+        bmp_details: Optional[str], board_version: Optional[int],
+        auto_detect_bmp: bool, scamp_connection_data: Optional[Dict[XY, str]],
         reset_machine_on_start_up: bool) -> Tuple[Machine, Transceiver]:
     """
     Makes a transceiver and a machine object.

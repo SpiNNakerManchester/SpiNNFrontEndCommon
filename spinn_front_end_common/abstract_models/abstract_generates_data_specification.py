@@ -11,12 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 from spinn_utilities.require_subclass import require_subclass
 from pacman.model.placements import Placement
-from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 from .abstract_has_associated_binary import AbstractHasAssociatedBinary
+if TYPE_CHECKING:
+    from spinn_front_end_common.interface.ds import DataSpecificationGenerator
 
 
 @require_subclass(AbstractHasAssociatedBinary)

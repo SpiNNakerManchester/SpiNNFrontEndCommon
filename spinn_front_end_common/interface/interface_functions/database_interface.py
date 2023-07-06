@@ -26,7 +26,7 @@ from spinn_front_end_common.data import FecDataView
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-def database_interface(runtime: int) -> Optional[str]:
+def database_interface(runtime: Optional[float]) -> Optional[str]:
     """
     :param int runtime:
     :return: where the database is located, if one is made
@@ -50,7 +50,7 @@ def database_interface(runtime: int) -> Optional[str]:
         return writer.database_path
 
 
-def _write_to_db(w: DatabaseWriter, runtime: int):
+def _write_to_db(w: DatabaseWriter, runtime: Optional[float]):
     """
     :param DatabaseWriter w:
     :param int runtime:
